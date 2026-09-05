@@ -532,15 +532,23 @@ export function WorkspaceClient({
 
   return (
     <div className="flex flex-col h-screen bg-white text-slate-900 overflow-hidden font-sans">
+      {/* Signature 4-Color Brand Accent Bar */}
+      <div className="h-[2.5px] w-full bg-gradient-to-r from-[#099BE9] via-[#09C899] via-[#8647E2] to-[#F78424] shrink-0" />
       {/* 1. TOP NAVBAR (LeetCode Light Style) */}
       <header className="h-12 border-b border-slate-200/90 bg-white px-4 flex items-center justify-between shrink-0 select-none shadow-2xs">
         <div className="flex items-center gap-3">
           <Link
             href="/challenges"
-            className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors"
+            className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors group"
           >
-            <AlgoLogoIcon size={26} />
-            <ArrowLeft className="w-4 h-4 ml-1" />
+            <AlgoLogoIcon size={24} className="transition-transform group-hover:scale-105" />
+            <span className="font-black tracking-wider text-sm inline-flex items-center gap-[0.5px]">
+              <span className="text-[#099BE9]">A</span>
+              <span className="text-[#09C899]">L</span>
+              <span className="text-[#8647E2]">G</span>
+              <span className="text-[#F78424]">O</span>
+            </span>
+            <ArrowLeft className="w-3.5 h-3.5 ml-1 text-slate-400 group-hover:text-slate-700 transition-colors" />
             <span className="text-xs font-semibold text-slate-700 hover:text-slate-950">Problem List</span>
           </Link>
 

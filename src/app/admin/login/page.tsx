@@ -45,13 +45,19 @@ function AdminLoginForm() {
         {/* Header */}
         <div className="text-center space-y-3">
           <div className="flex justify-center">
-            <AlgoLogoIcon size={48} />
+            <AlgoLogoIcon size={52} />
+          </div>
+          <div className="flex items-center justify-center gap-1 font-black text-2xl tracking-wider">
+            <span className="text-[#099BE9]">A</span>
+            <span className="text-[#09C899]">L</span>
+            <span className="text-[#8647E2]">G</span>
+            <span className="text-[#F78424]">O</span>
           </div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-mono">
             <Shield className="w-3.5 h-3.5 text-purple-400" />
-            <span>ALGO CONTROL PLANE</span>
+            <span>CONTROL PLANE</span>
           </div>
-          <h1 className="text-xl font-bold tracking-tight text-white">
+          <h1 className="text-lg font-bold tracking-tight text-white">
             Administrative Access
           </h1>
           <p className="text-xs text-slate-400 max-w-xs mx-auto">
@@ -60,7 +66,9 @@ function AdminLoginForm() {
         </div>
 
         {/* Card */}
-        <Card className="border-slate-800 bg-slate-800/80 backdrop-blur-md shadow-xl">
+        <Card className="border-slate-800 bg-slate-800/80 backdrop-blur-md shadow-xl overflow-hidden relative">
+          {/* Signature 4-Color Brand Accent Bar */}
+          <div className="h-[3px] w-full bg-gradient-to-r from-[#099BE9] via-[#09C899] via-[#8647E2] to-[#F78424]" />
           <CardContent className="p-6 space-y-4">
             {error && (
               <div className="p-3 text-xs bg-rose-950/50 border border-rose-800 text-rose-300 rounded-lg flex items-center gap-2">

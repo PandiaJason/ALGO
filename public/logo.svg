@@ -1,20 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3010 3010" fill="none" preserveAspectRatio="xMidYMid meet">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3010 3010" width="100%" height="100%" fill="none" preserveAspectRatio="xMidYMid meet">
   <defs>
+    <!-- Our Four Signature Brand Colours -->
+    <!-- A: Electric Blue to Royal Blue -->
     <linearGradient id="algo-grad-a" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#19B2E9" />
-      <stop offset="100%" stop-color="#117BEB" />
+      <stop offset="0%" stop-color="#099BE9" />
+      <stop offset="100%" stop-color="#1984E9" />
     </linearGradient>
+    <!-- L: Mint Cyan to Deep Teal Green -->
     <linearGradient id="algo-grad-l" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#1AD1A1" />
-      <stop offset="100%" stop-color="#08988F" />
+      <stop offset="0%" stop-color="#09C899" />
+      <stop offset="100%" stop-color="#0AA793" />
     </linearGradient>
+    <!-- G: Bright Violet to Royal Purple -->
     <linearGradient id="algo-grad-g" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#864FE1" />
-      <stop offset="100%" stop-color="#8A3CCE" />
+      <stop offset="0%" stop-color="#8647E2" />
+      <stop offset="100%" stop-color="#8937D6" />
     </linearGradient>
+    <!-- O: Golden Amber to Vibrant Tangerine Orange -->
     <linearGradient id="algo-grad-o" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#F9C242" />
-      <stop offset="100%" stop-color="#F7803C" />
+      <stop offset="0%" stop-color="#FBAE0C" />
+      <stop offset="100%" stop-color="#F78424" />
     </linearGradient>
   </defs>
   <!-- In potrace, y is inverted so scale(1, -1) with translate(0, 3010) -->

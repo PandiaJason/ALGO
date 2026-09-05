@@ -11,21 +11,21 @@ export function LeetCodeTablet() {
             "0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1)",
         }}
       >
-        {/* Top 4 Color Blocks */}
+        {/* Top 4 Color Blocks (Calibrated ALGO Brand Colors) */}
         <div className="grid grid-cols-4 gap-2.5 mb-5">
-          <div className="h-14 sm:h-16 rounded-xl bg-gradient-to-br from-[#19B2E9] to-[#117BEB] flex flex-col justify-end p-2 shadow-xs">
+          <div className="h-14 sm:h-16 rounded-xl bg-gradient-to-br from-[#099BE9] to-[#1984E9] flex flex-col justify-end p-2 shadow-xs">
             <span className="text-[10px] font-mono font-bold text-white/90">GET</span>
             <span className="text-xs font-bold text-white leading-none">80K</span>
           </div>
-          <div className="h-14 sm:h-16 rounded-xl bg-gradient-to-br from-[#1AD1A1] to-[#08988F] flex flex-col justify-end p-2 shadow-xs">
+          <div className="h-14 sm:h-16 rounded-xl bg-gradient-to-br from-[#09C899] to-[#0AA793] flex flex-col justify-end p-2 shadow-xs">
             <span className="text-[10px] font-mono font-bold text-white/90">SET</span>
             <span className="text-xs font-bold text-white leading-none">20K</span>
           </div>
-          <div className="h-14 sm:h-16 rounded-xl bg-gradient-to-br from-[#F9C242] to-[#F7803C] flex flex-col justify-end p-2 shadow-xs">
+          <div className="h-14 sm:h-16 rounded-xl bg-gradient-to-br from-[#8647E2] to-[#8937D6] flex flex-col justify-end p-2 shadow-xs">
             <span className="text-[10px] font-mono font-bold text-white/90">TTL</span>
             <span className="text-xs font-bold text-white leading-none">0.1ms</span>
           </div>
-          <div className="h-14 sm:h-16 rounded-xl bg-gradient-to-br from-[#FF5C77] to-[#E63956] flex flex-col justify-end p-2 shadow-xs">
+          <div className="h-14 sm:h-16 rounded-xl bg-gradient-to-br from-[#FBAE0C] to-[#F78424] flex flex-col justify-end p-2 shadow-xs">
             <span className="text-[10px] font-mono font-bold text-white/90">WAL</span>
             <span className="text-xs font-bold text-white leading-none">100%</span>
           </div>
@@ -74,9 +74,9 @@ export function LeetCodeTablet() {
                   fill="none"
                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                 />
-                {/* Segment 1: Cyan (80% GET) */}
+                {/* Segment 1: Blue (80% GET) */}
                 <path
-                  className="text-[#19B2E9]"
+                  className="text-[#099BE9]"
                   strokeDasharray="75, 100"
                   strokeWidth="3.8"
                   strokeLinecap="round"
@@ -84,9 +84,9 @@ export function LeetCodeTablet() {
                   fill="none"
                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                 />
-                {/* Segment 2: Green (20% SET) */}
+                {/* Segment 2: Mint/Teal (20% SET) */}
                 <path
-                  className="text-[#1AD1A1]"
+                  className="text-[#09C899]"
                   strokeDasharray="20, 100"
                   strokeDashoffset="-75"
                   strokeWidth="3.8"
