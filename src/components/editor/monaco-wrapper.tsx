@@ -27,7 +27,7 @@ export function MonacoWrapper({
   language,
   onChange,
   readOnly = false,
-  theme = "vs-dark",
+  theme = "vs",
 }: MonacoWrapperProps) {
   return (
     <div className={`w-full h-full min-h-[350px] overflow-hidden ${theme === "vs-dark" ? "bg-[#1e1e1e]" : "bg-white"}`}>

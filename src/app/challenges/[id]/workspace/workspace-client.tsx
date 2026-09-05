@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  Zap,
   Terminal,
   ChevronDown,
   ChevronUp,
@@ -21,8 +20,6 @@ import {
   History,
   Trophy,
   ArrowLeft,
-  Sun,
-  Moon,
   Copy,
   Check,
 } from "lucide-react";
@@ -83,7 +80,6 @@ export function WorkspaceClient({
   const [language, setLanguage] = useState<"python" | "cpp">("python");
   const [selectedLevel, setSelectedLevel] = useState<number>(1);
   const [code, setCode] = useState<string>(version.starterTemplates.python || "");
-  const [theme, setTheme] = useState<"vs-dark" | "vs">("vs-dark");
   const [leftTab, setLeftTab] = useState<"description" | "missions" | "submissions" | "leaderboard">("description");
 
   // Console drawer state
@@ -244,26 +240,26 @@ export function WorkspaceClient({
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#18181b] text-zinc-100 overflow-hidden font-sans">
-      {/* 1. TOP NAVBAR (LeetCode Style) */}
-      <header className="h-12 border-b border-zinc-800 bg-[#18181b] px-4 flex items-center justify-between shrink-0 select-none">
+    <div className="flex flex-col h-screen bg-white text-slate-900 overflow-hidden font-sans">
+      {/* 1. TOP NAVBAR (LeetCode Light Style) */}
+      <header className="h-12 border-b border-slate-200/90 bg-white px-4 flex items-center justify-between shrink-0 select-none shadow-2xs">
         <div className="flex items-center gap-3">
           <Link
             href="/challenges"
-            className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors"
+            className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors"
           >
             <AlgoLogoIcon size={26} />
             <ArrowLeft className="w-4 h-4 ml-1" />
-            <span className="text-xs font-semibold text-zinc-300 hover:text-white">Problem List</span>
+            <span className="text-xs font-semibold text-slate-700 hover:text-slate-950">Problem List</span>
           </Link>
 
-          <span className="text-zinc-700">|</span>
+          <span className="text-slate-200">|</span>
 
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-zinc-100">
+            <span className="text-sm font-semibold text-slate-900">
               {challenge.title}
             </span>
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-amber-50 text-amber-700 border border-amber-200">
               Level {selectedLevel}
             </span>
           </div>
@@ -274,16 +270,16 @@ export function WorkspaceClient({
           <button
             onClick={handleRunCode}
             disabled={isRunningTests || isSubmitting}
-            className="flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 transition-colors disabled:opacity-50 cursor-pointer"
           >
-            <Play className="w-3.5 h-3.5 text-blue-400 fill-blue-400" />
+            <Play className="w-3.5 h-3.5 text-blue-600 fill-blue-600" />
             <span>{isRunningTests ? "Running..." : "Run"}</span>
           </button>
 
           <button
             onClick={handleSubmit}
             disabled={isSubmitting || isRunningTests}
-            className="flex items-center gap-1.5 px-3.5 py-1 rounded text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
           >
             <Send className="w-3 h-3" />
             <span>{isSubmitting ? "Submitting..." : "Submit"}</span>
@@ -292,166 +288,158 @@ export function WorkspaceClient({
 
         {/* Right: Actions */}
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setTheme(theme === "vs-dark" ? "vs" : "vs-dark")}
-            className="p-1.5 rounded hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-colors"
-            title="Toggle Editor Theme"
-          >
-            {theme === "vs-dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </button>
-
           {user && (
             <Link
               href={`/profile/${user.username}`}
-              className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-zinc-800 text-xs font-mono text-zinc-300"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-slate-100 text-xs font-mono text-slate-700 transition-colors"
             >
-              <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-[10px] text-white font-bold">
+              <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-[10px] text-white font-bold">
                 {user.username.charAt(0).toUpperCase()}
               </div>
-              <span>{user.username}</span>
+              <span className="font-semibold">{user.username}</span>
             </Link>
           )}
         </div>
       </header>
 
       {/* 2. MAIN SPLIT PANE BODY */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-slate-50/50">
         {/* LEFT PANEL: Problem Description, Missions, Submissions, Leaderboard */}
-        <div className="w-full md:w-1/2 flex flex-col border-r border-zinc-800 bg-[#1e1e20] overflow-hidden">
+        <div className="w-full md:w-1/2 flex flex-col border-r border-slate-200 bg-white overflow-hidden">
           {/* Left Panel Tabs */}
-          <div className="h-9 border-b border-zinc-800 bg-[#18181b] px-2 flex items-center gap-1 shrink-0">
+          <div className="h-10 border-b border-slate-200 bg-slate-50/90 px-3 flex items-center gap-2 shrink-0">
             <button
               onClick={() => setLeftTab("description")}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                 leftTab === "description"
-                  ? "bg-zinc-800 text-zinc-100 font-semibold"
-                  : "text-zinc-400 hover:text-zinc-200"
+                  ? "bg-white text-slate-900 font-semibold shadow-2xs border border-slate-200/80"
+                  : "text-slate-500 hover:text-slate-900"
               }`}
             >
-              <FileText className="w-3.5 h-3.5 text-blue-400" />
+              <FileText className="w-3.5 h-3.5 text-blue-600" />
               <span>Description</span>
             </button>
 
             <button
               onClick={() => setLeftTab("missions")}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                 leftTab === "missions"
-                  ? "bg-zinc-800 text-zinc-100 font-semibold"
-                  : "text-zinc-400 hover:text-zinc-200"
+                  ? "bg-white text-slate-900 font-semibold shadow-2xs border border-slate-200/80"
+                  : "text-slate-500 hover:text-slate-900"
               }`}
             >
-              <Target className="w-3.5 h-3.5 text-amber-400" />
+              <Target className="w-3.5 h-3.5 text-amber-600" />
               <span>Missions</span>
             </button>
 
             <button
               onClick={() => setLeftTab("submissions")}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                 leftTab === "submissions"
-                  ? "bg-zinc-800 text-zinc-100 font-semibold"
-                  : "text-zinc-400 hover:text-zinc-200"
+                  ? "bg-white text-slate-900 font-semibold shadow-2xs border border-slate-200/80"
+                  : "text-slate-500 hover:text-slate-900"
               }`}
             >
-              <History className="w-3.5 h-3.5 text-emerald-400" />
+              <History className="w-3.5 h-3.5 text-emerald-600" />
               <span>Submissions ({pastSubmissions.length})</span>
             </button>
 
             <button
               onClick={() => setLeftTab("leaderboard")}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                 leftTab === "leaderboard"
-                  ? "bg-zinc-800 text-zinc-100 font-semibold"
-                  : "text-zinc-400 hover:text-zinc-200"
+                  ? "bg-white text-slate-900 font-semibold shadow-2xs border border-slate-200/80"
+                  : "text-slate-500 hover:text-slate-900"
               }`}
             >
-              <Trophy className="w-3.5 h-3.5 text-purple-400" />
+              <Trophy className="w-3.5 h-3.5 text-purple-600" />
               <span>Leaderboard</span>
             </button>
           </div>
 
           {/* Left Panel Content */}
-          <div className="flex-1 overflow-y-auto p-5 text-zinc-300 text-xs leading-relaxed space-y-6">
+          <div className="flex-1 overflow-y-auto p-6 text-slate-700 text-xs leading-relaxed space-y-6">
             {leftTab === "description" && (
               <div className="space-y-6">
                 <div>
-                  <h1 className="text-xl font-bold text-white mb-2">
+                  <h1 className="text-xl font-bold text-slate-900 mb-2">
                     {challenge.title}
                   </h1>
                   <div className="flex items-center gap-2 mb-4">
-                    <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <span className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-amber-50 text-amber-700 border border-amber-200">
                       Medium
                     </span>
-                    <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-zinc-800 text-zinc-400">
+                    <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-600 border border-slate-200">
                       Systems Engineering
                     </span>
-                    <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-zinc-800 text-zinc-400">
+                    <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-600 border border-slate-200">
                       In-Memory Database
                     </span>
                   </div>
-                  <p className="text-zinc-300 leading-relaxed text-sm">
+                  <p className="text-slate-600 leading-relaxed text-sm">
                     Reconstruct a high-performance in-memory key-value database inspired by Redis.
-                    Your engine must read commands from standard input, execute operations against
-                    your internal data structures, and print outputs to standard output.
+                    Your engine reads commands from standard input, executes operations against
+                    internal data structures, and prints outputs to standard output.
                   </p>
                 </div>
 
                 {/* Operations Section */}
                 <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-white">Supported Operations</h3>
-                  <div className="border border-zinc-800 rounded-lg overflow-hidden bg-zinc-900/50">
-                    <div className="p-3 border-b border-zinc-800 flex items-start gap-3">
-                      <code className="px-2 py-0.5 rounded bg-zinc-800 font-mono text-blue-400 text-xs shrink-0">SET key value</code>
-                      <span className="text-zinc-400">Stores the key-value pair. Returns <code className="text-emerald-400">OK</code>.</span>
+                  <h3 className="text-sm font-semibold text-slate-900">Supported Operations</h3>
+                  <div className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50/50 shadow-2xs">
+                    <div className="p-3 border-b border-slate-200 flex items-start gap-3 bg-white">
+                      <code className="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 font-mono text-blue-700 text-xs shrink-0 font-medium">SET key value</code>
+                      <span className="text-slate-600">Stores key-value pair. Returns <code className="text-emerald-700 font-semibold font-mono">OK</code>.</span>
                     </div>
-                    <div className="p-3 border-b border-zinc-800 flex items-start gap-3">
-                      <code className="px-2 py-0.5 rounded bg-zinc-800 font-mono text-blue-400 text-xs shrink-0">GET key</code>
-                      <span className="text-zinc-400">Retrieves the value for key. Returns <code className="text-zinc-300">NULL</code> if missing.</span>
+                    <div className="p-3 border-b border-slate-200 flex items-start gap-3 bg-white">
+                      <code className="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 font-mono text-blue-700 text-xs shrink-0 font-medium">GET key</code>
+                      <span className="text-slate-600">Retrieves value. Returns <code className="text-slate-800 font-mono">NULL</code> if missing.</span>
                     </div>
-                    <div className="p-3 border-b border-zinc-800 flex items-start gap-3">
-                      <code className="px-2 py-0.5 rounded bg-zinc-800 font-mono text-blue-400 text-xs shrink-0">DELETE key</code>
-                      <span className="text-zinc-400">Deletes the key. Returns <code className="text-emerald-400">OK</code> if deleted, or <code className="text-rose-400">NOT_FOUND</code>.</span>
+                    <div className="p-3 border-b border-slate-200 flex items-start gap-3 bg-white">
+                      <code className="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 font-mono text-blue-700 text-xs shrink-0 font-medium">DELETE key</code>
+                      <span className="text-slate-600">Deletes key. Returns <code className="text-emerald-700 font-semibold font-mono">OK</code> if deleted, or <code className="text-rose-700 font-semibold font-mono">NOT_FOUND</code>.</span>
                     </div>
-                    <div className="p-3 flex items-start gap-3">
-                      <code className="px-2 py-0.5 rounded bg-zinc-800 font-mono text-blue-400 text-xs shrink-0">EXISTS key</code>
-                      <span className="text-zinc-400">Checks if key exists. Returns <code className="text-emerald-400">TRUE</code> or <code className="text-zinc-400">FALSE</code>.</span>
+                    <div className="p-3 flex items-start gap-3 bg-white">
+                      <code className="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 font-mono text-blue-700 text-xs shrink-0 font-medium">EXISTS key</code>
+                      <span className="text-slate-600">Checks key existence. Returns <code className="text-emerald-700 font-semibold font-mono">TRUE</code> or <code className="text-slate-500 font-mono">FALSE</code>.</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Examples */}
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-white">Examples</h3>
+                  <h3 className="text-sm font-semibold text-slate-900">Examples</h3>
 
-                  <div className="p-3 rounded-lg bg-zinc-900 border border-zinc-800 space-y-2">
-                    <div className="text-[11px] font-mono text-zinc-400 font-semibold">Example 1: SET & GET</div>
-                    <div className="bg-black/40 p-2.5 rounded font-mono text-xs text-zinc-200">
-                      <div className="text-zinc-500 font-bold mb-1">Input:</div>
-                      <div>SET alpha 42</div>
-                      <div>GET alpha</div>
-                      <div className="text-zinc-500 font-bold mt-2 mb-1">Output:</div>
-                      <div className="text-emerald-400">OK</div>
-                      <div className="text-emerald-400">42</div>
+                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+                    <div className="text-[11px] font-mono text-slate-500 font-bold uppercase tracking-wide">Example 1: SET & GET</div>
+                    <div className="bg-white p-3 rounded-lg border border-slate-200 font-mono text-xs text-slate-800 space-y-1">
+                      <div className="text-slate-400 font-semibold">Input:</div>
+                      <div className="text-slate-900 font-medium">SET alpha 42</div>
+                      <div className="text-slate-900 font-medium">GET alpha</div>
+                      <div className="text-slate-400 font-semibold mt-2 pt-1 border-t border-slate-100">Output:</div>
+                      <div className="text-emerald-700 font-semibold">OK</div>
+                      <div className="text-emerald-700 font-semibold">42</div>
                     </div>
                   </div>
 
-                  <div className="p-3 rounded-lg bg-zinc-900 border border-zinc-800 space-y-2">
-                    <div className="text-[11px] font-mono text-zinc-400 font-semibold">Example 2: Missing Key</div>
-                    <div className="bg-black/40 p-2.5 rounded font-mono text-xs text-zinc-200">
-                      <div className="text-zinc-500 font-bold mb-1">Input:</div>
-                      <div>GET non_existent_key</div>
-                      <div className="text-zinc-500 font-bold mt-2 mb-1">Output:</div>
-                      <div className="text-emerald-400">NULL</div>
+                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+                    <div className="text-[11px] font-mono text-slate-500 font-bold uppercase tracking-wide">Example 2: Missing Key</div>
+                    <div className="bg-white p-3 rounded-lg border border-slate-200 font-mono text-xs text-slate-800 space-y-1">
+                      <div className="text-slate-400 font-semibold">Input:</div>
+                      <div className="text-slate-900 font-medium">GET non_existent_key</div>
+                      <div className="text-slate-400 font-semibold mt-2 pt-1 border-t border-slate-100">Output:</div>
+                      <div className="text-emerald-700 font-semibold">NULL</div>
                     </div>
                   </div>
                 </div>
 
                 {/* Constraints */}
-                <div className="space-y-2 pt-2 border-t border-zinc-800">
-                  <h3 className="text-sm font-semibold text-white">Constraints & Environment</h3>
-                  <ul className="list-disc list-inside space-y-1 text-zinc-400 text-xs">
-                    <li>Execution Sandbox: Isolated Docker container (<code className="text-zinc-300">algo-runner</code>)</li>
-                    <li>Resource Limits: <code className="text-zinc-300">256MB RAM</code>, <code className="text-zinc-300">1.0 CPU</code>, strict timeout</li>
-                    <li>Baseline Throughput: <code className="text-blue-400 font-mono">100,000 ops/sec</code></li>
+                <div className="space-y-2 pt-4 border-t border-slate-200">
+                  <h3 className="text-sm font-semibold text-slate-900">Constraints & Environment</h3>
+                  <ul className="list-disc list-inside space-y-1.5 text-slate-600 text-xs">
+                    <li>Execution Sandbox: Isolated Docker container (<code className="text-slate-800 font-mono">algo-runner</code>)</li>
+                    <li>Resource Limits: <code className="text-slate-800 font-mono">256MB RAM</code>, <code className="text-slate-800 font-mono">1.0 CPU</code>, strict timeout</li>
+                    <li>Baseline Throughput: <code className="text-blue-600 font-mono font-semibold">100,000 ops/sec</code></li>
                     <li>Languages Supported: Python 3.12, C++ 20 (GCC -O3)</li>
                   </ul>
                 </div>
@@ -460,33 +448,33 @@ export function WorkspaceClient({
 
             {leftTab === "missions" && (
               <div className="space-y-4">
-                <h2 className="text-sm font-semibold text-white mb-2">Progressive Engineering Missions</h2>
+                <h2 className="text-sm font-semibold text-slate-900 mb-2">Progressive Engineering Missions</h2>
                 <div className="space-y-3">
                   {version.levels.map((lvl) => (
                     <div
                       key={lvl.level}
                       onClick={() => setSelectedLevel(lvl.level)}
-                      className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                      className={`p-3.5 rounded-lg border cursor-pointer transition-all ${
                         selectedLevel === lvl.level
-                          ? "bg-blue-950/30 border-blue-500/50"
-                          : "bg-zinc-900 border-zinc-800 hover:border-zinc-700"
+                          ? "bg-blue-50/70 border-blue-300 shadow-2xs"
+                          : "bg-white border-slate-200 hover:border-slate-300"
                       }`}
                     >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-semibold text-white">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-bold text-slate-900">
                           Mission {lvl.level}: {lvl.title}
                         </span>
                         {selectedLevel === lvl.level ? (
-                          <span className="text-[10px] font-mono text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
+                          <span className="text-[10px] font-mono font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">
                             Active Level
                           </span>
                         ) : (
-                          <span className="text-[10px] font-mono text-zinc-500">
+                          <span className="text-[10px] font-mono text-slate-400">
                             Click to Select
                           </span>
                         )}
                       </div>
-                      <p className="text-zinc-400 text-xs leading-normal">
+                      <p className="text-slate-600 text-xs leading-normal">
                         {lvl.description}
                       </p>
                     </div>
@@ -497,9 +485,9 @@ export function WorkspaceClient({
 
             {leftTab === "submissions" && (
               <div className="space-y-4">
-                <h2 className="text-sm font-semibold text-white mb-2">Submission History</h2>
+                <h2 className="text-sm font-semibold text-slate-900 mb-2">Submission History</h2>
                 {pastSubmissions.length === 0 ? (
-                  <div className="text-center py-10 border border-dashed border-zinc-800 rounded-lg text-zinc-500">
+                  <div className="text-center py-12 border border-dashed border-slate-200 rounded-lg text-slate-400">
                     No verified submissions yet. Click "Submit" to test your engine.
                   </div>
                 ) : (
@@ -507,29 +495,29 @@ export function WorkspaceClient({
                     {pastSubmissions.map((sub) => (
                       <div
                         key={sub.id}
-                        className="p-3 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-between"
+                        className="p-3.5 rounded-lg bg-white border border-slate-200 flex items-center justify-between shadow-2xs"
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
                             {sub.isCorrect ? (
-                              <span className="flex items-center gap-1 text-emerald-400 font-semibold text-xs">
-                                <CheckCircle2 className="w-3.5 h-3.5" /> Accepted
+                              <span className="flex items-center gap-1 text-emerald-700 font-bold text-xs">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Accepted
                               </span>
                             ) : (
-                              <span className="flex items-center gap-1 text-rose-400 font-semibold text-xs">
-                                <XCircle className="w-3.5 h-3.5" /> Wrong Answer
+                              <span className="flex items-center gap-1 text-rose-700 font-bold text-xs">
+                                <XCircle className="w-3.5 h-3.5 text-rose-600" /> Wrong Answer
                               </span>
                             )}
-                            <span className="text-[10px] font-mono text-zinc-500 uppercase">
+                            <span className="text-[10px] font-mono text-slate-400 uppercase">
                               {sub.language} • Level {sub.level}
                             </span>
                           </div>
-                          <div className="text-[11px] font-mono text-zinc-400">
+                          <div className="text-[11px] font-mono text-slate-600">
                             {sub.throughputOpsSec ? `${Number(sub.throughputOpsSec).toLocaleString()} ops/s` : "Pending"}
                             {sub.score && ` (${sub.score}x baseline)`}
                           </div>
                         </div>
-                        <div className="text-right text-[11px] text-zinc-500">
+                        <div className="text-right text-[11px] text-slate-400 font-mono">
                           {new Date(sub.submittedAt).toLocaleTimeString()}
                         </div>
                       </div>
@@ -541,9 +529,9 @@ export function WorkspaceClient({
 
             {leftTab === "leaderboard" && (
               <div className="space-y-4">
-                <h2 className="text-sm font-semibold text-white mb-2">Verified Top Performers</h2>
+                <h2 className="text-sm font-semibold text-slate-900 mb-2">Verified Top Performers</h2>
                 {topLeaders.length === 0 ? (
-                  <div className="text-center py-10 border border-dashed border-zinc-800 rounded-lg text-zinc-500">
+                  <div className="text-center py-12 border border-dashed border-slate-200 rounded-lg text-slate-400">
                     No verified records on the leaderboard yet.
                   </div>
                 ) : (
@@ -551,28 +539,28 @@ export function WorkspaceClient({
                     {topLeaders.map((lead) => (
                       <div
                         key={lead.rank}
-                        className="p-3 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-between"
+                        className="p-3.5 rounded-lg bg-white border border-slate-200 flex items-center justify-between shadow-2xs"
                       >
                         <div className="flex items-center gap-3">
                           <div
                             className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
                               lead.rank === 1
-                                ? "bg-amber-500/20 text-amber-400 border border-amber-500/40"
+                                ? "bg-amber-100 text-amber-800 border border-amber-300"
                                 : lead.rank === 2
-                                ? "bg-slate-400/20 text-slate-300 border border-slate-400/40"
-                                : "bg-zinc-800 text-zinc-400"
+                                ? "bg-slate-200 text-slate-700 border border-slate-300"
+                                : "bg-slate-100 text-slate-600"
                             }`}
                           >
                             {lead.rank}
                           </div>
                           <div>
-                            <div className="text-xs font-semibold text-white">@{lead.username}</div>
-                            <div className="text-[10px] font-mono text-zinc-400">
+                            <div className="text-xs font-bold text-slate-900">@{lead.username}</div>
+                            <div className="text-[10px] font-mono text-slate-500">
                               {Number(lead.throughputOpsSec).toLocaleString()} ops/sec
                             </div>
                           </div>
                         </div>
-                        <div className="text-xs font-mono font-bold text-emerald-400">
+                        <div className="text-xs font-mono font-bold text-emerald-700">
                           {lead.score}x
                         </div>
                       </div>
@@ -585,14 +573,14 @@ export function WorkspaceClient({
         </div>
 
         {/* RIGHT PANEL: Code Editor (Top) + LeetCode Console Drawer (Bottom) */}
-        <div className="w-full md:w-1/2 flex flex-col bg-[#1e1e1e] overflow-hidden">
+        <div className="w-full md:w-1/2 flex flex-col bg-white overflow-hidden">
           {/* Code Editor Header */}
-          <div className="h-9 border-b border-zinc-800 bg-[#18181b] px-3 flex items-center justify-between shrink-0">
+          <div className="h-10 border-b border-slate-200 bg-slate-50/90 px-3 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <select
                 value={language}
                 onChange={(e) => handleLanguageChange(e.target.value as any)}
-                className="bg-zinc-800 text-zinc-200 text-xs font-mono rounded px-2.5 py-1 border border-zinc-700 focus:outline-none"
+                className="bg-white text-slate-800 text-xs font-mono font-medium rounded-md px-2.5 py-1 border border-slate-300 shadow-2xs focus:outline-none cursor-pointer"
               >
                 <option value="python">Python 3.12</option>
                 <option value="cpp">C++ 20 (g++)</option>
@@ -601,7 +589,7 @@ export function WorkspaceClient({
               <select
                 value={selectedLevel}
                 onChange={(e) => setSelectedLevel(Number(e.target.value))}
-                className="bg-zinc-800 text-zinc-300 text-xs font-mono rounded px-2.5 py-1 border border-zinc-700 focus:outline-none"
+                className="bg-white text-slate-800 text-xs font-mono font-medium rounded-md px-2.5 py-1 border border-slate-300 shadow-2xs focus:outline-none cursor-pointer"
               >
                 {version.levels.map((lvl) => (
                   <option key={lvl.level} value={lvl.level}>
@@ -611,49 +599,49 @@ export function WorkspaceClient({
               </select>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={handleCopyCode}
-                className="p-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-colors"
+                className="p-1.5 rounded-md hover:bg-slate-200 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
                 title="Copy Code"
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
               </button>
 
               <button
                 onClick={handleReset}
-                className="p-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-colors"
+                className="p-1.5 rounded-md hover:bg-slate-200 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
                 title="Reset to Starter Template"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <RotateCcw className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          {/* Monaco Editor Surface */}
-          <div className="flex-1 overflow-hidden">
+          {/* Monaco Editor Surface (Pure Light Mode vs theme) */}
+          <div className="flex-1 overflow-hidden bg-white">
             <MonacoWrapper
               value={code}
               language={language}
               onChange={(val) => setCode(val || "")}
-              theme={theme}
+              theme="vs"
             />
           </div>
 
-          {/* 3. LEETCODE-STYLE CONSOLE DRAWER */}
-          <div className="border-t border-zinc-800 bg-[#18181b] flex flex-col shrink-0">
+          {/* 3. LEETCODE-STYLE CONSOLE DRAWER (LIGHT MODE) */}
+          <div className="border-t border-slate-200 bg-white flex flex-col shrink-0">
             {/* Console Tab Header Bar */}
-            <div className="h-9 px-3 border-b border-zinc-800 flex items-center justify-between bg-[#1f1f22]">
+            <div className="h-9 px-3 border-b border-slate-200 flex items-center justify-between bg-slate-50">
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => {
                     setIsConsoleOpen(true);
                     setConsoleTab("testcase");
                   }}
-                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                     isConsoleOpen && consoleTab === "testcase"
-                      ? "bg-zinc-800 text-white font-semibold"
-                      : "text-zinc-400 hover:text-zinc-200"
+                      ? "bg-white text-slate-900 font-semibold shadow-2xs border border-slate-200"
+                      : "text-slate-500 hover:text-slate-900"
                   }`}
                 >
                   Testcase
@@ -664,10 +652,10 @@ export function WorkspaceClient({
                     setIsConsoleOpen(true);
                     setConsoleTab("result");
                   }}
-                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                     isConsoleOpen && consoleTab === "result"
-                      ? "bg-zinc-800 text-white font-semibold"
-                      : "text-zinc-400 hover:text-zinc-200"
+                      ? "bg-white text-slate-900 font-semibold shadow-2xs border border-slate-200"
+                      : "text-slate-500 hover:text-slate-900"
                   }`}
                 >
                   Test Result
@@ -677,9 +665,9 @@ export function WorkspaceClient({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsConsoleOpen(!isConsoleOpen)}
-                  className="flex items-center gap-1 text-[11px] text-zinc-400 hover:text-zinc-200 px-2 py-0.5 rounded hover:bg-zinc-800 transition-colors"
+                  className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-900 px-2.5 py-1 rounded hover:bg-slate-200 transition-colors cursor-pointer font-medium"
                 >
-                  <Terminal className="w-3 h-3" />
+                  <Terminal className="w-3.5 h-3.5 text-slate-600" />
                   <span>Console</span>
                   {isConsoleOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
                 </button>
@@ -688,7 +676,7 @@ export function WorkspaceClient({
 
             {/* Console Drawer Body */}
             {isConsoleOpen && (
-              <div className="h-56 overflow-y-auto p-4 bg-[#18181b] text-xs font-mono">
+              <div className="h-56 overflow-y-auto p-4 bg-white text-xs font-mono">
                 {consoleTab === "testcase" && (
                   <div className="space-y-3">
                     {/* Case Buttons */}
@@ -700,10 +688,10 @@ export function WorkspaceClient({
                             setSelectedCaseIndex(i);
                             setCustomInput(c.input);
                           }}
-                          className={`px-2.5 py-1 rounded text-xs font-mono transition-colors shrink-0 ${
+                          className={`px-2.5 py-1 rounded-md text-xs font-mono transition-colors shrink-0 cursor-pointer ${
                             selectedCaseIndex === i
-                              ? "bg-zinc-800 text-white border border-zinc-700 font-semibold"
-                              : "bg-zinc-900 text-zinc-400 hover:text-zinc-200 border border-transparent"
+                              ? "bg-slate-900 text-white font-semibold shadow-2xs"
+                              : "bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200"
                           }`}
                         >
                           Case {i + 1}
@@ -712,12 +700,12 @@ export function WorkspaceClient({
                     </div>
 
                     <div className="space-y-1.5">
-                      <div className="text-[11px] text-zinc-400 font-sans font-medium">Standard Input:</div>
+                      <div className="text-[11px] text-slate-500 font-sans font-semibold">Standard Input:</div>
                       <textarea
                         value={customInput}
                         onChange={(e) => setCustomInput(e.target.value)}
                         rows={5}
-                        className="w-full bg-zinc-900 border border-zinc-800 rounded p-2 text-xs font-mono text-zinc-200 focus:outline-none focus:border-zinc-700 resize-none"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-mono text-slate-900 focus:outline-none focus:border-blue-500 resize-none shadow-2xs"
                       />
                     </div>
                   </div>
@@ -726,7 +714,7 @@ export function WorkspaceClient({
                 {consoleTab === "result" && (
                   <div className="space-y-3">
                     {isRunningTests ? (
-                      <div className="flex items-center gap-2 text-blue-400 py-6">
+                      <div className="flex items-center gap-2 text-blue-600 py-6 font-sans">
                         <Clock className="w-4 h-4 animate-spin" />
                         <span>Running tests inside isolated Docker sandbox...</span>
                       </div>
@@ -735,31 +723,31 @@ export function WorkspaceClient({
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             {testResult.passed === testResult.total ? (
-                              <span className="flex items-center gap-1.5 text-sm font-bold text-emerald-400">
-                                <CheckCircle2 className="w-4 h-4" /> Accepted
+                              <span className="flex items-center gap-1.5 text-sm font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Accepted
                               </span>
                             ) : (
-                              <span className="flex items-center gap-1.5 text-sm font-bold text-rose-400">
-                                <XCircle className="w-4 h-4" /> Wrong Answer
+                              <span className="flex items-center gap-1.5 text-sm font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-md border border-rose-200">
+                                <XCircle className="w-4 h-4 text-rose-600" /> Wrong Answer
                               </span>
                             )}
-                            <span className="text-zinc-500 font-sans text-xs">
+                            <span className="text-slate-500 font-sans text-xs font-medium">
                               Passed {testResult.passed} / {testResult.total} testcases
                             </span>
                           </div>
 
-                          <span className="text-[11px] font-mono text-zinc-400">
-                            Docker Sandbox: OK
+                          <span className="text-[11px] font-mono text-slate-400">
+                            Docker Sandbox: Active
                           </span>
                         </div>
 
-                        <div className="p-3 rounded bg-zinc-900 border border-zinc-800 whitespace-pre-wrap text-zinc-300 text-xs">
+                        <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 whitespace-pre-wrap text-slate-800 text-xs shadow-2xs">
                           {testResult.details}
                         </div>
                       </div>
                     ) : (
-                      <div className="text-zinc-500 py-8 text-center font-sans">
-                        Click "Run" to test your implementation against the test suite.
+                      <div className="text-slate-400 py-8 text-center font-sans">
+                        Click "Run" to test your implementation against the automated test suite.
                       </div>
                     )}
                   </div>
