@@ -149,6 +149,118 @@ export default async function ChallengeDetailPage({ params }: Props) {
               </div>
             </div>
 
+            {/* Progressive Engineering Curriculum (Levels 1 - 6) */}
+            <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">
+                    Progressive Engineering Curriculum
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Complete 6 rigorous milestones from basic in-memory dictionaries to bare-metal hardware optimization.
+                  </p>
+                </div>
+                <span className="text-[11px] font-mono text-slate-400">
+                  6 Levels
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                {[
+                  {
+                    level: 1,
+                    title: "Basic In-Memory Store",
+                    difficulty: "Easy",
+                    desc: "Implement fundamental SET, GET, DELETE, and EXISTS operations with direct O(1) in-memory hash resolution.",
+                    ops: ["SET", "GET", "DELETE", "EXISTS"],
+                  },
+                  {
+                    level: 2,
+                    title: "Efficient Lookup & Collision Resolution",
+                    difficulty: "Medium",
+                    desc: "Build a custom internal hash table with 64-bit hashing, collision chaining / open addressing, and dynamic load factor threshold rehashing.",
+                    ops: ["SET", "GET", "DELETE", "EXISTS", "STATS"],
+                  },
+                  {
+                    level: 3,
+                    title: "Durable Persistence & Write-Ahead Log (WAL)",
+                    difficulty: "Medium",
+                    desc: "Implement append-only write-ahead logging (WAL) and crash recovery replay. Ensure zero data loss across simulated process restarts.",
+                    ops: ["SAVE", "RESTORE", "FLUSHALL", "WAL Append"],
+                  },
+                  {
+                    level: 4,
+                    title: "TTL & Key Expiration",
+                    difficulty: "Hard",
+                    desc: "Implement millisecond-precision key expiration with dual-mode passive eviction on read and active background sweeping.",
+                    ops: ["EXPIRE", "TTL", "PERSIST"],
+                  },
+                  {
+                    level: 5,
+                    title: "Concurrency & Thread-Safe Operations",
+                    difficulty: "Hard",
+                    desc: "Scale across 16+ parallel client threads. Implement striped locking (sharded mutexes) or read-write locks to maximize concurrent throughput.",
+                    ops: ["PING", "MGET", "MSET", "Striped Locks"],
+                  },
+                  {
+                    level: 6,
+                    title: "Extreme Optimization & Memory Compaction",
+                    difficulty: "Hard",
+                    desc: "Push hardware limits. Exceed 100,000 ops/sec with sub-0.20ms p99 latency under a strict 256MB memory cap using custom memory pooling and WAL compaction.",
+                    ops: ["COMPACT", "MEMSTATS", "SIMD / Zero-Copy"],
+                  },
+                ].map((lvl) => (
+                  <div
+                    key={lvl.level}
+                    className="p-3.5 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-slate-300 transition-all space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-slate-900">
+                          Level {lvl.level}: {lvl.title}
+                        </span>
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold ${
+                            lvl.difficulty === "Easy"
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              : lvl.difficulty === "Medium"
+                              ? "bg-amber-50 text-amber-700 border border-amber-200"
+                              : "bg-rose-50 text-rose-700 border border-rose-200"
+                          }`}
+                        >
+                          {lvl.difficulty}
+                        </span>
+                      </div>
+                      <Link
+                        href={`/challenges/${challenge.slug}/workspace`}
+                        className="text-[11px] font-mono text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        Enter L{lvl.level} →
+                      </Link>
+                    </div>
+
+                    <p className="text-slate-600 text-xs leading-relaxed">
+                      {lvl.desc}
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                      <span className="text-[10px] font-mono text-slate-400 uppercase font-semibold mr-1">
+                        Ops:
+                      </span>
+                      {lvl.ops.map((op, idx) => (
+                        <code
+                          key={idx}
+                          className="px-1.5 py-0.5 rounded bg-white text-slate-700 font-mono text-[10px] border border-slate-200"
+                        >
+                          {op}
+                        </code>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* API Specification (LeetCode Signature Style) */}
             <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-4">
               <div className="flex items-center justify-between">
