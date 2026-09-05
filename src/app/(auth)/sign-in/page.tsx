@@ -25,8 +25,15 @@ export default function SignInPage() {
 function SignInContent() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/challenges";
+  const urlError = searchParams.get("error");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    urlError === "AccessDenied"
+      ? "Access was denied or session could not be established. Please try again."
+      : urlError
+      ? `Authentication error (${urlError}). Please try signing in again.`
+      : null
+  );
 
   const handleGoogleSignIn = async () => {
     setLoading(true);

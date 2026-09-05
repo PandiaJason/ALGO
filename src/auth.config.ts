@@ -4,6 +4,7 @@ export const authConfig: NextAuthConfig = {
   trustHost: true,
   pages: {
     signIn: "/sign-in",
+    error: "/sign-in",
   },
   session: {
     strategy: "jwt",

@@ -80,56 +80,71 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async signIn({ user, account, profile }) {
       if (!user.email) return false;
 
-      // Ensure user exists in PostgreSQL for OAuth providers
+      const isOwnerAdmin = user.email.toLowerCase() === "pandiajason@gmail.com";
+      const baseUsername =
+        (user.name || user.email.split("@")[0])
+          .toLowerCase()
+          .replace(/[^a-z0-9_]/g, "")
+          .slice(0, 30) || "engineer";
+      const defaultUsername = isOwnerAdmin ? "jasonpandian" : baseUsername;
+
+      // Ensure user attributes exist on the user object for JWT token generation
+      (user as { role?: string }).role = isOwnerAdmin ? "ADMIN" : "STUDENT";
+      (user as { username?: string }).username = defaultUsername;
+      if (!user.id) {
+        user.id = `usr_${Buffer.from(user.email).toString("hex").slice(0, 16)}`;
+      }
+
+      // Sync user with PostgreSQL if database is reachable
       if (account?.provider !== "credentials") {
-        const existingUsers = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, user.email))
-          .limit(1);
+        try {
+          const existingUsers = await db
+            .select()
+            .from(users)
+            .where(eq(users.email, user.email))
+            .limit(1);
 
-        let dbUserId = existingUsers[0]?.id;
+          let dbUserId = existingUsers[0]?.id;
 
-        const isOwnerAdmin = user.email.toLowerCase() === "pandiajason@gmail.com";
+          if (!existingUsers[0]) {
+            const uniqueUsername = isOwnerAdmin
+              ? "jasonpandian"
+              : `${baseUsername}_${Math.floor(1000 + Math.random() * 9000)}`;
 
-        if (!existingUsers[0]) {
-          const baseUsername =
-            (user.name || user.email.split("@")[0])
-              .toLowerCase()
-              .replace(/[^a-z0-9_]/g, "")
-              .slice(0, 30) || "engineer";
-          
-          const uniqueUsername = isOwnerAdmin
-            ? "jasonpandian"
-            : `${baseUsername}_${Math.floor(1000 + Math.random() * 9000)}`;
+            const [newUser] = await db
+              .insert(users)
+              .values({
+                name: isOwnerAdmin ? "Jason Pandian" : user.name || "Curious Engineer",
+                username: uniqueUsername,
+                email: user.email,
+                avatarUrl: user.image,
+                role: isOwnerAdmin ? "ADMIN" : "STUDENT",
+              })
+              .returning();
 
-          const [newUser] = await db
-            .insert(users)
-            .values({
-              name: isOwnerAdmin ? "Jason Pandian" : user.name || "Curious Engineer",
-              username: uniqueUsername,
-              email: user.email,
-              avatarUrl: user.image,
-              role: isOwnerAdmin ? "ADMIN" : "STUDENT",
-            })
-            .returning();
-
-          dbUserId = newUser.id;
-          (user as { role?: string }).role = newUser.role;
-          (user as { username?: string }).username = newUser.username;
-        } else {
-          if (isOwnerAdmin && existingUsers[0].role !== "ADMIN") {
-            await db
-              .update(users)
-              .set({ role: "ADMIN", name: "Jason Pandian" })
-              .where(eq(users.id, existingUsers[0].id));
-            existingUsers[0].role = "ADMIN";
+            if (newUser) {
+              dbUserId = newUser.id;
+              (user as { role?: string }).role = newUser.role;
+              (user as { username?: string }).username = newUser.username;
+            }
+          } else {
+            if (isOwnerAdmin && existingUsers[0].role !== "ADMIN") {
+              await db
+                .update(users)
+                .set({ role: "ADMIN", name: "Jason Pandian" })
+                .where(eq(users.id, existingUsers[0].id));
+              existingUsers[0].role = "ADMIN";
+            }
+            (user as { role?: string }).role = existingUsers[0].role;
+            (user as { username?: string }).username = existingUsers[0].username;
           }
-          (user as { role?: string }).role = existingUsers[0].role;
-          (user as { username?: string }).username = existingUsers[0].username;
-        }
 
-        user.id = dbUserId!;
+          if (dbUserId) {
+            user.id = dbUserId;
+          }
+        } catch (dbErr) {
+          console.warn("Database sync skipped during OAuth sign-in (falling back to JWT session):", dbErr);
+        }
       }
 
       return true;
