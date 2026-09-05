@@ -8,6 +8,7 @@ import {
 } from "./schema";
 import { eq } from "drizzle-orm";
 import crypto from "crypto";
+import { DEFAULT_STARTER_TEMPLATES } from "@/lib/constants/templates";
 
 export function hashPassword(password: string): string {
   const salt = "algo_dev_salt_2026";
@@ -125,179 +126,6 @@ In this challenge, you will implement an in-memory data engine capable of handli
     ],
   };
 
-  const starterPython = `"""
-ALGO Key-Value Store Challenge
-Level 1-3 Implementation
-"""
-import os
-import sys
-
-class KeyValueStore:
-    def __init__(self, data_dir="./data"):
-        self.data_dir = data_dir
-        self.wal_path = os.path.join(data_dir, "wal.log")
-        os.makedirs(data_dir, exist_ok=True)
-        self.store = {}
-        self._recover()
-
-    def _recover(self):
-        """Recover state from WAL if it exists."""
-        if os.path.exists(self.wal_path):
-            with open(self.wal_path, "r", encoding="utf-8") as f:
-                for line in f:
-                    parts = line.strip().split(" ", 2)
-                    if not parts or not parts[0]:
-                        continue
-                    cmd = parts[0]
-                    if cmd == "SET" and len(parts) == 3:
-                        self.store[parts[1]] = parts[2]
-                    elif cmd == "DEL" and len(parts) >= 2:
-                        self.store.pop(parts[1], None)
-
-    def _log_wal(self, entry: str):
-        """Append-only log entry."""
-        with open(self.wal_path, "a", encoding="utf-8") as f:
-            f.write(entry + "\\n")
-            f.flush()
-
-    def set(self, key: str, value: str) -> str:
-        self._log_wal(f"SET {key} {value}")
-        self.store[key] = value
-        return "OK"
-
-    def get(self, key: str) -> str:
-        return self.store.get(key, "NULL")
-
-    def delete(self, key: str) -> str:
-        if key in self.store:
-            self._log_wal(f"DEL {key}")
-            del self.store[key]
-            return "OK"
-        return "NOT_FOUND"
-
-    def exists(self, key: str) -> str:
-        return "TRUE" if key in self.store else "FALSE"
-
-if __name__ == "__main__":
-    # Standard I/O command loop for automated testing & benchmarking
-    store = KeyValueStore()
-    for line in sys.stdin:
-        parts = line.strip().split(" ", 2)
-        if not parts or not parts[0]:
-            continue
-        cmd = parts[0].upper()
-        if cmd == "SET" and len(parts) == 3:
-            print(store.set(parts[1], parts[2]))
-        elif cmd == "GET" and len(parts) >= 2:
-            print(store.get(parts[1]))
-        elif cmd == "DELETE" and len(parts) >= 2:
-            print(store.delete(parts[1]))
-        elif cmd == "EXISTS" and len(parts) >= 2:
-            print(store.exists(parts[1]))
-        elif cmd == "EXIT":
-            break
-        sys.stdout.flush()
-`;
-
-  const starterCpp = `/**
- * ALGO Key-Value Store Challenge
- * Level 1-3 Implementation (C++)
- */
-#include <iostream>
-#include <string>
-#include <unordered_map>
-#include <fstream>
-#include <sstream>
-
-class KeyValueStore {
-private:
-    std::unordered_map<std::string, std::string> store;
-    std::string wal_path = "./data/wal.log";
-
-    void recover() {
-        std::ifstream wal(wal_path);
-        if (!wal.is_open()) return;
-        std::string line;
-        while (std::getline(wal, line)) {
-            std::istringstream iss(line);
-            std::string cmd, key, val;
-            iss >> cmd >> key;
-            if (cmd == "SET") {
-                std::getline(iss >> std::ws, val);
-                store[key] = val;
-            } else if (cmd == "DEL") {
-                store.erase(key);
-            }
-        }
-    }
-
-    void logWal(const std::string& entry) {
-        std::ofstream wal(wal_path, std::ios::app);
-        if (wal.is_open()) {
-            wal << entry << "\\n";
-            wal.flush();
-        }
-    }
-
-public:
-    KeyValueStore() {
-        system("mkdir -p ./data");
-        recover();
-    }
-
-    std::string set(const std::string& key, const std::string& val) {
-        logWal("SET " + key + " " + val);
-        store[key] = val;
-        return "OK";
-    }
-
-    std::string get(const std::string& key) {
-        auto it = store.find(key);
-        if (it != store.end()) return it->second;
-        return "NULL";
-    }
-
-    std::string del(const std::string& key) {
-        if (store.erase(key)) {
-            logWal("DEL " + key);
-            return "OK";
-        }
-        return "NOT_FOUND";
-    }
-
-    std::string exists(const std::string& key) {
-        return (store.find(key) != store.end()) ? "TRUE" : "FALSE";
-    }
-};
-
-int main() {
-    std::ios_base::sync_with_stdio(false);
-    std::cin.tie(NULL);
-    KeyValueStore store;
-    std::string line;
-    while (std::getline(std::cin, line)) {
-        if (line.empty()) continue;
-        std::istringstream iss(line);
-        std::string cmd, key, val;
-        iss >> cmd >> key;
-        if (cmd == "SET") {
-            std::getline(iss >> std::ws, val);
-            std::cout << store.set(key, val) << "\\n";
-        } else if (cmd == "GET") {
-            std::cout << store.get(key) << "\\n";
-        } else if (cmd == "DELETE") {
-            std::cout << store.del(key) << "\\n";
-        } else if (cmd == "EXISTS") {
-            std::cout << store.exists(key) << "\\n";
-        } else if (cmd == "EXIT") {
-            break;
-        }
-        std::cout << std::flush;
-    }
-    return 0;
-}
-`;
-
   const [version] = await db
     .insert(challengeVersions)
     .values({
@@ -305,10 +133,7 @@ int main() {
       version: 1,
       spec,
       levels: spec.levels,
-      starterTemplates: {
-        python: starterPython,
-        cpp: starterCpp,
-      },
+      starterTemplates: DEFAULT_STARTER_TEMPLATES,
       testDefinitions: {
         correctnessSuites: [
           { name: "test_basic_crud", weight: 30, description: "Validates SET, GET, DELETE, and EXISTS" },

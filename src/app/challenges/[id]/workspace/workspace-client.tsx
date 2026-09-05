@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MonacoWrapper } from "@/components/editor/monaco-wrapper";
 import { AlgoLogoIcon } from "@/components/layout/algo-logo-icon";
+import { DEFAULT_STARTER_TEMPLATES } from "@/lib/constants/templates";
 import {
   Play,
   Send,
@@ -77,15 +78,27 @@ export function WorkspaceClient({
   topLeaders = [],
 }: Props) {
   const router = useRouter();
+  const getInitialCode = (lang: "python" | "cpp") => {
+    const dbTemplate =
+      lang === "python"
+        ? version.starterTemplates?.python
+        : version.starterTemplates?.cpp;
+    if (dbTemplate && dbTemplate.includes("SAVE") && dbTemplate.includes("stats")) {
+      return dbTemplate;
+    }
+    return DEFAULT_STARTER_TEMPLATES[lang];
+  };
+
   const [language, setLanguage] = useState<"python" | "cpp">("python");
   const [selectedLevel, setSelectedLevel] = useState<number>(1);
-  const [code, setCode] = useState<string>(version.starterTemplates.python || "");
+  const [code, setCode] = useState<string>(() => getInitialCode("python"));
   const [leftTab, setLeftTab] = useState<"description" | "missions" | "submissions" | "leaderboard">("description");
 
   // Console drawer state
   const [isConsoleOpen, setIsConsoleOpen] = useState(true);
   const [consoleTab, setConsoleTab] = useState<"testcase" | "result">("testcase");
   const [selectedCaseIndex, setSelectedCaseIndex] = useState(0);
+  const [selectedResultCaseIndex, setSelectedResultCaseIndex] = useState(0);
   const [customInput, setCustomInput] = useState("SET alpha 42\nGET alpha\nEXISTS alpha\nDELETE alpha\nGET alpha");
   const [copied, setCopied] = useState(false);
 
@@ -97,6 +110,14 @@ export function WorkspaceClient({
     total: number;
     details: string;
     output: string;
+    cases?: Array<{
+      name: string;
+      input: string;
+      expected: string;
+      actual: string;
+      passed: boolean;
+      error?: string;
+    }>;
   } | null>(null);
 
   const levelData: Record<
@@ -403,20 +424,12 @@ export function WorkspaceClient({
 
   const handleLanguageChange = (newLang: "python" | "cpp") => {
     setLanguage(newLang);
-    setCode(
-      newLang === "python"
-        ? version.starterTemplates.python
-        : version.starterTemplates.cpp
-    );
+    setCode(getInitialCode(newLang));
   };
 
   const handleReset = () => {
     if (confirm("Reset editor to original starter template?")) {
-      setCode(
-        language === "python"
-          ? version.starterTemplates.python
-          : version.starterTemplates.cpp
-      );
+      setCode(getInitialCode(language));
     }
   };
 
@@ -454,6 +467,7 @@ export function WorkspaceClient({
           total: 5,
           details: data.error || "Test runner failure",
           output: data.error || "Execution failed",
+          cases: [],
         });
       } else {
         setTestResult({
@@ -461,7 +475,9 @@ export function WorkspaceClient({
           total: data.total,
           details: data.details,
           output: data.output || "Tests complete.",
+          cases: data.cases || [],
         });
+        setSelectedResultCaseIndex(0);
       }
     } catch (err: any) {
       setTestResult({
@@ -469,6 +485,7 @@ export function WorkspaceClient({
         total: 5,
         details: err.message,
         output: "Network error calling test runner",
+        cases: [],
       });
     } finally {
       setIsRunningTests(false);
@@ -1082,7 +1099,7 @@ export function WorkspaceClient({
                 )}
 
                 {consoleTab === "result" && (
-                  <div className="space-y-3">
+                  <div className="space-y-3 font-sans">
                     {isRunningTests ? (
                       <div className="flex items-center gap-2 text-blue-600 py-6 font-sans">
                         <Clock className="w-4 h-4 animate-spin" />
@@ -1101,19 +1118,125 @@ export function WorkspaceClient({
                                 <XCircle className="w-4 h-4 text-rose-600" /> Wrong Answer
                               </span>
                             )}
-                            <span className="text-slate-500 font-sans text-xs font-medium">
+                            <span className="text-slate-600 font-sans text-xs font-semibold">
                               Passed {testResult.passed} / {testResult.total} testcases
+                            </span>
+                            <span className="text-[11px] text-slate-500 font-medium bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                              Level {selectedLevel}
                             </span>
                           </div>
 
-                          <span className="text-[11px] font-mono text-slate-400">
+                          <span className="text-[11px] font-mono text-emerald-600 flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                             Docker Sandbox: Active
                           </span>
                         </div>
 
-                        <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 whitespace-pre-wrap text-slate-800 text-xs shadow-2xs">
-                          {testResult.details}
-                        </div>
+                        {testResult.cases && testResult.cases.length > 0 ? (
+                          <div className="space-y-3">
+                            {/* Case selector tabs */}
+                            <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+                              {testResult.cases.map((c, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => setSelectedResultCaseIndex(i)}
+                                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${
+                                    selectedResultCaseIndex === i
+                                      ? c.passed
+                                        ? "bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-2xs font-semibold"
+                                        : "bg-rose-50 text-rose-800 border border-rose-300 shadow-2xs font-semibold"
+                                      : "bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200"
+                                  }`}
+                                >
+                                  <span
+                                    className={`w-2 h-2 rounded-full ${
+                                      c.passed ? "bg-emerald-500" : "bg-rose-500"
+                                    }`}
+                                  />
+                                  Case {i + 1}
+                                </button>
+                              ))}
+                            </div>
+
+                            {/* Active case breakdown */}
+                            {(() => {
+                              const activeCase =
+                                testResult.cases[selectedResultCaseIndex] ||
+                                testResult.cases[0];
+                              if (!activeCase) return null;
+                              return (
+                                <div className="space-y-2.5">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-semibold text-slate-800">
+                                      {activeCase.name}
+                                    </span>
+                                    <span
+                                      className={`text-[11px] font-bold px-2 py-0.5 rounded ${
+                                        activeCase.passed
+                                          ? "text-emerald-700 bg-emerald-50 border border-emerald-200"
+                                          : "text-rose-700 bg-rose-50 border border-rose-200"
+                                      }`}
+                                    >
+                                      {activeCase.passed ? "✓ Passed" : "✗ Failed"}
+                                    </span>
+                                  </div>
+
+                                  <div className="space-y-1">
+                                    <span className="text-[11px] text-slate-500 font-sans font-semibold">
+                                      Standard Input:
+                                    </span>
+                                    <pre className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-800 whitespace-pre-wrap shadow-2xs">
+                                      {activeCase.input}
+                                    </pre>
+                                  </div>
+
+                                  <div className="space-y-1">
+                                    <span className="text-[11px] text-slate-500 font-sans font-semibold">
+                                      Actual Output:
+                                    </span>
+                                    <pre
+                                      className={`p-2.5 rounded-lg text-xs font-mono whitespace-pre-wrap shadow-2xs border ${
+                                        activeCase.passed
+                                          ? "bg-slate-50 border-slate-200 text-slate-800"
+                                          : "bg-rose-50/60 border-rose-200 text-rose-800 font-medium"
+                                      }`}
+                                    >
+                                      {activeCase.actual || "(No output produced)"}
+                                    </pre>
+                                    {activeCase.error && (
+                                      <div className="text-[11px] text-rose-600 font-mono bg-rose-50 p-2 rounded border border-rose-200">
+                                        Error: {activeCase.error}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  <div className="space-y-1">
+                                    <span className="text-[11px] text-slate-500 font-sans font-semibold">
+                                      Expected Output:
+                                    </span>
+                                    <pre className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-emerald-700 font-semibold whitespace-pre-wrap shadow-2xs">
+                                      {activeCase.expected}
+                                    </pre>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+
+                            {/* Collapsible raw log */}
+                            <details className="mt-2 text-xs text-slate-500 border-t border-slate-100 pt-2">
+                              <summary className="cursor-pointer font-medium hover:text-slate-700 py-1">
+                                View Raw Sandbox Execution Log
+                              </summary>
+                              <pre className="p-3 bg-slate-900 text-slate-100 rounded-lg font-mono text-[11px] whitespace-pre-wrap mt-1">
+                                {testResult.details}
+                              </pre>
+                            </details>
+                          </div>
+                        ) : (
+                          <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200 whitespace-pre-wrap text-slate-800 text-xs shadow-2xs">
+                            {testResult.details}
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="text-slate-400 py-8 text-center font-sans">

@@ -35,6 +35,7 @@ export async function POST(
       total: result.total,
       details: result.details,
       output: result.output,
+      cases: result.cases,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
