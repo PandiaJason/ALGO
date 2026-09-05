@@ -19,6 +19,7 @@ interface MonacoWrapperProps {
   language: string;
   onChange: (val: string | undefined) => void;
   readOnly?: boolean;
+  theme?: "vs-dark" | "vs";
 }
 
 export function MonacoWrapper({
@@ -26,15 +27,16 @@ export function MonacoWrapper({
   language,
   onChange,
   readOnly = false,
+  theme = "vs-dark",
 }: MonacoWrapperProps) {
   return (
-    <div className="w-full h-full min-h-[450px] border border-slate-200/90 rounded-b-md overflow-hidden bg-white">
+    <div className={`w-full h-full min-h-[350px] overflow-hidden ${theme === "vs-dark" ? "bg-[#1e1e1e]" : "bg-white"}`}>
       <Editor
         height="100%"
         language={language === "cpp" ? "cpp" : "python"}
         value={value}
         onChange={onChange}
-        theme="vs"
+        theme={theme}
         options={{
           fontSize: 13,
           fontFamily: "'SF Mono', Menlo, Monaco, Consolas, monospace",
