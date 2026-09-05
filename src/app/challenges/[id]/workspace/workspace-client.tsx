@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { MonacoWrapper } from "@/components/editor/monaco-wrapper";
 import { AlgoLogoIcon } from "@/components/layout/algo-logo-icon";
 import { DEFAULT_STARTER_TEMPLATES } from "@/lib/constants/templates";
+import { PROJECT_SCOPE, LEVEL_DEFINITIONS } from "@/lib/constants/challenge-data";
 import {
   Play,
   Send,
@@ -23,6 +24,16 @@ import {
   ArrowLeft,
   Copy,
   Check,
+  BookOpen,
+  Lightbulb,
+  Layers,
+  Cpu,
+  Zap,
+  Database,
+  Sparkles,
+  ShieldCheck,
+  Compass,
+  Info,
 } from "lucide-react";
 
 interface Props {
@@ -120,296 +131,8 @@ export function WorkspaceClient({
     }>;
   } | null>(null);
 
-  const levelData: Record<
-    number,
-    {
-      level: number;
-      shortTitle: string;
-      title: string;
-      difficulty: "Easy" | "Medium" | "Hard";
-      tagline: string;
-      operations: Array<{ cmd: string; desc: string }>;
-      durabilityRules?: string[];
-      examples: Array<{ title: string; input: string; output: string }>;
-      constraints: string[];
-      cases: Array<{ name: string; input: string; expected: string }>;
-    }
-  > = {
-    1: {
-      level: 1,
-      shortTitle: "In-Memory Store",
-      title: "Basic In-Memory Store",
-      difficulty: "Easy",
-      tagline:
-        "Implement fundamental SET, GET, DELETE, and EXISTS operations with direct O(1) in-memory hash resolution.",
-      operations: [
-        { cmd: "SET key value", desc: "Stores key-value pair in memory. Overwrites existing value if present. Returns OK." },
-        { cmd: "GET key", desc: "Retrieves value associated with key. Returns the string value or NULL if missing." },
-        { cmd: "DELETE key", desc: "Deletes key from memory. Returns OK if deleted, or NOT_FOUND if missing." },
-        { cmd: "EXISTS key", desc: "Checks key existence in store. Returns TRUE if present, or FALSE if missing." },
-      ],
-      durabilityRules: [
-        "In-Memory Resolution: Store all keys and values in heap memory with average O(1) time complexity.",
-        "Arbitrary Strings: Keys and values are arbitrary UTF-8 strings. Values may contain spaces or symbols.",
-        "Idempotent Behavior: Missing keys must consistently return NULL for GET and NOT_FOUND for DELETE.",
-      ],
-      examples: [
-        {
-          title: "Example 1: SET & GET",
-          input: "SET alpha 42\nGET alpha",
-          output: "OK\n42",
-        },
-        {
-          title: "Example 2: Missing Key",
-          input: "GET non_existent_key",
-          output: "NULL",
-        },
-        {
-          title: "Example 3: Overwrite & DELETE",
-          input: "SET score 10\nSET score 20\nGET score\nDELETE score\nGET score",
-          output: "OK\nOK\n20\nOK\nNULL",
-        },
-      ],
-      constraints: [
-        "Time Complexity: O(1) average lookup and insertion.",
-        "Memory Sandbox: 256MB RAM hard limit inside Docker container.",
-        "String Encoding: Valid UTF-8 string encoding across all inputs.",
-        "Execution Sandbox: Isolated non-root Docker runner with zero network access.",
-      ],
-      cases: [
-        { name: "Case 1: Basic SET & GET", input: "SET alpha 42\nGET alpha", expected: "OK\n42" },
-        { name: "Case 2: Missing Key", input: "GET non_existent_key", expected: "NULL" },
-        { name: "Case 3: EXISTS Check", input: "SET beta 100\nEXISTS beta\nEXISTS gamma", expected: "OK\nTRUE\nFALSE" },
-        { name: "Case 4: Overwrite Key", input: "SET score 10\nSET score 20\nGET score", expected: "OK\nOK\n20" },
-        { name: "Case 5: DELETE & Re-query", input: "SET delta 999\nDELETE delta\nGET delta", expected: "OK\nOK\nNULL" },
-      ],
-    },
-    2: {
-      level: 2,
-      shortTitle: "Hash Table & Collision",
-      title: "Efficient Lookup & Collision Resolution",
-      difficulty: "Medium",
-      tagline:
-        "Build a custom internal hash table with 64-bit hashing, collision chaining / open addressing, and dynamic load factor threshold rehashing.",
-      operations: [
-        { cmd: "SET key value", desc: "Hashes key, computes bucket index, resolves collisions, and resizes if load factor > 0.75. Returns OK." },
-        { cmd: "GET key", desc: "Probes collision chain / bucket to retrieve value. Returns value or NULL." },
-        { cmd: "DELETE key", desc: "Removes entry and marks tombstone or unlinks node. Returns OK or NOT_FOUND." },
-        { cmd: "EXISTS key", desc: "Probes bucket to verify existence. Returns TRUE or FALSE." },
-        { cmd: "STATS", desc: "Returns internal hash table metrics: BUCKETS: <n> ELEMENTS: <m> LOAD: <load_factor>." },
-      ],
-      durabilityRules: [
-        "Deterministic Hashing: Implement uniform 64-bit hashing (MurmurHash3 / FNV-1a) across all bucket slots.",
-        "Collision Resolution: Implement separate chaining (linked list / bucket vector) or open addressing (linear probing).",
-        "Dynamic Rehashing: When (elements / buckets) > 0.75, double bucket capacity and rehash all active entries.",
-        "Tombstone Management: On deletion in open addressing, mark slot as tombstone to preserve search probe continuity.",
-      ],
-      examples: [
-        {
-          title: "Example 1: Collision Resolution",
-          input: "SET k1 val1\nSET k2 val2\nGET k1\nGET k2",
-          output: "OK\nOK\nval1\nval2",
-        },
-        {
-          title: "Example 2: Table Expansion & STATS",
-          input: "SET user:1 jason\nSET user:2 alex\nSET user:3 sam\nSTATS",
-          output: "OK\nOK\nOK\nBUCKETS: 8 ELEMENTS: 3 LOAD: 0.38",
-        },
-      ],
-      constraints: [
-        "Maximum Load Factor: 0.75 threshold before dynamic rehashing.",
-        "Initial Buckets: Start with at least 8 or 16 buckets.",
-        "Amortized Complexity: O(1) insert, lookup, and delete.",
-        "Memory Allocation: Zero memory leaks during rehashing or node deletion.",
-      ],
-      cases: [
-        { name: "Case 1: Sequential Inserts", input: "SET a 1\nSET b 2\nGET a\nGET b", expected: "OK\nOK\n1\n2" },
-        { name: "Case 2: Overwrite in Same Bucket", input: "SET key 10\nSET key 20\nGET key", expected: "OK\nOK\n20" },
-        { name: "Case 3: DELETE with Probe Continuity", input: "SET x 1\nSET y 2\nDELETE x\nGET y", expected: "OK\nOK\nOK\n2" },
-        { name: "Case 4: STATS Verification", input: "SET k1 1\nSTATS", expected: "OK\nBUCKETS: 8 ELEMENTS: 1 LOAD: 0.13" },
-        { name: "Case 5: Non-existent Probing", input: "SET a 1\nGET z", expected: "OK\nNULL" },
-      ],
-    },
-    3: {
-      level: 3,
-      shortTitle: "Persistence & WAL",
-      title: "Durable Persistence & Write-Ahead Log (WAL)",
-      difficulty: "Medium",
-      tagline:
-        "Implement append-only write-ahead logging (WAL) and crash recovery replay. Ensure zero data loss across simulated process restarts.",
-      operations: [
-        { cmd: "SET / GET / DELETE / EXISTS", desc: "All Level 1 & 2 operations. Every mutation is synchronously flushed to wal.log before returning OK." },
-        { cmd: "SAVE", desc: "Forces an immediate synchronous snapshot dump of in-memory keys to disk (dump.rdb). Returns OK." },
-        { cmd: "RESTORE", desc: "Restores dataset from disk snapshot. Returns OK or NOT_FOUND if snapshot missing." },
-        { cmd: "FLUSHALL", desc: "Clears all in-memory keys and truncates wal.log to 0 bytes. Returns OK." },
-      ],
-      durabilityRules: [
-        "Write-Ahead Logging: Every mutating command (SET, DELETE, FLUSHALL) must append to ./data/wal.log before in-memory state is altered.",
-        "Crash Recovery Replay: On engine boot (__init__), open wal.log and replay mutations chronologically to restore full state.",
-        "Snapshot Serialization: SAVE creates an atomic point-in-time snapshot dump using temporary file rename.",
-        "Tolerant Log Parser: Gracefully ignore truncated or corrupt trailing log lines without crashing or aborting initialization.",
-      ],
-      examples: [
-        {
-          title: "Example 1: Crash Recovery from WAL",
-          input: "SET user:1 jason\nSET user:2 alex\n# Simulate engine restart\nGET user:1\nGET user:2",
-          output: "OK\nOK\njason\nalex",
-        },
-        {
-          title: "Example 2: Snapshot & Restore",
-          input: "SET key1 value1\nSAVE\nFLUSHALL\nGET key1\nRESTORE\nGET key1",
-          output: "OK\nOK\nOK\nNULL\nOK\nvalue1",
-        },
-      ],
-      constraints: [
-        "WAL Log File: ./data/wal.log.",
-        "Sync Guarantee: Flush file buffers (fdatasync/flush) on each mutation.",
-        "Crash Safety: Must survive SIGKILL and recover exact state.",
-        "Replay Overhead: Must complete recovery under 50ms for 10,000 log entries.",
-      ],
-      cases: [
-        { name: "Case 1: WAL Mutation Persistence", input: "SET user:1 jason\nGET user:1", expected: "OK\njason" },
-        { name: "Case 2: SAVE Snapshot", input: "SET snapshot_key saved_data\nSAVE\nGET snapshot_key", expected: "OK\nOK\nsaved_data" },
-        { name: "Case 3: FLUSHALL Reset", input: "SET tmp 123\nFLUSHALL\nGET tmp", expected: "OK\nOK\nNULL" },
-        { name: "Case 4: Overwrite Durability", input: "SET count 1\nSET count 2\nGET count", expected: "OK\nOK\n2" },
-        { name: "Case 5: DELETE Persistence", input: "SET active 1\nDELETE active\nGET active", expected: "OK\nOK\nNULL" },
-      ],
-    },
-    4: {
-      level: 4,
-      shortTitle: "TTL & Expiration",
-      title: "TTL & Key Expiration",
-      difficulty: "Hard",
-      tagline:
-        "Implement millisecond-precision key expiration with dual-mode passive eviction on read and active background sweeping.",
-      operations: [
-        { cmd: "EXPIRE key ttl_ms", desc: "Sets time-to-live in milliseconds on key. Returns OK, or NOT_FOUND if key does not exist." },
-        { cmd: "TTL key", desc: "Returns remaining lifetime in milliseconds, -1 if key has no TTL, or -2 if key does not exist." },
-        { cmd: "PERSIST key", desc: "Removes expiration timer from key, making it permanent. Returns OK or NOT_FOUND." },
-        { cmd: "GET key", desc: "Checks expiration timestamp. If current_time >= expire_at, deletes key and returns NULL." },
-      ],
-      durabilityRules: [
-        "Passive Eviction (Lazy): Every read operation (GET, EXISTS, TTL) evaluates expiration. If expired, remove key immediately.",
-        "Active Eviction Sweep: Periodically sample keys with TTL to evict expired keys that are never queried, preventing memory leaks.",
-        "Overwrite Semantics: A SET command on an existing key without EXPIRE clears any previously set TTL (resets TTL to -1).",
-        "Monotonic Clock: Use monotonic time (time.monotonic() in Python or steady_clock in C++) to prevent NTP/wall-clock drift issues.",
-      ],
-      examples: [
-        {
-          title: "Example 1: TTL Expiration",
-          input: "SET token xyz\nEXPIRE token 50\n# sleep 60ms\nGET token\nTTL token",
-          output: "OK\nOK\nNULL\n-2",
-        },
-        {
-          title: "Example 2: PERSIST Command",
-          input: "SET session 123\nEXPIRE session 60000\nTTL session\nPERSIST session\nTTL session",
-          output: "OK\nOK\n>0\nOK\n-1",
-        },
-      ],
-      constraints: [
-        "Time Precision: Millisecond resolution (ttl_ms >= 1).",
-        "TTL Return Codes: Positive integer (ms remaining), -1 (no expiration), -2 (key does not exist).",
-        "Memory Cleanup: Bound expired keys memory under heavy workloads.",
-        "Clock Monotonicity: Use steady/monotonic system time sources.",
-      ],
-      cases: [
-        { name: "Case 1: EXPIRE & Query", input: "SET auth 99\nEXPIRE auth 5000\nGET auth", expected: "OK\nOK\n99" },
-        { name: "Case 2: TTL Check", input: "SET perm 42\nTTL perm\nTTL not_there", expected: "OK\n-1\n-2" },
-        { name: "Case 3: PERSIST Clears Expiration", input: "SET token abc\nEXPIRE token 10000\nPERSIST token\nTTL token", expected: "OK\nOK\nOK\n-1" },
-        { name: "Case 4: Overwrite Clears TTL", input: "SET a 1\nEXPIRE a 1000\nSET a 2\nTTL a", expected: "OK\nOK\nOK\n-1" },
-        { name: "Case 5: DELETE Expired Key", input: "SET b 1\nDELETE b\nTTL b", expected: "OK\nOK\n-2" },
-      ],
-    },
-    5: {
-      level: 5,
-      shortTitle: "Concurrency",
-      title: "Concurrency & Thread-Safe Operations",
-      difficulty: "Hard",
-      tagline:
-        "Scale across 16+ parallel client threads. Implement striped locking (sharded mutexes) or read-write locks to maximize concurrent throughput.",
-      operations: [
-        { cmd: "All Level 1-4 Operations", desc: "Fully thread-safe under concurrent multi-threaded execution without data races." },
-        { cmd: "PING [msg]", desc: "Server health check. Returns PONG or echoed string." },
-        { cmd: "MGET key1 key2 ...", desc: "Atomically retrieves multiple keys in a single consistent snapshot. Returns space-separated values." },
-        { cmd: "MSET k1 v1 k2 v2 ...", desc: "Atomically stores multiple key-value pairs without interleaving partial writes. Returns OK." },
-      ],
-      durabilityRules: [
-        "Striped Locking: Partition keyspace into 32 or 64 independent mutex shards to eliminate global lock bottleneck.",
-        "Reader-Writer Locks: Allow concurrent simultaneous readers while acquiring exclusive locks only for mutations.",
-        "Deadlock Avoidance: For multi-key operations (MGET, MSET), always acquire locks in sorted order of shard index.",
-        "Thread Safety: Zero race conditions under 16 concurrent worker threads (verified via ThreadSanitizer).",
-      ],
-      examples: [
-        {
-          title: "Example 1: PING & Multi-Key Read",
-          input: "PING\nSET k1 10\nSET k2 20\nMGET k1 k2 k3",
-          output: "PONG\nOK\nOK\n10 20 NULL",
-        },
-        {
-          title: "Example 2: Atomic Multi-Set",
-          input: "MSET a 1 b 2 c 3\nGET a\nGET b\nGET c",
-          output: "OK\n1\n2\n3",
-        },
-      ],
-      constraints: [
-        "Parallel Clients: Support 16+ concurrent threads without race conditions.",
-        "Lock Striping Factor: At least 16 independent mutex partitions.",
-        "Deadlock Free: Multi-key lock ordering must guarantee zero deadlocks.",
-        "Correctness Gate: 100% test pass rate required under concurrent stress.",
-      ],
-      cases: [
-        { name: "Case 1: PING Healthcheck", input: "PING\nPING hello", expected: "PONG\nhello" },
-        { name: "Case 2: MSET Batch", input: "MSET alpha 1 beta 2 gamma 3\nGET alpha\nGET beta", expected: "OK\n1\n2" },
-        { name: "Case 3: MGET Multi-Key Fetch", input: "SET x 10\nSET y 20\nMGET x y z", expected: "OK\nOK\n10 20 NULL" },
-        { name: "Case 4: Concurrent Overwrite Consistency", input: "SET score 5\nSET score 10\nGET score", expected: "OK\nOK\n10" },
-        { name: "Case 5: MSET with Existing Key Overwrite", input: "SET a 1\nMSET a 99 b 100\nGET a\nGET b", expected: "OK\nOK\n99\n100" },
-      ],
-    },
-    6: {
-      level: 6,
-      shortTitle: "Peak Perf & Memory",
-      title: "Extreme Optimization & Memory Compaction",
-      difficulty: "Hard",
-      tagline:
-        "Push hardware limits. Exceed 100,000 ops/sec with sub-0.20ms p99 latency under a strict 256MB memory cap using custom memory pooling and WAL compaction.",
-      operations: [
-        { cmd: "All Prior Operations", desc: "Executed with zero-copy I/O parsing, SIMD string comparisons, and cache-line aligned layouts." },
-        { cmd: "COMPACT", desc: "Rewrites Write-Ahead Log by discarding superseded mutations and defragmenting memory. Returns OK." },
-        { cmd: "MEMSTATS", desc: "Returns detailed memory metrics: ALLOCATED_BYTES: <n> PEAK_BYTES: <m> FRAGMENTATION_RATIO: <r>." },
-      ],
-      durabilityRules: [
-        "Custom Memory Arena: Allocate memory in fixed-size slab pools to eliminate malloc/free heap fragmentation.",
-        "Cache-Line Packing: Align hot data structures (hash node headers, key pointers) to 64-byte CPU cache lines.",
-        "Zero-Copy Parsing: Parse incoming protocol buffers directly without allocating intermediate strings.",
-        "Online WAL Compaction: Atomically replace bloated log files with clean point-in-time state snapshots.",
-      ],
-      examples: [
-        {
-          title: "Example 1: Log Compaction & Memory Stats",
-          input: "SET key 1\nSET key 2\nSET key 3\nCOMPACT\nMEMSTATS\nGET key",
-          output: "OK\nOK\nOK\nOK\nALLOCATED_BYTES: 1048 PEAK_BYTES: 2048 FRAGMENTATION_RATIO: 1.02\n3",
-        },
-        {
-          title: "Example 2: High-Throughput Burst",
-          input: "SET burst:1 val\nSET burst:2 val\nGET burst:1\nDELETE burst:2\nEXISTS burst:2",
-          output: "OK\nOK\nval\nOK\nFALSE",
-        },
-      ],
-      constraints: [
-        "Throughput Benchmark: > 100,000 ops/sec sustained.",
-        "p99 Latency Cap: < 0.20 ms under heavy load.",
-        "Memory Quota: Hard 256MB cgroup enforcement.",
-        "Durability: Full WAL crash recovery fidelity preserved after compaction.",
-      ],
-      cases: [
-        { name: "Case 1: COMPACT Log Compaction", input: "SET user:1 old\nSET user:1 new\nCOMPACT\nGET user:1", expected: "OK\nOK\nOK\nnew" },
-        { name: "Case 2: MEMSTATS Resource Breakdown", input: "SET sample test\nMEMSTATS", expected: "OK\nALLOCATED_BYTES: 1024 PEAK_BYTES: 1024 FRAGMENTATION_RATIO: 1.00" },
-        { name: "Case 3: High-Frequency Insertion", input: "SET a 1\nSET b 2\nSET c 3\nGET b", expected: "OK\nOK\nOK\n2" },
-        { name: "Case 4: Cache-Line Aligned Retrieval", input: "SET metric 99.9\nGET metric", expected: "OK\n99.9" },
-        { name: "Case 5: Full Cycle Verification", input: "SET k v\nEXISTS k\nDELETE k\nEXISTS k", expected: "OK\nTRUE\nOK\nFALSE" },
-      ],
-    },
-  };
+  const [isScopeExpanded, setIsScopeExpanded] = useState(true);
+  const levelData = LEVEL_DEFINITIONS;
 
   const handleSelectLevel = (lvl: number) => {
     setSelectedLevel(lvl);
@@ -657,6 +380,76 @@ export function WorkspaceClient({
           <div className="flex-1 overflow-y-auto p-6 text-slate-700 text-xs leading-relaxed space-y-6">
             {leftTab === "description" && (
               <div className="space-y-6">
+                {/* Project Scope & Engineering Capstone Architecture Banner */}
+                <div className="rounded-xl border border-blue-200/90 bg-gradient-to-br from-blue-50/70 via-slate-50 to-indigo-50/40 p-4 shadow-2xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-blue-600 text-white shadow-2xs">
+                        {PROJECT_SCOPE.badge}
+                      </span>
+                      <span className="text-xs font-bold text-slate-900">
+                        {PROJECT_SCOPE.title}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setIsScopeExpanded(!isScopeExpanded)}
+                      className="text-xs font-mono text-blue-700 hover:text-blue-900 flex items-center gap-1 font-semibold cursor-pointer"
+                    >
+                      <span>{isScopeExpanded ? "Collapse Scope" : "Explore Full System Scope"}</span>
+                      {isScopeExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-slate-700 leading-relaxed">
+                    {PROJECT_SCOPE.overview}
+                  </p>
+
+                  {isScopeExpanded && (
+                    <div className="space-y-3 pt-2 border-t border-blue-100 animate-in fade-in duration-200">
+                      <div>
+                        <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                          The 6 Architectural Engine Layers
+                        </span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                          {PROJECT_SCOPE.architecturalLayers.map((layer) => (
+                            <div
+                              key={layer.number}
+                              onClick={() => handleSelectLevel(layer.number)}
+                              className={`p-2.5 rounded-lg border text-xs cursor-pointer transition-all ${
+                                selectedLevel === layer.number
+                                  ? "bg-white border-blue-400 shadow-2xs ring-1 ring-blue-300"
+                                  : "bg-white/80 border-slate-200/80 hover:bg-white hover:border-slate-300"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between font-bold text-slate-900">
+                                <span>Layer {layer.number}: {layer.name}</span>
+                                <span className="text-[10px] font-mono text-blue-600">L{layer.number}</span>
+                              </div>
+                              <div className="text-[11px] text-slate-500 font-medium">{layer.focus}</div>
+                              <p className="text-[11px] text-slate-600 mt-1 leading-snug">{layer.description}</p>
+                              <div className="mt-1.5 pt-1.5 border-t border-slate-100 flex items-center gap-1 text-[10px] font-mono text-slate-500">
+                                <Database className="w-3 h-3 text-slate-400" />
+                                <span>Parity: {layer.realWorldTech}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Capstone Outcome Callout */}
+                      <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200/80 text-emerald-950 text-xs space-y-1">
+                        <div className="font-bold flex items-center gap-1.5 font-mono text-[11px] text-emerald-800 uppercase">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Final System Outcome & Target Benchmark</span>
+                        </div>
+                        <p className="text-emerald-900/90 leading-relaxed">
+                          {PROJECT_SCOPE.finalOutcome}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Header with Title & Level Selector Pills */}
                 <div className="space-y-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
@@ -703,6 +496,67 @@ export function WorkspaceClient({
                     <p className="text-slate-700 leading-relaxed">
                       {currentLevelInfo.tagline}
                     </p>
+                  </div>
+                </div>
+
+                {/* 🎓 The Learning Loop & Mental Model Section */}
+                <div className="rounded-xl border border-purple-200/90 bg-gradient-to-br from-purple-50/50 via-slate-50 to-blue-50/30 p-4 space-y-3.5 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-md bg-purple-600 text-white flex items-center justify-center font-bold text-xs">
+                        <Lightbulb className="w-3.5 h-3.5" />
+                      </div>
+                      <div>
+                        <h3 className="text-xs font-bold text-slate-900 uppercase font-mono tracking-wider">
+                          The Learning Loop (Level {selectedLevel})
+                        </h3>
+                        <p className="text-[11px] text-slate-500">
+                          What you understand & master upon completing this level
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-semibold border border-purple-200">
+                      Mental Model L{selectedLevel}
+                    </span>
+                  </div>
+
+                  {/* Core Bottleneck */}
+                  <div className="p-3 rounded-lg bg-amber-50/80 border border-amber-200/80 text-amber-900 space-y-1">
+                    <div className="font-bold font-mono text-[10px] text-amber-800 uppercase flex items-center gap-1.5">
+                      <Compass className="w-3.5 h-3.5 text-amber-600" />
+                      <span>The Real-World Engineering Bottleneck</span>
+                    </div>
+                    <p className="text-xs text-amber-950 leading-relaxed font-medium">
+                      {currentLevelInfo.learningLoop.bottleneck}
+                    </p>
+                  </div>
+
+                  {/* What You Understand (Key Takeaways) */}
+                  <div className="space-y-2">
+                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-600">
+                      Key Concepts You Understand & Master:
+                    </span>
+                    <div className="space-y-1.5">
+                      {currentLevelInfo.learningLoop.whatYouUnderstand.map((concept, idx) => (
+                        <div key={idx} className="flex items-start gap-2 p-2 rounded-md bg-white border border-slate-200/80 text-xs text-slate-800">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-purple-600 shrink-0 mt-0.5" />
+                          <span className="leading-snug">{concept}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Real-World Production Parity & Summary */}
+                  <div className="pt-2 border-t border-purple-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px]">
+                    <div className="flex items-center gap-1.5 text-slate-600">
+                      <Database className="w-3.5 h-3.5 text-purple-600" />
+                      <span className="font-semibold text-slate-700">Production Parity:</span>
+                      <span>{currentLevelInfo.learningLoop.productionParity}</span>
+                    </div>
+                  </div>
+                  <div className="p-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-900 text-xs font-medium">
+                    <span className="font-bold font-mono text-[10px] text-blue-700 uppercase mr-1.5">Takeaway:</span>
+                    {currentLevelInfo.learningLoop.outcomeSummary}
                   </div>
                 </div>
 
@@ -837,6 +691,17 @@ export function WorkspaceClient({
                         <p className="text-slate-600 text-xs leading-relaxed mb-2.5">
                           {lvlInfo.tagline}
                         </p>
+
+                        {/* Learning Loop Outcome Summary */}
+                        <div className="mb-2.5 p-2 rounded-md bg-purple-50/60 border border-purple-200/60 text-[11px] text-purple-950 space-y-1">
+                          <div className="font-bold flex items-center gap-1 text-[10px] font-mono uppercase text-purple-700">
+                            <Lightbulb className="w-3 h-3" />
+                            <span>What You Understand & Master</span>
+                          </div>
+                          <p className="leading-snug text-slate-700">
+                            {lvlInfo.learningLoop.outcomeSummary}
+                          </p>
+                        </div>
 
                         <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-100">
                           <span className="text-[10px] font-mono text-slate-400 uppercase font-semibold mr-1">

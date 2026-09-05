@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { LeaderboardTable, LeaderboardItem } from "@/components/leaderboard/leaderboard-table";
 import { Trophy, ChevronRight, Terminal, ArrowLeft } from "lucide-react";
 
+import { PROJECT_SCOPE } from "@/lib/constants/challenge-data";
+
 export const dynamic = "force-dynamic";
 
 interface Props {
@@ -27,60 +29,71 @@ export default async function ChallengeLeaderboardPage({ params }: Props) {
   const { id } = await params;
   const session = await auth();
 
-  const foundChallenges = await db
-    .select()
-    .from(challenges)
-    .where(eq(challenges.slug, id))
-    .limit(1);
+  let challenge: any = {
+    id: "kv-store",
+    slug: id || "kv-store",
+    title: PROJECT_SCOPE.title,
+    description: PROJECT_SCOPE.overview,
+  };
 
-  const challenge = foundChallenges[0];
-  if (!challenge) {
-    notFound();
+  let mappedEntries: LeaderboardItem[] = [];
+
+  try {
+    const foundChallenges = await db
+      .select()
+      .from(challenges)
+      .where(eq(challenges.slug, id))
+      .limit(1);
+
+    if (foundChallenges[0]) {
+      challenge = foundChallenges[0];
+
+      const entries = await db
+        .select({
+          id: leaderboardEntries.id,
+          score: leaderboardEntries.score,
+          throughputOpsSec: leaderboardEntries.throughputOpsSec,
+          latencyP99Ms: leaderboardEntries.latencyP99Ms,
+          memoryBytes: leaderboardEntries.memoryBytes,
+          rank: leaderboardEntries.rank,
+          isVerified: leaderboardEntries.isVerified,
+          updatedAt: leaderboardEntries.updatedAt,
+          username: users.username,
+          name: users.name,
+          submissionId: leaderboardEntries.submissionId,
+          language: submissions.language,
+          isInvalidated: submissionResults.isInvalidated,
+        })
+        .from(leaderboardEntries)
+        .innerJoin(users, eq(leaderboardEntries.userId, users.id))
+        .innerJoin(submissions, eq(leaderboardEntries.submissionId, submissions.id))
+        .innerJoin(
+          submissionResults,
+          eq(submissions.id, submissionResults.submissionId)
+        )
+        .where(
+          and(
+            eq(leaderboardEntries.challengeId, challenge.id),
+            eq(submissionResults.isInvalidated, false)
+          )
+        )
+        .orderBy(desc(leaderboardEntries.score));
+
+      mappedEntries = entries.map((e) => ({
+        id: e.id,
+        score: e.score,
+        throughputOpsSec: e.throughputOpsSec,
+        latencyP99Ms: e.latencyP99Ms,
+        memoryBytes: e.memoryBytes,
+        username: e.username,
+        challengeTitle: challenge.title,
+        challengeSlug: challenge.slug,
+        language: e.language,
+      }));
+    }
+  } catch (err) {
+    console.warn("Challenge leaderboard query skipped or unavailable:", err);
   }
-
-  // Get active leaderboard entries (sorted by score descending)
-  const entries = await db
-    .select({
-      id: leaderboardEntries.id,
-      score: leaderboardEntries.score,
-      throughputOpsSec: leaderboardEntries.throughputOpsSec,
-      latencyP99Ms: leaderboardEntries.latencyP99Ms,
-      memoryBytes: leaderboardEntries.memoryBytes,
-      rank: leaderboardEntries.rank,
-      isVerified: leaderboardEntries.isVerified,
-      updatedAt: leaderboardEntries.updatedAt,
-      username: users.username,
-      name: users.name,
-      submissionId: leaderboardEntries.submissionId,
-      language: submissions.language,
-      isInvalidated: submissionResults.isInvalidated,
-    })
-    .from(leaderboardEntries)
-    .innerJoin(users, eq(leaderboardEntries.userId, users.id))
-    .innerJoin(submissions, eq(leaderboardEntries.submissionId, submissions.id))
-    .innerJoin(
-      submissionResults,
-      eq(submissions.id, submissionResults.submissionId)
-    )
-    .where(
-      and(
-        eq(leaderboardEntries.challengeId, challenge.id),
-        eq(submissionResults.isInvalidated, false)
-      )
-    )
-    .orderBy(desc(leaderboardEntries.score));
-
-  const mappedEntries: LeaderboardItem[] = entries.map((e) => ({
-    id: e.id,
-    score: e.score,
-    throughputOpsSec: e.throughputOpsSec,
-    latencyP99Ms: e.latencyP99Ms,
-    memoryBytes: e.memoryBytes,
-    username: e.username,
-    challengeTitle: challenge.title,
-    challengeSlug: challenge.slug,
-    language: e.language,
-  }));
 
   return (
     <div className="flex min-h-screen flex-col bg-[#fafafa]">

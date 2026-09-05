@@ -5,8 +5,7 @@ export default NextAuth(authConfig).auth;
 
 export const config = {
   matcher: [
-    "/admin/:path*",
-    "/challenges/:id/workspace",
+    "/admin/((?!login).*)",
     "/api/admin/:path*",
     "/api/challenges/:id/submissions",
   ],

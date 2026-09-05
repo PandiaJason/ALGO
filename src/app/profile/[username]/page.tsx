@@ -45,55 +45,76 @@ export default async function UserProfilePage({ params }: Props) {
 
   const session = await auth();
 
-  const foundUsers = await db
-    .select()
-    .from(users)
-    .where(eq(users.username, username))
-    .limit(1);
+  let profileUser: any = null;
+  let progressList: any[] = [];
+  let userSubmissions: any[] = [];
 
-  const profileUser = foundUsers[0];
-  if (!profileUser) {
-    notFound();
+  try {
+    const foundUsers = await db
+      .select()
+      .from(users)
+      .where(eq(users.username, username))
+      .limit(1);
+
+    profileUser = foundUsers[0];
+
+    if (profileUser) {
+      // Fetch verified progress across challenges
+      progressList = await db
+        .select({
+          challengeTitle: challenges.title,
+          challengeSlug: challenges.slug,
+          isCompleted: userChallengeProgress.isCompleted,
+          highestLevelUnlocked: userChallengeProgress.highestLevelUnlocked,
+          bestScore: userChallengeProgress.bestScore,
+          submissionCount: userChallengeProgress.submissionCount,
+        })
+        .from(userChallengeProgress)
+        .innerJoin(challenges, eq(userChallengeProgress.challengeId, challenges.id))
+        .where(eq(userChallengeProgress.userId, profileUser.id));
+
+      // Fetch all submissions history
+      userSubmissions = await db
+        .select({
+          id: submissions.id,
+          language: submissions.language,
+          level: submissions.level,
+          status: submissions.status,
+          submittedAt: submissions.submittedAt,
+          challengeTitle: challenges.title,
+          challengeSlug: challenges.slug,
+          isCorrect: submissionResults.isCorrect,
+          score: submissionResults.score,
+          throughputOpsSec: submissionResults.throughputOpsSec,
+          improvementPct: submissionResults.improvementPct,
+        })
+        .from(submissions)
+        .innerJoin(challenges, eq(submissions.challengeId, challenges.id))
+        .leftJoin(
+          submissionResults,
+          eq(submissions.id, submissionResults.submissionId)
+        )
+        .where(eq(submissions.userId, profileUser.id))
+        .orderBy(desc(submissions.submittedAt))
+        .limit(30);
+    }
+  } catch (err) {
+    console.warn("Profile query skipped or unavailable:", err);
   }
 
-  // Fetch verified progress across challenges
-  const progressList = await db
-    .select({
-      challengeTitle: challenges.title,
-      challengeSlug: challenges.slug,
-      isCompleted: userChallengeProgress.isCompleted,
-      highestLevelUnlocked: userChallengeProgress.highestLevelUnlocked,
-      bestScore: userChallengeProgress.bestScore,
-      submissionCount: userChallengeProgress.submissionCount,
-    })
-    .from(userChallengeProgress)
-    .innerJoin(challenges, eq(userChallengeProgress.challengeId, challenges.id))
-    .where(eq(userChallengeProgress.userId, profileUser.id));
-
-  // Fetch all submissions history
-  const userSubmissions = await db
-    .select({
-      id: submissions.id,
-      language: submissions.language,
-      level: submissions.level,
-      status: submissions.status,
-      submittedAt: submissions.submittedAt,
-      challengeTitle: challenges.title,
-      challengeSlug: challenges.slug,
-      isCorrect: submissionResults.isCorrect,
-      score: submissionResults.score,
-      throughputOpsSec: submissionResults.throughputOpsSec,
-      improvementPct: submissionResults.improvementPct,
-    })
-    .from(submissions)
-    .innerJoin(challenges, eq(submissions.challengeId, challenges.id))
-    .leftJoin(
-      submissionResults,
-      eq(submissions.id, submissionResults.submissionId)
-    )
-    .where(eq(submissions.userId, profileUser.id))
-    .orderBy(desc(submissions.submittedAt))
-    .limit(30);
+  if (!profileUser) {
+    if (session?.user && (session.user as any).username === username) {
+      profileUser = {
+        id: session.user.id || "current-user",
+        username: (session.user as any).username || username,
+        name: session.user.name || "Systems Engineer",
+        role: (session.user as any).role || "STUDENT",
+        createdAt: new Date(),
+      };
+    } else {
+      notFound();
+    }
+  }
 
   // Best result
   const bestSubmission = userSubmissions.find((s) => s.isCorrect);

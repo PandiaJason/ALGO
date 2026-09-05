@@ -21,29 +21,34 @@ export const dynamic = "force-dynamic";
 export default async function GlobalLeaderboardPage() {
   const session = await auth();
 
-  const entries = await db
-    .select({
-      id: leaderboardEntries.id,
-      score: leaderboardEntries.score,
-      throughputOpsSec: leaderboardEntries.throughputOpsSec,
-      latencyP99Ms: leaderboardEntries.latencyP99Ms,
-      memoryBytes: leaderboardEntries.memoryBytes,
-      username: users.username,
-      challengeTitle: challenges.title,
-      challengeSlug: challenges.slug,
-      language: submissions.language,
-    })
-    .from(leaderboardEntries)
-    .innerJoin(users, eq(leaderboardEntries.userId, users.id))
-    .innerJoin(challenges, eq(leaderboardEntries.challengeId, challenges.id))
-    .innerJoin(submissions, eq(leaderboardEntries.submissionId, submissions.id))
-    .innerJoin(
-      submissionResults,
-      eq(submissions.id, submissionResults.submissionId)
-    )
-    .where(eq(submissionResults.isInvalidated, false))
-    .orderBy(desc(leaderboardEntries.score))
-    .limit(100);
+  let entries: any[] = [];
+  try {
+    entries = await db
+      .select({
+        id: leaderboardEntries.id,
+        score: leaderboardEntries.score,
+        throughputOpsSec: leaderboardEntries.throughputOpsSec,
+        latencyP99Ms: leaderboardEntries.latencyP99Ms,
+        memoryBytes: leaderboardEntries.memoryBytes,
+        username: users.username,
+        challengeTitle: challenges.title,
+        challengeSlug: challenges.slug,
+        language: submissions.language,
+      })
+      .from(leaderboardEntries)
+      .innerJoin(users, eq(leaderboardEntries.userId, users.id))
+      .innerJoin(challenges, eq(leaderboardEntries.challengeId, challenges.id))
+      .innerJoin(submissions, eq(leaderboardEntries.submissionId, submissions.id))
+      .innerJoin(
+        submissionResults,
+        eq(submissions.id, submissionResults.submissionId)
+      )
+      .where(eq(submissionResults.isInvalidated, false))
+      .orderBy(desc(leaderboardEntries.score))
+      .limit(100);
+  } catch (err) {
+    console.warn("Global leaderboard query skipped or unavailable:", err);
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-[#fafafa]">
