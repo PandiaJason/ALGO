@@ -95,6 +95,8 @@ for line in sys.stdin:
     isCorrect: true,
     correctnessPassed: test1.passed,
     correctnessTotal: test1.total,
+    correctnessScore: "1.0000",
+    baselineThroughput: "100000.00",
     throughputOpsSec: bench1.throughputOpsSec.toString(),
     latencyP50Ms: bench1.latencyP50Ms.toString(),
     latencyP95Ms: bench1.latencyP95Ms.toString(),
@@ -104,7 +106,7 @@ for line in sys.stdin:
     score: bench1.score.toString(),
     improvementPct: bench1.improvementPct.toString(),
     rawMetrics: bench1,
-  });
+  } as any);
 
   // ==========================================
   // LOOP 2: SECOND SUBMISSION (OPTIMIZED)
@@ -174,6 +176,8 @@ sys.stdout.flush()
     isCorrect: true,
     correctnessPassed: test2.passed,
     correctnessTotal: test2.total,
+    correctnessScore: "1.0000",
+    baselineThroughput: "100000.00",
     throughputOpsSec: bench2.throughputOpsSec.toString(),
     latencyP50Ms: bench2.latencyP50Ms.toString(),
     latencyP95Ms: bench2.latencyP95Ms.toString(),
@@ -183,7 +187,7 @@ sys.stdout.flush()
     score: bench2.score.toString(),
     improvementPct: bench2.improvementPct.toString(),
     rawMetrics: bench2,
-  });
+  } as any);
 
   // Update progress and leaderboard
   await db

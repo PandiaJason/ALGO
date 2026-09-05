@@ -1,6 +1,6 @@
 import React from "react";
-import Image from "next/image";
 import Link from "next/link";
+import { AlgoLogoIcon } from "./algo-logo-icon";
 
 interface LogoProps {
   size?: number;
@@ -12,14 +12,9 @@ export function Logo({ size = 32, showText = true, className = "" }: LogoProps) 
   return (
     <Link href="/" className={`inline-flex items-center gap-2.5 group ${className}`}>
       <div className="relative flex items-center justify-center shrink-0">
-        <Image
-          src="/logo.png"
-          alt="ALGO Logo"
-          width={size}
-          height={size}
-          style={{ width: `${size}px`, height: `${size}px` }}
+        <AlgoLogoIcon
+          size={size}
           className="transition-transform duration-200 group-hover:scale-105"
-          priority
         />
       </div>
       {showText && (

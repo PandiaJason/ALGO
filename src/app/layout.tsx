@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description:
     "Build technology. Make it better. Invent what's next. A platform where engineers learn real systems by building, measuring, and optimizing them.",
   icons: {
-    icon: "/logo.png",
+    icon: "/logo.svg",
   },
 };
 
