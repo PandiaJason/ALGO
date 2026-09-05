@@ -6,9 +6,10 @@ interface LogoProps {
   size?: number;
   showText?: boolean;
   className?: string;
+  textColor?: string;
 }
 
-export function Logo({ size = 32, showText = true, className = "" }: LogoProps) {
+export function Logo({ size = 32, showText = true, className = "", textColor = "text-slate-900" }: LogoProps) {
   return (
     <Link href="/" className={`inline-flex items-center gap-2.5 group ${className}`}>
       <div className="relative flex items-center justify-center shrink-0">
@@ -18,10 +19,11 @@ export function Logo({ size = 32, showText = true, className = "" }: LogoProps) 
         />
       </div>
       {showText && (
-        <span className="font-semibold tracking-wider text-slate-900 text-lg group-hover:text-black transition-colors">
+        <span className={`font-semibold tracking-wider text-lg transition-colors ${textColor}`}>
           ALGO
         </span>
       )}
     </Link>
   );
 }
+

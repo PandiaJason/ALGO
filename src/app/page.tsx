@@ -3,252 +3,273 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { HeroWorkbench } from "@/components/home/hero-workbench";
+import { LeetCodeTablet } from "@/components/home/leetcode-tablet";
+import { LeetCodePlayground } from "@/components/home/leetcode-playground";
 import {
-  ArrowRight,
-  Terminal,
-  Cpu,
-  Zap,
-  CheckCircle2,
-  Database,
-  Search,
-  Code2,
+  ChevronRight,
+  GraduationCap,
+  Users,
   Trophy,
-  ShieldCheck,
-  ChevronRight
+  Briefcase,
+  Server,
+  Play,
+  CheckCircle2,
+  Code2,
+  Heart
 } from "lucide-react";
 
 export default async function HomePage() {
   const session = await auth();
 
-  const sampleProblems = [
-    {
-      id: "1",
-      title: "Build a Key-Value Store",
-      slug: "kv-store",
-      category: "In-Memory Databases",
-      difficulty: "Medium",
-      difficultyColor: "text-amber-600 bg-amber-50 border-amber-200",
-      throughput: "101,170 ops/sec",
-      languages: "Python, C++",
-      status: "Available",
-    },
-    {
-      id: "2",
-      title: "Append-Only Write-Ahead Log (WAL)",
-      slug: "kv-store",
-      category: "Storage Engines",
-      difficulty: "Medium",
-      difficultyColor: "text-amber-600 bg-amber-50 border-amber-200",
-      throughput: "85,000 ops/sec",
-      languages: "Python, C++",
-      status: "Available",
-    },
-    {
-      id: "3",
-      title: "Lock-Free Ring Buffer Queue",
-      slug: "kv-store",
-      category: "Concurrency & Locks",
-      difficulty: "Hard",
-      difficultyColor: "text-rose-600 bg-rose-50 border-rose-200",
-      throughput: "250,000 ops/sec",
-      languages: "C++20",
-      status: "Upcoming",
-    },
-    {
-      id: "4",
-      title: "Raft Distributed Consensus Engine",
-      slug: "kv-store",
-      category: "Distributed Systems",
-      difficulty: "Hard",
-      difficultyColor: "text-rose-600 bg-rose-50 border-rose-200",
-      throughput: "50,000 ops/sec",
-      languages: "Python, C++",
-      status: "Upcoming",
-    },
-  ];
-
   return (
-    <div className="flex min-h-screen flex-col bg-[#ffffff] text-slate-900 selection:bg-slate-100">
-      <Navbar user={session?.user as any} />
+    <div className="flex min-h-screen flex-col bg-white text-slate-900 selection:bg-teal-100 selection:text-teal-900 font-sans">
+      {/* Top Navbar with LeetCode dark style for homepage hero */}
+      <Navbar user={session?.user as any} variant="dark" />
 
       <main className="flex-1">
-        {/* Minimal LeetCode Hero */}
-        <section className="pt-16 pb-16 px-4 sm:px-6 lg:px-8 border-b border-slate-100 bg-[#fafafa]/50">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Minimal Pill */}
-            <Link
-              href="/challenges/kv-store/workspace"
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-slate-200 bg-white text-xs text-slate-700 font-mono mb-6 shadow-2xs hover:border-slate-300 transition-colors"
-            >
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span>Module 01 Live: Build a Key-Value Engine</span>
-              <ChevronRight className="w-3 h-3 text-slate-400" />
-            </Link>
+        {/* ============================================================== */}
+        {/* HERO SECTION: LeetCode Charcoal Diagonal Cut Split             */}
+        {/* ============================================================== */}
+        <section className="relative bg-[#262626] pt-12 pb-28 sm:pb-36 overflow-hidden">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+              {/* Left Column: Isometric Tablet Showcase */}
+              <div className="lg:col-span-6 flex justify-center order-2 lg:order-1">
+                <LeetCodeTablet />
+              </div>
 
-            {/* Clean Authoritative Title: GO CURIOUS. */}
-            <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-slate-900 mb-4">
-              GO CURIOUS.
-            </h1>
+              {/* Right Column: Hero Pitch & CTA */}
+              <div className="lg:col-span-6 text-center lg:text-left order-1 lg:order-2 space-y-6">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
+                  GO CURIOUS.
+                </h1>
 
-            {/* Minimal Subtitle */}
-            <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed mb-8">
-              A new way to build, benchmark, and master real systems. Reconstruct production engines from first principles and optimize against empirical hardware workloads.
+                <p className="text-sm sm:text-base text-neutral-300 max-w-xl mx-auto lg:mx-0 leading-relaxed font-normal">
+                  ALGO is the engineering proving ground for the AI era. Reconstruct real systems from first principles, measure performance under true 100K+ ops/sec workloads, and prove your capability.
+                </p>
+
+                <div className="pt-2">
+                  <Link
+                    href="/challenges/kv-store/workspace"
+                    className="inline-flex items-center gap-2 bg-[#00af9b] hover:bg-[#009b89] text-white px-7 py-3 rounded-full text-sm font-semibold shadow-lg shadow-teal-950/30 transition-all hover:translate-x-0.5 active:scale-95"
+                  >
+                    <span>Explore Challenges</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Diagonal Angle Cut across to White Bottom */}
+          <div
+            className="absolute bottom-0 left-0 right-0 h-16 sm:h-24 bg-white"
+            style={{
+              clipPath: "polygon(0 100%, 100% 100%, 100% 0)",
+            }}
+          />
+        </section>
+
+        {/* ============================================================== */}
+        {/* SECTION 1: "Start Exploring" (LeetCode Explore Track)          */}
+        {/* ============================================================== */}
+        <section className="py-16 sm:py-20 bg-white">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
+              {/* Left Column: Explore Pitch */}
+              <div className="md:col-span-6 space-y-4">
+                <div className="w-12 h-12 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center text-[#00af9b]">
+                  <GraduationCap className="w-6 h-6" />
+                </div>
+
+                <h2 className="text-2xl font-bold text-[#00af9b] tracking-tight">
+                  Start Exploring
+                </h2>
+
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Explore is a structured engineering curriculum that helps you master systems from first principles. Reconstruct databases, message queues, and protocols to prepare for world-class infrastructure engineering.
+                </p>
+
+                <div className="pt-2">
+                  <Link
+                    href="/challenges"
+                    className="text-sm font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 group"
+                  >
+                    <span>Get Started</span>
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Right Column: Stacked Colorful Cards with Play Button */}
+              <div className="md:col-span-6 flex justify-center">
+                <div className="relative w-full max-w-sm h-64 flex items-center justify-center">
+                  {/* Card 1 (Back, cream) */}
+                  <div className="absolute w-52 h-44 rounded-2xl bg-[#FFF6E5] border border-amber-200/60 transform -rotate-6 translate-x-[-28px] shadow-sm" />
+                  {/* Card 2 (Middle, soft green) */}
+                  <div className="absolute w-52 h-44 rounded-2xl bg-[#E8F8F5] border border-teal-200/60 transform rotate-3 translate-x-[24px] shadow-sm" />
+                  {/* Card 3 (Front, light blue) with play button */}
+                  <div className="relative w-56 h-48 rounded-2xl bg-[#E6F4FE] border border-blue-200/80 shadow-md p-4 flex flex-col justify-between">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-mono font-semibold text-blue-700">MODULE 01</span>
+                      <span className="w-2 h-2 rounded-full bg-blue-500" />
+                    </div>
+                    <div className="text-sm font-bold text-slate-800">
+                      In-Memory Key-Value Store
+                    </div>
+                    <div className="flex items-center justify-between pt-2 border-t border-blue-200/50">
+                      <span className="text-[10px] font-mono text-slate-500">10 Missions</span>
+                      <div className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-blue-600">
+                        <Play className="w-3.5 h-3.5 fill-blue-600 ml-0.5" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ============================================================== */}
+        {/* SECTION 2: Two-Column Feature Blocks with Hexagonal Clusters    */}
+        {/* ============================================================== */}
+        <section className="py-16 sm:py-20 bg-[#fafafa] border-t border-slate-100">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 sm:gap-16">
+              {/* Left Column: Questions, Community & Contests */}
+              <div className="space-y-4">
+                {/* 3 Hexagons Cluster */}
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500 text-white font-mono font-bold text-xs flex items-center justify-center shadow-xs">
+                    100K
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-[#00af9b] text-white flex items-center justify-center shadow-xs">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-[#f7a01d] text-white flex items-center justify-center shadow-xs">
+                    <Trophy className="w-5 h-5" />
+                  </div>
+                </div>
+
+                <h3 className="text-lg sm:text-xl font-bold text-blue-600 tracking-tight">
+                  Questions, Community & Contests
+                </h3>
+
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  Over 10 progressive missions for you to practice. Reconstruct key-value stores, write-ahead logs, and lock-free queues, then measure your implementation against empirical bare-metal benchmarks on our global leaderboard.
+                </p>
+
+                <div className="pt-1">
+                  <Link
+                    href="/challenges"
+                    className="text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 group"
+                  >
+                    <span>View Questions</span>
+                    <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Right Column: Measured Engineering Ability */}
+              <div className="space-y-4">
+                {/* 2 Hexagons Cluster */}
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-xl bg-[#b58900] text-white flex items-center justify-center shadow-xs">
+                    <Briefcase className="w-5 h-5" />
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-slate-600 text-white flex items-center justify-center shadow-xs">
+                    <Server className="w-5 h-5" />
+                  </div>
+                </div>
+
+                <h3 className="text-lg sm:text-xl font-bold text-[#b58900] tracking-tight">
+                  Companies & Candidates
+                </h3>
+
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  Not only does ALGO prepare candidates for top engineering roles, we also help companies identify real systems talent. Our deterministic containerized benchmarks verify latency, thread safety, and crash recovery under stress.
+                </p>
+
+                <div className="pt-1">
+                  <Link
+                    href="/challenges/kv-store/leaderboard"
+                    className="text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 group"
+                  >
+                    <span>Leaderboard & Rankings</span>
+                    <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ============================================================== */}
+        {/* SECTION 3: "Developer" / Playground Code Box (Screenshot 3)    */}
+        {/* ============================================================== */}
+        <section className="py-20 bg-white border-t border-slate-100">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
+            {/* Centered Hexagonal Icon */}
+            <div className="inline-flex w-12 h-12 rounded-xl bg-teal-50 border border-teal-200 items-center justify-center text-[#00af9b] mx-auto shadow-2xs">
+              <Code2 className="w-6 h-6" />
+            </div>
+
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Developer
+            </h2>
+
+            <p className="text-xs sm:text-sm text-slate-500 max-w-2xl mx-auto leading-relaxed">
+              We now support C++20 and Python 3.12. At our core, ALGO is about developers. Our containerized execution sandbox helps you test, benchmark, and optimize real systems online.
             </p>
 
-            {/* Clean Minimal Buttons */}
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <Link href="/challenges/kv-store/workspace">
-                <Button size="lg" className="h-10 px-5 text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white rounded-md shadow-xs gap-1.5">
-                  <Terminal className="w-3.5 h-3.5" />
-                  <span>Start Module 01</span>
-                </Button>
-              </Link>
-              <Link href="/challenges">
-                <Button size="lg" variant="outline" className="h-10 px-5 text-xs font-medium border-slate-200 bg-white hover:bg-slate-50 text-slate-800 rounded-md">
-                  Explore Problems
-                </Button>
-              </Link>
-              <Link href="/leaderboard">
-                <Button size="lg" variant="ghost" className="h-10 px-4 text-xs font-medium text-slate-600 hover:text-slate-900">
-                  Leaderboard
-                </Button>
-              </Link>
+            {/* Interactive Code Playground & Quick Selectors */}
+            <div className="pt-6">
+              <LeetCodePlayground />
             </div>
-
-            {/* Interactive LeetCode-style Workbench Console */}
-            <HeroWorkbench />
           </div>
         </section>
 
-        {/* LeetCode Problem Set Preview */}
-        <section className="py-14 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-bold tracking-tight text-slate-900">
-                Problem Set
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Systems engineering challenges evaluated in containerized sandboxes.
+        {/* ============================================================== */}
+        {/* SECTION 4: Built for Engineers & Tech Logos (Screenshot 4)     */}
+        {/* ============================================================== */}
+        <section className="py-20 bg-[#fafafa] border-t border-slate-100 text-center">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+            {/* Red Hexagonal Icon */}
+            <div className="inline-flex w-12 h-12 rounded-xl bg-rose-50 border border-rose-200 items-center justify-center text-rose-600 mx-auto shadow-2xs">
+              <Heart className="w-6 h-6 fill-rose-600 text-rose-600" />
+            </div>
+
+            <h2 className="text-2xl sm:text-3xl font-bold text-rose-600 tracking-tight flex items-center justify-center gap-2">
+              Made with ❤️ for Systems Engineers
+            </h2>
+
+            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mx-auto leading-relaxed">
+              At ALGO, our mission is to help you understand real systems and prove your engineering mastery. Reconstruct architectures inspired by the core infrastructure that powers the world.
+            </p>
+
+            {/* Grayscale Tech Logos Row */}
+            <div className="pt-6 pb-6 flex flex-wrap items-center justify-center gap-8 sm:gap-12 opacity-60 text-slate-400 font-mono text-sm tracking-wider font-bold">
+              <span>REDIS</span>
+              <span>SQLITE</span>
+              <span>LINUX</span>
+              <span>POSTGRESQL</span>
+              <span>KAFKA</span>
+              <span>RAFT</span>
+              <span>DOCKER</span>
+              <span>ROCKSDB</span>
+            </div>
+
+            <div className="pt-2">
+              <p className="text-xs text-slate-500 mb-3">
+                If you are passionate about tackling real systems challenges, begin your proving ground journey today.
               </p>
-            </div>
-
-            <Link
-              href="/challenges"
-              className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
-            >
-              <span>View all problems</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          {/* Minimalist LeetCode Table */}
-          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-2xs">
-            <table className="w-full text-left text-xs font-sans border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200 bg-[#f8fafc] text-slate-600 font-mono">
-                  <th className="py-2.5 px-4 w-12 text-center font-medium">#</th>
-                  <th className="py-2.5 px-4 font-medium">Title</th>
-                  <th className="py-2.5 px-4 font-medium hidden sm:table-cell">Category</th>
-                  <th className="py-2.5 px-4 font-medium">Throughput Target</th>
-                  <th className="py-2.5 px-4 font-medium">Difficulty</th>
-                  <th className="py-2.5 px-4 text-right font-medium">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {sampleProblems.map((prob) => (
-                  <tr
-                    key={prob.id}
-                    className="hover:bg-slate-50/80 transition-colors group"
-                  >
-                    <td className="py-3 px-4 text-center font-mono text-slate-400 text-xs">
-                      {prob.id}
-                    </td>
-                    <td className="py-3 px-4">
-                      <Link
-                        href={`/challenges/${prob.slug}`}
-                        className="font-medium text-slate-900 hover:text-blue-600 transition-colors flex items-center gap-1.5"
-                      >
-                        <span>{prob.title}</span>
-                      </Link>
-                    </td>
-                    <td className="py-3 px-4 text-slate-500 hidden sm:table-cell text-xs">
-                      {prob.category}
-                    </td>
-                    <td className="py-3 px-4 font-mono text-slate-700 text-xs">
-                      {prob.throughput}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded text-[11px] font-medium border font-mono ${prob.difficultyColor}`}
-                      >
-                        {prob.difficulty}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      {prob.status === "Available" ? (
-                        <Link href={`/challenges/${prob.slug}/workspace`}>
-                          <Button size="sm" variant="outline" className="h-7 text-xs px-2.5 border-slate-200 hover:bg-slate-100">
-                            Solve
-                          </Button>
-                        </Link>
-                      ) : (
-                        <span className="text-[11px] text-slate-400 font-mono">
-                          Soon
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        {/* Minimal Three Pillars Section */}
-        <section className="py-14 border-t border-slate-100 bg-[#fafafa]">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Build */}
-              <div className="p-5 rounded-lg border border-slate-200 bg-white space-y-2">
-                <div className="text-xs font-mono font-semibold text-blue-600 uppercase tracking-wider">
-                  01 • BUILD
-                </div>
-                <h3 className="text-base font-bold text-slate-900">
-                  First-Principles Engineering
-                </h3>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Reconstruct in-memory engines, append-only logs, and thread pools without relying on toy abstractions.
-                </p>
-              </div>
-
-              {/* Optimize */}
-              <div className="p-5 rounded-lg border border-slate-200 bg-white space-y-2">
-                <div className="text-xs font-mono font-semibold text-emerald-600 uppercase tracking-wider">
-                  02 • OPTIMIZE
-                </div>
-                <h3 className="text-base font-bold text-slate-900">
-                  Hardware-Level Metrics
-                </h3>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Measure raw ops/sec throughput, p99 tail latency, and RSS heap footprint in isolated Linux containers.
-                </p>
-              </div>
-
-              {/* Compete */}
-              <div className="p-5 rounded-lg border border-slate-200 bg-white space-y-2">
-                <div className="text-xs font-mono font-semibold text-purple-600 uppercase tracking-wider">
-                  03 • COMPETE
-                </div>
-                <h3 className="text-base font-bold text-slate-900">
-                  Verifiable Proof-of-Work
-                </h3>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Zero fake rankings. Every leaderboard entry is backed by container execution logs and deterministic workloads.
-                </p>
-              </div>
+              <Link
+                href="/challenges/kv-store/workspace"
+                className="text-xs sm:text-sm font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 group"
+              >
+                <span>Enter Proving Ground</span>
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
             </div>
           </div>
         </section>
