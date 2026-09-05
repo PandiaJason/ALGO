@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { db } from "@/db";
 import {
   submissions,
+  submissionFiles,
   submissionResults,
   challenges,
   leaderboardEntries,
@@ -121,11 +122,21 @@ export default async function SubmissionResultPage({ params }: Props) {
 
   const previousScore = prevSubmissions[1]?.score || null;
 
+  // Fetch submitted code file
+  const files = await db
+    .select()
+    .from(submissionFiles)
+    .where(eq(submissionFiles.submissionId, submission.id))
+    .limit(1);
+
+  const submittedCode = files[0]?.content || null;
+
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex min-h-screen flex-col bg-[#fafafa]">
       <Navbar user={session?.user as any} />
       <main className="flex-1">
         <ResultClient
+          submittedCode={submittedCode}
           initialSubmission={{
             id: submission.id,
             language: submission.language,
