@@ -7,7 +7,7 @@ export function Footer() {
     <footer className="w-full border-t border-slate-200/80 bg-white py-8 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Logo size={20} showText={true} />
+          <Logo size={24} showText={true} />
           <span className="text-xs text-slate-400">
             The engineering proving ground for the AI era.
           </span>

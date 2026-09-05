@@ -57,7 +57,7 @@ export default async function AdminLayout({
       <aside className="w-64 border-r border-slate-200/90 bg-white flex flex-col justify-between shrink-0">
         <div className="p-4 space-y-6">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <Logo size={24} />
+            <Logo size={28} />
             <Badge variant="purple" className="text-[10px] font-mono">
               CONTROL PLANE
             </Badge>

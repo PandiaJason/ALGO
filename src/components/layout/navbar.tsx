@@ -30,7 +30,7 @@ export function Navbar({ user }: NavbarProps) {
     <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <Logo size={28} />
+          <Logo size={32} />
           <nav className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => {
               const isActive = pathname.startsWith(link.href);
