@@ -17,6 +17,7 @@ export function Logo({ size = 32, showText = true, className = "" }: LogoProps) 
           alt="ALGO Logo"
           width={size}
           height={size}
+          style={{ width: `${size}px`, height: `${size}px` }}
           className="transition-transform duration-200 group-hover:scale-105"
           priority
         />
