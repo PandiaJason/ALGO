@@ -49,11 +49,8 @@ function SignInContent() {
               <AlgoLogoIcon size={56} />
             </Link>
           </div>
-          <h1 className="text-3xl font-black tracking-wider inline-flex items-center justify-center gap-0.5">
-            <span className="text-[#099BE9]">A</span>
-            <span className="text-[#09C899]">L</span>
-            <span className="text-[#8647E2]">G</span>
-            <span className="text-[#F78424]">O</span>
+          <h1 className="text-3xl font-black tracking-wider text-slate-900">
+            ALGO
           </h1>
           <div className="text-xs font-mono font-bold tracking-widest text-slate-800 uppercase">
             GO CURIOUS.

@@ -8,16 +8,14 @@ interface LogoProps {
   className?: string;
   textColor?: string;
   textClassName?: string;
-  useFourColours?: boolean;
 }
 
 export function Logo({
   size = 32,
   showText = true,
   className = "",
-  textColor,
+  textColor = "text-slate-900",
   textClassName = "",
-  useFourColours = true,
 }: LogoProps) {
   return (
     <Link href="/" className={`inline-flex items-center gap-2.5 group select-none ${className}`}>
@@ -28,18 +26,11 @@ export function Logo({
         />
       </div>
       {showText && (
-        useFourColours ? (
-          <span className={`font-black tracking-wider text-lg inline-flex items-center gap-[0.5px] ${textClassName}`}>
-            <span className="text-[#099BE9] transition-transform duration-150 group-hover:translate-y-[-1px]">A</span>
-            <span className="text-[#09C899] transition-transform duration-150 group-hover:translate-y-[-1px]">L</span>
-            <span className="text-[#8647E2] transition-transform duration-150 group-hover:translate-y-[-1px]">G</span>
-            <span className="text-[#F78424] transition-transform duration-150 group-hover:translate-y-[-1px]">O</span>
-          </span>
-        ) : (
-          <span className={`font-black tracking-wider text-lg transition-colors ${textColor || "text-slate-900"} ${textClassName}`}>
-            ALGO
-          </span>
-        )
+        <span
+          className={`font-black tracking-wider text-lg transition-colors ${textColor} ${textClassName}`}
+        >
+          ALGO
+        </span>
       )}
     </Link>
   );

@@ -47,12 +47,9 @@ function AdminLoginForm() {
           <div className="flex justify-center">
             <AlgoLogoIcon size={52} />
           </div>
-          <div className="flex items-center justify-center gap-1 font-black text-2xl tracking-wider">
-            <span className="text-[#099BE9]">A</span>
-            <span className="text-[#09C899]">L</span>
-            <span className="text-[#8647E2]">G</span>
-            <span className="text-[#F78424]">O</span>
-          </div>
+          <h1 className="text-2xl font-black tracking-wider text-white">
+            ALGO
+          </h1>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-mono">
             <Shield className="w-3.5 h-3.5 text-purple-400" />
             <span>CONTROL PLANE</span>
