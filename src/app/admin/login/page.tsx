@@ -7,9 +7,26 @@ import { AlgoLogoIcon } from "@/components/layout/algo-logo-icon";
 import { Card, CardContent } from "@/components/ui/card";
 import { Shield, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
 
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+
 export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-900" />}>
+      <AdminLoginForm />
+    </Suspense>
+  );
+}
+
+function AdminLoginForm() {
+  const searchParams = useSearchParams();
+  const isAccessDenied = searchParams.get("error") === "AccessDenied";
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    isAccessDenied
+      ? "Access Denied: Administrative access is restricted exclusively to Jason Pandian (pandiajason@gmail.com)."
+      : null
+  );
 
   const handleGoogleAdminLogin = async () => {
     setLoading(true);
@@ -38,7 +55,7 @@ export default function AdminLoginPage() {
             Administrative Access
           </h1>
           <p className="text-xs text-slate-400 max-w-xs mx-auto">
-            Authorized personnel only. Access is protected by server-verified role-based access control.
+            Restricted exclusively to platform owner <span className="text-purple-300 font-semibold font-mono">Jason Pandian (pandiajason@gmail.com)</span>.
           </p>
         </div>
 
@@ -83,7 +100,7 @@ export default function AdminLoginPage() {
             </button>
 
             <div className="text-center text-[11px] text-slate-500">
-              Only authorized Google accounts with verified database <code className="text-purple-400">ADMIN</code> role can access the control plane.
+              Only <code className="text-purple-400">pandiajason@gmail.com</code> is authorized to access the control plane.
             </div>
           </CardContent>
         </Card>

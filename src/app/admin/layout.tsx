@@ -26,20 +26,42 @@ export default async function AdminLayout({
 }) {
   const session = await auth();
 
-  // Server-side strict database authorization check
-  if (!session?.user?.email) {
+  // Server-side strict authorization: Accessible EXCLUSIVELY by Jason Pandian (pandiajason@gmail.com)
+  const userEmail = session?.user?.email?.toLowerCase();
+  if (!userEmail) {
     redirect("/admin/login");
+  }
+
+  const AUTHORIZED_ADMIN_EMAIL = "pandiajason@gmail.com";
+  if (userEmail !== AUTHORIZED_ADMIN_EMAIL) {
+    redirect("/admin/login?error=AccessDenied");
   }
 
   const dbUsers = await db
     .select()
     .from(users)
-    .where(eq(users.email, session.user.email))
+    .where(eq(users.email, userEmail))
     .limit(1);
 
-  const currentUser = dbUsers[0];
-  if (!currentUser || currentUser.role !== "ADMIN") {
-    redirect("/");
+  let currentUser = dbUsers[0];
+  if (!currentUser) {
+    // Auto-provision Jason Pandian as ADMIN if record doesn't exist yet
+    const [newUser] = await db
+      .insert(users)
+      .values({
+        name: "Jason Pandian",
+        username: "jasonpandian",
+        email: AUTHORIZED_ADMIN_EMAIL,
+        role: "ADMIN",
+      })
+      .returning();
+    currentUser = newUser;
+  } else if (currentUser.role !== "ADMIN") {
+    await db
+      .update(users)
+      .set({ role: "ADMIN" })
+      .where(eq(users.id, currentUser.id));
+    currentUser.role = "ADMIN";
   }
 
   const adminNav = [

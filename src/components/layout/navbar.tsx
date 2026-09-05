@@ -69,7 +69,7 @@ export function Navbar({ user, variant = "default" }: NavbarProps) {
         <div className="flex items-center gap-3">
           {user ? (
             <div className="flex items-center gap-3">
-              {user.role === "ADMIN" && (
+              {user.email?.toLowerCase() === "pandiajason@gmail.com" && (
                 <Link href="/admin">
                   <Badge variant="purple" className="gap-1 hover:bg-purple-100 cursor-pointer">
                     <Shield className="w-3 h-3 text-purple-700" />

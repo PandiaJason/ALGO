@@ -56,7 +56,7 @@ function SignInContent() {
             GO CURIOUS.
           </div>
           <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
-            The engineering proving ground for the AI era. Reconstruct real technology, benchmark performance, and prove what you can do.
+            Where the next generation of engineers learn by building real technology, measuring what they create, and pushing it further through an agentic flow state.
           </p>
         </div>
 

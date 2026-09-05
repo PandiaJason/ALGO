@@ -1,0 +1,8 @@
+{
+    email pandiajason@gmail.com
+}
+
+# Replace :80 with your domain (e.g. algo.yourdomain.com) for automatic free Let's Encrypt SSL
+:80 {
+    reverse_proxy web:3000
+}

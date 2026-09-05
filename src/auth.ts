@@ -90,6 +90,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         let dbUserId = existingUsers[0]?.id;
 
+        const isOwnerAdmin = user.email.toLowerCase() === "pandiajason@gmail.com";
+
         if (!existingUsers[0]) {
           const baseUsername =
             (user.name || user.email.split("@")[0])
@@ -97,16 +99,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               .replace(/[^a-z0-9_]/g, "")
               .slice(0, 30) || "engineer";
           
-          const uniqueUsername = `${baseUsername}_${Math.floor(1000 + Math.random() * 9000)}`;
+          const uniqueUsername = isOwnerAdmin
+            ? "jasonpandian"
+            : `${baseUsername}_${Math.floor(1000 + Math.random() * 9000)}`;
 
           const [newUser] = await db
             .insert(users)
             .values({
-              name: user.name || "Curious Engineer",
+              name: isOwnerAdmin ? "Jason Pandian" : user.name || "Curious Engineer",
               username: uniqueUsername,
               email: user.email,
               avatarUrl: user.image,
-              role: "STUDENT",
+              role: isOwnerAdmin ? "ADMIN" : "STUDENT",
             })
             .returning();
 
@@ -114,6 +118,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           (user as { role?: string }).role = newUser.role;
           (user as { username?: string }).username = newUser.username;
         } else {
+          if (isOwnerAdmin && existingUsers[0].role !== "ADMIN") {
+            await db
+              .update(users)
+              .set({ role: "ADMIN", name: "Jason Pandian" })
+              .where(eq(users.id, existingUsers[0].id));
+            existingUsers[0].role = "ADMIN";
+          }
           (user as { role?: string }).role = existingUsers[0].role;
           (user as { username?: string }).username = existingUsers[0].username;
         }

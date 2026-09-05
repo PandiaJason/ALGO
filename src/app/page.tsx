@@ -45,7 +45,7 @@ export default async function HomePage() {
                 </h1>
 
                 <p className="text-sm sm:text-base text-neutral-300 max-w-xl mx-auto lg:mx-0 leading-relaxed font-normal">
-                  ALGO is the engineering proving ground for the AI era. Reconstruct real systems from first principles, measure performance under true 100K+ ops/sec workloads, and prove your capability.
+                  ALGO is where the next generation of engineers learn by building real technology, measuring what they create, and pushing it further through an agentic flow state.
                 </p>
 
                 <div className="pt-2">

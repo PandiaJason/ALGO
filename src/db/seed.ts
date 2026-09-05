@@ -17,48 +17,29 @@ export function hashPassword(password: string): string {
 async function seed() {
   console.log("🌱 Seeding ALGO database...");
 
-  // 1. Seed Users
+  // 1. Seed Verified Admin User: Jason Pandian
   const adminPasswordHash = hashPassword("Admin123!algo");
-  const studentPasswordHash = hashPassword("Student123!algo");
 
   const [adminUser] = await db
     .insert(users)
     .values({
-      name: "ALGO Administrator",
-      username: "admin",
-      email: "admin@algo.local",
+      name: "Jason Pandian",
+      username: "jasonpandian",
+      email: "pandiajason@gmail.com",
       role: "ADMIN",
       passwordHash: adminPasswordHash,
     })
     .onConflictDoUpdate({
       target: users.email,
       set: {
+        name: "Jason Pandian",
+        username: "jasonpandian",
         role: "ADMIN",
-        passwordHash: adminPasswordHash,
-      },
-    })
-    .returning();
-
-  const [studentUser] = await db
-    .insert(users)
-    .values({
-      name: "Curious Engineer",
-      username: "engineer",
-      email: "student@algo.local",
-      role: "STUDENT",
-      passwordHash: studentPasswordHash,
-    })
-    .onConflictDoUpdate({
-      target: users.email,
-      set: {
-        role: "STUDENT",
-        passwordHash: studentPasswordHash,
       },
     })
     .returning();
 
   console.log(`✓ Admin user: ${adminUser.email} (role: ${adminUser.role})`);
-  console.log(`✓ Student user: ${studentUser.email} (role: ${studentUser.role})`);
 
   // 2. Seed Challenge: Key-Value Store
   const challengeSlug = "kv-store";

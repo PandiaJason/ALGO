@@ -10,7 +10,7 @@ export function Footer() {
           <Logo size={22} showText={true} />
           <span className="text-slate-300">|</span>
           <span className="text-slate-400 font-normal">
-            The engineering proving ground.
+            Where the next generation of engineers learn.
           </span>
         </div>
 
