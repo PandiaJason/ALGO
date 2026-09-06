@@ -20,6 +20,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { ADMIN_EMAIL } from "@/lib/constants";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 
 export default async function AdminLayout({
   children,
@@ -129,14 +130,13 @@ export default async function AdminLayout({
               <ArrowLeft className="w-3 h-3" />
               <span>Exit Admin</span>
             </Link>
-            <form action="/api/auth/signout" method="POST">
-              <button
-                type="submit"
-                className="text-xs text-red-500 hover:text-red-700 font-medium"
-              >
-                Sign Out
-              </button>
-            </form>
+            <SignOutButton
+              showLabel
+              label="Sign Out"
+              variant="ghost"
+              size="sm"
+              className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 h-7 px-2 font-medium"
+            />
           </div>
         </div>
       </aside>

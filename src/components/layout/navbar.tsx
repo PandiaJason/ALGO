@@ -7,6 +7,7 @@ import { Logo } from "./logo";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Shield, User, LogOut, Code, Trophy, Sparkles } from "lucide-react";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 
 interface NavbarProps {
   user?: {
@@ -84,20 +85,13 @@ export function Navbar({ user, variant = "default" }: NavbarProps) {
                 </div>
                 <span className="hidden sm:inline">@{user.username}</span>
               </Link>
-              <form action="/api/auth/signout" method="POST">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  type="submit"
-                  className={`h-8 px-2 ${
-                    isDark
-                      ? "text-neutral-400 hover:text-white hover:bg-white/10"
-                      : "text-slate-500 hover:text-slate-800"
-                  }`}
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                </Button>
-              </form>
+              <SignOutButton
+                className={`h-8 px-2 ${
+                  isDark
+                    ? "text-neutral-400 hover:text-white hover:bg-white/10"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+              />
             </div>
           ) : (
             <div className="flex items-center gap-2">

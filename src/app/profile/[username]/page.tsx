@@ -14,6 +14,7 @@ import {
 import { eq, desc } from "drizzle-orm";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatThroughput, formatLatency } from "@/lib/utils";
@@ -152,6 +153,27 @@ export default async function UserProfilePage({ params }: Props) {
                   </div>
                 </div>
               </div>
+
+              {session?.user && ((session.user as any).username === username || session.user.id === profileUser.id) && (
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                  {profileUser.role === "ADMIN" ? (
+                    <Link
+                      href="/admin"
+                      className="text-xs font-medium text-purple-600 hover:text-purple-800 flex items-center gap-1 bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded transition-colors"
+                    >
+                      <Shield className="w-3.5 h-3.5" />
+                      <span>Admin Panel</span>
+                    </Link>
+                  ) : <div />}
+                  <SignOutButton
+                    showLabel
+                    label="Sign Out"
+                    variant="subtle"
+                    size="sm"
+                    className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                  />
+                </div>
+              )}
             </div>
 
             {/* LeetCode Solved Problems Breakdown Card */}
