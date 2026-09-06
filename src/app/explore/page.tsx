@@ -5,14 +5,14 @@ import { submissions, leaderboardEntries } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { ChallengesCatalog } from "@/components/challenge/challenges-catalog";
+import { ExploreManifesto } from "@/components/explore/explore-manifesto";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Explore Curriculum — ALGO",
+  title: "Explore — The Engineering Proving Ground | ALGO",
   description:
-    "Explore the 10 core engineering challenges. Reconstruct production-grade systems from first principles — databases, proxies, queues, and schedulers.",
+    "Software engineering changed. The way we measure it hasn't. An evidence-led examination of technical assessment in the agentic era, backed by empirical data from Stack Overflow, HackerRank, and real systems benchmarks.",
 };
 
 export default async function ExplorePage() {
@@ -61,8 +61,8 @@ export default async function ExplorePage() {
     <div className="flex min-h-screen flex-col bg-[#fafafa]">
       <Navbar user={session?.user as any} />
 
-      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
-        <ChallengesCatalog
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+        <ExploreManifesto
           userSolvedIds={userSolvedIds}
           topThroughputMap={topThroughputMap}
         />
