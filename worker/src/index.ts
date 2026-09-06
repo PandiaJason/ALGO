@@ -218,6 +218,23 @@ worker.on("error", (err) => {
   console.error("Worker queue error:", err);
 });
 
+export const quickTestWorker = new Worker(
+  "quick-test-queue",
+  async (job: Job) => {
+    const { language, level, code } = job.data;
+    console.log(`[Worker] Executing quick-test (Level ${level}, ${language}) [Slot: ${job.id}]`);
+    return await runQuickTest(language, code, level);
+  },
+  {
+    connection,
+    concurrency: 4, // 4 parallel execution slots for rapid code iteration
+  }
+);
+
+quickTestWorker.on("error", (err) => {
+  console.error("QuickTest worker queue error:", err);
+});
+
 // Embedded Lightweight HTTP Health Check Server
 export const healthServer = http.createServer(async (req, res) => {
   if (req.url === "/health" || req.url === "/") {
@@ -312,6 +329,7 @@ const shutdown = async (signal: string) => {
   console.log(`[Worker] Received ${signal}. Shutting down gracefully...`);
   healthServer.close();
   try {
+    await quickTestWorker.close();
     await worker.close();
     await queue.close();
     await connection.quit();

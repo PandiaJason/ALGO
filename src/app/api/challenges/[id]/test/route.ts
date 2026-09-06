@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { enqueueQuickTest } from "@/lib/queue/producer";
 import { runQuickTest } from "@/lib/sandbox/runner";
 import { z } from "zod";
 
@@ -27,8 +28,28 @@ export async function POST(
 
     const { language, level, code } = parsed.data;
 
-    // Run test harness
-    const result = await runQuickTest(language, code, level);
+    // 1. Attempt delegated execution via BullMQ queue (Vercel-compatible)
+    let result: any = null;
+    let queueError: any = null;
+
+    try {
+      result = await enqueueQuickTest({ language, level, code }, 25000);
+    } catch (err: any) {
+      queueError = err;
+    }
+
+    // 2. Fallback: direct runner if running locally with Docker available
+    if (!result) {
+      try {
+        result = await runQuickTest(language, code, level);
+      } catch (directErr: any) {
+        throw new Error(
+          queueError?.message ||
+            directErr?.message ||
+            "Evaluator worker is currently unavailable."
+        );
+      }
+    }
 
     return NextResponse.json({
       passed: result.passed,
