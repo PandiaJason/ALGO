@@ -1,3 +1,6 @@
+import * as dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
+
 import http from "http";
 import { execSync } from "child_process";
 import { Worker, Job, Queue } from "bullmq";
@@ -12,9 +15,6 @@ import {
 } from "../../src/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { runQuickTest, runBenchmark } from "../../src/lib/sandbox/runner";
-import * as dotenv from "dotenv";
-
-dotenv.config({ path: ".env.local" });
 
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 const WORKER_CONCURRENCY = parseInt(process.env.WORKER_CONCURRENCY || "2", 10);
@@ -28,6 +28,8 @@ export const connection = new Redis(REDIS_URL, {
 export const queue = new Queue("submission-eval-queue", { connection });
 
 console.log(`🚀 ALGO Execution Worker starting (Concurrency: ${WORKER_CONCURRENCY})...`);
+console.log(`📡 Database: ${process.env.DATABASE_URL?.replace(/:[^:@]+@/, ":****@") || "default localhost"}`);
+console.log(`📡 Redis: ${REDIS_URL.replace(/:[^:@]+@/, ":****@")}`);
 
 export const worker = new Worker(
   "submission-eval-queue",
