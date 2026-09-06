@@ -112,7 +112,16 @@ export default async function ChallengeDetailPage({ params }: Props) {
     ];
   }
 
-  const levelsArray = Object.values(LEVEL_DEFINITIONS).sort((a, b) => a.level - b.level);
+  const levelsArray = (Array.isArray(version?.levels) && version.levels.length > 0)
+    ? version.levels.map((l: any, idx: number) => ({
+        ...l,
+        level: l.level || idx + 1,
+        title: l.title || `Level ${idx + 1}`,
+        shortTitle: l.title ? (l.title.length > 25 ? l.title.slice(0, 25) + "..." : l.title) : `Level ${idx + 1}`,
+        difficulty: l.difficulty || "Medium",
+        tagline: l.tagline || l.description || "",
+      }))
+    : Object.values(LEVEL_DEFINITIONS).sort((a, b) => a.level - b.level);
 
   return (
     <div className="flex min-h-screen flex-col bg-[#fafafa] font-sans">
@@ -138,7 +147,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
                 {challenge.difficulty}
               </span>
               <span className="px-2.5 py-0.5 rounded text-xs font-semibold font-mono bg-blue-50 text-blue-700 border border-blue-200">
-                6 Progressive Levels
+                {levelsArray.length} Progressive Levels
               </span>
             </div>
 
@@ -320,7 +329,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
 
               {/* Each Level with its comprehensive learning loop */}
               <div className="space-y-6">
-                {levelsArray.map((lvl) => (
+                {levelsArray.map((lvl: any) => (
                   <div
                     key={lvl.level}
                     className="p-5 rounded-xl border border-slate-200 bg-slate-50/40 hover:bg-white hover:border-slate-300 hover:shadow-xs transition-all space-y-4"
@@ -363,70 +372,101 @@ export default async function ChallengeDetailPage({ params }: Props) {
                       </Link>
                     </div>
 
-                    {/* Supported Operations */}
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider mr-1">
-                        Operations:
-                      </span>
-                      {lvl.operations.map((op, idx) => (
-                        <code
-                          key={idx}
-                          className="px-1.5 py-0.5 rounded bg-white text-slate-800 font-mono text-[10px] border border-slate-200/80 font-semibold"
-                          title={op.desc}
-                        >
-                          {op.cmd}
-                        </code>
-                      ))}
-                    </div>
-
-                    {/* The Learning Loop Card for this Level */}
-                    <div className="p-3.5 rounded-lg border border-blue-100/80 bg-blue-50/40 space-y-3">
-                      {/* Engineering Bottleneck */}
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-rose-700">
-                          <AlertTriangle className="w-3 h-3 text-rose-600" />
-                          <span>The Engineering Bottleneck</span>
-                        </div>
-                        <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                          {lvl.learningLoop.bottleneck}
-                        </p>
+                    {/* Supported Operations (if defined) */}
+                    {Array.isArray(lvl.operations) && lvl.operations.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider mr-1">
+                          Operations:
+                        </span>
+                        {lvl.operations.map((op: any, idx: number) => (
+                          <code
+                            key={idx}
+                            className="px-1.5 py-0.5 rounded bg-white text-slate-800 font-mono text-[10px] border border-slate-200/80 font-semibold"
+                            title={op.desc}
+                          >
+                            {op.cmd}
+                          </code>
+                        ))}
                       </div>
+                    )}
 
-                      {/* What You Understand & Master */}
-                      <div className="space-y-1.5 pt-1 border-t border-blue-100">
-                        <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-blue-800">
-                          <Lightbulb className="w-3 h-3 text-amber-600" />
-                          <span>What You Understand & Master</span>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
-                          {lvl.learningLoop.whatYouUnderstand.map((concept, cIdx) => (
-                            <div key={cIdx} className="flex items-start gap-1.5">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
-                              <span className="leading-snug">{concept}</span>
+                    {/* Level Description */}
+                    {lvl.description && (
+                      <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                        {lvl.description}
+                      </p>
+                    )}
+
+                    {/* Requirements / Constraints */}
+                    {lvl.requirements && (
+                      <div className="p-3 bg-white/80 rounded border border-slate-200/80 text-xs text-slate-600 font-mono">
+                        <span className="font-bold text-slate-700 block mb-1 uppercase text-[10px] tracking-wider">
+                          Key Requirements:
+                        </span>
+                        <span>{lvl.requirements}</span>
+                      </div>
+                    )}
+
+                    {/* The Learning Loop Card for this Level (if present) */}
+                    {lvl.learningLoop && (
+                      <div className="p-3.5 rounded-lg border border-blue-100/80 bg-blue-50/40 space-y-3">
+                        {/* Engineering Bottleneck */}
+                        {lvl.learningLoop.bottleneck && (
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-rose-700">
+                              <AlertTriangle className="w-3 h-3 text-rose-600" />
+                              <span>The Engineering Bottleneck</span>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Production Parity & Outcome Takeaway */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-blue-100 text-[11px]">
-                        <div className="flex items-start gap-1.5 bg-white/70 p-2 rounded border border-blue-100/70">
-                          <Server className="w-3.5 h-3.5 text-indigo-600 shrink-0 mt-0.5" />
-                          <div>
-                            <span className="font-bold text-slate-800 font-mono block">Real-World Parity:</span>
-                            <span className="text-slate-600">{lvl.learningLoop.productionParity}</span>
+                            <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                              {lvl.learningLoop.bottleneck}
+                            </p>
                           </div>
-                        </div>
+                        )}
 
-                        <div className="flex items-start gap-1.5 bg-white/70 p-2 rounded border border-blue-100/70">
-                          <Zap className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                          <div>
-                            <span className="font-bold text-slate-800 font-mono block">Outcome Takeaway:</span>
-                            <span className="text-slate-600">{lvl.learningLoop.outcomeSummary}</span>
+                        {/* What You Understand & Master */}
+                        {Array.isArray(lvl.learningLoop.whatYouUnderstand) && (
+                          <div className="space-y-1.5 pt-1 border-t border-blue-100">
+                            <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-blue-800">
+                              <Lightbulb className="w-3 h-3 text-amber-600" />
+                              <span>What You Understand & Master</span>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
+                              {lvl.learningLoop.whatYouUnderstand.map((concept: string, cIdx: number) => (
+                                <div key={cIdx} className="flex items-start gap-1.5">
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
+                                  <span className="leading-snug">{concept}</span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
+                        )}
+
+                        {/* Production Parity & Outcome Takeaway */}
+                        {(lvl.learningLoop.productionParity || lvl.learningLoop.outcomeSummary) && (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-blue-100 text-[11px]">
+                            {lvl.learningLoop.productionParity && (
+                              <div className="flex items-start gap-1.5 bg-white/70 p-2 rounded border border-blue-100/70">
+                                <Server className="w-3.5 h-3.5 text-indigo-600 shrink-0 mt-0.5" />
+                                <div>
+                                  <span className="font-bold text-slate-800 font-mono block">Real-World Parity:</span>
+                                  <span className="text-slate-600">{lvl.learningLoop.productionParity}</span>
+                                </div>
+                              </div>
+                            )}
+
+                            {lvl.learningLoop.outcomeSummary && (
+                              <div className="flex items-start gap-1.5 bg-white/70 p-2 rounded border border-blue-100/70">
+                                <Zap className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                                <div>
+                                  <span className="font-bold text-slate-800 font-mono block">Outcome Takeaway:</span>
+                                  <span className="text-slate-600">{lvl.learningLoop.outcomeSummary}</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -494,7 +534,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
                 Progressive Levels Map
               </div>
               <div className="space-y-1.5">
-                {levelsArray.map((lvl) => (
+                {levelsArray.map((lvl: any) => (
                   <Link
                     key={lvl.level}
                     href={`/challenges/${challenge.slug}/workspace`}

@@ -64,7 +64,12 @@ export default async function WorkspacePage({ params }: Props) {
         .limit(1);
 
       if (versions[0]) {
-        version = versions[0];
+        version = {
+          ...versions[0],
+          levels: (Array.isArray(versions[0].levels) && versions[0].levels.length > 0)
+            ? versions[0].levels
+            : version.levels,
+        };
       }
 
       if (session?.user?.id) {

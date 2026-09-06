@@ -19,6 +19,7 @@ import {
   Trash2,
   ExternalLink,
   GitBranch,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -26,6 +27,15 @@ interface TestCase {
   name: string;
   input: string;
   expected: string;
+}
+
+export interface ChallengeLevel {
+  level: number;
+  title: string;
+  difficulty?: "Easy" | "Medium" | "Hard" | "Expert";
+  tagline?: string;
+  description: string;
+  requirements?: string;
 }
 
 interface Props {
@@ -69,7 +79,7 @@ export function ChallengeEditorForm({
   initialBenchmarkConfig,
 }: Props) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"spec" | "code" | "tests" | "bench">("spec");
+  const [activeTab, setActiveTab] = useState<"spec" | "levels" | "code" | "tests" | "bench">("spec");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -83,6 +93,77 @@ export function ChallengeEditorForm({
     initialChallenge.difficulty
   );
   const [status, setStatus] = useState<"DRAFT" | "PUBLISHED" | "ARCHIVED">(initialChallenge.status);
+
+  // Levels State
+  const rawLevels = Array.isArray(initialVersion?.levels) && initialVersion.levels.length > 0
+    ? initialVersion.levels.map((l: any, idx: number) => ({
+        level: l.level || idx + 1,
+        title: l.title || `Level ${idx + 1}`,
+        difficulty: l.difficulty || (idx === 0 ? "Easy" : idx === 1 ? "Medium" : "Hard"),
+        tagline: l.tagline || l.description || "",
+        description: l.description || "",
+        requirements: l.requirements || "",
+      }))
+    : [
+        {
+          level: 1,
+          title: "Core Mechanics & Correctness",
+          difficulty: "Easy" as const,
+          tagline: "Implement fundamental operations with 100% test pass rate.",
+          description: "Build the baseline data structures and command dispatch loops.",
+          requirements: "All validation test cases must pass with zero runtime errors.",
+        },
+        {
+          level: 2,
+          title: "Efficient Lookup & Low Latency",
+          difficulty: "Medium" as const,
+          tagline: "Optimize operations for sub-millisecond lookups.",
+          description: "Implement collision resolution, dynamic resizing, and load factor thresholding.",
+          requirements: "Target O(1) operations with bounded memory overhead.",
+        },
+        {
+          level: 3,
+          title: "Concurrency & Stress Resilience",
+          difficulty: "Hard" as const,
+          tagline: "Scale under high-concurrency throughput benchmarks.",
+          description: "Maximize throughput ops/sec and prevent race conditions or memory leaks.",
+          requirements: "Achieve the baseline benchmark throughput target.",
+        },
+      ];
+
+  const [levels, setLevels] = useState<ChallengeLevel[]>(rawLevels);
+
+  const addLevel = () => {
+    const nextNum = levels.length + 1;
+    setLevels((prev) => [
+      ...prev,
+      {
+        level: nextNum,
+        title: `Level ${nextNum}: Advanced Optimization`,
+        difficulty: nextNum <= 2 ? "Medium" : "Hard",
+        tagline: "Scale data structure performance.",
+        description: "Implement higher-tier algorithms and data structures.",
+        requirements: "Must preserve correctness while achieving target throughput.",
+      },
+    ]);
+  };
+
+  const removeLevel = (index: number) => {
+    if (levels.length <= 1) {
+      alert("At least one level is required.");
+      return;
+    }
+    const filtered = levels.filter((_, i) => i !== index);
+    setLevels(filtered.map((lvl, idx) => ({ ...lvl, level: idx + 1 })));
+  };
+
+  const updateLevel = (index: number, field: keyof ChallengeLevel, val: any) => {
+    setLevels((prev) => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], [field]: val };
+      return copy;
+    });
+  };
 
   // Starter Code
   const pythonFile = initialFiles.find((f) => f.language === "python" || f.filename.endsWith(".py"));
@@ -172,13 +253,7 @@ export function ChallengeEditorForm({
         ],
         apiSpecification: initialVersion?.spec?.apiSpecification || [],
       },
-      levels: initialVersion?.levels || [
-        {
-          level: 1,
-          title: "Core Mechanics",
-          description: "All validation test cases pass.",
-        },
-      ],
+      levels: levels,
       starterTemplates: {
         python: pythonTemplate,
         cpp: cppTemplate,
@@ -284,11 +359,11 @@ export function ChallengeEditorForm({
       )}
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 gap-2">
+      <div className="flex border-b border-slate-200 gap-2 overflow-x-auto">
         <button
           type="button"
           onClick={() => setActiveTab("spec")}
-          className={`px-4 py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer ${
+          className={`px-4 py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
             activeTab === "spec"
               ? "border-[#2d7cf6] text-[#2d7cf6]"
               : "border-transparent text-slate-500 hover:text-slate-900"
@@ -299,39 +374,51 @@ export function ChallengeEditorForm({
         </button>
         <button
           type="button"
+          onClick={() => setActiveTab("levels")}
+          className={`px-4 py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
+            activeTab === "levels"
+              ? "border-[#2d7cf6] text-[#2d7cf6]"
+              : "border-transparent text-slate-500 hover:text-slate-900"
+          }`}
+        >
+          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+          2. Progressive Levels ({levels.length})
+        </button>
+        <button
+          type="button"
           onClick={() => setActiveTab("code")}
-          className={`px-4 py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer ${
+          className={`px-4 py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
             activeTab === "code"
               ? "border-[#2d7cf6] text-[#2d7cf6]"
               : "border-transparent text-slate-500 hover:text-slate-900"
           }`}
         >
           <FileCode className="w-3.5 h-3.5" />
-          2. Starter Templates
+          3. Starter Templates
         </button>
         <button
           type="button"
           onClick={() => setActiveTab("tests")}
-          className={`px-4 py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer ${
+          className={`px-4 py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
             activeTab === "tests"
               ? "border-[#2d7cf6] text-[#2d7cf6]"
               : "border-transparent text-slate-500 hover:text-slate-900"
           }`}
         >
           <CheckCircle2 className="w-3.5 h-3.5" />
-          3. Test Suite ({testCases.length})
+          4. Test Suite ({testCases.length})
         </button>
         <button
           type="button"
           onClick={() => setActiveTab("bench")}
-          className={`px-4 py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer ${
+          className={`px-4 py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
             activeTab === "bench"
               ? "border-[#2d7cf6] text-[#2d7cf6]"
               : "border-transparent text-slate-500 hover:text-slate-900"
           }`}
         >
           <Cpu className="w-3.5 h-3.5" />
-          4. Benchmarks & Sandbox
+          5. Benchmarks & Sandbox
         </button>
       </div>
 
@@ -446,7 +533,121 @@ export function ChallengeEditorForm({
           </div>
         )}
 
-        {/* Tab 2: Starter Code Templates */}
+        {/* Tab 2: Progressive Levels */}
+        {activeTab === "levels" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xs font-semibold text-slate-900">Progressive Challenge Levels</h2>
+                <p className="text-[11px] text-slate-500">
+                  Configure the progressive roadmap, milestones, and requirements students work through.
+                </p>
+              </div>
+              <Button
+                type="button"
+                onClick={addLevel}
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs gap-1 cursor-pointer bg-white"
+              >
+                <Plus className="w-3 h-3" />
+                Add Level
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              {levels.map((lvl, idx) => (
+                <Card key={idx} className="border border-slate-200 shadow-2xs">
+                  <CardHeader className="py-2.5 px-4 border-b border-slate-100 bg-slate-50/60 flex flex-row items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="flex items-center justify-center w-5 h-5 rounded bg-slate-900 text-white font-mono text-[11px] font-bold">
+                        {lvl.level}
+                      </span>
+                      <span className="text-xs font-bold text-slate-800">
+                        Level {lvl.level}: {lvl.title || "Untitled Level"}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeLevel(idx)}
+                      className="text-slate-400 hover:text-red-600 transition-colors p-1 cursor-pointer"
+                      title="Remove level"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </CardHeader>
+
+                  <CardContent className="p-4 space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="sm:col-span-2 space-y-1">
+                        <label className="text-[11px] font-semibold text-slate-700">Level Title</label>
+                        <input
+                          type="text"
+                          required
+                          value={lvl.title}
+                          onChange={(e) => updateLevel(idx, "title", e.target.value)}
+                          placeholder="e.g. Core Mechanics & Correctness"
+                          className="w-full text-xs px-3 py-1.5 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white font-sans"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-semibold text-slate-700">Difficulty Tier</label>
+                        <select
+                          value={lvl.difficulty || "Medium"}
+                          onChange={(e: any) => updateLevel(idx, "difficulty", e.target.value)}
+                          className="w-full text-xs px-3 py-1.5 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                        >
+                          <option value="Easy">Easy</option>
+                          <option value="Medium">Medium</option>
+                          <option value="Hard">Hard</option>
+                          <option value="Expert">Expert</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold text-slate-700">Tagline / Brief Summary</label>
+                      <input
+                        type="text"
+                        value={lvl.tagline || ""}
+                        onChange={(e) => updateLevel(idx, "tagline", e.target.value)}
+                        placeholder="e.g. Implement fundamental operations with 100% test pass rate."
+                        className="w-full text-xs px-3 py-1.5 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-semibold text-slate-700">Goal & Description</label>
+                        <textarea
+                          rows={3}
+                          value={lvl.description}
+                          onChange={(e) => updateLevel(idx, "description", e.target.value)}
+                          placeholder="Describe what the student needs to construct in this level..."
+                          className="w-full text-xs p-2 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-semibold text-slate-700">Requirements & Constraints</label>
+                        <textarea
+                          rows={3}
+                          value={lvl.requirements || ""}
+                          onChange={(e) => updateLevel(idx, "requirements", e.target.value)}
+                          placeholder="Specific architectural constraints, memory bounds, or command semantics..."
+                          className="w-full text-xs p-2 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white font-mono"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: Starter Code Templates */}
         {activeTab === "code" && (
           <div className="space-y-4">
             <Card>
@@ -487,7 +688,7 @@ export function ChallengeEditorForm({
           </div>
         )}
 
-        {/* Tab 3: Test Definitions */}
+        {/* Tab 4: Test Definitions */}
         {activeTab === "tests" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -517,7 +718,7 @@ export function ChallengeEditorForm({
                       type="text"
                       value={tc.name}
                       onChange={(e) => updateTestCase(idx, "name", e.target.value)}
-                      className="text-xs font-semibold text-slate-800 bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-blue-500 px-1 rounded"
+                      className="text-xs font-semibold text-slate-800 bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-blue-500 px-1 rounded font-sans"
                     />
                     <button
                       type="button"
@@ -556,7 +757,7 @@ export function ChallengeEditorForm({
           </div>
         )}
 
-        {/* Tab 4: Benchmark Config */}
+        {/* Tab 5: Benchmark Config */}
         {activeTab === "bench" && (
           <div className="space-y-4">
             <Card>
