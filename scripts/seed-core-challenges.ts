@@ -156,10 +156,10 @@ async function seed() {
           ) VALUES (
             ${challengeId},
             1,
-            ${JSON.stringify(specPayload)},
-            ${JSON.stringify(levelsPayload)},
-            ${JSON.stringify(starterTemplates)},
-            ${JSON.stringify([])}
+            ${sql.json(specPayload as any)},
+            ${sql.json(levelsPayload as any)},
+            ${sql.json(starterTemplates as any)},
+            ${sql.json([])}
           )
         `);
       } else {
@@ -167,9 +167,9 @@ async function seed() {
         await retryQuery(() => sql`
           UPDATE challenge_versions
           SET
-            spec = ${JSON.stringify(specPayload)},
-            levels = ${JSON.stringify(levelsPayload)},
-            starter_templates = ${JSON.stringify(starterTemplates)}
+            spec = ${sql.json(specPayload as any)},
+            levels = ${sql.json(levelsPayload as any)},
+            starter_templates = ${sql.json(starterTemplates as any)}
           WHERE id = ${existingVersion[0].id}
         `);
       }

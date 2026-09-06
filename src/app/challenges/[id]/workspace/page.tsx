@@ -5,9 +5,8 @@ import { db } from "@/db";
 import { challenges, challengeVersions, submissions, submissionResults, leaderboardEntries, users } from "@/db/schema";
 import { eq, desc, and } from "drizzle-orm";
 import { WorkspaceClient } from "./workspace-client";
-
-import { DEFAULT_STARTER_TEMPLATES } from "@/lib/constants/templates";
-import { PROJECT_SCOPE, LEVEL_DEFINITIONS } from "@/lib/constants/challenge-data";
+import { getChallenge } from "@/lib/challenges";
+import { CORE_CHALLENGES } from "@/lib/constants/core-challenges";
 
 export const dynamic = "force-dynamic";
 
@@ -19,22 +18,30 @@ export default async function WorkspacePage({ params }: Props) {
   const { id } = await params;
   const session = await auth();
 
+  // 1. Resolve authentic challenge definition first
+  const coreDef = CORE_CHALLENGES.find((c) => c.slug === id || c.number === id);
+  const chData = getChallenge(id);
+
   let challenge = {
-    id: "kv-store",
-    slug: id || "kv-store",
-    title: PROJECT_SCOPE.title,
-    description: PROJECT_SCOPE.overview,
-    difficulty: "Medium",
+    id: chData?.slug || coreDef?.slug || id || "kv-store",
+    slug: chData?.slug || coreDef?.slug || id || "kv-store",
+    title: chData?.title || coreDef?.title || "Build a Systems Engine",
+    description: chData?.overview || coreDef?.overview || "Engineering proving ground challenge",
+    difficulty: coreDef?.difficulty || "Medium",
   };
 
   let version: any = {
     id: "v1",
-    starterTemplates: DEFAULT_STARTER_TEMPLATES,
-    levels: Object.values(LEVEL_DEFINITIONS).map((l) => ({
-      level: l.level,
-      title: l.title,
-      description: l.tagline,
-    })),
+    starterTemplates: chData?.starterTemplates || { python: "", cpp: "" },
+    levels: chData ? Object.values(chData.levels).sort((a, b) => a.level - b.level) : [],
+    spec: chData ? {
+      badge: chData.badge,
+      title: chData.title,
+      overview: chData.overview,
+      whyItMatters: chData.whyItMatters,
+      finalOutcome: chData.finalOutcome,
+      architecturalLayers: chData.architecturalLayers,
+    } : null,
   };
 
   let userSubmissions: any[] = [];
@@ -44,16 +51,22 @@ export default async function WorkspacePage({ params }: Props) {
     const foundChallenges = await db
       .select()
       .from(challenges)
-      .where(eq(challenges.slug, id))
+      .where(eq(challenges.slug, challenge.slug))
       .limit(1);
 
     if (foundChallenges[0]) {
       challenge = {
         id: foundChallenges[0].id,
         slug: foundChallenges[0].slug,
-        title: foundChallenges[0].title,
-        description: foundChallenges[0].description,
-        difficulty: foundChallenges[0].difficulty,
+        title: foundChallenges[0].title || challenge.title,
+        description: foundChallenges[0].description || challenge.description,
+        difficulty: (
+          foundChallenges[0].difficulty === "BEGINNER" ? "Easy" :
+          foundChallenges[0].difficulty === "INTERMEDIATE" ? "Medium" :
+          foundChallenges[0].difficulty === "ADVANCED" ? "Hard" :
+          foundChallenges[0].difficulty === "EXPERT" ? "Expert" :
+          challenge.difficulty
+        ),
       };
 
       const versions = await db
@@ -64,11 +77,30 @@ export default async function WorkspacePage({ params }: Props) {
         .limit(1);
 
       if (versions[0]) {
+        let rawLevels = versions[0].levels;
+        if (typeof rawLevels === "string") {
+          try { rawLevels = JSON.parse(rawLevels); } catch {}
+        }
+        let rawTemplates = versions[0].starterTemplates;
+        if (typeof rawTemplates === "string") {
+          try { rawTemplates = JSON.parse(rawTemplates); } catch {}
+        }
+        let rawSpec = versions[0].spec;
+        if (typeof rawSpec === "string") {
+          try { rawSpec = JSON.parse(rawSpec); } catch {}
+        }
+
         version = {
           ...versions[0],
-          levels: (Array.isArray(versions[0].levels) && versions[0].levels.length > 0)
-            ? versions[0].levels
+          starterTemplates: (rawTemplates && typeof rawTemplates === "object" && ((rawTemplates as any).python || (rawTemplates as any).cpp))
+            ? rawTemplates
+            : version.starterTemplates,
+          levels: (Array.isArray(rawLevels) && rawLevels.length > 0)
+            ? rawLevels
             : version.levels,
+          spec: (rawSpec && typeof rawSpec === "object" && ((rawSpec as any).architecturalLayers || (rawSpec as any).overview))
+            ? rawSpec
+            : version.spec,
         };
       }
 
@@ -129,6 +161,7 @@ export default async function WorkspacePage({ params }: Props) {
         id: version.id,
         starterTemplates: version.starterTemplates as any,
         levels: (version.levels as any[]) || [],
+        spec: version.spec || undefined,
       }}
       user={session?.user as any}
       pastSubmissions={userSubmissions as any}
