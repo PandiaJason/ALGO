@@ -26,7 +26,7 @@ export function Navbar({ user, variant = "default" }: NavbarProps) {
 
   const navLinks = [
     { href: "/explore", label: "Explore", icon: Sparkles },
-    { href: "/challenges", label: "Problems", icon: Code },
+    { href: "/challenges", label: "Challenges", icon: Code },
     { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
   ];
 
@@ -109,7 +109,7 @@ export function Navbar({ user, variant = "default" }: NavbarProps) {
                   Sign In
                 </Button>
               </Link>
-              <Link href="/explore">
+              <Link href="/sign-in">
                 <Button
                   size="sm"
                   className={`text-xs font-medium gap-1.5 ${
@@ -118,8 +118,7 @@ export function Navbar({ user, variant = "default" }: NavbarProps) {
                       : "bg-[#2d7cf6] hover:bg-[#256cd8] text-white"
                   }`}
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Explore
+                  Get Started
                 </Button>
               </Link>
             </div>

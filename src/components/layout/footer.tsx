@@ -25,7 +25,7 @@ export function Footer() {
             href="/challenges"
             className="hover:text-slate-900 transition-colors"
           >
-            Problems
+            Challenges
           </Link>
           <Link
             href="/leaderboard"
