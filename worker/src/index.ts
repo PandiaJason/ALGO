@@ -20,12 +20,17 @@ const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 const WORKER_CONCURRENCY = parseInt(process.env.WORKER_CONCURRENCY || "2", 10);
 const HEALTH_PORT = parseInt(process.env.HEALTH_PORT || "8080", 10);
 
-export const connection = new Redis(REDIS_URL, {
+const redisOpts = {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
-});
+};
 
-export const queue = new Queue("submission-eval-queue", { connection });
+export const queueConnection = new Redis(REDIS_URL, redisOpts);
+export const workerConnection = new Redis(REDIS_URL, redisOpts);
+export const quickTestConnection = new Redis(REDIS_URL, redisOpts);
+export const connection = queueConnection;
+
+export const queue = new Queue("submission-eval-queue", { connection: queueConnection });
 
 console.log(`🚀 ALGO Execution Worker starting (Concurrency: ${WORKER_CONCURRENCY})...`);
 console.log(`📡 Database: ${process.env.DATABASE_URL?.replace(/:[^:@]+@/, ":****@") || "default localhost"}`);
@@ -207,7 +212,7 @@ export const worker = new Worker(
     }
   },
   {
-    connection,
+    connection: workerConnection,
     concurrency: WORKER_CONCURRENCY,
   }
 );
@@ -228,7 +233,7 @@ export const quickTestWorker = new Worker(
     return await runQuickTest(language, code, level);
   },
   {
-    connection,
+    connection: quickTestConnection,
     concurrency: 4, // 4 parallel execution slots for rapid code iteration
   }
 );
@@ -334,7 +339,9 @@ const shutdown = async (signal: string) => {
     await quickTestWorker.close();
     await worker.close();
     await queue.close();
-    await connection.quit();
+    await queueConnection.quit();
+    await workerConnection.quit();
+    await quickTestConnection.quit();
   } catch (err) {
     console.error("Error during graceful shutdown:", err);
   }
