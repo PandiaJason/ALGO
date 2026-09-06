@@ -1,11 +1,12 @@
 import React from "react";
 import Link from "next/link";
 import { db } from "@/db";
-import { challenges, challengeVersions } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { challenges } from "@/db/schema";
+import { desc } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, CheckCircle2, EyeOff, Archive } from "lucide-react";
+import { Plus } from "lucide-react";
+import { ChallengeRowActions } from "./challenge-row-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,12 @@ export default async function AdminChallengesPage() {
             Create, version, configure benchmarks, and publish engineering challenges.
           </p>
         </div>
+        <Link href="/admin/challenges/new">
+          <Button size="sm" className="bg-[#2d7cf6] hover:bg-[#2065d1] text-white">
+            <Plus className="w-4 h-4 mr-1.5" />
+            Create Challenge
+          </Button>
+        </Link>
       </div>
 
       <div className="border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs">
@@ -69,13 +76,8 @@ export default async function AdminChallengesPage() {
                     {c.status}
                   </Badge>
                 </td>
-                <td className="py-3 px-4 text-right font-sans">
-                  <Link
-                    href={`/challenges/${c.slug}`}
-                    className="text-xs text-[#2d7cf6] hover:underline font-medium"
-                  >
-                    View Live
-                  </Link>
+                <td className="py-3 px-4 text-right">
+                  <ChallengeRowActions id={c.id} slug={c.slug} status={c.status} />
                 </td>
               </tr>
             ))}
