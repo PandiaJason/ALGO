@@ -5,7 +5,7 @@ import { submissions, leaderboardEntries } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { ChallengesCatalog } from "@/components/challenge/challenges-catalog";
+import { ChallengesTable } from "@/components/challenge/challenges-table";
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +56,7 @@ export default async function ChallengesPage() {
       <Navbar user={session?.user as any} />
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
-        <ChallengesCatalog
+        <ChallengesTable
           userSolvedIds={userSolvedIds}
           topThroughputMap={topThroughputMap}
         />
