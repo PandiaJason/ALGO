@@ -1,3 +1,6 @@
+import * as dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
+
 import { db } from "../src/db";
 import {
   users,
@@ -10,15 +13,16 @@ import {
 } from "../src/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { enqueueSubmission } from "../src/lib/queue/producer";
-import * as dotenv from "dotenv";
-
-dotenv.config({ path: ".env.local" });
 
 async function verify() {
   console.log("🔍 Running ALGO End-to-End Flow Verification...");
 
   // 1. Get student user & challenge
-  const [student] = await db.select().from(users).where(eq(users.email, "student@algo.local"));
+  let [student] = await db.select().from(users).where(eq(users.email, "pandiajason@gmail.com"));
+  if (!student) {
+    const all = await db.select().from(users).limit(1);
+    student = all[0];
+  }
   const [challenge] = await db.select().from(challenges).where(eq(challenges.slug, "kv-store"));
   const [version] = await db
     .select()

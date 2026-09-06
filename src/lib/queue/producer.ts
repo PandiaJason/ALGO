@@ -1,3 +1,6 @@
+import * as dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
+
 import { Queue, QueueEvents } from "bullmq";
 import Redis from "ioredis";
 
@@ -14,7 +17,6 @@ export const redisConnection =
   new Redis(REDIS_URL, {
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
-    lazyConnect: true,
   });
 
 if (process.env.NODE_ENV !== "production") {

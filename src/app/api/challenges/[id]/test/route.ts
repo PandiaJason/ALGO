@@ -33,20 +33,28 @@ export async function POST(
     let queueError: any = null;
 
     try {
-      result = await enqueueQuickTest({ language, level, code }, 25000);
+      result = await enqueueQuickTest({ language, level, code }, 8000);
     } catch (err: any) {
+      console.error("[QuickTest Queue Error]:", err);
       queueError = err;
     }
 
-    // 2. Fallback: direct runner if running locally with Docker available
+    // 2. Fallback: only if running locally on dev machine with Docker
     if (!result) {
-      try {
-        result = await runQuickTest(language, code, level);
-      } catch (directErr: any) {
+      if (!process.env.VERCEL) {
+        try {
+          result = await runQuickTest(language, code, level);
+        } catch (directErr: any) {
+          throw new Error(
+            queueError?.message ||
+              directErr?.message ||
+              "Evaluator worker is currently unavailable."
+          );
+        }
+      } else {
         throw new Error(
           queueError?.message ||
-            directErr?.message ||
-            "Evaluator worker is currently unavailable."
+            "Evaluator worker is currently busy. Please verify the worker daemon is active."
         );
       }
     }
