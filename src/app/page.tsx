@@ -48,13 +48,20 @@ export default async function HomePage() {
                   ALGO is where the next generation of engineers learn by building real technology, measuring what they create, and pushing it further through an agentic flow state.
                 </p>
 
-                <div className="pt-2">
+                <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-3">
                   <Link
-                    href="/challenges/kv-store/workspace"
+                    href="/explore"
                     className="inline-flex items-center gap-2 bg-[#00af9b] hover:bg-[#009b89] text-white px-7 py-3 rounded-full text-sm font-semibold shadow-lg shadow-teal-950/30 transition-all hover:translate-x-0.5 active:scale-95"
                   >
                     <span>Explore Challenges</span>
                     <ChevronRight className="w-4 h-4" />
+                  </Link>
+                  <Link
+                    href="/challenges/kv-store/workspace"
+                    className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 text-white border border-white/20 px-5 py-3 rounded-full text-sm font-medium transition-all"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-white" />
+                    <span>Flagship: Key-Value Engine</span>
                   </Link>
                 </div>
               </div>
@@ -92,7 +99,7 @@ export default async function HomePage() {
 
                 <div className="pt-2">
                   <Link
-                    href="/challenges"
+                    href="/explore"
                     className="text-sm font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 group"
                   >
                     <span>Get Started</span>
@@ -109,21 +116,24 @@ export default async function HomePage() {
                   {/* Card 2 (Middle, soft green) */}
                   <div className="absolute w-52 h-44 rounded-2xl bg-[#E8F8F5] border border-teal-200/60 transform rotate-3 translate-x-[24px] shadow-sm" />
                   {/* Card 3 (Front, light blue) with play button */}
-                  <div className="relative w-56 h-48 rounded-2xl bg-[#E6F4FE] border border-blue-200/80 shadow-md p-4 flex flex-col justify-between">
+                  <Link
+                    href="/challenges/kv-store/workspace"
+                    className="relative w-56 h-48 rounded-2xl bg-[#E6F4FE] border border-blue-200/80 shadow-md p-4 flex flex-col justify-between hover:scale-105 hover:shadow-lg transition-all cursor-pointer group select-none"
+                  >
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-mono font-semibold text-blue-700">MODULE 01</span>
-                      <span className="w-2 h-2 rounded-full bg-blue-500" />
+                      <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                     </div>
-                    <div className="text-sm font-bold text-slate-800">
+                    <div className="text-sm font-bold text-slate-800 group-hover:text-blue-700 transition-colors">
                       In-Memory Key-Value Store
                     </div>
                     <div className="flex items-center justify-between pt-2 border-t border-blue-200/50">
-                      <span className="text-[10px] font-mono text-slate-500">10 Missions</span>
-                      <div className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-blue-600">
-                        <Play className="w-3.5 h-3.5 fill-blue-600 ml-0.5" />
+                      <span className="text-[10px] font-mono text-slate-500">6 Engine Layers</span>
+                      <div className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                        <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 </div>
               </div>
             </div>

@@ -16,6 +16,12 @@ export function Footer() {
 
         <div className="flex items-center gap-5 text-xs text-slate-500">
           <Link
+            href="/explore"
+            className="hover:text-slate-900 transition-colors"
+          >
+            Explore
+          </Link>
+          <Link
             href="/challenges"
             className="hover:text-slate-900 transition-colors"
           >

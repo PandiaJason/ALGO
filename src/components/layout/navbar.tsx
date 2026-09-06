@@ -25,7 +25,8 @@ export function Navbar({ user, variant = "default" }: NavbarProps) {
   const isDark = variant === "dark";
 
   const navLinks = [
-    { href: "/challenges", label: "Challenges", icon: Code },
+    { href: "/explore", label: "Explore", icon: Sparkles },
+    { href: "/challenges", label: "Problems", icon: Code },
     { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
   ];
 
@@ -108,7 +109,7 @@ export function Navbar({ user, variant = "default" }: NavbarProps) {
                   Sign In
                 </Button>
               </Link>
-              <Link href="/challenges">
+              <Link href="/explore">
                 <Button
                   size="sm"
                   className={`text-xs font-medium gap-1.5 ${

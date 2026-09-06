@@ -276,9 +276,7 @@ export function ChallengesCatalog({
             <div className="grid grid-cols-1 gap-4">
               {challenges.map((c) => {
                 const isSolved = solvedSet.has(c.slug) || solvedSet.has(c.number);
-                const isKvStore = c.slug === "kv-store";
-                const isCache = c.slug === "lru-cache";
-                const isExecutable = isKvStore || isCache;
+                const isExecutable = true;
                 const topSpeed = topThroughputMap[c.slug] || "101,170 ops/s";
 
                 return (
