@@ -105,12 +105,18 @@ export default async function AdminSubmissionsPage() {
                       </Badge>
                     )}
                   </td>
-                  <td className="py-3 px-4 text-right font-sans">
+                  <td className="py-3 px-4 text-right font-sans space-x-2">
+                    <Link
+                      href={`/admin/submissions/${s.id}`}
+                      className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-[#2d7cf6] text-white hover:bg-[#256cd8] transition-colors"
+                    >
+                      Inspect
+                    </Link>
                     <Link
                       href={`/submissions/${s.id}`}
-                      className="text-xs text-[#2d7cf6] hover:underline font-medium"
+                      className="text-xs text-slate-500 hover:text-slate-900 font-medium"
                     >
-                      View Report
+                      Report
                     </Link>
                   </td>
                 </tr>

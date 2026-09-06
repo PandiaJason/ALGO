@@ -5,3 +5,4 @@ export * from "./submissions";
 export * from "./benchmarks";
 export * from "./leaderboards";
 export * from "./audit-and-events";
+export * from "./whitelist";

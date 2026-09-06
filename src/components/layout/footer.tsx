@@ -27,12 +27,6 @@ export function Footer() {
           >
             Leaderboard
           </Link>
-          <Link
-            href="/admin/login"
-            className="text-slate-400 hover:text-slate-700 transition-colors"
-          >
-            Admin
-          </Link>
           <span className="text-slate-300">|</span>
           <span className="text-[11px] text-slate-400 font-mono">
             © 2026 ALGO. GO CURIOUS.

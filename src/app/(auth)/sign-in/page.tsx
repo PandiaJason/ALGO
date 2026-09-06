@@ -29,7 +29,7 @@ function SignInContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(
     urlError === "AccessDenied"
-      ? "Access was denied or session could not be established. Please try again."
+      ? "Access Denied: ALGO is currently in private preview. Only approved Google accounts on the access wishlist can join. Please contact Jason Pandian to request access."
       : urlError
       ? `Authentication error (${urlError}). Please try signing in again.`
       : null

@@ -17,7 +17,9 @@ import {
   Shield,
   ArrowLeft,
   LogOut,
+  UserCheck,
 } from "lucide-react";
+import { ADMIN_EMAIL } from "@/lib/constants";
 
 export default async function AdminLayout({
   children,
@@ -26,14 +28,13 @@ export default async function AdminLayout({
 }) {
   const session = await auth();
 
-  // Server-side strict authorization: Accessible EXCLUSIVELY by Jason Pandian (pandiajason@gmail.com)
+  // Server-side strict authorization: Accessible EXCLUSIVELY by ADMIN_EMAIL
   const userEmail = session?.user?.email?.toLowerCase();
   if (!userEmail) {
     redirect("/admin/login");
   }
 
-  const AUTHORIZED_ADMIN_EMAIL = "pandiajason@gmail.com";
-  if (userEmail !== AUTHORIZED_ADMIN_EMAIL) {
+  if (userEmail !== ADMIN_EMAIL) {
     redirect("/admin/login?error=AccessDenied");
   }
 
@@ -51,7 +52,7 @@ export default async function AdminLayout({
       .values({
         name: "Jason Pandian",
         username: "jasonpandian",
-        email: AUTHORIZED_ADMIN_EMAIL,
+        email: ADMIN_EMAIL,
         role: "ADMIN",
       })
       .returning();
@@ -69,6 +70,7 @@ export default async function AdminLayout({
     { href: "/admin/challenges", label: "Challenges", icon: Code },
     { href: "/admin/submissions", label: "Submissions", icon: Layers },
     { href: "/admin/benchmarks", label: "Benchmarks", icon: Cpu },
+    { href: "/admin/whitelist", label: "Wishlist", icon: UserCheck },
     { href: "/admin/users", label: "Users", icon: Users },
     { href: "/admin/audit", label: "Audit Log", icon: FileText },
   ];

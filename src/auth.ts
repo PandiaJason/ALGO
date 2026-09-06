@@ -4,8 +4,9 @@ import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import { db } from "@/db";
-import { users, accounts } from "@/db/schema";
+import { users, accounts, whitelistUsers } from "@/db/schema";
 import { eq, or } from "drizzle-orm";
+import { ADMIN_EMAIL } from "@/lib/constants";
 import crypto from "crypto";
 
 function verifyPassword(password: string, storedHash: string | null): boolean {
@@ -80,7 +81,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async signIn({ user, account, profile }) {
       if (!user.email) return false;
 
-      const isOwnerAdmin = user.email.toLowerCase() === "pandiajason@gmail.com";
+      const normalizedEmail = user.email.toLowerCase().trim();
+      const isOwnerAdmin = normalizedEmail === ADMIN_EMAIL;
+
+      // 1. Strict Access Wishlist Check (Only whitelisted Google accounts can join)
+      if (!isOwnerAdmin) {
+        try {
+          const [whitelisted] = await db
+            .select()
+            .from(whitelistUsers)
+            .where(eq(whitelistUsers.email, normalizedEmail))
+            .limit(1);
+
+          if (!whitelisted) {
+            console.warn(`[Auth] Blocked sign-in attempt: ${normalizedEmail} is not on the access wishlist`);
+            return false;
+          }
+        } catch (dbErr) {
+          console.error("[Auth Whitelist Query Error]:", dbErr);
+          return false;
+        }
+      }
+
       const baseUsername =
         (user.name || user.email.split("@")[0])
           .toLowerCase()
