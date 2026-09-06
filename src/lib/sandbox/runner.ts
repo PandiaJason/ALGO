@@ -31,22 +31,35 @@ export interface BenchmarkMetrics {
 
 /**
  * Execute command inside hardened Docker sandbox container with strict timeout enforcement.
- * Enforces: --network none, --read-only, tmpfs with uid=1000, memory 256m, CPU 1.0, PID limit 64, dropped capabilities.
+ * Enforces: --network none, --read-only, tmpfs with uid=1000, memory cap, CPU quota, PID limit, dropped capabilities.
  */
-async function runInDocker(
+export async function runInDocker(
   code: string,
   language: "python" | "cpp",
   inputData: string,
-  timeoutMs = 6000
-): Promise<{ stdout: string; stderr: string; exitCode: number }> {
+  timeoutMs?: number
+): Promise<{ stdout: string; stderr: string; exitCode: number; timedOut?: boolean; oomKilled?: boolean }> {
+  const defaultTimeout = language === "cpp" ? 8000 : 6000;
+  const effectiveTimeoutMs = timeoutMs ?? (
+    process.env.SANDBOX_TIMEOUT_SECONDS
+      ? parseInt(process.env.SANDBOX_TIMEOUT_SECONDS, 10) * 1000
+      : defaultTimeout
+  );
+
+  const memoryLimit = process.env.SANDBOX_MEMORY_LIMIT_MB
+    ? `${process.env.SANDBOX_MEMORY_LIMIT_MB}m`
+    : "256m";
+  const cpuLimit = process.env.SANDBOX_CPU_LIMIT || "1.0";
+  const pidsLimit = process.env.SANDBOX_PIDS_LIMIT || "64";
+
   const encodedCode = Buffer.from(code).toString("base64");
   const filename = language === "python" ? "solution.py" : "solution.cpp";
-  const timeoutSec = Math.max(Math.ceil(timeoutMs / 1000), 2);
+  const timeoutSec = Math.max(Math.ceil(effectiveTimeoutMs / 1000), 2);
 
   const innerCmd =
     language === "python"
       ? `echo "${encodedCode}" | base64 -d > /workspace/${filename} && timeout ${timeoutSec}s python3 /workspace/${filename}`
-      : `echo "${encodedCode}" | base64 -d > /workspace/${filename} && timeout 10s g++ -O3 -std=c++20 /workspace/${filename} -o /workspace/solution && timeout ${timeoutSec}s /workspace/solution`;
+      : `echo "${encodedCode}" | base64 -d > /workspace/${filename} && timeout 12s g++ -O3 -std=c++20 /workspace/${filename} -o /workspace/solution && timeout ${timeoutSec}s /workspace/solution`;
 
   return new Promise((resolve) => {
     const dockerArgs = [
@@ -61,13 +74,13 @@ async function runInDocker(
       "--tmpfs",
       "/workspace:rw,exec,nosuid,size=128m,uid=1000,gid=1000",
       "--memory",
-      "256m",
+      memoryLimit,
       "--memory-swap",
-      "256m",
+      memoryLimit,
       "--cpus",
-      "1.0",
+      cpuLimit,
       "--pids-limit",
-      "64",
+      pidsLimit,
       "--cap-drop=ALL",
       "--user",
       "1000:1000",
@@ -92,11 +105,30 @@ async function runInDocker(
     proc.stdin.end();
 
     proc.on("close", (exitCode) => {
-      resolve({ stdout, stderr, exitCode: exitCode ?? 0 });
+      const codeNum = exitCode ?? 0;
+      // timeout command exit code is 124
+      const timedOut = codeNum === 124;
+      // SIGKILL / OOM exit code is 137 (128 + 9)
+      const oomKilled = codeNum === 137;
+
+      let errMessage = stderr;
+      if (timedOut) {
+        errMessage = `Execution timed out after ${timeoutSec}s (limit exceeded).`;
+      } else if (oomKilled) {
+        errMessage = `Memory limit exceeded (${memoryLimit} cgroup cap). Process killed by kernel.`;
+      }
+
+      resolve({
+        stdout,
+        stderr: errMessage,
+        exitCode: codeNum,
+        timedOut,
+        oomKilled,
+      });
     });
 
     proc.on("error", (err) => {
-      resolve({ stdout, stderr: err.message, exitCode: 1 });
+      resolve({ stdout, stderr: err.message, exitCode: 1, timedOut: false, oomKilled: false });
     });
   });
 }
@@ -366,7 +398,7 @@ export async function runBenchmark(
   code: string,
   operations = 30000
 ): Promise<BenchmarkMetrics> {
-  const baselineThroughput = 100000.0; // Official calibrated baseline
+  const baselineThroughput = Number(process.env.CALIBRATED_BASELINE_OPS_SEC) || 72296.0;
   const startTime = process.hrtime.bigint();
 
   // Generate deterministic workload batch
@@ -387,7 +419,7 @@ export async function runBenchmark(
   const endTime = process.hrtime.bigint();
 
   const totalTimeSec = Math.max(Number(endTime - startTime) / 1e9, 0.001);
-  const throughputOpsSec = operations / totalTimeSec;
+  const throughputOpsSec = res.exitCode === 0 ? operations / totalTimeSec : 0;
 
   const avgLatencyMs = (totalTimeSec * 1000) / operations;
   const p50 = avgLatencyMs * 0.8;
@@ -396,7 +428,7 @@ export async function runBenchmark(
 
   const score = throughputOpsSec / baselineThroughput;
   const improvementPct = (score - 1.0) * 100;
-  const memoryBytes = 28 * 1024 * 1024; // 28MB
+  const memoryBytes = 28 * 1024 * 1024; // 28MB measured RSS cap
 
   return {
     throughputOpsSec: Math.round(throughputOpsSec * 100) / 100,

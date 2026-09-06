@@ -1,4 +1,6 @@
-import { Worker, Job } from "bullmq";
+import http from "http";
+import { execSync } from "child_process";
+import { Worker, Job, Queue } from "bullmq";
 import Redis from "ioredis";
 import { db } from "../../src/db";
 import {
@@ -8,25 +10,30 @@ import {
   userChallengeProgress,
   events,
 } from "../../src/db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { runQuickTest, runBenchmark } from "../../src/lib/sandbox/runner";
 import * as dotenv from "dotenv";
 
 dotenv.config({ path: ".env.local" });
 
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
-const connection = new Redis(REDIS_URL, {
+const WORKER_CONCURRENCY = parseInt(process.env.WORKER_CONCURRENCY || "2", 10);
+const HEALTH_PORT = parseInt(process.env.HEALTH_PORT || "8080", 10);
+
+export const connection = new Redis(REDIS_URL, {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
 });
 
-console.log("🚀 ALGO Execution Worker starting...");
+export const queue = new Queue("submission-eval-queue", { connection });
+
+console.log(`🚀 ALGO Execution Worker starting (Concurrency: ${WORKER_CONCURRENCY})...`);
 
 export const worker = new Worker(
   "submission-eval-queue",
   async (job: Job) => {
     const { submissionId, challengeId, language, level, files, userId } = job.data;
-    console.log(`[Worker] Processing submission ${submissionId} (${language}, Level ${level})`);
+    console.log(`[Worker] Processing submission ${submissionId} (${language}, Level ${level}) [Slot: ${job.id}]`);
 
     try {
       // 1. Mark as RUNNING
@@ -199,14 +206,121 @@ export const worker = new Worker(
   },
   {
     connection,
-    concurrency: 2,
+    concurrency: WORKER_CONCURRENCY,
   }
 );
 
 worker.on("ready", () => {
-  console.log("⚡ Worker connected to Redis and ready for jobs.");
+  console.log(`⚡ Worker connected to Redis (${REDIS_URL.split("@").pop()}) and ready for jobs.`);
 });
 
 worker.on("error", (err) => {
-  console.error("Worker error:", err);
+  console.error("Worker queue error:", err);
 });
+
+// Embedded Lightweight HTTP Health Check Server
+export const healthServer = http.createServer(async (req, res) => {
+  if (req.url === "/health" || req.url === "/") {
+    try {
+      let redisOk = false;
+      try {
+        redisOk = (await connection.ping()) === "PONG";
+      } catch {
+        redisOk = false;
+      }
+
+      let postgresOk = false;
+      try {
+        await db.execute(sql`SELECT 1`);
+        postgresOk = true;
+      } catch {
+        postgresOk = false;
+      }
+
+      let dockerOk = false;
+      let dockerVersion = "unavailable";
+      try {
+        const out = execSync("docker version --format '{{.Server.Version}}'", { timeout: 3000 });
+        dockerVersion = out.toString().trim();
+        dockerOk = true;
+      } catch {
+        dockerOk = false;
+      }
+
+      let queueCounts: Record<string, number> = { waiting: 0, active: 0, completed: 0, failed: 0, delayed: 0 };
+      try {
+        queueCounts = await queue.getJobCounts("waiting", "active", "completed", "failed", "delayed");
+      } catch {}
+
+      const mem = process.memoryUsage();
+      const isHealthy = redisOk && postgresOk && dockerOk;
+
+      res.writeHead(isHealthy ? 200 : 503, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify(
+          {
+            status: isHealthy ? "healthy" : "degraded",
+            service: "algo-evaluator-worker",
+            timestamp: new Date().toISOString(),
+            uptimeSec: Math.floor(process.uptime()),
+            concurrency: WORKER_CONCURRENCY,
+            subsystems: {
+              redis: redisOk ? "connected" : "disconnected",
+              postgres: postgresOk ? "connected" : "disconnected",
+              docker: dockerOk ? `available (${dockerVersion})` : "unavailable",
+            },
+            queue: queueCounts,
+            memory: {
+              rssMb: Math.round(mem.rss / 1024 / 1024),
+              heapUsedMb: Math.round(mem.heapUsed / 1024 / 1024),
+            },
+          },
+          null,
+          2
+        )
+      );
+    } catch (err: any) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ status: "error", message: err.message }));
+    }
+  } else {
+    res.writeHead(404, { "Content-Type": "text/plain" });
+    res.end("Not Found");
+  }
+});
+
+healthServer.listen(HEALTH_PORT, "0.0.0.0", () => {
+  console.log(`🩺 Health check monitoring listening on http://0.0.0.0:${HEALTH_PORT}/health`);
+});
+
+// Periodic Heartbeat Logging (every 60s)
+const heartbeatInterval = setInterval(async () => {
+  try {
+    const counts = await queue.getJobCounts("waiting", "active", "completed", "failed");
+    const mem = process.memoryUsage();
+    console.log(
+      `[Heartbeat] Active: ${counts.active} | Waiting: ${counts.waiting} | Completed: ${counts.completed} | Failed: ${counts.failed} | Worker RAM: ${(mem.rss / 1024 / 1024).toFixed(1)}MB`
+    );
+  } catch (err: any) {
+    console.warn(`[Heartbeat Error]:`, err.message);
+  }
+}, 60000);
+heartbeatInterval.unref();
+
+// Graceful Shutdown Handler
+const shutdown = async (signal: string) => {
+  console.log(`[Worker] Received ${signal}. Shutting down gracefully...`);
+  healthServer.close();
+  try {
+    await worker.close();
+    await queue.close();
+    await connection.quit();
+  } catch (err) {
+    console.error("Error during graceful shutdown:", err);
+  }
+  process.exit(0);
+};
+
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
+

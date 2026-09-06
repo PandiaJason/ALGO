@@ -25,9 +25,13 @@ export const submissionQueue =
   new Queue("submission-eval-queue", {
     connection: redisConnection,
     defaultJobOptions: {
-      attempts: 1,
-      removeOnComplete: 100,
-      removeOnFail: 200,
+      attempts: 3,
+      backoff: {
+        type: "exponential",
+        delay: 2000,
+      },
+      removeOnComplete: 200,
+      removeOnFail: 500,
     },
   });
 
