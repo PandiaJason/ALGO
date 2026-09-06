@@ -14,6 +14,10 @@ import {
   Search,
   Shield,
   Mail,
+  Pencil,
+  X,
+  Check,
+  Save,
 } from "lucide-react";
 
 export interface WhitelistEntry {
@@ -23,6 +27,7 @@ export interface WhitelistEntry {
   createdAt: Date | string;
   registeredUsername: string | null;
   registeredName: string | null;
+  registeredRole?: "STUDENT" | "ADMIN" | null;
   registeredAt: Date | string | null;
 }
 
@@ -39,6 +44,12 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
   const [loading, setLoading] = useState(false);
   const [deletingEmail, setDeletingEmail] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // Edit Modal/State
+  const [editingEntry, setEditingEntry] = useState<WhitelistEntry | null>(null);
+  const [editNotes, setEditNotes] = useState("");
+  const [editRole, setEditRole] = useState<"STUDENT" | "ADMIN">("STUDENT");
+  const [editSaving, setEditSaving] = useState(false);
 
   const registeredCount = entries.filter((e) => e.registeredUsername).length;
   const pendingCount = entries.length - registeredCount;
@@ -67,6 +78,7 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
           ...data.entry,
           registeredUsername: null,
           registeredName: null,
+          registeredRole: "STUDENT",
           registeredAt: null,
         },
         ...prev,
@@ -110,6 +122,55 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
       setFeedback({ type: "error", text: err.message });
     } finally {
       setDeletingEmail(null);
+    }
+  };
+
+  const startEdit = (entry: WhitelistEntry) => {
+    setEditingEntry(entry);
+    setEditNotes(entry.notes || "");
+    setEditRole(entry.registeredRole === "ADMIN" ? "ADMIN" : "STUDENT");
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingEntry) return;
+
+    setEditSaving(true);
+    setFeedback(null);
+
+    try {
+      const res = await fetch("/api/admin/whitelist", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: editingEntry.email,
+          notes: editNotes,
+          role: editRole,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update wishlist entry");
+      }
+
+      setEntries((prev) =>
+        prev.map((item) =>
+          item.email.toLowerCase() === editingEntry.email.toLowerCase()
+            ? {
+                ...item,
+                notes: editNotes.trim() || null,
+                registeredRole: editRole,
+              }
+            : item
+        )
+      );
+
+      setFeedback({ type: "success", text: `Updated ${editingEntry.email} successfully!` });
+      setEditingEntry(null);
+    } catch (err: any) {
+      setFeedback({ type: "error", text: err.message });
+    } finally {
+      setEditSaving(false);
     }
   };
 
@@ -177,7 +238,7 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
               type="submit"
               disabled={loading || !newEmail.trim()}
               size="sm"
-              className="w-full sm:w-auto text-xs font-semibold gap-1.5 bg-[#2d7cf6] hover:bg-[#256cd8] text-white shrink-0"
+              className="w-full sm:w-auto text-xs font-semibold gap-1.5 bg-[#2d7cf6] hover:bg-[#256cd8] text-white shrink-0 cursor-pointer"
             >
               {loading ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -207,6 +268,85 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
         </CardContent>
       </Card>
 
+      {/* Edit Modal / Drawer overlay */}
+      {editingEntry && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50">
+              <div className="flex items-center gap-2">
+                <Pencil className="w-4 h-4 text-blue-600" />
+                <h3 className="text-sm font-bold text-slate-900">Edit Wishlist Entry</h3>
+              </div>
+              <button
+                onClick={() => setEditingEntry(null)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-md"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-4 space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Google Email</label>
+                <input
+                  type="text"
+                  disabled
+                  value={editingEntry.email}
+                  className="w-full text-xs font-mono px-3 py-2 rounded bg-slate-100 border border-slate-200 text-slate-500 cursor-not-allowed"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Notes / Memo</label>
+                <input
+                  type="text"
+                  placeholder="e.g. VIP Candidate, External Reviewer"
+                  value={editNotes}
+                  onChange={(e) => setEditNotes(e.target.value)}
+                  className="w-full text-xs px-3 py-2 rounded border border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Assigned Role</label>
+                <select
+                  value={editRole}
+                  onChange={(e: any) => setEditRole(e.target.value)}
+                  disabled={editingEntry.email.toLowerCase() === adminEmail.toLowerCase()}
+                  className="w-full text-xs px-3 py-2 rounded border border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                >
+                  <option value="STUDENT">STUDENT (Standard Solve & Benchmark Access)</option>
+                  <option value="ADMIN">ADMIN (Full Control Plane Access)</option>
+                </select>
+                {editingEntry.email.toLowerCase() === adminEmail.toLowerCase() && (
+                  <p className="text-[11px] text-slate-400 mt-1">Platform owner role cannot be modified.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setEditingEntry(null)}
+                className="text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSaveEdit}
+                disabled={editSaving}
+                className="text-xs bg-[#2d7cf6] hover:bg-[#2065d1] text-white gap-1.5 shadow-2xs cursor-pointer"
+              >
+                {editSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Table Section */}
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -232,15 +372,16 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
               <tr>
                 <th className="py-3 px-4">Authorized Email</th>
                 <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4">Role</th>
                 <th className="py-3 px-4">Notes</th>
                 <th className="py-3 px-4">Added On</th>
-                <th className="py-3 px-4 text-right">Action</th>
+                <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-mono">
               {filteredEntries.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-slate-400 font-sans">
+                  <td colSpan={6} className="py-8 text-center text-slate-400 font-sans">
                     No matching accounts found on wishlist.
                   </td>
                 </tr>
@@ -271,29 +412,49 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
                           </Badge>
                         )}
                       </td>
+                      <td className="py-3 px-4">
+                        <Badge
+                          variant={e.registeredRole === "ADMIN" || isOwner ? "purple" : "secondary"}
+                          className="text-[10px]"
+                        >
+                          {e.registeredRole || (isOwner ? "ADMIN" : "STUDENT")}
+                        </Badge>
+                      </td>
                       <td className="py-3 px-4 font-sans text-slate-500 text-[11px]">
                         {e.notes || "—"}
                       </td>
                       <td className="py-3 px-4 text-slate-400 font-sans text-[11px]">
                         {new Date(e.createdAt).toLocaleDateString()}
                       </td>
-                      <td className="py-3 px-4 text-right">
-                        {isOwner ? (
-                          <span className="text-[11px] text-slate-400 font-sans italic">Protected</span>
-                        ) : (
+                      <td className="py-3 px-4 text-right font-sans">
+                        <div className="flex items-center justify-end gap-2.5">
                           <button
-                            onClick={() => handleRemove(e.email)}
-                            disabled={deletingEmail === e.email}
-                            className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 text-xs font-sans font-medium transition-colors disabled:opacity-50"
+                            onClick={() => startEdit(e)}
+                            className="inline-flex items-center gap-1 text-slate-600 hover:text-blue-600 text-xs font-medium cursor-pointer"
+                            title="Edit wishlist entry"
                           >
-                            {deletingEmail === e.email ? (
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                            ) : (
-                              <Trash2 className="w-3 h-3" />
-                            )}
-                            <span>Remove</span>
+                            <Pencil className="w-3.5 h-3.5" />
+                            <span>Edit</span>
                           </button>
-                        )}
+
+                          {isOwner ? (
+                            <span className="text-[11px] text-slate-400 italic">Protected</span>
+                          ) : (
+                            <button
+                              onClick={() => handleRemove(e.email)}
+                              disabled={deletingEmail === e.email}
+                              className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 text-xs font-medium transition-colors disabled:opacity-50 cursor-pointer"
+                              title="Remove from wishlist"
+                            >
+                              {deletingEmail === e.email ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-3.5 h-3.5" />
+                              )}
+                              <span>Remove</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

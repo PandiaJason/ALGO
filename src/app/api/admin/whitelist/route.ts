@@ -11,6 +11,12 @@ const addEmailSchema = z.object({
   notes: z.string().max(500).optional(),
 });
 
+const updateWhitelistSchema = z.object({
+  email: z.string().email().max(255),
+  notes: z.string().max(500).optional().nullable(),
+  role: z.enum(["STUDENT", "ADMIN"]).optional(),
+});
+
 export async function GET(req: NextRequest) {
   try {
     const session = await auth();
@@ -20,7 +26,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    // Query whitelist entries with registration status from users table
+    // Query whitelist entries with registration status and role from users table
     const entries = await db
       .select({
         id: whitelistUsers.id,
@@ -29,6 +35,7 @@ export async function GET(req: NextRequest) {
         createdAt: whitelistUsers.createdAt,
         registeredUsername: users.username,
         registeredName: users.name,
+        registeredRole: users.role,
         registeredAt: users.createdAt,
       })
       .from(whitelistUsers)
@@ -102,6 +109,87 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true, entry });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const session = await auth();
+    const userEmail = session?.user?.email?.toLowerCase();
+
+    if (!session?.user || userEmail !== ADMIN_EMAIL) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const parsed = updateWhitelistSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid payload", details: parsed.error.format() }, { status: 400 });
+    }
+
+    const targetEmail = parsed.data.email.toLowerCase().trim();
+    const [adminUser] = await db.select().from(users).where(eq(users.email, userEmail)).limit(1);
+    if (!adminUser) {
+      return NextResponse.json({ error: "Admin record not found" }, { status: 403 });
+    }
+
+    const [existing] = await db
+      .select()
+      .from(whitelistUsers)
+      .where(eq(whitelistUsers.email, targetEmail))
+      .limit(1);
+
+    if (!existing) {
+      return NextResponse.json({ error: "Wishlist entry not found" }, { status: 404 });
+    }
+
+    // Update notes if provided
+    let updatedNotes = existing.notes;
+    if (parsed.data.notes !== undefined) {
+      updatedNotes = parsed.data.notes ? parsed.data.notes.trim() : null;
+      await db
+        .update(whitelistUsers)
+        .set({ notes: updatedNotes })
+        .where(eq(whitelistUsers.email, targetEmail));
+    }
+
+    // If role is provided, synchronize with users table
+    let updatedRole: string | undefined;
+    if (parsed.data.role) {
+      if (targetEmail === ADMIN_EMAIL && parsed.data.role !== "ADMIN") {
+        return NextResponse.json({ error: "Cannot demote platform owner." }, { status: 400 });
+      }
+
+      const [updatedUser] = await db
+        .update(users)
+        .set({ role: parsed.data.role, updatedAt: new Date() })
+        .where(eq(users.email, targetEmail))
+        .returning();
+
+      if (updatedUser) {
+        updatedRole = updatedUser.role;
+      }
+    }
+
+    await db.insert(auditLogs).values({
+      adminId: adminUser.id,
+      action: "WHITELIST_EMAIL_UPDATED",
+      resource: "whitelist_users",
+      resourceId: existing.id,
+      metadata: { email: targetEmail, notes: updatedNotes, role: updatedRole },
+      ipAddress: req.headers.get("x-forwarded-for") || "127.0.0.1",
+    });
+
+    return NextResponse.json({
+      success: true,
+      entry: {
+        ...existing,
+        notes: updatedNotes,
+        registeredRole: updatedRole,
+      },
+    });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

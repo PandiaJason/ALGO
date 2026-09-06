@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Archive, CheckCircle2, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Archive, CheckCircle2, Loader2, Pencil } from "lucide-react";
 
 interface ChallengeRowActionsProps {
   id: string;
@@ -40,6 +40,15 @@ export function ChallengeRowActions({ id, slug, status: initialStatus }: Challen
 
   return (
     <div className="flex items-center justify-end gap-3 font-sans">
+      <Link
+        href={`/admin/challenges/${id}/edit`}
+        className="text-xs text-slate-700 hover:text-blue-600 hover:underline font-medium inline-flex items-center gap-1"
+        title="Edit Challenge"
+      >
+        <Pencil className="w-3.5 h-3.5" />
+        Edit
+      </Link>
+
       <Link
         href={`/challenges/${slug}`}
         target="_blank"

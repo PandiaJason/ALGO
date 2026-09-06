@@ -26,6 +26,7 @@ export default async function AdminWhitelistPage() {
       createdAt: whitelistUsers.createdAt,
       registeredUsername: users.username,
       registeredName: users.name,
+      registeredRole: users.role,
       registeredAt: users.createdAt,
     })
     .from(whitelistUsers)

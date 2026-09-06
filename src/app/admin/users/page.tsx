@@ -2,7 +2,8 @@ import React from "react";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { desc } from "drizzle-orm";
-import { Badge } from "@/components/ui/badge";
+import { ADMIN_EMAIL } from "@/lib/constants";
+import { UserRoleSelector } from "./user-role-selector";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,7 @@ export default async function AdminUsersPage() {
               <th className="py-3 px-4">Username</th>
               <th className="py-3 px-4">Name</th>
               <th className="py-3 px-4">Email</th>
-              <th className="py-3 px-4">Role</th>
+              <th className="py-3 px-4">Role Assignment</th>
               <th className="py-3 px-4 text-right">Joined</th>
             </tr>
           </thead>
@@ -44,9 +45,12 @@ export default async function AdminUsersPage() {
                   {u.email}
                 </td>
                 <td className="py-3 px-4">
-                  <Badge variant={u.role === "ADMIN" ? "purple" : "secondary"} className="text-[10px]">
-                    {u.role}
-                  </Badge>
+                  <UserRoleSelector
+                    userId={u.id}
+                    initialRole={u.role}
+                    userEmail={u.email}
+                    adminEmail={ADMIN_EMAIL}
+                  />
                 </td>
                 <td className="py-3 px-4 text-right font-sans text-slate-400 text-[11px]">
                   {new Date(u.createdAt).toLocaleDateString()}
