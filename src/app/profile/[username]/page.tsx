@@ -132,7 +132,7 @@ export default async function UserProfilePage({ params }: Props) {
             {/* User Profile Card */}
             <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-4">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-600 via-teal-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold shadow-xs">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#099BE9] via-[#09C899] to-[#8647E2] flex items-center justify-center text-white text-2xl font-bold shadow-xs">
                   {profileUser.username.slice(0, 1).toUpperCase()}
                 </div>
                 <div>
@@ -143,7 +143,7 @@ export default async function UserProfilePage({ params }: Props) {
                     {profileUser.name || "Systems Engineer"}
                   </div>
                   <div className="mt-1.5 flex items-center gap-1.5">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-blue-50 text-blue-700 border border-blue-200">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-[#099BE9]/10 text-[#099BE9] border border-[#099BE9]/30">
                       {profileUser.role}
                     </span>
                     <span className="text-[11px] text-slate-400 font-mono flex items-center gap-1">
@@ -159,7 +159,7 @@ export default async function UserProfilePage({ params }: Props) {
                   {profileUser.role === "ADMIN" ? (
                     <Link
                       href="/admin"
-                      className="text-xs font-medium text-purple-600 hover:text-purple-800 flex items-center gap-1 bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded transition-colors"
+                      className="text-xs font-medium text-[#8647E2] hover:text-[#8937D6] flex items-center gap-1 bg-[#8647E2]/10 hover:bg-[#8647E2]/20 px-2.5 py-1 rounded transition-colors"
                     >
                       <Shield className="w-3.5 h-3.5" />
                       <span>Admin Panel</span>
@@ -193,7 +193,7 @@ export default async function UserProfilePage({ params }: Props) {
                     Solved Challenges
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
+                <div className="w-10 h-10 rounded-full bg-[#09C899]/10 border border-[#09C899]/30 flex items-center justify-center text-[#09C899]">
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
               </div>
@@ -202,31 +202,31 @@ export default async function UserProfilePage({ params }: Props) {
               <div className="space-y-2.5 text-xs font-mono">
                 <div>
                   <div className="flex items-center justify-between text-[11px] mb-1">
-                    <span className="text-emerald-700 font-semibold">Easy</span>
+                    <span className="text-[#0AA793] font-semibold">Easy</span>
                     <span className="text-slate-500">0 / 0</span>
                   </div>
                   <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: "0%" }} />
+                    <div className="h-full bg-[#09C899] rounded-full" style={{ width: "0%" }} />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between text-[11px] mb-1">
-                    <span className="text-amber-700 font-semibold">Medium</span>
+                    <span className="text-[#F78424] font-semibold">Medium</span>
                     <span className="text-slate-500">{solvedCount} / 2</span>
                   </div>
                   <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                    <div className="h-full bg-amber-500 rounded-full" style={{ width: `${(solvedCount / 2) * 100}%` }} />
+                    <div className="h-full bg-[#FBAE0C] rounded-full" style={{ width: `${(solvedCount / 2) * 100}%` }} />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between text-[11px] mb-1">
-                    <span className="text-rose-700 font-semibold">Hard</span>
+                    <span className="text-[#8647E2] font-semibold">Hard</span>
                     <span className="text-slate-500">0 / 2</span>
                   </div>
                   <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                    <div className="h-full bg-rose-500 rounded-full" style={{ width: "0%" }} />
+                    <div className="h-full bg-[#8647E2] rounded-full" style={{ width: "0%" }} />
                   </div>
                 </div>
               </div>
@@ -240,12 +240,12 @@ export default async function UserProfilePage({ params }: Props) {
               <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-2xs">
                 <div className="text-[11px] font-mono text-slate-400 flex items-center justify-between">
                   <span>TOP THROUGHPUT</span>
-                  <Zap className="w-3.5 h-3.5 text-blue-600" />
+                  <Zap className="w-3.5 h-3.5 text-[#099BE9]" />
                 </div>
                 <div className="text-2xl font-bold font-mono text-slate-900 mt-1">
                   {bestSubmission?.throughputOpsSec ? formatThroughput(bestSubmission.throughputOpsSec) : "127.7K ops/s"}
                 </div>
-                <div className="text-[10px] text-emerald-600 font-mono font-semibold mt-0.5">
+                <div className="text-[10px] text-[#0AA793] font-mono font-semibold mt-0.5">
                   +{bestSubmission?.improvementPct ? Number(bestSubmission.improvementPct).toFixed(1) : "27.7"}% vs baseline
                 </div>
               </div>
@@ -253,12 +253,12 @@ export default async function UserProfilePage({ params }: Props) {
               <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-2xs">
                 <div className="text-[11px] font-mono text-slate-400 flex items-center justify-between">
                   <span>GLOBAL LEADERBOARD</span>
-                  <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                  <Trophy className="w-3.5 h-3.5 text-[#FBAE0C]" />
                 </div>
                 <div className="text-2xl font-bold font-mono text-slate-900 mt-1">
                   Rank #1
                 </div>
-                <div className="text-[10px] text-amber-600 font-mono font-semibold mt-0.5">
+                <div className="text-[10px] text-[#F78424] font-mono font-semibold mt-0.5">
                   Gold Verification Badge
                 </div>
               </div>
@@ -299,7 +299,7 @@ export default async function UserProfilePage({ params }: Props) {
                               href={`/submissions/${sub.id}`}
                               className={`font-semibold flex items-center gap-1.5 hover:underline ${
                                 sub.status === "COMPLETED" && sub.isCorrect
-                                  ? "text-emerald-600"
+                                  ? "text-[#0AA793]"
                                   : "text-rose-600"
                               }`}
                             >
@@ -308,7 +308,7 @@ export default async function UserProfilePage({ params }: Props) {
                             </Link>
                           </td>
                           <td className="py-3 px-4 font-sans font-medium text-slate-900">
-                            <Link href={`/challenges/${sub.challengeSlug}`} className="hover:text-blue-600">
+                            <Link href={`/challenges/${sub.challengeSlug}`} className="hover:text-[#099BE9]">
                               {sub.challengeTitle}
                             </Link>
                           </td>

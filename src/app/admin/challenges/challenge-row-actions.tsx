@@ -42,7 +42,7 @@ export function ChallengeRowActions({ id, slug, status: initialStatus }: Challen
     <div className="flex items-center justify-end gap-3 font-sans">
       <Link
         href={`/admin/challenges/${id}/edit`}
-        className="text-xs text-slate-700 hover:text-blue-600 hover:underline font-medium inline-flex items-center gap-1"
+        className="text-xs text-slate-700 hover:text-[#099BE9] hover:underline font-medium inline-flex items-center gap-1"
         title="Edit Challenge"
       >
         <Pencil className="w-3.5 h-3.5" />
@@ -52,7 +52,7 @@ export function ChallengeRowActions({ id, slug, status: initialStatus }: Challen
       <Link
         href={`/challenges/${slug}`}
         target="_blank"
-        className="text-xs text-[#2d7cf6] hover:underline font-medium inline-flex items-center gap-1"
+        className="text-xs text-[#099BE9] hover:underline font-medium inline-flex items-center gap-1"
       >
         <Eye className="w-3.5 h-3.5" />
         View Live
@@ -62,7 +62,7 @@ export function ChallengeRowActions({ id, slug, status: initialStatus }: Challen
         <button
           onClick={() => toggleStatus("DRAFT")}
           disabled={loading}
-          className="text-xs text-amber-600 hover:text-amber-700 hover:underline font-medium inline-flex items-center gap-1 disabled:opacity-50 cursor-pointer"
+          className="text-xs text-[#F78424] hover:text-[#FBAE0C] hover:underline font-medium inline-flex items-center gap-1 disabled:opacity-50 cursor-pointer"
           title="Unpublish to Draft"
         >
           {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <EyeOff className="w-3.5 h-3.5" />}
@@ -72,7 +72,7 @@ export function ChallengeRowActions({ id, slug, status: initialStatus }: Challen
         <button
           onClick={() => toggleStatus("PUBLISHED")}
           disabled={loading}
-          className="text-xs text-emerald-600 hover:text-emerald-700 hover:underline font-medium inline-flex items-center gap-1 disabled:opacity-50 cursor-pointer"
+          className="text-xs text-[#0AA793] hover:text-[#09C899] hover:underline font-medium inline-flex items-center gap-1 disabled:opacity-50 cursor-pointer"
           title="Publish Challenge"
         >
           {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}

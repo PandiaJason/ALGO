@@ -80,7 +80,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
         <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs">
           <div className="text-slate-400 text-[11px] font-medium flex items-center justify-between">
             <span>VERIFIED ENGINEERS</span>
-            <Trophy className="w-3.5 h-3.5 text-amber-500" />
+            <Trophy className="w-3.5 h-3.5 text-[#FBAE0C]" />
           </div>
           <div className="text-2xl font-bold text-slate-900 mt-1 font-sans">
             {entries.length}
@@ -93,12 +93,12 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
         <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs">
           <div className="text-slate-400 text-[11px] font-medium flex items-center justify-between">
             <span>PEAK THROUGHPUT</span>
-            <Zap className="w-3.5 h-3.5 text-blue-600" />
+            <Zap className="w-3.5 h-3.5 text-[#099BE9]" />
           </div>
           <div className="text-2xl font-bold text-slate-900 mt-1">
             {topThroughput ? formatThroughput(topThroughput) : "—"}
           </div>
-          <div className="text-[10px] text-emerald-600 font-semibold mt-0.5">
+          <div className="text-[10px] text-[#0AA793] font-semibold mt-0.5">
             1.01x vs baseline
           </div>
         </div>
@@ -106,12 +106,12 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
         <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs">
           <div className="text-slate-400 text-[11px] font-medium flex items-center justify-between">
             <span>LOWEST p99 LATENCY</span>
-            <Activity className="w-3.5 h-3.5 text-teal-600" />
+            <Activity className="w-3.5 h-3.5 text-[#09C899]" />
           </div>
           <div className="text-2xl font-bold text-slate-900 mt-1">
             {bestLatency > 0 && bestLatency < 999 ? formatLatency(bestLatency) : "25µs"}
           </div>
-          <div className="text-[10px] text-teal-600 font-semibold mt-0.5">
+          <div className="text-[10px] text-[#0AA793] font-semibold mt-0.5">
             Deterministic cgroup
           </div>
         </div>
@@ -119,7 +119,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
         <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs">
           <div className="text-slate-400 text-[11px] font-medium flex items-center justify-between">
             <span>BENCHMARK ENGINE</span>
-            <Cpu className="w-3.5 h-3.5 text-purple-600" />
+            <Cpu className="w-3.5 h-3.5 text-[#8647E2]" />
           </div>
           <div className="text-sm font-bold text-slate-900 mt-2 font-mono">
             algo-runner:latest
@@ -185,7 +185,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="h-8 px-2 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-700 focus:outline-none focus:border-blue-500 shadow-2xs"
+              className="h-8 px-2 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-700 focus:outline-none focus:border-[#099BE9] shadow-2xs"
             >
               <option value="score">Sort: Normalized Score</option>
               <option value="throughput">Sort: Throughput</option>
@@ -206,7 +206,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
               <th className="py-3 px-4 font-semibold text-right">Score</th>
               <th className="py-3 px-4 font-semibold text-right">Throughput</th>
               <th className="py-3 px-4 font-semibold text-right hidden sm:table-cell">p99 Latency</th>
-              <th className="py-3 px-4 font-semibold text-center">Status</th>
+              <th className="py-3 px-4 text-center">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -227,7 +227,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
                 let rankBadge = null;
                 if (rank === 1) {
                   rankBadge = (
-                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-50 border border-amber-300 text-amber-600 font-bold text-xs shadow-2xs">
+                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#FBAE0C]/10 border border-[#FBAE0C]/40 text-[#F78424] font-bold text-xs shadow-2xs">
                       🥇 1
                     </span>
                   );
@@ -239,7 +239,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
                   );
                 } else if (rank === 3) {
                   rankBadge = (
-                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-100/60 border border-amber-400/60 text-amber-700 font-bold text-xs shadow-2xs">
+                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#8647E2]/10 border border-[#8647E2]/30 text-[#8647E2] font-bold text-xs shadow-2xs">
                       🥉 3
                     </span>
                   );
@@ -255,7 +255,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
                   <tr
                     key={entry.id}
                     className={`hover:bg-slate-50/80 transition-colors group ${
-                      isCurrentUser ? "bg-blue-50/30" : ""
+                      isCurrentUser ? "bg-[#099BE9]/5" : ""
                     }`}
                   >
                     {/* Rank */}
@@ -266,19 +266,19 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
                     {/* User Avatar + Username + Language */}
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-500 to-teal-400 flex items-center justify-center text-white text-[11px] font-bold shrink-0">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#099BE9] to-[#09C899] flex items-center justify-center text-white text-[11px] font-bold shrink-0">
                           {entry.username.slice(0, 1).toUpperCase()}
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5">
                             <Link
                               href={`/profile/${entry.username}`}
-                              className="font-semibold text-slate-900 hover:text-blue-600 transition-colors"
+                              className="font-semibold text-slate-900 hover:text-[#099BE9] transition-colors"
                             >
                               @{entry.username}
                             </Link>
                             {isCurrentUser && (
-                              <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-100 text-blue-800 font-mono">
+                              <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#099BE9]/15 text-[#099BE9] font-mono">
                                 YOU
                               </span>
                             )}
@@ -294,14 +294,14 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
                     <td className="py-3.5 px-4 hidden md:table-cell text-slate-600 text-xs font-medium">
                       <Link
                         href={`/challenges/${entry.challengeSlug}`}
-                        className="hover:text-blue-600 transition-colors flex items-center gap-1"
+                        className="hover:text-[#099BE9] transition-colors flex items-center gap-1"
                       >
                         <span>{entry.challengeTitle}</span>
                       </Link>
                     </td>
 
                     {/* Normalized Score */}
-                    <td className="py-3.5 px-4 text-right font-mono font-bold text-blue-600 text-xs">
+                    <td className="py-3.5 px-4 text-right font-mono font-bold text-[#099BE9] text-xs">
                       {Number(entry.score).toFixed(2)}×
                     </td>
 
@@ -317,8 +317,8 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
 
                     {/* Status Pill */}
                     <td className="py-3.5 px-4 text-center">
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#0AA793] bg-[#09C899]/10 px-2 py-0.5 rounded-full border border-[#09C899]/30">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#09C899]" />
                         <span>Accepted</span>
                       </span>
                     </td>

@@ -8,7 +8,7 @@ const Editor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full min-h-[450px] bg-slate-50 flex items-center justify-center text-xs text-slate-400 gap-2">
-      <Loader2 className="w-4 h-4 animate-spin text-[#2d7cf6]" />
+      <Loader2 className="w-4 h-4 animate-spin text-[#099BE9]" />
       <span>Loading ALGO Monaco Editor...</span>
     </div>
   ),

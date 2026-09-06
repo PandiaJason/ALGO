@@ -81,7 +81,7 @@ export function Navbar({ user, variant = "default" }: NavbarProps) {
                     : "text-slate-700 hover:text-slate-900 hover:bg-slate-50"
                 }`}
               >
-                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#2d7cf6] to-[#2dbfa8] flex items-center justify-center text-white text-[11px] font-semibold">
+                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#099BE9] to-[#09C899] flex items-center justify-center text-white text-[11px] font-semibold">
                   {user.username.slice(0, 1).toUpperCase()}
                 </div>
                 <span className="hidden sm:inline">@{user.username}</span>
@@ -114,8 +114,8 @@ export function Navbar({ user, variant = "default" }: NavbarProps) {
                   size="sm"
                   className={`text-xs font-medium gap-1.5 ${
                     isDark
-                      ? "bg-[#00af9b] hover:bg-[#009b89] text-white"
-                      : "bg-[#2d7cf6] hover:bg-[#256cd8] text-white"
+                      ? "bg-[#09C899] hover:bg-[#0AA793] text-white shadow-xs"
+                      : "bg-[#099BE9] hover:bg-[#1984E9] text-white shadow-xs"
                   }`}
                 >
                   Get Started

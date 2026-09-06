@@ -195,13 +195,13 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
 
         <div className="p-4 bg-white rounded-lg border border-slate-200 shadow-2xs">
           <div className="text-[11px] font-mono text-slate-400 uppercase">Registered & Active</div>
-          <div className="text-2xl font-bold text-emerald-600 mt-1">{registeredCount}</div>
+          <div className="text-2xl font-bold text-[#0AA793] mt-1">{registeredCount}</div>
           <div className="text-[11px] text-slate-500 mt-0.5">Have signed in and created profiles</div>
         </div>
 
         <div className="p-4 bg-white rounded-lg border border-slate-200 shadow-2xs">
           <div className="text-[11px] font-mono text-slate-400 uppercase">Pending Access</div>
-          <div className="text-2xl font-bold text-amber-600 mt-1">{pendingCount}</div>
+          <div className="text-2xl font-bold text-[#F78424] mt-1">{pendingCount}</div>
           <div className="text-[11px] text-slate-500 mt-0.5">Whitelisted, waiting to sign in</div>
         </div>
       </div>
@@ -210,7 +210,7 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
       <Card className="border-slate-200 shadow-2xs">
         <CardHeader className="py-3 px-4 border-b border-slate-100 bg-slate-50/50">
           <CardTitle className="text-xs font-bold text-slate-900 flex items-center gap-1.5 font-mono uppercase">
-            <UserPlus className="w-3.5 h-3.5 text-[#2d7cf6]" />
+            <UserPlus className="w-3.5 h-3.5 text-[#099BE9]" />
             <span>Add User to Access Wishlist</span>
           </CardTitle>
         </CardHeader>
@@ -224,7 +224,7 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
                 placeholder="Google / Gmail address (e.g. student@gmail.com)"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs rounded border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#2d7cf6] bg-slate-50/30"
+                className="w-full pl-9 pr-3 py-2 text-xs rounded border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#099BE9] bg-slate-50/30"
               />
             </div>
             <input
@@ -232,13 +232,13 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
               placeholder="Optional notes / memo (e.g. Beta Tester)"
               value={newNotes}
               onChange={(e) => setNewNotes(e.target.value)}
-              className="w-full sm:w-64 px-3 py-2 text-xs rounded border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#2d7cf6] bg-slate-50/30"
+              className="w-full sm:w-64 px-3 py-2 text-xs rounded border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#099BE9] bg-slate-50/30"
             />
             <Button
               type="submit"
               disabled={loading || !newEmail.trim()}
               size="sm"
-              className="w-full sm:w-auto text-xs font-semibold gap-1.5 bg-[#2d7cf6] hover:bg-[#256cd8] text-white shrink-0 cursor-pointer"
+              className="w-full sm:w-auto text-xs font-semibold gap-1.5 bg-[#099BE9] hover:bg-[#1984E9] text-white shrink-0 cursor-pointer"
             >
               {loading ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -253,12 +253,12 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
             <div
               className={`mt-3 p-2.5 rounded text-xs flex items-center gap-2 ${
                 feedback.type === "success"
-                  ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
+                  ? "bg-[#09C899]/10 border border-[#09C899]/30 text-[#0AA793]"
                   : "bg-red-50 border border-red-200 text-red-800"
               }`}
             >
               {feedback.type === "success" ? (
-                <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-600" />
+                <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-[#09C899]" />
               ) : (
                 <AlertCircle className="w-3.5 h-3.5 shrink-0 text-red-600" />
               )}
@@ -274,7 +274,7 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
           <div className="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50">
               <div className="flex items-center gap-2">
-                <Pencil className="w-4 h-4 text-blue-600" />
+                <Pencil className="w-4 h-4 text-[#099BE9]" />
                 <h3 className="text-sm font-bold text-slate-900">Edit Wishlist Entry</h3>
               </div>
               <button
@@ -303,7 +303,7 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
                   placeholder="e.g. VIP Candidate, External Reviewer"
                   value={editNotes}
                   onChange={(e) => setEditNotes(e.target.value)}
-                  className="w-full text-xs px-3 py-2 rounded border border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full text-xs px-3 py-2 rounded border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#099BE9]"
                 />
               </div>
 
@@ -313,7 +313,7 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
                   value={editRole}
                   onChange={(e: any) => setEditRole(e.target.value)}
                   disabled={editingEntry.email.toLowerCase() === adminEmail.toLowerCase()}
-                  className="w-full text-xs px-3 py-2 rounded border border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                  className="w-full text-xs px-3 py-2 rounded border border-slate-200 focus:outline-none focus:ring-1 focus:ring-[#099BE9] bg-white"
                 >
                   <option value="STUDENT">STUDENT (Standard Solve & Benchmark Access)</option>
                   <option value="ADMIN">ADMIN (Full Control Plane Access)</option>
@@ -337,7 +337,7 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
                 size="sm"
                 onClick={handleSaveEdit}
                 disabled={editSaving}
-                className="text-xs bg-[#2d7cf6] hover:bg-[#2065d1] text-white gap-1.5 shadow-2xs cursor-pointer"
+                className="text-xs bg-[#099BE9] hover:bg-[#1984E9] text-white gap-1.5 shadow-2xs cursor-pointer"
               >
                 {editSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                 Save Changes
@@ -351,7 +351,7 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h2 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-            <UserCheck className="w-4 h-4 text-emerald-600" />
+            <UserCheck className="w-4 h-4 text-[#0AA793]" />
             <span>Authorized Email Accounts</span>
           </h2>
           <div className="relative w-full sm:w-64">
@@ -361,7 +361,7 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
               placeholder="Search wishlist..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 text-xs rounded border border-slate-200 bg-white focus:outline-none focus:ring-1 focus:ring-[#2d7cf6]"
+              className="w-full pl-8 pr-3 py-1.5 text-xs rounded border border-slate-200 bg-white focus:outline-none focus:ring-1 focus:ring-[#099BE9]"
             />
           </div>
         </div>
@@ -407,7 +407,7 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
                             Joined @{e.registeredUsername}
                           </Badge>
                         ) : (
-                          <Badge variant="secondary" className="text-[10px] font-sans text-amber-700 bg-amber-50 border-amber-200">
+                          <Badge variant="secondary" className="text-[10px] font-sans text-[#F78424] bg-[#FBAE0C]/10 border-[#FBAE0C]/30">
                             Pending Invite
                           </Badge>
                         )}
@@ -430,7 +430,7 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
                         <div className="flex items-center justify-end gap-2.5">
                           <button
                             onClick={() => startEdit(e)}
-                            className="inline-flex items-center gap-1 text-slate-600 hover:text-blue-600 text-xs font-medium cursor-pointer"
+                            className="inline-flex items-center gap-1 text-slate-600 hover:text-[#099BE9] text-xs font-medium cursor-pointer"
                             title="Edit wishlist entry"
                           >
                             <Pencil className="w-3.5 h-3.5" />

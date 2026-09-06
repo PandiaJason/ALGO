@@ -92,10 +92,10 @@ export function ChallengesCatalog({
   }, [filteredChallenges]);
 
   const domainIcons: Record<EngineeringDomain, React.ReactNode> = {
-    SYSTEMS: <Cpu className="w-4 h-4 text-cyan-600" />,
-    PERFORMANCE: <Zap className="w-4 h-4 text-amber-600" />,
-    DISTRIBUTED_SYSTEMS: <Layers className="w-4 h-4 text-purple-600" />,
-    SEARCH_DATA: <Database className="w-4 h-4 text-emerald-600" />,
+    SYSTEMS: <Cpu className="w-4 h-4 text-[#099BE9]" />,
+    PERFORMANCE: <Zap className="w-4 h-4 text-[#FBAE0C]" />,
+    DISTRIBUTED_SYSTEMS: <Layers className="w-4 h-4 text-[#8647E2]" />,
+    SEARCH_DATA: <Database className="w-4 h-4 text-[#09C899]" />,
   };
 
   return (
@@ -105,7 +105,7 @@ export function ChallengesCatalog({
       {/* ============================================================== */}
       <div className="space-y-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium bg-slate-900 text-white shadow-xs">
-          <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+          <Sparkles className="w-3.5 h-3.5 text-[#09C899]" />
           <span>10 CORE ENGINEERING CHALLENGES</span>
         </div>
 
@@ -137,13 +137,13 @@ export function ChallengesCatalog({
       {/* ALGO PHILOSOPHY STEPPER BANNER                                 */}
       {/* ============================================================== */}
       <div className="bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 rounded-2xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-slate-800">
-        <div className="absolute right-0 top-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute left-1/3 bottom-0 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute right-0 top-0 w-96 h-96 bg-[#099BE9]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute left-1/3 bottom-0 w-80 h-80 bg-[#09C899]/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
             <div>
-              <span className="text-[11px] font-mono tracking-wider uppercase text-cyan-400 font-semibold">
+              <span className="text-[11px] font-mono tracking-wider uppercase text-[#09C899] font-semibold">
                 The ALGO Learning Loop
               </span>
               <h2 className="text-lg sm:text-xl font-bold text-white mt-0.5">
@@ -164,14 +164,14 @@ export function ChallengesCatalog({
               >
                 <div>
                   <div className="flex items-center justify-between text-xs font-mono mb-2">
-                    <span className="font-bold text-cyan-400 group-hover:text-cyan-300 transition-colors">
+                    <span className="font-bold text-[#09C899] group-hover:text-[#0AA793] transition-colors">
                       {String(index + 1).padStart(2, "0")}
                     </span>
                     <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold px-1.5 py-0.5 rounded bg-slate-700/50">
                       {item.step}
                     </span>
                   </div>
-                  <div className="font-semibold text-xs text-white group-hover:text-cyan-200 transition-colors">
+                  <div className="font-semibold text-xs text-white group-hover:text-slate-200 transition-colors">
                     {item.title}
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1 leading-snug">
@@ -193,7 +193,7 @@ export function ChallengesCatalog({
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono font-medium bg-slate-800 border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 transition-all cursor-default"
                 title={t.desc}
               >
-                <span className="font-bold text-cyan-400">{t.type}</span>
+                <span className="font-bold text-[#099BE9]">{t.type}</span>
                 <span className="text-slate-500">•</span>
                 <span className="text-slate-300">{t.label}</span>
               </span>
@@ -236,7 +236,7 @@ export function ChallengesCatalog({
                 <span
                   className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
                     isActive
-                      ? "bg-slate-800 text-cyan-300"
+                      ? "bg-slate-800 text-[#099BE9]"
                       : "bg-slate-100 text-slate-500"
                   }`}
                 >
@@ -284,7 +284,7 @@ export function ChallengesCatalog({
                     key={c.slug}
                     className={`bg-white border rounded-2xl p-5 sm:p-6 transition-all duration-200 hover:shadow-md ${
                       c.isFlagship
-                        ? "border-cyan-300/80 ring-2 ring-cyan-500/10 shadow-sm"
+                        ? "border-[#099BE9]/40 ring-2 ring-[#099BE9]/10 shadow-sm"
                         : "border-slate-200 hover:border-slate-300"
                     }`}
                   >
@@ -297,8 +297,8 @@ export function ChallengesCatalog({
                           </span>
 
                           {c.isFlagship && (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-cyan-50 text-cyan-800 border border-cyan-300">
-                              <Sparkles className="w-3 h-3 text-cyan-600" />
+                            <span className="inline-flex items-center gap-1 text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-[#099BE9]/10 text-[#099BE9] border border-[#099BE9]/30">
+                              <Sparkles className="w-3 h-3 text-[#099BE9]" />
                               FLAGSHIP ENGINE
                             </span>
                           )}
@@ -314,15 +314,17 @@ export function ChallengesCatalog({
                           <span
                             className={`text-[11px] font-mono font-medium px-2 py-0.5 rounded border ${
                               c.difficulty === "Hard"
-                                ? "bg-red-50 text-red-700 border-red-200"
-                                : "bg-amber-50 text-amber-700 border-amber-200"
+                                ? "bg-[#8647E2]/10 text-[#8647E2] border-[#8647E2]/30"
+                                : c.difficulty === "Medium"
+                                ? "bg-[#FBAE0C]/10 text-[#F78424] border-[#FBAE0C]/30"
+                                : "bg-[#09C899]/10 text-[#0AA793] border-[#09C899]/30"
                             }`}
                           >
                             {c.difficulty}
                           </span>
 
                           {isSolved && (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-600 font-medium">
+                            <span className="inline-flex items-center gap-1 text-[11px] font-mono text-[#0AA793] font-medium">
                               <CheckCircle2 className="w-3.5 h-3.5" />
                               SOLVED
                             </span>
@@ -332,7 +334,7 @@ export function ChallengesCatalog({
                         {/* Title & Signature Question */}
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="text-base sm:text-lg font-bold text-slate-900 hover:text-cyan-700 transition-colors">
+                            <h3 className="text-base sm:text-lg font-bold text-slate-900 hover:text-[#099BE9] transition-colors">
                               {c.title}
                             </h3>
                           </div>
@@ -342,7 +344,7 @@ export function ChallengesCatalog({
                         </div>
 
                         {/* Signature Question Callout */}
-                        <div className="bg-slate-50 border-l-2 border-cyan-500 px-3 py-1.5 rounded-r-lg">
+                        <div className="bg-slate-50 border-l-2 border-[#099BE9] px-3 py-1.5 rounded-r-lg">
                           <p className="text-xs italic text-slate-700 font-serif">
                             &ldquo;{c.signatureQuestion}&rdquo;
                           </p>
@@ -371,7 +373,7 @@ export function ChallengesCatalog({
                           <div className="text-[10px] font-mono uppercase tracking-wider font-semibold text-slate-500 flex items-center justify-between">
                             <span>Target Metrics</span>
                             {isExecutable && (
-                              <span className="text-emerald-600 font-bold">LIVE BENCHMARK</span>
+                              <span className="text-[#0AA793] font-bold">LIVE BENCHMARK</span>
                             )}
                           </div>
                           <div className="text-xs font-mono font-semibold text-slate-900">
@@ -398,7 +400,7 @@ export function ChallengesCatalog({
                               >
                                 <button className={`w-full px-4 py-2 rounded-xl text-xs font-semibold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer ${
                                   c.isFlagship
-                                    ? "bg-slate-900 hover:bg-cyan-600 text-white"
+                                    ? "bg-slate-900 hover:bg-[#099BE9] text-white"
                                     : "bg-slate-900 hover:bg-slate-800 text-white"
                                 }`}>
                                   <span>Launch Engine</span>
@@ -441,7 +443,7 @@ export function ChallengesCatalog({
                 setSearchQuery("");
                 setSelectedDomain("ALL");
               }}
-              className="text-xs font-semibold text-cyan-600 hover:underline pt-2 inline-block cursor-pointer"
+              className="text-xs font-semibold text-[#099BE9] hover:underline pt-2 inline-block cursor-pointer"
             >
               Clear all filters
             </button>

@@ -22,7 +22,7 @@ export default async function HomePage() {
   const session = await auth();
 
   return (
-    <div className="flex min-h-screen flex-col bg-white text-slate-900 selection:bg-teal-100 selection:text-teal-900 font-sans">
+    <div className="flex min-h-screen flex-col bg-white text-slate-900 selection:bg-[#099BE9]/20 selection:text-[#099BE9] font-sans">
       {/* Top Navbar with LeetCode dark style for homepage hero */}
       <Navbar user={session?.user as any} variant="dark" />
 
@@ -51,7 +51,7 @@ export default async function HomePage() {
                 <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-3">
                   <Link
                     href="/explore"
-                    className="inline-flex items-center gap-2 bg-[#00af9b] hover:bg-[#009b89] text-white px-7 py-3 rounded-full text-sm font-semibold shadow-lg shadow-teal-950/30 transition-all hover:translate-x-0.5 active:scale-95"
+                    className="inline-flex items-center gap-2 bg-[#09C899] hover:bg-[#0AA793] text-white px-7 py-3 rounded-full text-sm font-semibold shadow-lg shadow-[#09C899]/20 transition-all hover:translate-x-0.5 active:scale-95"
                   >
                     <span>Explore Challenges</span>
                     <ChevronRight className="w-4 h-4" />
@@ -85,11 +85,11 @@ export default async function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
               {/* Left Column: Explore Pitch */}
               <div className="md:col-span-6 space-y-4">
-                <div className="w-12 h-12 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center text-[#00af9b]">
+                <div className="w-12 h-12 rounded-xl bg-[#09C899]/10 border border-[#09C899]/30 flex items-center justify-center text-[#09C899]">
                   <GraduationCap className="w-6 h-6" />
                 </div>
 
-                <h2 className="text-2xl font-bold text-[#00af9b] tracking-tight">
+                <h2 className="text-2xl font-bold text-[#09C899] tracking-tight">
                   Start Exploring
                 </h2>
 
@@ -100,7 +100,7 @@ export default async function HomePage() {
                 <div className="pt-2">
                   <Link
                     href="/explore"
-                    className="text-sm font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 group"
+                    className="text-sm font-semibold text-[#099BE9] hover:text-[#1984E9] flex items-center gap-1 group"
                   >
                     <span>Get Started</span>
                     <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -111,25 +111,25 @@ export default async function HomePage() {
               {/* Right Column: Stacked Colorful Cards with Play Button */}
               <div className="md:col-span-6 flex justify-center">
                 <div className="relative w-full max-w-sm h-64 flex items-center justify-center">
-                  {/* Card 1 (Back, cream) */}
-                  <div className="absolute w-52 h-44 rounded-2xl bg-[#FFF6E5] border border-amber-200/60 transform -rotate-6 translate-x-[-28px] shadow-sm" />
-                  {/* Card 2 (Middle, soft green) */}
-                  <div className="absolute w-52 h-44 rounded-2xl bg-[#E8F8F5] border border-teal-200/60 transform rotate-3 translate-x-[24px] shadow-sm" />
-                  {/* Card 3 (Front, light blue) with play button */}
+                  {/* Card 1 (Back, Amber/Orange O) */}
+                  <div className="absolute w-52 h-44 rounded-2xl bg-[#FBAE0C]/10 border border-[#FBAE0C]/30 transform -rotate-6 translate-x-[-28px] shadow-xs" />
+                  {/* Card 2 (Middle, Mint/Teal L) */}
+                  <div className="absolute w-52 h-44 rounded-2xl bg-[#09C899]/10 border border-[#09C899]/30 transform rotate-3 translate-x-[24px] shadow-xs" />
+                  {/* Card 3 (Front, Electric Blue A) with play button */}
                   <Link
                     href="/challenges/kv-store/workspace"
-                    className="relative w-56 h-48 rounded-2xl bg-[#E6F4FE] border border-blue-200/80 shadow-md p-4 flex flex-col justify-between hover:scale-105 hover:shadow-lg transition-all cursor-pointer group select-none"
+                    className="relative w-56 h-48 rounded-2xl bg-[#099BE9]/10 border border-[#099BE9]/30 shadow-md p-4 flex flex-col justify-between hover:scale-105 hover:shadow-lg transition-all cursor-pointer group select-none"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-mono font-semibold text-blue-700">MODULE 01</span>
-                      <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                      <span className="text-[11px] font-mono font-semibold text-[#099BE9]">MODULE 01</span>
+                      <span className="w-2 h-2 rounded-full bg-[#099BE9] animate-pulse" />
                     </div>
-                    <div className="text-sm font-bold text-slate-800 group-hover:text-blue-700 transition-colors">
+                    <div className="text-sm font-bold text-slate-800 group-hover:text-[#099BE9] transition-colors">
                       In-Memory Key-Value Store
                     </div>
-                    <div className="flex items-center justify-between pt-2 border-t border-blue-200/50">
+                    <div className="flex items-center justify-between pt-2 border-t border-[#099BE9]/20">
                       <span className="text-[10px] font-mono text-slate-500">6 Engine Layers</span>
-                      <div className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                      <div className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center text-[#099BE9] group-hover:bg-[#099BE9] group-hover:text-white transition-all">
                         <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
                       </div>
                     </div>
@@ -148,21 +148,21 @@ export default async function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 sm:gap-16">
               {/* Left Column: Questions, Community & Contests */}
               <div className="space-y-4">
-                {/* 3 Hexagons Cluster */}
+                {/* 3 Hexagons Cluster (Blue A, Teal L, Orange O) */}
                 <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500 text-white font-mono font-bold text-xs flex items-center justify-center shadow-xs">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#099BE9] to-[#1984E9] text-white font-mono font-bold text-xs flex items-center justify-center shadow-xs">
                     100K
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-[#00af9b] text-white flex items-center justify-center shadow-xs">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#09C899] to-[#0AA793] text-white flex items-center justify-center shadow-xs">
                     <Users className="w-5 h-5" />
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-[#f7a01d] text-white flex items-center justify-center shadow-xs">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FBAE0C] to-[#F78424] text-white flex items-center justify-center shadow-xs">
                     <Trophy className="w-5 h-5" />
                   </div>
                 </div>
 
-                <h3 className="text-lg sm:text-xl font-bold text-blue-600 tracking-tight">
-                  Questions, Community & Contests
+                <h3 className="text-lg sm:text-xl font-bold text-[#099BE9] tracking-tight">
+                  Questions, Community &amp; Contests
                 </h3>
 
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
@@ -172,7 +172,7 @@ export default async function HomePage() {
                 <div className="pt-1">
                   <Link
                     href="/challenges"
-                    className="text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 group"
+                    className="text-xs sm:text-sm font-medium text-[#099BE9] hover:text-[#1984E9] flex items-center gap-1 group"
                   >
                     <span>View Questions</span>
                     <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -182,18 +182,18 @@ export default async function HomePage() {
 
               {/* Right Column: Measured Engineering Ability */}
               <div className="space-y-4">
-                {/* 2 Hexagons Cluster */}
+                {/* 2 Hexagons Cluster (Purple G, Blue A) */}
                 <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-xl bg-[#b58900] text-white flex items-center justify-center shadow-xs">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#8647E2] to-[#8937D6] text-white flex items-center justify-center shadow-xs">
                     <Briefcase className="w-5 h-5" />
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-slate-600 text-white flex items-center justify-center shadow-xs">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#099BE9] to-[#1984E9] text-white flex items-center justify-center shadow-xs">
                     <Server className="w-5 h-5" />
                   </div>
                 </div>
 
-                <h3 className="text-lg sm:text-xl font-bold text-[#b58900] tracking-tight">
-                  Companies & Candidates
+                <h3 className="text-lg sm:text-xl font-bold text-[#8647E2] tracking-tight">
+                  Companies &amp; Candidates
                 </h3>
 
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
@@ -203,9 +203,9 @@ export default async function HomePage() {
                 <div className="pt-1">
                   <Link
                     href="/challenges/kv-store/leaderboard"
-                    className="text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 group"
+                    className="text-xs sm:text-sm font-medium text-[#099BE9] hover:text-[#1984E9] flex items-center gap-1 group"
                   >
-                    <span>Leaderboard & Rankings</span>
+                    <span>Leaderboard &amp; Rankings</span>
                     <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                   </Link>
                 </div>
@@ -215,12 +215,12 @@ export default async function HomePage() {
         </section>
 
         {/* ============================================================== */}
-        {/* SECTION 3: "Developer" / Playground Code Box (Screenshot 3)    */}
+        {/* SECTION 3: "Developer" / Playground Code Box                   */}
         {/* ============================================================== */}
         <section className="py-20 bg-white border-t border-slate-100">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
-            {/* Centered Hexagonal Icon */}
-            <div className="inline-flex w-12 h-12 rounded-xl bg-teal-50 border border-teal-200 items-center justify-center text-[#00af9b] mx-auto shadow-2xs">
+            {/* Centered Hexagonal Icon (Teal L) */}
+            <div className="inline-flex w-12 h-12 rounded-xl bg-[#09C899]/10 border border-[#09C899]/30 items-center justify-center text-[#09C899] mx-auto shadow-2xs">
               <Code2 className="w-6 h-6" />
             </div>
 
@@ -240,17 +240,17 @@ export default async function HomePage() {
         </section>
 
         {/* ============================================================== */}
-        {/* SECTION 4: Built for Engineers & Tech Logos (Screenshot 4)     */}
+        {/* SECTION 4: Built for Engineers & Tech Logos                    */}
         {/* ============================================================== */}
         <section className="py-20 bg-[#fafafa] border-t border-slate-100 text-center">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-            {/* Red Hexagonal Icon */}
-            <div className="inline-flex w-12 h-12 rounded-xl bg-rose-50 border border-rose-200 items-center justify-center text-rose-600 mx-auto shadow-2xs">
-              <Heart className="w-6 h-6 fill-rose-600 text-rose-600" />
+            {/* Purple G Hexagonal Icon */}
+            <div className="inline-flex w-12 h-12 rounded-xl bg-[#8647E2]/10 border border-[#8647E2]/30 items-center justify-center text-[#8647E2] mx-auto shadow-2xs">
+              <Heart className="w-6 h-6 fill-[#8647E2] text-[#8647E2]" />
             </div>
 
-            <h2 className="text-2xl sm:text-3xl font-bold text-rose-600 tracking-tight flex items-center justify-center gap-2">
-              Made with ❤️ for Systems Engineers
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight flex items-center justify-center gap-2">
+              Made with <span className="text-[#F78424]">❤️</span> for Systems Engineers
             </h2>
 
             <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mx-auto leading-relaxed">
@@ -275,7 +275,7 @@ export default async function HomePage() {
               </p>
               <Link
                 href="/challenges/kv-store/workspace"
-                className="text-xs sm:text-sm font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 group"
+                className="text-xs sm:text-sm font-semibold text-[#099BE9] hover:text-[#1984E9] inline-flex items-center gap-1 group"
               >
                 <span>Enter Proving Ground</span>
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />

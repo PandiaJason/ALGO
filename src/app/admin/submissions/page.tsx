@@ -91,7 +91,7 @@ export default async function AdminSubmissionsPage() {
                   <td className="py-3 px-4 text-slate-700">
                     {s.throughputOpsSec ? formatThroughput(s.throughputOpsSec) : "—"}
                   </td>
-                  <td className="py-3 px-4 font-bold text-[#2d7cf6]">
+                  <td className="py-3 px-4 font-bold text-[#099BE9]">
                     {s.score ? `${Number(s.score).toFixed(2)}×` : "—"}
                   </td>
                   <td className="py-3 px-4">
@@ -108,7 +108,7 @@ export default async function AdminSubmissionsPage() {
                   <td className="py-3 px-4 text-right font-sans space-x-2">
                     <Link
                       href={`/admin/submissions/${s.id}`}
-                      className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-[#2d7cf6] text-white hover:bg-[#256cd8] transition-colors"
+                      className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-[#099BE9] text-white hover:bg-[#1984E9] transition-colors"
                     >
                       Inspect
                     </Link>

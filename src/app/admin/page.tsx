@@ -71,8 +71,8 @@ export default async function AdminDashboardPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs font-mono">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#09C899]/10 border border-[#09C899]/30 text-[#0AA793] text-xs font-mono">
+            <span className="w-2 h-2 rounded-full bg-[#09C899] animate-pulse" />
             <span>WORKER: ONLINE</span>
           </div>
         </div>
@@ -144,7 +144,7 @@ export default async function AdminDashboardPage() {
                     <td className="py-2.5 px-4 text-right font-sans">
                       <Link
                         href={`/admin/submissions/${s.id}`}
-                        className="text-[#2d7cf6] hover:underline font-medium"
+                        className="text-[#099BE9] hover:underline font-medium"
                       >
                         Inspect
                       </Link>

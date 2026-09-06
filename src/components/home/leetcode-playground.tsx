@@ -177,7 +177,7 @@ class ThreadSafeBuffer:
               className="text-slate-600 hover:text-slate-900 px-2 py-1 rounded flex items-center gap-1 text-xs"
             >
               {copied ? (
-                <Check className="w-3.5 h-3.5 text-emerald-600" />
+                <Check className="w-3.5 h-3.5 text-[#09C899]" />
               ) : (
                 <Copy className="w-3.5 h-3.5" />
               )}
@@ -187,7 +187,7 @@ class ThreadSafeBuffer:
             <button
               onClick={handleRun}
               disabled={isRunning}
-              className="bg-[#00af9b] hover:bg-[#009b89] text-white px-3 py-1 rounded flex items-center gap-1.5 text-xs font-semibold shadow-xs transition-all active:scale-95"
+              className="bg-[#09C899] hover:bg-[#0AA793] text-white px-3 py-1 rounded flex items-center gap-1.5 text-xs font-semibold shadow-xs transition-all active:scale-95"
             >
               <Play className={`w-3 h-3 fill-white ${isRunning ? "animate-spin" : ""}`} />
               <span>{isRunning ? "Testing..." : "Run"}</span>
@@ -219,8 +219,8 @@ class ThreadSafeBuffer:
         {/* Output Console Banner */}
         <div className="px-4 py-2.5 bg-[#f8fafc] border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <span className="text-emerald-700 font-bold">Accepted</span>
+            <CheckCircle2 className="w-4 h-4 text-[#09C899]" />
+            <span className="text-[#0AA793] font-bold">Accepted</span>
             <span className="text-slate-400">•</span>
             <span className="text-slate-700 font-semibold">101,170 ops/s</span>
             <span className="text-slate-400">•</span>
@@ -239,7 +239,7 @@ class ThreadSafeBuffer:
             onClick={() => setSelectedSnippet(key)}
             className={`w-full text-left p-3.5 rounded-xl border transition-all flex items-center justify-between group ${
               selectedSnippet === key
-                ? "border-blue-500 bg-blue-50/40 shadow-xs"
+                ? "border-[#099BE9] bg-[#099BE9]/5 shadow-xs"
                 : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
             }`}
           >
@@ -247,7 +247,7 @@ class ThreadSafeBuffer:
               <div
                 className={`w-7 h-7 rounded-lg flex items-center justify-center ${
                   selectedSnippet === key
-                    ? "bg-blue-600 text-white"
+                    ? "bg-[#099BE9] text-white"
                     : "bg-slate-100 text-slate-600 group-hover:text-slate-900"
                 }`}
               >
@@ -264,9 +264,9 @@ class ThreadSafeBuffer:
         <div className="pt-2">
           <Link
             href="/challenges/kv-store/workspace"
-            className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1.5"
+            className="text-xs font-semibold text-[#099BE9] hover:text-[#1984E9] flex items-center gap-1.5"
           >
-            <span>Create Playground & Workspace</span>
+            <span>Create Playground &amp; Workspace</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>

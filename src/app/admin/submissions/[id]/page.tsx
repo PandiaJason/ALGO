@@ -157,7 +157,7 @@ export default async function AdminSubmissionInspectPage({ params }: Props) {
             <div className="text-[10px] text-slate-400 font-sans uppercase">Correctness</div>
             <div className="text-lg font-bold text-slate-900 flex items-center gap-1.5">
               {result.isCorrect ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <CheckCircle2 className="w-4 h-4 text-[#09C899]" />
               ) : (
                 <XCircle className="w-4 h-4 text-red-600" />
               )}
@@ -169,14 +169,14 @@ export default async function AdminSubmissionInspectPage({ params }: Props) {
 
           <div className="p-3 bg-white rounded-lg border border-slate-200 shadow-2xs space-y-1">
             <div className="text-[10px] text-slate-400 font-sans uppercase">Throughput</div>
-            <div className="text-lg font-bold text-[#2d7cf6]">
+            <div className="text-lg font-bold text-[#099BE9]">
               {result.throughputOpsSec ? formatThroughput(result.throughputOpsSec) : "0 ops/s"}
             </div>
           </div>
 
           <div className="p-3 bg-white rounded-lg border border-slate-200 shadow-2xs space-y-1">
             <div className="text-[10px] text-slate-400 font-sans uppercase">Normalized Score</div>
-            <div className="text-lg font-bold text-purple-700">
+            <div className="text-lg font-bold text-[#8647E2]">
               {result.score ? `${Number(result.score).toFixed(2)}×` : "—"}
             </div>
           </div>

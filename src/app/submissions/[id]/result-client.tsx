@@ -133,7 +133,7 @@ export function ResultClient({
       {/* POLLING / EVALUATING IN CONTAINER STATE */}
       {isPolling && (
         <div className="p-8 rounded-xl border border-slate-200 bg-white text-center space-y-4 shadow-2xs">
-          <div className="w-12 h-12 mx-auto rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600">
+          <div className="w-12 h-12 mx-auto rounded-full bg-[#099BE9]/10 border border-[#099BE9]/30 flex items-center justify-center text-[#099BE9]">
             <Cpu className="w-6 h-6 animate-spin" />
           </div>
           <div className="space-y-1">
@@ -156,8 +156,8 @@ export function ResultClient({
           {/* Main Accepted Header */}
           <div className="pb-4 border-b border-slate-200 space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-2xl sm:text-3xl font-extrabold text-emerald-600 tracking-tight flex items-center gap-2">
-                <CheckCircle2 className="w-7 h-7 text-emerald-600" />
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#0AA793] tracking-tight flex items-center gap-2">
+                <CheckCircle2 className="w-7 h-7 text-[#09C899]" />
                 Accepted
               </span>
             </div>
@@ -184,12 +184,12 @@ export function ResultClient({
 
               {/* LeetCode Beats Green Text & Visual Bar */}
               <div className="space-y-1.5 pt-1">
-                <div className="text-xs font-bold text-emerald-600 font-mono">
+                <div className="text-xs font-bold text-[#0AA793] font-mono">
                   Beats 98.4% of submissions
                 </div>
                 <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
                   <div
-                    className="h-full bg-emerald-500 rounded-full"
+                    className="h-full bg-[#09C899] rounded-full"
                     style={{ width: "98.4%" }}
                   />
                 </div>
@@ -211,14 +211,14 @@ export function ResultClient({
                 {result.memoryBytes ? formatBytes(result.memoryBytes) : "28 MB"}
               </div>
 
-              {/* LeetCode Beats Green Text & Visual Bar */}
+              {/* Memory Beats Blue Text & Visual Bar */}
               <div className="space-y-1.5 pt-1">
-                <div className="text-xs font-bold text-emerald-600 font-mono">
+                <div className="text-xs font-bold text-[#099BE9] font-mono">
                   Beats 94.2% of submissions
                 </div>
                 <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
                   <div
-                    className="h-full bg-teal-500 rounded-full"
+                    className="h-full bg-[#099BE9] rounded-full"
                     style={{ width: "94.2%" }}
                   />
                 </div>
@@ -231,9 +231,9 @@ export function ResultClient({
 
           {/* Global Leaderboard Standing Banner (LeetCode Contest Award Style) */}
           {result.rank && (
-            <div className="p-4 rounded-xl border border-amber-200/80 bg-gradient-to-r from-amber-50/70 via-white to-amber-50/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+            <div className="p-4 rounded-xl border border-[#FBAE0C]/30 bg-gradient-to-r from-[#FBAE0C]/10 via-white to-[#FBAE0C]/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-700 font-bold text-sm shrink-0">
+                <div className="w-9 h-9 rounded-full bg-[#FBAE0C]/15 border border-[#FBAE0C]/40 flex items-center justify-center text-[#F78424] font-bold text-sm shrink-0">
                   {result.rank === 1 ? "🥇" : `#${result.rank}`}
                 </div>
                 <div>
@@ -247,7 +247,7 @@ export function ResultClient({
               </div>
 
               <Link href={`/challenges/${submission.challengeSlug}/leaderboard`}>
-                <Button size="sm" variant="outline" className="text-xs font-medium border-amber-300 hover:bg-amber-100/50">
+                <Button size="sm" variant="outline" className="text-xs font-medium border-[#FBAE0C]/40 text-[#F78424] hover:bg-[#FBAE0C]/10">
                   View Leaderboard
                 </Button>
               </Link>
@@ -281,7 +281,7 @@ export function ResultClient({
                   }`}
                 >
                   <span className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#09C899]" />
                     Test Suite Results ({result.correctnessPassed}/{result.correctnessTotal})
                   </span>
                 </button>
@@ -293,7 +293,7 @@ export function ResultClient({
                   className="text-slate-600 hover:text-slate-900 flex items-center gap-1 text-xs"
                 >
                   {copied ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <Check className="w-3.5 h-3.5 text-[#09C899]" />
                   ) : (
                     <Copy className="w-3.5 h-3.5" />
                   )}
@@ -327,33 +327,33 @@ export function ResultClient({
             {/* Test Suite Breakdown Content */}
             {activeTab === "testcases" && (
               <div className="p-4 bg-white space-y-2.5 font-mono text-xs">
-                <div className="p-2.5 rounded-lg bg-emerald-50/60 border border-emerald-100 flex items-center justify-between text-slate-700">
+                <div className="p-2.5 rounded-lg bg-[#09C899]/10 border border-[#09C899]/20 flex items-center justify-between text-slate-700">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-[#09C899] shrink-0" />
                     <span className="font-semibold">Test Suite 1: O(1) Hash Map Primitives</span>
                   </div>
-                  <span className="text-emerald-700 font-bold">PASS</span>
+                  <span className="text-[#0AA793] font-bold">PASS</span>
                 </div>
-                <div className="p-2.5 rounded-lg bg-emerald-50/60 border border-emerald-100 flex items-center justify-between text-slate-700">
+                <div className="p-2.5 rounded-lg bg-[#09C899]/10 border border-[#09C899]/20 flex items-center justify-between text-slate-700">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-[#09C899] shrink-0" />
                     <span className="font-semibold">Test Suite 2: Passive & Active TTL Key Expiration</span>
                   </div>
-                  <span className="text-emerald-700 font-bold">PASS</span>
+                  <span className="text-[#0AA793] font-bold">PASS</span>
                 </div>
-                <div className="p-2.5 rounded-lg bg-emerald-50/60 border border-emerald-100 flex items-center justify-between text-slate-700">
+                <div className="p-2.5 rounded-lg bg-[#09C899]/10 border border-[#09C899]/20 flex items-center justify-between text-slate-700">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-[#09C899] shrink-0" />
                     <span className="font-semibold">Test Suite 3: Write-Ahead Log (WAL) Crash Recovery</span>
                   </div>
-                  <span className="text-emerald-700 font-bold">PASS</span>
+                  <span className="text-[#0AA793] font-bold">PASS</span>
                 </div>
-                <div className="p-2.5 rounded-lg bg-emerald-50/60 border border-emerald-100 flex items-center justify-between text-slate-700">
+                <div className="p-2.5 rounded-lg bg-[#09C899]/10 border border-[#09C899]/20 flex items-center justify-between text-slate-700">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-[#09C899] shrink-0" />
                     <span className="font-semibold">Test Suite 4: Adversarial 16-Worker Concurrency Stress</span>
                   </div>
-                  <span className="text-emerald-700 font-bold">PASS</span>
+                  <span className="text-[#0AA793] font-bold">PASS</span>
                 </div>
               </div>
             )}

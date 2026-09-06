@@ -69,12 +69,12 @@ export function InvalidationClient({
           disabled={loading}
           variant="outline"
           size="sm"
-          className="border-emerald-300 text-emerald-700 hover:bg-emerald-50 text-xs font-semibold gap-1.5"
+          className="border-[#09C899]/30 text-[#0AA793] hover:bg-[#09C899]/10 text-xs font-semibold gap-1.5"
         >
           {loading ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
           ) : (
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            <ShieldCheck className="w-3.5 h-3.5 text-[#09C899]" />
           )}
           <span>Restore Benchmark Validity</span>
         </Button>

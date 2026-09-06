@@ -28,7 +28,7 @@ export default async function AdminChallengesPage() {
           </p>
         </div>
         <Link href="/admin/challenges/new">
-          <Button size="sm" className="bg-[#2d7cf6] hover:bg-[#2065d1] text-white">
+          <Button size="sm" className="bg-[#099BE9] hover:bg-[#1984E9] text-white">
             <Plus className="w-4 h-4 mr-1.5" />
             Create Challenge
           </Button>

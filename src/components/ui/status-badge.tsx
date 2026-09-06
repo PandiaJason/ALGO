@@ -26,14 +26,14 @@ export function StatusBadge({ status }: { status: SubmissionStatus }) {
     case "BENCHMARKING":
       return (
         <Badge variant="blue" className="gap-1.5 font-normal animate-pulse">
-          <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
+          <Loader2 className="w-3 h-3 animate-spin text-[#099BE9]" />
           <span className="capitalize">{status.toLowerCase()}</span>
         </Badge>
       );
     case "COMPLETED":
       return (
         <Badge variant="success" className="gap-1.5 font-medium">
-          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+          <CheckCircle2 className="w-3 h-3 text-[#09C899]" />
           <span>Verified</span>
         </Badge>
       );
@@ -48,7 +48,7 @@ export function StatusBadge({ status }: { status: SubmissionStatus }) {
     case "ERROR":
       return (
         <Badge variant="warning" className="gap-1.5 font-medium">
-          <AlertCircle className="w-3 h-3 text-amber-600" />
+          <AlertCircle className="w-3 h-3 text-[#FBAE0C]" />
           <span className="capitalize">{status.toLowerCase()}</span>
         </Badge>
       );

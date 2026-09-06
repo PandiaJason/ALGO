@@ -302,7 +302,7 @@ export function WorkspaceClient({
             <span className="text-sm font-semibold text-slate-900">
               {challenge.title}
             </span>
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-amber-50 text-amber-700 border border-amber-200">
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[#FBAE0C]/10 text-[#F78424] border border-[#FBAE0C]/30">
               Level {selectedLevel}: {currentLevelInfo.shortTitle}
             </span>
           </div>
@@ -315,14 +315,14 @@ export function WorkspaceClient({
             disabled={isRunningTests || isSubmitting}
             className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 transition-colors disabled:opacity-50 cursor-pointer"
           >
-            <Play className="w-3.5 h-3.5 text-blue-600 fill-blue-600" />
+            <Play className="w-3.5 h-3.5 text-[#099BE9] fill-[#099BE9]" />
             <span>{isRunningTests ? "Running..." : "Run"}</span>
           </button>
 
           <button
             onClick={handleSubmit}
             disabled={isSubmitting || isRunningTests}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-[#09C899] hover:bg-[#0AA793] text-white shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
           >
             <Send className="w-3 h-3" />
             <span>{isSubmitting ? "Submitting..." : "Submit"}</span>
@@ -336,7 +336,7 @@ export function WorkspaceClient({
               href={`/profile/${user.username}`}
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-slate-100 text-xs font-mono text-slate-700 transition-colors"
             >
-              <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-[10px] text-white font-bold">
+              <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#099BE9] to-[#09C899] flex items-center justify-center text-[10px] text-white font-bold">
                 {user.username.charAt(0).toUpperCase()}
               </div>
               <span className="font-semibold">{user.username}</span>
@@ -359,7 +359,7 @@ export function WorkspaceClient({
                   : "text-slate-500 hover:text-slate-900"
               }`}
             >
-              <FileText className="w-3.5 h-3.5 text-blue-600" />
+              <FileText className="w-3.5 h-3.5 text-[#099BE9]" />
               <span>Description</span>
             </button>
 
@@ -371,7 +371,7 @@ export function WorkspaceClient({
                   : "text-slate-500 hover:text-slate-900"
               }`}
             >
-              <Target className="w-3.5 h-3.5 text-amber-600" />
+              <Target className="w-3.5 h-3.5 text-[#FBAE0C]" />
               <span>Missions</span>
             </button>
 
@@ -383,7 +383,7 @@ export function WorkspaceClient({
                   : "text-slate-500 hover:text-slate-900"
               }`}
             >
-              <History className="w-3.5 h-3.5 text-emerald-600" />
+              <History className="w-3.5 h-3.5 text-[#09C899]" />
               <span>Submissions ({pastSubmissions.length})</span>
             </button>
 
@@ -395,7 +395,7 @@ export function WorkspaceClient({
                   : "text-slate-500 hover:text-slate-900"
               }`}
             >
-              <Trophy className="w-3.5 h-3.5 text-purple-600" />
+              <Trophy className="w-3.5 h-3.5 text-[#8647E2]" />
               <span>Leaderboard</span>
             </button>
           </div>
@@ -419,10 +419,10 @@ export function WorkspaceClient({
                   const outcome = challengeData?.finalOutcome || spec.finalOutcome || (isKv ? PROJECT_SCOPE.finalOutcome : overview);
 
                   return (
-                    <div className="rounded-xl border border-blue-200/90 bg-gradient-to-br from-blue-50/70 via-slate-50 to-indigo-50/40 p-4 shadow-2xs space-y-3">
+                    <div className="rounded-xl border border-[#099BE9]/30 bg-gradient-to-br from-[#099BE9]/10 via-slate-50 to-[#8647E2]/10 p-4 shadow-2xs space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-blue-600 text-white shadow-2xs">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-[#099BE9] text-white shadow-2xs">
                             {badge}
                           </span>
                           <span className="text-xs font-bold text-slate-900">
@@ -431,7 +431,7 @@ export function WorkspaceClient({
                         </div>
                         <button
                           onClick={() => setIsScopeExpanded(!isScopeExpanded)}
-                          className="text-xs font-mono text-blue-700 hover:text-blue-900 flex items-center gap-1 font-semibold cursor-pointer"
+                          className="text-xs font-mono text-[#099BE9] hover:text-[#1984E9] flex items-center gap-1 font-semibold cursor-pointer"
                         >
                           <span>{isScopeExpanded ? "Collapse Scope" : "Explore Full System Scope"}</span>
                           {isScopeExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -443,7 +443,7 @@ export function WorkspaceClient({
                       </p>
 
                       {isScopeExpanded && (
-                        <div className="space-y-3 pt-2 border-t border-blue-100 animate-in fade-in duration-200">
+                        <div className="space-y-3 pt-2 border-t border-[#099BE9]/20 animate-in fade-in duration-200">
                           <div>
                             <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                               The {layers.length} Architectural Engine Layers
@@ -455,13 +455,13 @@ export function WorkspaceClient({
                                   onClick={() => handleSelectLevel(layer.number)}
                                   className={`p-2.5 rounded-lg border text-xs cursor-pointer transition-all ${
                                     selectedLevel === layer.number
-                                      ? "bg-white border-blue-400 shadow-2xs ring-1 ring-blue-300"
+                                      ? "bg-white border-[#099BE9] shadow-2xs ring-1 ring-[#099BE9]/30"
                                       : "bg-white/80 border-slate-200/80 hover:bg-white hover:border-slate-300"
                                   }`}
                                 >
                                   <div className="flex items-center justify-between font-bold text-slate-900">
                                     <span>Layer {layer.number}: {layer.name}</span>
-                                    <span className="text-[10px] font-mono text-blue-600">L{layer.number}</span>
+                                    <span className="text-[10px] font-mono text-[#099BE9]">L{layer.number}</span>
                                   </div>
                                   <div className="text-[11px] text-slate-500 font-medium">{layer.focus}</div>
                                   <p className="text-[11px] text-slate-600 mt-1 leading-snug">{layer.description}</p>
@@ -475,12 +475,12 @@ export function WorkspaceClient({
                           </div>
 
                           {/* Capstone Outcome Callout */}
-                          <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200/80 text-emerald-950 text-xs space-y-1">
-                            <div className="font-bold flex items-center gap-1.5 font-mono text-[11px] text-emerald-800 uppercase">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <div className="p-3 rounded-lg bg-[#09C899]/10 border border-[#09C899]/30 text-slate-900 text-xs space-y-1">
+                            <div className="font-bold flex items-center gap-1.5 font-mono text-[11px] text-[#0AA793] uppercase">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-[#09C899]" />
                               <span>Final System Outcome & Target Benchmark</span>
                             </div>
-                            <p className="text-emerald-900/90 leading-relaxed">
+                            <p className="text-slate-800 leading-relaxed">
                               {outcome}
                             </p>
                           </div>
@@ -498,10 +498,10 @@ export function WorkspaceClient({
                     </h1>
                     <span className={`px-2.5 py-0.5 rounded text-xs font-semibold font-mono border ${
                       currentLevelInfo.difficulty === "Easy"
-                        ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                        ? "text-[#0AA793] bg-[#09C899]/10 border-[#09C899]/30"
                         : currentLevelInfo.difficulty === "Medium"
-                        ? "text-amber-700 bg-amber-50 border-amber-200"
-                        : "text-rose-700 bg-rose-50 border-rose-200"
+                        ? "text-[#F78424] bg-[#FBAE0C]/10 border-[#FBAE0C]/30"
+                        : "text-[#8647E2] bg-[#8647E2]/10 border-[#8647E2]/30"
                     }`}>
                       {currentLevelInfo.difficulty}
                     </span>
@@ -529,8 +529,8 @@ export function WorkspaceClient({
                   </div>
 
                   {/* Level Mission Banner */}
-                  <div className="p-3 rounded-lg bg-blue-50/70 border border-blue-200/70 text-blue-900 text-xs font-medium space-y-1">
-                    <div className="font-bold flex items-center gap-1.5 font-mono text-[11px] text-blue-700 uppercase">
+                  <div className="p-3 rounded-lg bg-[#099BE9]/10 border border-[#099BE9]/30 text-slate-900 text-xs font-medium space-y-1">
+                    <div className="font-bold flex items-center gap-1.5 font-mono text-[11px] text-[#099BE9] uppercase">
                       <span>Level {selectedLevel}: {currentLevelInfo.title}</span>
                     </div>
                     <p className="text-slate-700 leading-relaxed">
@@ -540,10 +540,10 @@ export function WorkspaceClient({
                 </div>
 
                 {/* 🎓 The Learning Loop & Mental Model Section */}
-                <div className="rounded-xl border border-purple-200/90 bg-gradient-to-br from-purple-50/50 via-slate-50 to-blue-50/30 p-4 space-y-3.5 shadow-2xs">
+                <div className="rounded-xl border border-[#8647E2]/30 bg-gradient-to-br from-[#8647E2]/10 via-slate-50 to-[#099BE9]/10 p-4 space-y-3.5 shadow-2xs">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-md bg-purple-600 text-white flex items-center justify-center font-bold text-xs">
+                      <div className="w-6 h-6 rounded-md bg-[#8647E2] text-white flex items-center justify-center font-bold text-xs">
                         <Lightbulb className="w-3.5 h-3.5" />
                       </div>
                       <div>
@@ -555,19 +555,19 @@ export function WorkspaceClient({
                         </p>
                       </div>
                     </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-semibold border border-purple-200">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#8647E2]/10 text-[#8647E2] font-semibold border border-[#8647E2]/30">
                       Mental Model L{selectedLevel}
                     </span>
                   </div>
 
                   {/* Core Bottleneck */}
                   {currentLevelInfo.learningLoop?.bottleneck && (
-                    <div className="p-3 rounded-lg bg-amber-50/80 border border-amber-200/80 text-amber-900 space-y-1">
-                      <div className="font-bold font-mono text-[10px] text-amber-800 uppercase flex items-center gap-1.5">
-                        <Compass className="w-3.5 h-3.5 text-amber-600" />
+                    <div className="p-3 rounded-lg bg-[#FBAE0C]/10 border border-[#FBAE0C]/30 text-slate-900 space-y-1">
+                      <div className="font-bold font-mono text-[10px] text-[#F78424] uppercase flex items-center gap-1.5">
+                        <Compass className="w-3.5 h-3.5 text-[#FBAE0C]" />
                         <span>The Real-World Engineering Bottleneck</span>
                       </div>
-                      <p className="text-xs text-amber-950 leading-relaxed font-medium">
+                      <p className="text-xs text-slate-800 leading-relaxed font-medium">
                         {currentLevelInfo.learningLoop.bottleneck}
                       </p>
                     </div>
@@ -582,7 +582,7 @@ export function WorkspaceClient({
                       <div className="space-y-1.5">
                         {currentLevelInfo.learningLoop.whatYouUnderstand.map((concept: string, idx: number) => (
                           <div key={idx} className="flex items-start gap-2 p-2 rounded-md bg-white border border-slate-200/80 text-xs text-slate-800">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-purple-600 shrink-0 mt-0.5" />
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#8647E2] shrink-0 mt-0.5" />
                             <span className="leading-snug">{concept}</span>
                           </div>
                         ))}
@@ -592,17 +592,17 @@ export function WorkspaceClient({
 
                   {/* Real-World Production Parity & Summary */}
                   {currentLevelInfo.learningLoop?.productionParity && (
-                    <div className="pt-2 border-t border-purple-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px]">
+                    <div className="pt-2 border-t border-[#8647E2]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px]">
                       <div className="flex items-center gap-1.5 text-slate-600">
-                        <Database className="w-3.5 h-3.5 text-purple-600" />
+                        <Database className="w-3.5 h-3.5 text-[#8647E2]" />
                         <span className="font-semibold text-slate-700">Production Parity:</span>
                         <span>{currentLevelInfo.learningLoop.productionParity}</span>
                       </div>
                     </div>
                   )}
                   {currentLevelInfo.learningLoop?.outcomeSummary && (
-                    <div className="p-2 rounded-lg bg-blue-50 border border-blue-200 text-blue-900 text-xs font-medium">
-                      <span className="font-bold font-mono text-[10px] text-blue-700 uppercase mr-1.5">Takeaway:</span>
+                    <div className="p-2 rounded-lg bg-[#099BE9]/10 border border-[#099BE9]/30 text-slate-900 text-xs font-medium">
+                      <span className="font-bold font-mono text-[10px] text-[#099BE9] uppercase mr-1.5">Takeaway:</span>
                       {currentLevelInfo.learningLoop.outcomeSummary}
                     </div>
                   )}
@@ -623,7 +623,7 @@ export function WorkspaceClient({
                     <div className="border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs divide-y divide-slate-100">
                       {currentLevelInfo.operations.map((op: any, idx: number) => (
                         <div key={idx} className="p-3 flex flex-col sm:flex-row sm:items-start gap-2 hover:bg-slate-50/60 transition-colors">
-                          <code className="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 font-mono text-blue-700 text-xs shrink-0 font-medium">
+                          <code className="px-2 py-0.5 rounded bg-[#099BE9]/10 border border-[#099BE9]/30 font-mono text-[#099BE9] text-xs shrink-0 font-medium">
                             {op.cmd}
                           </code>
                           <span className="text-slate-600 text-xs leading-relaxed">
@@ -644,7 +644,7 @@ export function WorkspaceClient({
                     <div className="p-4 rounded-lg bg-[#fafafa] border border-slate-200 space-y-2">
                       {currentLevelInfo.durabilityRules.map((rule: any, idx: number) => (
                         <div key={idx} className="flex items-start gap-2 text-xs text-slate-700">
-                          <span className="text-emerald-600 font-bold font-mono">•</span>
+                          <span className="text-[#09C899] font-bold font-mono">•</span>
                           <span>{rule}</span>
                         </div>
                       ))}
@@ -669,7 +669,7 @@ export function WorkspaceClient({
                           </div>
                           <div className="pt-2 border-t border-slate-100">
                             <div className="text-slate-400 font-semibold mb-0.5">Output:</div>
-                            <pre className="text-emerald-700 font-semibold whitespace-pre-wrap">{ex.output}</pre>
+                            <pre className="text-[#0AA793] font-semibold whitespace-pre-wrap">{ex.output}</pre>
                           </div>
                         </div>
                       </div>
@@ -712,7 +712,7 @@ export function WorkspaceClient({
                         onClick={() => handleSelectLevel(num)}
                         className={`p-4 rounded-xl border cursor-pointer transition-all ${
                           isActive
-                            ? "bg-blue-50/70 border-blue-300 shadow-2xs ring-1 ring-blue-300"
+                            ? "bg-[#099BE9]/10 border-[#099BE9]/40 shadow-2xs ring-1 ring-[#099BE9]/30"
                             : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-2xs"
                         }`}
                       >
@@ -723,16 +723,16 @@ export function WorkspaceClient({
                             </span>
                             <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold ${
                               lvlInfo.difficulty === "Easy"
-                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                ? "bg-[#09C899]/10 text-[#0AA793] border border-[#09C899]/30"
                                 : lvlInfo.difficulty === "Medium"
-                                ? "bg-amber-50 text-amber-700 border border-amber-200"
-                                : "bg-rose-50 text-rose-700 border border-rose-200"
+                                ? "bg-[#FBAE0C]/10 text-[#F78424] border border-[#FBAE0C]/30"
+                                : "bg-[#8647E2]/10 text-[#8647E2] border border-[#8647E2]/30"
                             }`}>
                               {lvlInfo.difficulty}
                             </span>
                           </div>
                           {isActive ? (
-                            <span className="text-[10px] font-mono font-semibold text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-full">
+                            <span className="text-[10px] font-mono font-semibold text-[#099BE9] bg-[#099BE9]/15 px-2.5 py-0.5 rounded-full">
                               Active Mission
                             </span>
                           ) : (
@@ -748,8 +748,8 @@ export function WorkspaceClient({
 
                         {/* Learning Loop Outcome Summary */}
                         {lvlInfo.learningLoop?.outcomeSummary && (
-                          <div className="mb-2.5 p-2 rounded-md bg-purple-50/60 border border-purple-200/60 text-[11px] text-purple-950 space-y-1">
-                            <div className="font-bold flex items-center gap-1 text-[10px] font-mono uppercase text-purple-700">
+                          <div className="mb-2.5 p-2 rounded-md bg-[#8647E2]/10 border border-[#8647E2]/30 text-[11px] text-slate-900 space-y-1">
+                            <div className="font-bold flex items-center gap-1 text-[10px] font-mono uppercase text-[#8647E2]">
                               <Lightbulb className="w-3 h-3" />
                               <span>What You Understand & Master</span>
                             </div>
@@ -798,8 +798,8 @@ export function WorkspaceClient({
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
                             {sub.isCorrect ? (
-                              <span className="flex items-center gap-1 text-emerald-700 font-bold text-xs">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Accepted
+                              <span className="flex items-center gap-1 text-[#0AA793] font-bold text-xs">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-[#09C899]" /> Accepted
                               </span>
                             ) : (
                               <span className="flex items-center gap-1 text-rose-700 font-bold text-xs">
@@ -843,10 +843,10 @@ export function WorkspaceClient({
                           <div
                             className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
                               lead.rank === 1
-                                ? "bg-amber-100 text-amber-800 border border-amber-300"
+                                ? "bg-[#FBAE0C]/15 text-[#F78424] border border-[#FBAE0C]/30"
                                 : lead.rank === 2
                                 ? "bg-slate-200 text-slate-700 border border-slate-300"
-                                : "bg-slate-100 text-slate-600"
+                                : "bg-[#8647E2]/10 text-[#8647E2] border border-[#8647E2]/30"
                             }`}
                           >
                             {lead.rank}
@@ -858,7 +858,7 @@ export function WorkspaceClient({
                             </div>
                           </div>
                         </div>
-                        <div className="text-xs font-mono font-bold text-emerald-700">
+                        <div className="text-xs font-mono font-bold text-[#0AA793]">
                           {lead.score}x
                         </div>
                       </div>
@@ -906,7 +906,7 @@ export function WorkspaceClient({
                 className="p-1.5 rounded-md hover:bg-slate-200 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
                 title="Copy Code"
               >
-                {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                {copied ? <Check className="w-4 h-4 text-[#09C899]" /> : <Copy className="w-4 h-4" />}
               </button>
 
               <button
@@ -1011,14 +1011,14 @@ export function WorkspaceClient({
                         value={customInput}
                         onChange={(e) => setCustomInput(e.target.value)}
                         rows={3}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-mono text-slate-900 focus:outline-none focus:border-blue-500 resize-none shadow-2xs"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-mono text-slate-900 focus:outline-none focus:border-[#099BE9] resize-none shadow-2xs"
                       />
                     </div>
 
                     {sampleCases[selectedCaseIndex]?.expected && (
                       <div className="space-y-1">
                         <div className="text-[11px] text-slate-500 font-sans font-semibold">Expected Output:</div>
-                        <pre className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-emerald-700 font-semibold whitespace-pre-wrap">
+                        <pre className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-[#0AA793] font-semibold whitespace-pre-wrap">
                           {sampleCases[selectedCaseIndex].expected}
                         </pre>
                       </div>
@@ -1029,7 +1029,7 @@ export function WorkspaceClient({
                 {consoleTab === "result" && (
                   <div className="space-y-3 font-sans">
                     {isRunningTests ? (
-                      <div className="flex items-center gap-2 text-blue-600 py-6 font-sans">
+                      <div className="flex items-center gap-2 text-[#099BE9] py-6 font-sans">
                         <Clock className="w-4 h-4 animate-spin" />
                         <span>Running tests inside isolated Docker sandbox...</span>
                       </div>
@@ -1038,8 +1038,8 @@ export function WorkspaceClient({
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             {testResult.passed === testResult.total ? (
-                              <span className="flex items-center gap-1.5 text-sm font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
-                                <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Accepted
+                              <span className="flex items-center gap-1.5 text-sm font-bold text-[#0AA793] bg-[#09C899]/10 px-2.5 py-1 rounded-md border border-[#09C899]/30">
+                                <CheckCircle2 className="w-4 h-4 text-[#09C899]" /> Accepted
                               </span>
                             ) : (
                               <span className="flex items-center gap-1.5 text-sm font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-md border border-rose-200">
@@ -1054,8 +1054,8 @@ export function WorkspaceClient({
                             </span>
                           </div>
 
-                          <span className="text-[11px] font-mono text-emerald-600 flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                          <span className="text-[11px] font-mono text-[#09C899] flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-[#09C899] animate-pulse" />
                             Docker Sandbox: Active
                           </span>
                         </div>
@@ -1071,14 +1071,14 @@ export function WorkspaceClient({
                                   className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${
                                     selectedResultCaseIndex === i
                                       ? c.passed
-                                        ? "bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-2xs font-semibold"
+                                        ? "bg-[#09C899]/10 text-[#0AA793] border border-[#09C899]/30 shadow-2xs font-semibold"
                                         : "bg-rose-50 text-rose-800 border border-rose-300 shadow-2xs font-semibold"
                                       : "bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200"
                                   }`}
                                 >
                                   <span
                                     className={`w-2 h-2 rounded-full ${
-                                      c.passed ? "bg-emerald-500" : "bg-rose-500"
+                                      c.passed ? "bg-[#09C899]" : "bg-rose-500"
                                     }`}
                                   />
                                   Case {i + 1}
@@ -1101,7 +1101,7 @@ export function WorkspaceClient({
                                     <span
                                       className={`text-[11px] font-bold px-2 py-0.5 rounded ${
                                         activeCase.passed
-                                          ? "text-emerald-700 bg-emerald-50 border border-emerald-200"
+                                          ? "text-[#0AA793] bg-[#09C899]/10 border border-[#09C899]/30"
                                           : "text-rose-700 bg-rose-50 border border-rose-200"
                                       }`}
                                     >
@@ -1142,7 +1142,7 @@ export function WorkspaceClient({
                                     <span className="text-[11px] text-slate-500 font-sans font-semibold">
                                       Expected Output:
                                     </span>
-                                    <pre className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-emerald-700 font-semibold whitespace-pre-wrap shadow-2xs">
+                                    <pre className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-[#0AA793] font-semibold whitespace-pre-wrap shadow-2xs">
                                       {activeCase.expected}
                                     </pre>
                                   </div>

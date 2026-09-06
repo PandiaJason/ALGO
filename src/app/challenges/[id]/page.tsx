@@ -164,15 +164,21 @@ export default async function ChallengeDetailPage({ params }: Props) {
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
                 {coreDef?.number ? `${coreDef.number}. ` : ""}{challenge.title}
               </h1>
-              <span className="px-2.5 py-0.5 rounded text-xs font-semibold font-mono border text-amber-600 bg-amber-50 border-amber-200">
+              <span className={`px-2.5 py-0.5 rounded text-xs font-semibold font-mono border ${
+                challenge.difficulty === "Easy"
+                  ? "text-[#0AA793] bg-[#09C899]/10 border-[#09C899]/30"
+                  : challenge.difficulty === "Medium"
+                  ? "text-[#F78424] bg-[#FBAE0C]/10 border-[#FBAE0C]/30"
+                  : "text-[#8647E2] bg-[#8647E2]/10 border-[#8647E2]/30"
+              }`}>
                 {challenge.difficulty}
               </span>
-              <span className="px-2.5 py-0.5 rounded text-xs font-semibold font-mono bg-blue-50 text-blue-700 border border-blue-200">
+              <span className="px-2.5 py-0.5 rounded text-xs font-semibold font-mono bg-[#099BE9]/10 text-[#099BE9] border border-[#099BE9]/30">
                 {levelsArray.length} Progressive Levels
               </span>
               {coreDef?.isFlagship && (
-                <span className="px-2.5 py-0.5 rounded text-xs font-semibold font-mono bg-cyan-50 text-cyan-700 border border-cyan-300 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3 text-cyan-600" />
+                <span className="px-2.5 py-0.5 rounded text-xs font-semibold font-mono bg-[#099BE9]/10 text-[#099BE9] border border-[#099BE9]/30 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-[#099BE9]" />
                   FLAGSHIP
                 </span>
               )}
@@ -189,7 +195,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
               <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-600 border border-slate-200/60">
                 Python 3.12, C++20
               </span>
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-[#09C899]/10 text-[#0AA793] border border-[#09C899]/30">
                 Target: {coreDef?.benchmarkMetrics[0] ?? ">100,000 ops/s"}
               </span>
             </div>
@@ -199,7 +205,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
           <div className="flex items-center gap-2.5">
             <Link href={`/challenges/${challenge.slug}/leaderboard`}>
               <Button variant="outline" size="sm" className="h-9 px-3 text-xs gap-1.5 border-slate-200 bg-white hover:bg-slate-50">
-                <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                <Trophy className="w-3.5 h-3.5 text-[#FBAE0C]" />
                 <span>Leaderboard</span>
               </Button>
             </Link>
@@ -243,7 +249,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
             <section className="p-6 rounded-2xl border border-slate-200/90 bg-white shadow-sm space-y-6">
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                 <div className="space-y-1.5 max-w-3xl">
-                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-50 border border-blue-200/60 text-[10px] font-mono font-bold uppercase tracking-wider text-blue-700">
+                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#099BE9]/10 border border-[#099BE9]/30 text-[10px] font-mono font-bold uppercase tracking-wider text-[#099BE9]">
                     <Sparkles className="w-3 h-3" />
                     {scopeBadge}
                   </div>
@@ -266,14 +272,14 @@ export default async function ChallengeDetailPage({ params }: Props) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs leading-relaxed text-slate-600 bg-slate-50/70 p-4 rounded-xl border border-slate-200/70">
                 <div>
                   <div className="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
-                    <Database className="w-3.5 h-3.5 text-blue-600" />
+                    <Database className="w-3.5 h-3.5 text-[#099BE9]" />
                     <span>What You Are Building</span>
                   </div>
                   <p>{scopeOverview}</p>
                 </div>
                 <div>
                   <div className="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
-                    <Zap className="w-3.5 h-3.5 text-amber-600" />
+                    <Zap className="w-3.5 h-3.5 text-[#FBAE0C]" />
                     <span>Why This Systems Engineering Loop Matters</span>
                   </div>
                   <p>{scopeWhyItMatters}</p>
@@ -284,7 +290,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
               <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between">
                   <div className="text-xs font-mono font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-blue-600" />
+                    <Layers className="w-4 h-4 text-[#099BE9]" />
                     <span>The {layers.length} Core Architectural Layers</span>
                   </div>
                   <span className="text-[11px] font-mono text-slate-400">
@@ -296,13 +302,13 @@ export default async function ChallengeDetailPage({ params }: Props) {
                   {layers.map((layer) => (
                     <div
                       key={layer.number}
-                      className="p-3.5 rounded-xl border border-slate-200 bg-white hover:border-blue-200 hover:shadow-xs transition-all space-y-2"
+                      className="p-3.5 rounded-xl border border-slate-200 bg-white hover:border-[#099BE9]/40 hover:shadow-xs transition-all space-y-2"
                     >
                       <div className="flex items-center justify-between">
                         <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
                           Layer {layer.number}
                         </span>
-                        <span className="text-[10px] font-mono text-blue-600 font-semibold truncate max-w-[150px]">
+                        <span className="text-[10px] font-mono text-[#099BE9] font-semibold truncate max-w-[150px]">
                           {layer.realWorldTech.split(",")[0]}
                         </span>
                       </div>
@@ -332,8 +338,8 @@ export default async function ChallengeDetailPage({ params }: Props) {
               {/* Target Outcome Benchmark Callout */}
               <div className="p-4 rounded-xl bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1">
-                  <div className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  <div className="text-[10px] font-mono font-bold text-[#FBAE0C] uppercase tracking-wider flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#09C899]" />
                     <span>Capstone Target Outcome</span>
                   </div>
                   <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
@@ -343,15 +349,15 @@ export default async function ChallengeDetailPage({ params }: Props) {
                 <div className="flex items-center gap-3 shrink-0 font-mono text-center">
                   <div className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/15">
                     <div className="text-[10px] text-slate-400">THROUGHPUT</div>
-                    <div className="text-sm font-bold text-emerald-400">{targetMetric1}</div>
+                    <div className="text-sm font-bold text-[#09C899]">{targetMetric1}</div>
                   </div>
                   <div className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/15">
                     <div className="text-[10px] text-slate-400">LATENCY</div>
-                    <div className="text-sm font-bold text-cyan-400">{targetMetric2}</div>
+                    <div className="text-sm font-bold text-[#099BE9]">{targetMetric2}</div>
                   </div>
                   <div className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/15">
                     <div className="text-[10px] text-slate-400">RESOURCE</div>
-                    <div className="text-sm font-bold text-amber-400">{targetMetric3}</div>
+                    <div className="text-sm font-bold text-[#FBAE0C]">{targetMetric3}</div>
                   </div>
                 </div>
               </div>
@@ -369,7 +375,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div>
                   <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <Cpu className="w-5 h-5 text-blue-600" />
+                    <Cpu className="w-5 h-5 text-[#099BE9]" />
                     <span>Progressive Curriculum & The Learning Loop</span>
                   </h2>
                   <p className="text-xs text-slate-500 mt-1">
@@ -402,10 +408,10 @@ export default async function ChallengeDetailPage({ params }: Props) {
                             <span
                               className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold ${
                                 lvl.difficulty === "Easy"
-                                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                  ? "bg-[#09C899]/10 text-[#0AA793] border border-[#09C899]/30"
                                   : lvl.difficulty === "Medium"
-                                  ? "bg-amber-50 text-amber-700 border border-amber-200"
-                                  : "bg-rose-50 text-rose-700 border border-rose-200"
+                                  ? "bg-[#FBAE0C]/10 text-[#F78424] border border-[#FBAE0C]/30"
+                                  : "bg-[#8647E2]/10 text-[#8647E2] border border-[#8647E2]/30"
                               }`}
                             >
                               {lvl.difficulty}
@@ -419,7 +425,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
 
                       <Link
                         href={`/challenges/${challenge.slug}/workspace`}
-                        className="inline-flex items-center gap-1 text-xs font-mono text-blue-600 hover:text-blue-800 font-bold shrink-0 self-start sm:self-auto"
+                        className="inline-flex items-center gap-1 text-xs font-mono text-[#099BE9] hover:text-[#1984E9] font-bold shrink-0 self-start sm:self-auto"
                       >
                         <span>Enter Workspace</span>
                         <ArrowRight className="w-3.5 h-3.5" />
@@ -463,7 +469,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
 
                     {/* The Learning Loop Card for this Level (if present) */}
                     {lvl.learningLoop && (
-                      <div className="p-3.5 rounded-lg border border-blue-100/80 bg-blue-50/40 space-y-3">
+                      <div className="p-3.5 rounded-lg border border-[#099BE9]/20 bg-[#099BE9]/5 space-y-3">
                         {/* Engineering Bottleneck */}
                         {lvl.learningLoop.bottleneck && (
                           <div className="space-y-1">
@@ -479,15 +485,15 @@ export default async function ChallengeDetailPage({ params }: Props) {
 
                         {/* What You Understand & Master */}
                         {Array.isArray(lvl.learningLoop.whatYouUnderstand) && (
-                          <div className="space-y-1.5 pt-1 border-t border-blue-100">
-                            <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-blue-800">
-                              <Lightbulb className="w-3 h-3 text-amber-600" />
+                          <div className="space-y-1.5 pt-1 border-t border-[#099BE9]/20">
+                            <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-[#099BE9]">
+                              <Lightbulb className="w-3 h-3 text-[#FBAE0C]" />
                               <span>What You Understand & Master</span>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
                               {lvl.learningLoop.whatYouUnderstand.map((concept: string, cIdx: number) => (
                                 <div key={cIdx} className="flex items-start gap-1.5">
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-[#099BE9] shrink-0 mt-0.5" />
                                   <span className="leading-snug">{concept}</span>
                                 </div>
                               ))}
@@ -497,10 +503,10 @@ export default async function ChallengeDetailPage({ params }: Props) {
 
                         {/* Production Parity & Outcome Takeaway */}
                         {(lvl.learningLoop.productionParity || lvl.learningLoop.outcomeSummary) && (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-blue-100 text-[11px]">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-[#099BE9]/20 text-[11px]">
                             {lvl.learningLoop.productionParity && (
-                              <div className="flex items-start gap-1.5 bg-white/70 p-2 rounded border border-blue-100/70">
-                                <Server className="w-3.5 h-3.5 text-indigo-600 shrink-0 mt-0.5" />
+                              <div className="flex items-start gap-1.5 bg-white/70 p-2 rounded border border-[#099BE9]/20">
+                                <Server className="w-3.5 h-3.5 text-[#8647E2] shrink-0 mt-0.5" />
                                 <div>
                                   <span className="font-bold text-slate-800 font-mono block">Real-World Parity:</span>
                                   <span className="text-slate-600">{lvl.learningLoop.productionParity}</span>
@@ -509,8 +515,8 @@ export default async function ChallengeDetailPage({ params }: Props) {
                             )}
 
                             {lvl.learningLoop.outcomeSummary && (
-                              <div className="flex items-start gap-1.5 bg-white/70 p-2 rounded border border-blue-100/70">
-                                <Zap className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                              <div className="flex items-start gap-1.5 bg-white/70 p-2 rounded border border-[#099BE9]/20">
+                                <Zap className="w-3.5 h-3.5 text-[#09C899] shrink-0 mt-0.5" />
                                 <div>
                                   <span className="font-bold text-slate-800 font-mono block">Outcome Takeaway:</span>
                                   <span className="text-slate-600">{lvl.learningLoop.outcomeSummary}</span>
@@ -554,8 +560,8 @@ export default async function ChallengeDetailPage({ params }: Props) {
                   <tbody className="divide-y divide-slate-100 bg-white">
                     {apiSpec.map((item, idx) => (
                       <tr key={idx} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-2 px-3 font-bold text-blue-700">{item.command}</td>
-                        <td className="py-2 px-3 text-emerald-700">{item.returns}</td>
+                        <td className="py-2 px-3 font-bold text-[#099BE9]">{item.command}</td>
+                        <td className="py-2 px-3 text-[#0AA793]">{item.returns}</td>
                         <td className="py-2 px-3 font-sans text-slate-600 text-xs">{item.description}</td>
                       </tr>
                     ))}
@@ -572,7 +578,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
                 {whatYouLearn.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-2 p-2.5 rounded-lg bg-slate-50 border border-slate-200/60 font-medium">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-[#09C899] shrink-0" />
                     <span>{item}</span>
                   </div>
                 ))}
@@ -662,12 +668,12 @@ export default async function ChallengeDetailPage({ params }: Props) {
                     72,296 ops/s
                   </div>
                 </div>
-                <div className="p-2.5 rounded-lg bg-emerald-50/70 border border-emerald-200/70">
-                  <div className="text-[11px] text-emerald-700">HIGH-PERFORMANCE TARGET</div>
-                  <div className="text-base font-bold text-emerald-800 mt-0.5">
+                <div className="p-2.5 rounded-lg bg-[#09C899]/10 border border-[#09C899]/30">
+                  <div className="text-[11px] text-[#0AA793] font-semibold">HIGH-PERFORMANCE TARGET</div>
+                  <div className="text-base font-bold text-[#0AA793] mt-0.5">
                     &gt; 100,000 ops/s
                   </div>
-                  <div className="text-[10px] text-emerald-600 mt-0.5">
+                  <div className="text-[10px] text-[#09C899] mt-0.5 font-medium">
                     Sub-0.20ms p99 latency
                   </div>
                 </div>
@@ -676,7 +682,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
               <div className="pt-2">
                 <Link href="/leaderboard" className="w-full block">
                   <Button variant="outline" className="w-full text-xs font-semibold h-9 border-slate-200 bg-white hover:bg-slate-50 gap-1.5">
-                    <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                    <Trophy className="w-3.5 h-3.5 text-[#FBAE0C]" />
                     <span>View Global Leaderboard</span>
                   </Button>
                 </Link>

@@ -60,7 +60,7 @@ export function UserRoleSelector({ userId, initialRole, userEmail, adminEmail }:
     return (
       <div className="flex items-center gap-1.5 font-sans">
         <Badge variant="purple" className="text-[10px] gap-1 py-0.5 px-2 font-semibold">
-          <Shield className="w-3 h-3 text-purple-600 inline" />
+          <Shield className="w-3 h-3 text-[#8647E2] inline" />
           ADMIN (OWNER)
         </Badge>
       </div>
@@ -76,8 +76,8 @@ export function UserRoleSelector({ userId, initialRole, userEmail, adminEmail }:
           disabled={loading}
           className={`text-xs font-semibold py-1 pl-2.5 pr-7 rounded border transition-colors focus:outline-none focus:ring-1 cursor-pointer disabled:opacity-50 ${
             role === "ADMIN"
-              ? "bg-purple-50 text-purple-700 border-purple-200 focus:ring-purple-400"
-              : "bg-slate-50 text-slate-700 border-slate-200 focus:ring-blue-400 hover:bg-slate-100"
+              ? "bg-[#8647E2]/10 text-[#8647E2] border-[#8647E2]/30 focus:ring-[#8647E2]"
+              : "bg-slate-50 text-slate-700 border-slate-200 focus:ring-[#099BE9] hover:bg-slate-100"
           }`}
         >
           <option value="STUDENT">STUDENT</option>
@@ -91,7 +91,7 @@ export function UserRoleSelector({ userId, initialRole, userEmail, adminEmail }:
       </div>
 
       {justUpdated && (
-        <span className="text-[11px] text-emerald-600 font-medium inline-flex items-center gap-0.5 animate-fade-in">
+        <span className="text-[11px] text-[#0AA793] font-medium inline-flex items-center gap-0.5 animate-fade-in">
           <Check className="w-3 h-3" /> Saved
         </span>
       )}

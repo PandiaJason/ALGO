@@ -46,12 +46,12 @@ export const ALGO_PHILOSOPHY = [
 ] as const;
 
 export const CHALLENGE_TYPES: Array<{ type: ChallengeType; label: string; desc: string; color: string }> = [
-  { type: "BUILD", label: "Build From Scratch", desc: "Construct real technology from first principles without black-box libraries.", color: "text-emerald-700 bg-emerald-50 border-emerald-200" },
-  { type: "FIX", label: "Fix The Slow Service", desc: "Here is a working production application that is slow. Profile and diagnose the bottleneck.", color: "text-amber-700 bg-amber-50 border-amber-200" },
+  { type: "BUILD", label: "Build From Scratch", desc: "Construct real technology from first principles without black-box libraries.", color: "text-[#0AA793] bg-[#09C899]/10 border-[#09C899]/30" },
+  { type: "FIX", label: "Fix The Slow Service", desc: "Here is a working production application that is slow. Profile and diagnose the bottleneck.", color: "text-[#F78424] bg-[#FBAE0C]/10 border-[#FBAE0C]/30" },
   { type: "BREAK", label: "Break Your System", desc: "Subject your implementation to 100× traffic, memory pressure, and hostile workloads.", color: "text-red-700 bg-red-50 border-red-200" },
-  { type: "OPTIMIZE", label: "Beat The Baseline", desc: "Everyone starts with the same baseline. Maximize ops/sec and squeeze p99 latency.", color: "text-blue-700 bg-blue-50 border-blue-200" },
-  { type: "SURVIVE", label: "Survive Failure", desc: "Survive abrupt host power cuts (SIGKILL), network partitions, and partial disk writes.", color: "text-purple-700 bg-purple-50 border-purple-200" },
-  { type: "INVENT", label: "Design The Better System", desc: "No single correct implementation. Submit custom architectures and prove them experimentally.", color: "text-indigo-700 bg-indigo-50 border-indigo-200" },
+  { type: "OPTIMIZE", label: "Beat The Baseline", desc: "Everyone starts with the same baseline. Maximize ops/sec and squeeze p99 latency.", color: "text-[#099BE9] bg-[#099BE9]/10 border-[#099BE9]/30" },
+  { type: "SURVIVE", label: "Survive Failure", desc: "Survive abrupt host power cuts (SIGKILL), network partitions, and partial disk writes.", color: "text-[#8647E2] bg-[#8647E2]/10 border-[#8647E2]/30" },
+  { type: "INVENT", label: "Design The Better System", desc: "No single correct implementation. Submit custom architectures and prove them experimentally.", color: "text-[#099BE9] bg-[#099BE9]/10 border-[#099BE9]/30" },
 ];
 
 export const DOMAINS: Record<EngineeringDomain, { label: string; description: string; count: number }> = {

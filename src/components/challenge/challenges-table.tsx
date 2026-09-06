@@ -73,7 +73,7 @@ export function ChallengesTable({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search problems..."
-            className="w-full pl-9 pr-4 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 text-slate-800 shadow-2xs"
+            className="w-full pl-9 pr-4 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-[#099BE9] text-slate-800 shadow-2xs"
           />
         </div>
       </div>
@@ -125,7 +125,7 @@ export function ChallengesTable({
                     {/* Status Icon */}
                     <td className="py-4 px-4 text-center">
                       {isSolved ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500 mx-auto" />
+                        <CheckCircle2 className="w-4 h-4 text-[#09C899] mx-auto" />
                       ) : (
                         <Circle className="w-4 h-4 text-slate-300 mx-auto" />
                       )}
@@ -136,11 +136,11 @@ export function ChallengesTable({
                       <div className="flex flex-col gap-1">
                         <Link
                           href={`/challenges/${challenge.slug}`}
-                          className="font-semibold text-slate-900 hover:text-blue-600 transition-colors text-sm flex items-center gap-2"
+                          className="font-semibold text-slate-900 hover:text-[#099BE9] transition-colors text-sm flex items-center gap-2"
                         >
                           <span>{challenge.number}. {challenge.title}</span>
                           {challenge.isFlagship && (
-                            <span className="text-[10px] font-mono font-bold px-2 py-0.2 rounded-full bg-cyan-50 text-cyan-700 border border-cyan-200">
+                            <span className="text-[10px] font-mono font-bold px-2 py-0.2 rounded-full bg-[#099BE9]/10 text-[#099BE9] border border-[#099BE9]/30">
                               FLAGSHIP
                             </span>
                           )}
@@ -165,7 +165,7 @@ export function ChallengesTable({
                     </td>
 
                     {/* Top Speed */}
-                    <td className="py-4 px-4 hidden md:table-cell font-mono font-medium text-emerald-600">
+                    <td className="py-4 px-4 hidden md:table-cell font-mono font-medium text-[#09C899]">
                       {topSpeed}
                     </td>
 
@@ -174,8 +174,10 @@ export function ChallengesTable({
                       <span
                         className={`px-2 py-0.5 rounded text-[11px] font-mono font-medium border ${
                           challenge.difficulty === "Hard"
-                            ? "bg-red-50 text-red-700 border-red-200"
-                            : "bg-amber-50 text-amber-700 border-amber-200"
+                            ? "bg-[#8647E2]/10 text-[#8647E2] border-[#8647E2]/30"
+                            : challenge.difficulty === "Medium"
+                            ? "bg-[#FBAE0C]/10 text-[#F78424] border-[#FBAE0C]/30"
+                            : "bg-[#09C899]/10 text-[#0AA793] border-[#09C899]/30"
                         }`}
                       >
                         {challenge.difficulty}
@@ -185,7 +187,7 @@ export function ChallengesTable({
                     {/* Action */}
                     <td className="py-4 px-4 text-right">
                       <Link href={`/challenges/${challenge.slug}/workspace`}>
-                        <button className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-white hover:bg-blue-600 transition-colors shadow-2xs inline-flex items-center gap-1.5 cursor-pointer">
+                        <button className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-white hover:bg-[#099BE9] transition-colors shadow-2xs inline-flex items-center gap-1.5 cursor-pointer">
                           <span>Solve Challenge</span>
                           <ArrowRight className="w-3 h-3" />
                         </button>

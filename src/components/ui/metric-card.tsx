@@ -36,8 +36,8 @@ export function MetricCard({
           <span
             className={cn(
               "text-xs font-semibold px-1.5 py-0.5 rounded font-mono",
-              trend === "positive" && "bg-emerald-50 text-emerald-700",
-              trend === "negative" && "bg-red-50 text-red-700",
+              trend === "positive" && "bg-[#09C899]/10 text-[#0AA793] border border-[#09C899]/30",
+              trend === "negative" && "bg-red-50 text-red-700 border border-red-200",
               trend === "neutral" && "bg-slate-100 text-slate-700"
             )}
           >

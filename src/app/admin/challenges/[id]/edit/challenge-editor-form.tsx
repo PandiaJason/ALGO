@@ -336,7 +336,7 @@ export function ChallengeEditorForm({
             onClick={handleSubmit}
             disabled={loading}
             size="sm"
-            className="h-8 bg-[#2d7cf6] hover:bg-[#2065d1] text-white gap-1.5 shadow-2xs cursor-pointer"
+            className="h-8 bg-[#099BE9] hover:bg-[#1984E9] text-white gap-1.5 shadow-2xs cursor-pointer"
           >
             {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
             Save Changes
@@ -352,8 +352,8 @@ export function ChallengeEditorForm({
       )}
 
       {success && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-md text-xs flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
+        <div className="p-3 bg-[#09C899]/10 border border-[#09C899]/30 text-[#0AA793] rounded-md text-xs flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 shrink-0 text-[#09C899]" />
           <span>{success}</span>
         </div>
       )}
@@ -365,7 +365,7 @@ export function ChallengeEditorForm({
           onClick={() => setActiveTab("spec")}
           className={`px-4 py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
             activeTab === "spec"
-              ? "border-[#2d7cf6] text-[#2d7cf6]"
+              ? "border-[#099BE9] text-[#099BE9]"
               : "border-transparent text-slate-500 hover:text-slate-900"
           }`}
         >
@@ -377,11 +377,11 @@ export function ChallengeEditorForm({
           onClick={() => setActiveTab("levels")}
           className={`px-4 py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
             activeTab === "levels"
-              ? "border-[#2d7cf6] text-[#2d7cf6]"
+              ? "border-[#099BE9] text-[#099BE9]"
               : "border-transparent text-slate-500 hover:text-slate-900"
           }`}
         >
-          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+          <Sparkles className="w-3.5 h-3.5 text-[#FBAE0C]" />
           2. Progressive Levels ({levels.length})
         </button>
         <button
@@ -389,7 +389,7 @@ export function ChallengeEditorForm({
           onClick={() => setActiveTab("code")}
           className={`px-4 py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
             activeTab === "code"
-              ? "border-[#2d7cf6] text-[#2d7cf6]"
+              ? "border-[#099BE9] text-[#099BE9]"
               : "border-transparent text-slate-500 hover:text-slate-900"
           }`}
         >
@@ -401,7 +401,7 @@ export function ChallengeEditorForm({
           onClick={() => setActiveTab("tests")}
           className={`px-4 py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
             activeTab === "tests"
-              ? "border-[#2d7cf6] text-[#2d7cf6]"
+              ? "border-[#099BE9] text-[#099BE9]"
               : "border-transparent text-slate-500 hover:text-slate-900"
           }`}
         >
@@ -413,7 +413,7 @@ export function ChallengeEditorForm({
           onClick={() => setActiveTab("bench")}
           className={`px-4 py-2 text-xs font-semibold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
             activeTab === "bench"
-              ? "border-[#2d7cf6] text-[#2d7cf6]"
+              ? "border-[#099BE9] text-[#099BE9]"
               : "border-transparent text-slate-500 hover:text-slate-900"
           }`}
         >
@@ -441,7 +441,7 @@ export function ChallengeEditorForm({
                       required
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      className="w-full text-xs px-3 py-2 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#2d7cf6] bg-white font-sans"
+                      className="w-full text-xs px-3 py-2 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#099BE9] bg-white font-sans"
                     />
                   </div>
 
@@ -452,7 +452,7 @@ export function ChallengeEditorForm({
                       required
                       value={slug}
                       onChange={(e) => setSlug(e.target.value)}
-                      className="w-full text-xs px-3 py-2 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#2d7cf6] bg-white font-mono"
+                      className="w-full text-xs px-3 py-2 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#099BE9] bg-white font-mono"
                     />
                   </div>
                 </div>
@@ -463,7 +463,7 @@ export function ChallengeEditorForm({
                     type="text"
                     value={tagline}
                     onChange={(e) => setTagline(e.target.value)}
-                    className="w-full text-xs px-3 py-2 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#2d7cf6] bg-white"
+                    className="w-full text-xs px-3 py-2 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#099BE9] bg-white"
                   />
                 </div>
 
@@ -474,7 +474,7 @@ export function ChallengeEditorForm({
                     required
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full text-xs px-3 py-2 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#2d7cf6] bg-white font-mono"
+                    className="w-full text-xs px-3 py-2 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#099BE9] bg-white font-mono"
                   />
                 </div>
 
@@ -484,7 +484,7 @@ export function ChallengeEditorForm({
                     <select
                       value={difficulty}
                       onChange={(e: any) => setDifficulty(e.target.value)}
-                      className="w-full text-xs px-3 py-2 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#2d7cf6] bg-white"
+                      className="w-full text-xs px-3 py-2 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#099BE9] bg-white"
                     >
                       <option value="BEGINNER">BEGINNER</option>
                       <option value="INTERMEDIATE">INTERMEDIATE</option>
@@ -498,7 +498,7 @@ export function ChallengeEditorForm({
                     <select
                       value={status}
                       onChange={(e: any) => setStatus(e.target.value)}
-                      className="w-full text-xs px-3 py-2 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#2d7cf6] bg-white"
+                      className="w-full text-xs px-3 py-2 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-[#099BE9] bg-white"
                     >
                       <option value="PUBLISHED">PUBLISHED (Visible in Public Catalog)</option>
                       <option value="DRAFT">DRAFT (Hidden from Public)</option>
@@ -510,7 +510,7 @@ export function ChallengeEditorForm({
                 {/* Version bump option */}
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-md mt-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <GitBranch className="w-4 h-4 text-blue-600" />
+                    <GitBranch className="w-4 h-4 text-[#099BE9]" />
                     <div>
                       <p className="text-xs font-semibold text-slate-800">Version Management</p>
                       <p className="text-[11px] text-slate-500">
@@ -523,7 +523,7 @@ export function ChallengeEditorForm({
                       type="checkbox"
                       checked={createNewVersion}
                       onChange={(e) => setCreateNewVersion(e.target.checked)}
-                      className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-slate-300 text-[#099BE9] focus:ring-[#099BE9]"
                     />
                     Bump to v{initialChallenge.currentVersionNumber + 1}.0
                   </label>
@@ -587,7 +587,7 @@ export function ChallengeEditorForm({
                           value={lvl.title}
                           onChange={(e) => updateLevel(idx, "title", e.target.value)}
                           placeholder="e.g. Core Mechanics & Correctness"
-                          className="w-full text-xs px-3 py-1.5 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white font-sans"
+                          className="w-full text-xs px-3 py-1.5 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#099BE9] bg-white font-sans"
                         />
                       </div>
 
@@ -596,7 +596,7 @@ export function ChallengeEditorForm({
                         <select
                           value={lvl.difficulty || "Medium"}
                           onChange={(e: any) => updateLevel(idx, "difficulty", e.target.value)}
-                          className="w-full text-xs px-3 py-1.5 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                          className="w-full text-xs px-3 py-1.5 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#099BE9] bg-white"
                         >
                           <option value="Easy">Easy</option>
                           <option value="Medium">Medium</option>
@@ -613,7 +613,7 @@ export function ChallengeEditorForm({
                         value={lvl.tagline || ""}
                         onChange={(e) => updateLevel(idx, "tagline", e.target.value)}
                         placeholder="e.g. Implement fundamental operations with 100% test pass rate."
-                        className="w-full text-xs px-3 py-1.5 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                        className="w-full text-xs px-3 py-1.5 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#099BE9] bg-white"
                       />
                     </div>
 
@@ -625,7 +625,7 @@ export function ChallengeEditorForm({
                           value={lvl.description}
                           onChange={(e) => updateLevel(idx, "description", e.target.value)}
                           placeholder="Describe what the student needs to construct in this level..."
-                          className="w-full text-xs p-2 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                          className="w-full text-xs p-2 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#099BE9] bg-white"
                         />
                       </div>
 
@@ -636,7 +636,7 @@ export function ChallengeEditorForm({
                           value={lvl.requirements || ""}
                           onChange={(e) => updateLevel(idx, "requirements", e.target.value)}
                           placeholder="Specific architectural constraints, memory bounds, or command semantics..."
-                          className="w-full text-xs p-2 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white font-mono"
+                          className="w-full text-xs p-2 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#099BE9] bg-white font-mono"
                         />
                       </div>
                     </div>
@@ -653,7 +653,7 @@ export function ChallengeEditorForm({
             <Card>
               <CardHeader className="py-3 px-5 border-b border-slate-100 bg-slate-50/50">
                 <CardTitle className="text-xs font-semibold text-slate-900 flex items-center gap-2">
-                  <Code className="w-4 h-4 text-blue-600" />
+                  <Code className="w-4 h-4 text-[#099BE9]" />
                   Python 3.12 Starter Template (solution.py)
                 </CardTitle>
               </CardHeader>
@@ -662,7 +662,7 @@ export function ChallengeEditorForm({
                   rows={14}
                   value={pythonTemplate}
                   onChange={(e) => setPythonTemplate(e.target.value)}
-                  className="w-full text-xs font-mono p-3 bg-slate-900 text-slate-100 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full text-xs font-mono p-3 bg-slate-900 text-slate-100 rounded-md focus:outline-none focus:ring-1 focus:ring-[#099BE9]"
                   spellCheck={false}
                 />
               </CardContent>
@@ -671,7 +671,7 @@ export function ChallengeEditorForm({
             <Card>
               <CardHeader className="py-3 px-5 border-b border-slate-100 bg-slate-50/50">
                 <CardTitle className="text-xs font-semibold text-slate-900 flex items-center gap-2">
-                  <Code className="w-4 h-4 text-emerald-600" />
+                  <Code className="w-4 h-4 text-[#0AA793]" />
                   C++ 20 Starter Template (solution.cpp)
                 </CardTitle>
               </CardHeader>
@@ -680,7 +680,7 @@ export function ChallengeEditorForm({
                   rows={14}
                   value={cppTemplate}
                   onChange={(e) => setCppTemplate(e.target.value)}
-                  className="w-full text-xs font-mono p-3 bg-slate-900 text-slate-100 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  className="w-full text-xs font-mono p-3 bg-slate-900 text-slate-100 rounded-md focus:outline-none focus:ring-1 focus:ring-[#09C899]"
                   spellCheck={false}
                 />
               </CardContent>
@@ -718,7 +718,7 @@ export function ChallengeEditorForm({
                       type="text"
                       value={tc.name}
                       onChange={(e) => updateTestCase(idx, "name", e.target.value)}
-                      className="text-xs font-semibold text-slate-800 bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-blue-500 px-1 rounded font-sans"
+                      className="text-xs font-semibold text-slate-800 bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-[#099BE9] px-1 rounded font-sans"
                     />
                     <button
                       type="button"
@@ -736,7 +736,7 @@ export function ChallengeEditorForm({
                         rows={4}
                         value={tc.input}
                         onChange={(e) => updateTestCase(idx, "input", e.target.value)}
-                        className="w-full text-xs font-mono p-2 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-slate-50"
+                        className="w-full text-xs font-mono p-2 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#099BE9] bg-slate-50"
                         spellCheck={false}
                       />
                     </div>
@@ -746,7 +746,7 @@ export function ChallengeEditorForm({
                         rows={4}
                         value={tc.expected}
                         onChange={(e) => updateTestCase(idx, "expected", e.target.value)}
-                        className="w-full text-xs font-mono p-2 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-slate-50"
+                        className="w-full text-xs font-mono p-2 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-[#099BE9] bg-slate-50"
                         spellCheck={false}
                       />
                     </div>
@@ -831,7 +831,7 @@ export function ChallengeEditorForm({
             type="submit"
             disabled={loading}
             size="sm"
-            className="bg-[#2d7cf6] hover:bg-[#2065d1] text-white gap-1.5 cursor-pointer shadow-2xs"
+            className="bg-[#099BE9] hover:bg-[#1984E9] text-white gap-1.5 cursor-pointer shadow-2xs"
           >
             {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
             {createNewVersion ? `Save as v${initialChallenge.currentVersionNumber + 1}.0` : "Save Changes"}

@@ -62,7 +62,7 @@ export default async function GlobalLeaderboardPage() {
               GLOBAL RANKINGS
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-              <Trophy className="w-6 h-6 text-amber-500" />
+              <Trophy className="w-6 h-6 text-[#FBAE0C]" />
               <span>Global Ranking</span>
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">

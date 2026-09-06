@@ -36,27 +36,27 @@ export function LeetCodeTablet() {
           {/* Left: Table with colored status dots */}
           <div className="col-span-7 space-y-2.5">
             <div className="flex items-center gap-2 py-1 border-b border-slate-100">
-              <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-[#FBAE0C] shrink-0" />
               <div className="h-2 w-20 bg-slate-200 rounded-full" />
               <div className="h-2 w-8 bg-slate-100 rounded-full ml-auto" />
             </div>
             <div className="flex items-center gap-2 py-1 border-b border-slate-100">
-              <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-[#F78424] shrink-0" />
               <div className="h-2 w-24 bg-slate-200 rounded-full" />
               <div className="h-2 w-10 bg-slate-100 rounded-full ml-auto" />
             </div>
             <div className="flex items-center gap-2 py-1 border-b border-slate-100">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-[#09C899] shrink-0" />
               <div className="h-2 w-16 bg-slate-200 rounded-full" />
               <div className="h-2 w-6 bg-slate-100 rounded-full ml-auto" />
             </div>
             <div className="flex items-center gap-2 py-1 border-b border-slate-100">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-[#8647E2] shrink-0" />
               <div className="h-2 w-28 bg-slate-200 rounded-full" />
               <div className="h-2 w-12 bg-slate-100 rounded-full ml-auto" />
             </div>
             <div className="flex items-center gap-2 py-1">
-              <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-[#099BE9] shrink-0" />
               <div className="h-2 w-20 bg-slate-200 rounded-full" />
               <div className="h-2 w-8 bg-slate-100 rounded-full ml-auto" />
             </div>
@@ -107,7 +107,7 @@ export function LeetCodeTablet() {
         {/* Bottom subtle bar */}
         <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-mono text-slate-400">
           <span>ALGO RUNNER • DOCKER ISOLATED</span>
-          <span className="text-emerald-600 font-medium">● 100% ACCURACY</span>
+          <span className="text-[#09C899] font-medium">● 100% ACCURACY</span>
         </div>
       </div>
     </div>
