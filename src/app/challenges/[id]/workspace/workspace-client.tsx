@@ -7,6 +7,7 @@ import { MonacoWrapper } from "@/components/editor/monaco-wrapper";
 import { AlgoLogoIcon } from "@/components/layout/algo-logo-icon";
 import { DEFAULT_STARTER_TEMPLATES } from "@/lib/constants/templates";
 import { PROJECT_SCOPE, LEVEL_DEFINITIONS } from "@/lib/constants/challenge-data";
+import { getChallenge } from "@/lib/challenges";
 import {
   Play,
   Send,
@@ -50,11 +51,8 @@ interface Props {
       python: string;
       cpp: string;
     };
-    levels: Array<{
-      level: number;
-      title: string;
-      description: string;
-    }>;
+    levels: Array<any>;
+    spec?: any;
   };
   user: {
     id: string;
@@ -89,13 +87,23 @@ export function WorkspaceClient({
   topLeaders = [],
 }: Props) {
   const router = useRouter();
+  const challengeData = getChallenge(challenge.slug);
+  const dbLevelsRecord: Record<number, any> | null =
+    Array.isArray(version.levels) && version.levels.length > 0
+      ? Object.fromEntries(version.levels.map((l: any, idx: number) => [l.level || idx + 1, l]))
+      : null;
+  const levelData = dbLevelsRecord || challengeData?.levels || LEVEL_DEFINITIONS;
+
   const getInitialCode = (lang: "python" | "cpp") => {
     const dbTemplate =
       lang === "python"
         ? version.starterTemplates?.python
         : version.starterTemplates?.cpp;
-    if (dbTemplate && dbTemplate.includes("SAVE") && dbTemplate.includes("stats")) {
+    if (dbTemplate && dbTemplate.length > 20) {
       return dbTemplate;
+    }
+    if (challengeData?.starterTemplates?.[lang]) {
+      return challengeData.starterTemplates[lang];
     }
     return DEFAULT_STARTER_TEMPLATES[lang];
   };
@@ -110,7 +118,10 @@ export function WorkspaceClient({
   const [consoleTab, setConsoleTab] = useState<"testcase" | "result">("testcase");
   const [selectedCaseIndex, setSelectedCaseIndex] = useState(0);
   const [selectedResultCaseIndex, setSelectedResultCaseIndex] = useState(0);
-  const [customInput, setCustomInput] = useState("SET alpha 42\nGET alpha\nEXISTS alpha\nDELETE alpha\nGET alpha");
+  const [customInput, setCustomInput] = useState(() => {
+    const l1 = levelData[1];
+    return l1?.cases?.[0]?.input || "SET alpha 42\nGET alpha\nEXISTS alpha\nDELETE alpha\nGET alpha";
+  });
   const [copied, setCopied] = useState(false);
 
   // Execution states
@@ -132,7 +143,6 @@ export function WorkspaceClient({
   } | null>(null);
 
   const [isScopeExpanded, setIsScopeExpanded] = useState(true);
-  const levelData = LEVEL_DEFINITIONS;
 
   const handleSelectLevel = (lvl: number) => {
     setSelectedLevel(lvl);
@@ -381,74 +391,87 @@ export function WorkspaceClient({
             {leftTab === "description" && (
               <div className="space-y-6">
                 {/* Project Scope & Engineering Capstone Architecture Banner */}
-                <div className="rounded-xl border border-blue-200/90 bg-gradient-to-br from-blue-50/70 via-slate-50 to-indigo-50/40 p-4 shadow-2xs space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-blue-600 text-white shadow-2xs">
-                        {PROJECT_SCOPE.badge}
-                      </span>
-                      <span className="text-xs font-bold text-slate-900">
-                        {PROJECT_SCOPE.title}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => setIsScopeExpanded(!isScopeExpanded)}
-                      className="text-xs font-mono text-blue-700 hover:text-blue-900 flex items-center gap-1 font-semibold cursor-pointer"
-                    >
-                      <span>{isScopeExpanded ? "Collapse Scope" : "Explore Full System Scope"}</span>
-                      {isScopeExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                    </button>
-                  </div>
+                {(() => {
+                  const spec = (version.spec as any) || {};
+                  const layers = (Array.isArray(spec.architecturalLayers) && spec.architecturalLayers.length > 0)
+                    ? spec.architecturalLayers
+                    : (challengeData?.architecturalLayers || PROJECT_SCOPE.architecturalLayers);
+                  const badge = spec.badge || challengeData?.badge || PROJECT_SCOPE.badge;
+                  const title = challenge.title || spec.title || challengeData?.title || PROJECT_SCOPE.title;
+                  const overview = challenge.description || spec.overview || challengeData?.overview || PROJECT_SCOPE.overview;
+                  const outcome = spec.finalOutcome || challengeData?.finalOutcome || PROJECT_SCOPE.finalOutcome;
 
-                  <p className="text-xs text-slate-700 leading-relaxed">
-                    {PROJECT_SCOPE.overview}
-                  </p>
+                  return (
+                    <div className="rounded-xl border border-blue-200/90 bg-gradient-to-br from-blue-50/70 via-slate-50 to-indigo-50/40 p-4 shadow-2xs space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-blue-600 text-white shadow-2xs">
+                            {badge}
+                          </span>
+                          <span className="text-xs font-bold text-slate-900">
+                            {title}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => setIsScopeExpanded(!isScopeExpanded)}
+                          className="text-xs font-mono text-blue-700 hover:text-blue-900 flex items-center gap-1 font-semibold cursor-pointer"
+                        >
+                          <span>{isScopeExpanded ? "Collapse Scope" : "Explore Full System Scope"}</span>
+                          {isScopeExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
 
-                  {isScopeExpanded && (
-                    <div className="space-y-3 pt-2 border-t border-blue-100 animate-in fade-in duration-200">
-                      <div>
-                        <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
-                          The 6 Architectural Engine Layers
-                        </span>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-                          {PROJECT_SCOPE.architecturalLayers.map((layer) => (
-                            <div
-                              key={layer.number}
-                              onClick={() => handleSelectLevel(layer.number)}
-                              className={`p-2.5 rounded-lg border text-xs cursor-pointer transition-all ${
-                                selectedLevel === layer.number
-                                  ? "bg-white border-blue-400 shadow-2xs ring-1 ring-blue-300"
-                                  : "bg-white/80 border-slate-200/80 hover:bg-white hover:border-slate-300"
-                              }`}
-                            >
-                              <div className="flex items-center justify-between font-bold text-slate-900">
-                                <span>Layer {layer.number}: {layer.name}</span>
-                                <span className="text-[10px] font-mono text-blue-600">L{layer.number}</span>
-                              </div>
-                              <div className="text-[11px] text-slate-500 font-medium">{layer.focus}</div>
-                              <p className="text-[11px] text-slate-600 mt-1 leading-snug">{layer.description}</p>
-                              <div className="mt-1.5 pt-1.5 border-t border-slate-100 flex items-center gap-1 text-[10px] font-mono text-slate-500">
-                                <Database className="w-3 h-3 text-slate-400" />
-                                <span>Parity: {layer.realWorldTech}</span>
-                              </div>
+                      <p className="text-xs text-slate-700 leading-relaxed">
+                        {overview}
+                      </p>
+
+                      {isScopeExpanded && (
+                        <div className="space-y-3 pt-2 border-t border-blue-100 animate-in fade-in duration-200">
+                          <div>
+                            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                              The {layers.length} Architectural Engine Layers
+                            </span>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                              {layers.map((layer: any) => (
+                                <div
+                                  key={layer.number}
+                                  onClick={() => handleSelectLevel(layer.number)}
+                                  className={`p-2.5 rounded-lg border text-xs cursor-pointer transition-all ${
+                                    selectedLevel === layer.number
+                                      ? "bg-white border-blue-400 shadow-2xs ring-1 ring-blue-300"
+                                      : "bg-white/80 border-slate-200/80 hover:bg-white hover:border-slate-300"
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between font-bold text-slate-900">
+                                    <span>Layer {layer.number}: {layer.name}</span>
+                                    <span className="text-[10px] font-mono text-blue-600">L{layer.number}</span>
+                                  </div>
+                                  <div className="text-[11px] text-slate-500 font-medium">{layer.focus}</div>
+                                  <p className="text-[11px] text-slate-600 mt-1 leading-snug">{layer.description}</p>
+                                  <div className="mt-1.5 pt-1.5 border-t border-slate-100 flex items-center gap-1 text-[10px] font-mono text-slate-500">
+                                    <Database className="w-3 h-3 text-slate-400" />
+                                    <span>Parity: {layer.realWorldTech}</span>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                          ))}
-                        </div>
-                      </div>
+                          </div>
 
-                      {/* Capstone Outcome Callout */}
-                      <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200/80 text-emerald-950 text-xs space-y-1">
-                        <div className="font-bold flex items-center gap-1.5 font-mono text-[11px] text-emerald-800 uppercase">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>Final System Outcome & Target Benchmark</span>
+                          {/* Capstone Outcome Callout */}
+                          <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200/80 text-emerald-950 text-xs space-y-1">
+                            <div className="font-bold flex items-center gap-1.5 font-mono text-[11px] text-emerald-800 uppercase">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>Final System Outcome & Target Benchmark</span>
+                            </div>
+                            <p className="text-emerald-900/90 leading-relaxed">
+                              {outcome}
+                            </p>
+                          </div>
                         </div>
-                        <p className="text-emerald-900/90 leading-relaxed">
-                          {PROJECT_SCOPE.finalOutcome}
-                        </p>
-                      </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  );
+                })()}
 
                 {/* Header with Title & Level Selector Pills */}
                 <div className="space-y-3">
@@ -537,7 +560,7 @@ export function WorkspaceClient({
                       Key Concepts You Understand & Master:
                     </span>
                     <div className="space-y-1.5">
-                      {currentLevelInfo.learningLoop.whatYouUnderstand.map((concept, idx) => (
+                      {currentLevelInfo.learningLoop.whatYouUnderstand.map((concept: string, idx: number) => (
                         <div key={idx} className="flex items-start gap-2 p-2 rounded-md bg-white border border-slate-200/80 text-xs text-slate-800">
                           <CheckCircle2 className="w-3.5 h-3.5 text-purple-600 shrink-0 mt-0.5" />
                           <span className="leading-snug">{concept}</span>
@@ -572,7 +595,7 @@ export function WorkspaceClient({
                   </div>
 
                   <div className="border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs divide-y divide-slate-100">
-                    {currentLevelInfo.operations.map((op, idx) => (
+                    {currentLevelInfo.operations.map((op: any, idx: number) => (
                       <div key={idx} className="p-3 flex flex-col sm:flex-row sm:items-start gap-2 hover:bg-slate-50/60 transition-colors">
                         <code className="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 font-mono text-blue-700 text-xs shrink-0 font-medium">
                           {op.cmd}
@@ -592,7 +615,7 @@ export function WorkspaceClient({
                       Engineering & Durability Protocol
                     </h3>
                     <div className="p-4 rounded-lg bg-[#fafafa] border border-slate-200 space-y-2">
-                      {currentLevelInfo.durabilityRules.map((rule, idx) => (
+                      {currentLevelInfo.durabilityRules.map((rule: any, idx: number) => (
                         <div key={idx} className="flex items-start gap-2 text-xs text-slate-700">
                           <span className="text-emerald-600 font-bold font-mono">•</span>
                           <span>{rule}</span>
@@ -606,7 +629,7 @@ export function WorkspaceClient({
                 <div className="space-y-4">
                   <h3 className="text-sm font-semibold text-slate-900">Examples</h3>
 
-                  {currentLevelInfo.examples.map((ex, idx) => (
+                  {currentLevelInfo.examples.map((ex: any, idx: number) => (
                     <div key={idx} className="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
                       <div className="text-[11px] font-mono text-slate-500 font-bold uppercase tracking-wide">
                         {ex.title}
@@ -629,7 +652,7 @@ export function WorkspaceClient({
                 <div className="space-y-2 pt-4 border-t border-slate-200">
                   <h3 className="text-sm font-semibold text-slate-900">Constraints & Evaluation</h3>
                   <ul className="list-disc list-inside space-y-1.5 text-slate-600 text-xs">
-                    {currentLevelInfo.constraints.map((c, idx) => (
+                    {currentLevelInfo.constraints.map((c: any, idx: number) => (
                       <li key={idx}>{c}</li>
                     ))}
                   </ul>
@@ -707,7 +730,7 @@ export function WorkspaceClient({
                           <span className="text-[10px] font-mono text-slate-400 uppercase font-semibold mr-1">
                             Operations:
                           </span>
-                          {lvlInfo.operations.map((op, idx) => (
+                          {lvlInfo.operations.map((op: any, idx: number) => (
                             <code
                               key={idx}
                               className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[10px] border border-slate-200"
@@ -924,7 +947,7 @@ export function WorkspaceClient({
                   <div className="space-y-3">
                     {/* Case Buttons */}
                     <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-                      {sampleCases.map((c, i) => (
+                      {sampleCases.map((c: any, i: number) => (
                         <button
                           key={i}
                           onClick={() => {

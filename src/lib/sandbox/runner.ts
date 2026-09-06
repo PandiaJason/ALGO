@@ -1,4 +1,5 @@
 import { spawn } from "child_process";
+import { getChallenge } from "../challenges";
 
 export interface TestCaseResult {
   name: string;
@@ -310,16 +311,21 @@ export const LEVEL_TEST_SUITES: Record<number, TestCaseDef[]> = {
 export async function runQuickTest(
   language: "python" | "cpp",
   code: string,
-  level: number = 1
+  level: number = 1,
+  challengeSlug?: string
 ): Promise<TestResult> {
-  const suite = LEVEL_TEST_SUITES[level] || LEVEL_TEST_SUITES[1];
+  const challenge = challengeSlug ? getChallenge(challengeSlug) : undefined;
+  const suite: Array<{ name: string; input: string; expected: string; check?: (actual: string, expected: string) => boolean }> =
+    (challenge?.levels?.[level]?.cases as any) ||
+    LEVEL_TEST_SUITES[level] ||
+    LEVEL_TEST_SUITES[1];
   const total = suite.length;
 
   // Execute all test cases concurrently across isolated Docker containers
   const caseResults = await Promise.all(
     suite.map(async (testDef) => {
       try {
-        const input = testDef.input.trim() + "\nEXIT\n";
+        const input = testDef.input.trim() + "\n";
         const res = await runInDocker(code, language, input, 4000);
 
         if (res.exitCode === 124) {

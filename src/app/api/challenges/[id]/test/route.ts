@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { db } from "@/db";
+import { challenges } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { enqueueQuickTest } from "@/lib/queue/producer";
 import { runQuickTest } from "@/lib/sandbox/runner";
 import { z } from "zod";
@@ -20,6 +23,19 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = await params;
+    let challengeSlug = id;
+    try {
+      const found = await db
+        .select({ slug: challenges.slug })
+        .from(challenges)
+        .where(eq(challenges.id, id))
+        .limit(1);
+      if (found[0]?.slug) {
+        challengeSlug = found[0].slug;
+      }
+    } catch {}
+
     const body = await req.json();
     const parsed = testSchema.safeParse(body);
     if (!parsed.success) {
@@ -33,7 +49,7 @@ export async function POST(
     let queueError: any = null;
 
     try {
-      result = await enqueueQuickTest({ language, level, code }, 25000);
+      result = await enqueueQuickTest({ language, level, code, challengeSlug }, 25000);
     } catch (err: any) {
       console.error("[QuickTest Queue Error]:", err);
       queueError = err;
@@ -43,7 +59,7 @@ export async function POST(
     if (!result) {
       if (!process.env.VERCEL) {
         try {
-          result = await runQuickTest(language, code, level);
+          result = await runQuickTest(language, code, level, challengeSlug);
         } catch (directErr: any) {
           throw new Error(
             queueError?.message ||

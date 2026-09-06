@@ -92,6 +92,7 @@ export async function POST(
       await enqueueSubmission({
         submissionId: submission.id,
         challengeId: challenge.id,
+        challengeSlug: challenge.slug,
         challengeVersionId,
         userId: session.user.id,
         language,

@@ -39,8 +39,8 @@ console.log(`📡 Redis: ${REDIS_URL.replace(/:[^:@]+@/, ":****@")}`);
 export const worker = new Worker(
   "submission-eval-queue",
   async (job: Job) => {
-    const { submissionId, challengeId, language, level, files, userId } = job.data;
-    console.log(`[Worker] Processing submission ${submissionId} (${language}, Level ${level}) [Slot: ${job.id}]`);
+    const { submissionId, challengeId, language, level, files, userId, challengeSlug } = job.data;
+    console.log(`[Worker] Processing submission ${submissionId} (${language}, Level ${level}, Challenge: ${challengeSlug || "default"}) [Slot: ${job.id}]`);
 
     try {
       // 1. Mark as RUNNING
@@ -57,7 +57,7 @@ export const worker = new Worker(
         .set({ status: "TESTING" })
         .where(eq(submissions.id, submissionId));
 
-      const testResult = await runQuickTest(language, code, level);
+      const testResult = await runQuickTest(language, code, level, challengeSlug);
       const isCorrect = testResult.passed === testResult.total;
 
       console.log(`[Worker] Test pass rate: ${testResult.passed}/${testResult.total}`);
@@ -228,9 +228,9 @@ worker.on("error", (err) => {
 export const quickTestWorker = new Worker(
   "quick-test-queue",
   async (job: Job) => {
-    const { language, level, code } = job.data;
-    console.log(`[Worker] Executing quick-test (Level ${level}, ${language}) [Slot: ${job.id}]`);
-    return await runQuickTest(language, code, level);
+    const { language, level, code, challengeSlug } = job.data;
+    console.log(`[Worker] Executing quick-test (Level ${level}, ${language}, Challenge: ${challengeSlug || "default"}) [Slot: ${job.id}]`);
+    return await runQuickTest(language, code, level, challengeSlug);
   },
   {
     connection: quickTestConnection,

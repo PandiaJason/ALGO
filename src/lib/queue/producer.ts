@@ -60,6 +60,7 @@ if (process.env.NODE_ENV !== "production") {
 export interface SubmissionJobData {
   submissionId: string;
   challengeId: string;
+  challengeSlug?: string;
   challengeVersionId: string;
   userId: string;
   language: string;
@@ -80,6 +81,7 @@ export interface QuickTestJobData {
   language: "python" | "cpp";
   level: number;
   code: string;
+  challengeSlug?: string;
 }
 
 export async function enqueueQuickTest(data: QuickTestJobData, timeoutMs = 25000) {

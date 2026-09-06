@@ -33,6 +33,7 @@ export const dynamic = "force-dynamic";
 
 import { PROJECT_SCOPE, LEVEL_DEFINITIONS } from "@/lib/constants/challenge-data";
 import { CORE_CHALLENGES } from "@/lib/constants/core-challenges";
+import { getChallenge } from "@/lib/challenges";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -43,26 +44,29 @@ export default async function ChallengeDetailPage({ params }: Props) {
   const session = await auth();
 
   const coreDef = CORE_CHALLENGES.find((c) => c.slug === id || c.number === id);
+  const challengeData = getChallenge(id);
 
   let challenge = {
-    id: coreDef?.slug || id || "kv-store",
-    slug: coreDef?.slug || id || "kv-store",
-    title: coreDef?.title || PROJECT_SCOPE.title,
-    description: coreDef?.overview || PROJECT_SCOPE.overview,
+    id: coreDef?.slug || challengeData?.slug || id || "kv-store",
+    slug: coreDef?.slug || challengeData?.slug || id || "kv-store",
+    title: challengeData?.title || coreDef?.title || PROJECT_SCOPE.title,
+    description: challengeData?.overview || coreDef?.overview || PROJECT_SCOPE.overview,
     difficulty: coreDef?.difficulty || "MEDIUM",
   };
 
   let version: any = null;
   let spec: any = {};
   let apiSpec: any[] = [];
-  let whatYouLearn: string[] = [
-    "O(1) in-memory pointer resolution & fast stream command dispatching",
-    "64-bit MurmurHash3 uniform hashing and dynamic 0.75 load factor rehashing",
-    "Append-only Write-Ahead Logging (WAL) and <50ms crash recovery replay",
-    "Dual-mode TTL eviction with passive evaluation & active background sweepers",
-    "32-shard striped mutex concurrency without race conditions or deadlocks",
-    "100K+ ops/sec throughput, online log compaction, and custom slab memory arenas",
-  ];
+  let whatYouLearn: string[] = challengeData
+    ? challengeData.architecturalLayers.map((l) => `${l.name}: ${l.description}`)
+    : [
+        "O(1) in-memory pointer resolution & fast stream command dispatching",
+        "64-bit MurmurHash3 uniform hashing and dynamic 0.75 load factor rehashing",
+        "Append-only Write-Ahead Logging (WAL) and <50ms crash recovery replay",
+        "Dual-mode TTL eviction with passive evaluation & active background sweepers",
+        "32-shard striped mutex concurrency without race conditions or deadlocks",
+        "100K+ ops/sec throughput, online log compaction, and custom slab memory arenas",
+      ];
 
   try {
     const foundChallenges = await db
@@ -96,23 +100,33 @@ export default async function ChallengeDetailPage({ params }: Props) {
 
   // Fallback API spec if empty from DB
   if (!apiSpec || apiSpec.length === 0) {
-    apiSpec = [
-      { command: "SET <key> <val>", returns: "OK", description: "Store key-value pair in memory. Overwrites existing." },
-      { command: "GET <key>", returns: "<val> | NULL", description: "Retrieve value or NULL if absent or expired." },
-      { command: "DELETE <key>", returns: "OK | NOT_FOUND", description: "Removes key from store." },
-      { command: "EXISTS <key>", returns: "TRUE | FALSE", description: "Determines if key exists and is non-expired." },
-      { command: "SAVE", returns: "OK", description: "Persist current memory state snapshot to disk." },
-      { command: "RESTORE", returns: "OK", description: "Reconstitute memory state from disk snapshot." },
-      { command: "FLUSHALL", returns: "OK", description: "Wipes all keys from memory." },
-      { command: "EXPIRE <key> <ms>", returns: "OK | NOT_FOUND", description: "Sets millisecond TTL on key." },
-      { command: "TTL <key>", returns: "<ms> | -1 | -2", description: "Returns remaining TTL in ms (-1 permanent, -2 absent)." },
-      { command: "PERSIST <key>", returns: "OK | NOT_FOUND", description: "Removes expiration from key." },
-      { command: "PING [msg]", returns: "PONG | <msg>", description: "Health check response for concurrent connections." },
-      { command: "MGET <k1> <k2>...", returns: "Multiple lines", description: "Batch atomic multi-key read." },
-      { command: "MSET <k1> <v1>...", returns: "OK", description: "Batch atomic multi-key write across shards." },
-      { command: "COMPACT", returns: "OK", description: "Online WAL compaction / tombstone elimination." },
-      { command: "MEMSTATS", returns: "<used_bytes>", description: "Reports accurate heap usage in bytes." },
-    ];
+    if (challengeData) {
+      apiSpec = Object.values(challengeData.levels).flatMap((l) =>
+        l.operations.map((op) => ({
+          command: op.cmd,
+          returns: "Response",
+          description: op.desc,
+        }))
+      );
+    } else {
+      apiSpec = [
+        { command: "SET <key> <val>", returns: "OK", description: "Store key-value pair in memory. Overwrites existing." },
+        { command: "GET <key>", returns: "<val> | NULL", description: "Retrieve value or NULL if absent or expired." },
+        { command: "DELETE <key>", returns: "OK | NOT_FOUND", description: "Removes key from store." },
+        { command: "EXISTS <key>", returns: "TRUE | FALSE", description: "Determines if key exists and is non-expired." },
+        { command: "SAVE", returns: "OK", description: "Persist current memory state snapshot to disk." },
+        { command: "RESTORE", returns: "OK", description: "Reconstitute memory state from disk snapshot." },
+        { command: "FLUSHALL", returns: "OK", description: "Wipes all keys from memory." },
+        { command: "EXPIRE <key> <ms>", returns: "OK | NOT_FOUND", description: "Sets millisecond TTL on key." },
+        { command: "TTL <key>", returns: "<ms> | -1 | -2", description: "Returns remaining TTL in ms (-1 permanent, -2 absent)." },
+        { command: "PERSIST <key>", returns: "OK | NOT_FOUND", description: "Removes expiration from key." },
+        { command: "PING [msg]", returns: "PONG | <msg>", description: "Health check response for concurrent connections." },
+        { command: "MGET <k1> <k2>...", returns: "Multiple lines", description: "Batch atomic multi-key read." },
+        { command: "MSET <k1> <v1>...", returns: "OK", description: "Batch atomic multi-key write across shards." },
+        { command: "COMPACT", returns: "OK", description: "Online WAL compaction / tombstone elimination." },
+        { command: "MEMSTATS", returns: "<used_bytes>", description: "Reports accurate heap usage in bytes." },
+      ];
+    }
   }
 
   const levelsArray = (Array.isArray(version?.levels) && version.levels.length > 0)
@@ -124,6 +138,8 @@ export default async function ChallengeDetailPage({ params }: Props) {
         difficulty: l.difficulty || "Medium",
         tagline: l.tagline || l.description || "",
       }))
+    : challengeData
+    ? Object.values(challengeData.levels).sort((a, b) => a.level - b.level)
     : Object.values(LEVEL_DEFINITIONS).sort((a, b) => a.level - b.level);
 
   return (
@@ -201,16 +217,16 @@ export default async function ChallengeDetailPage({ params }: Props) {
         {/* ========================================================================= */}
         {(() => {
           const isKv = challenge.slug === "kv-store";
-          const scopeBadge = isKv ? PROJECT_SCOPE.badge : `${coreDef?.domainLabel ?? "SYSTEMS"} CAPSTONE`;
-          const scopeTitle = isKv ? PROJECT_SCOPE.title : (coreDef?.title || challenge.title);
-          const scopeSubtitle = isKv
+          const scopeBadge = challengeData?.badge || (isKv ? PROJECT_SCOPE.badge : `${coreDef?.domainLabel ?? "SYSTEMS"} CAPSTONE`);
+          const scopeTitle = challengeData?.title || (isKv ? PROJECT_SCOPE.title : (coreDef?.title || challenge.title));
+          const scopeSubtitle = challengeData?.subtitle || (isKv
             ? PROJECT_SCOPE.subtitle
-            : `Inspired by ${coreDef?.inspiredBy ?? "Production Systems"} • ${coreDef?.whatStudentsBuild ?? "Systems Engineering"}`;
-          const scopeOverview = isKv ? PROJECT_SCOPE.overview : (coreDef?.overview || challenge.description);
-          const scopeWhyItMatters = isKv
+            : `Inspired by ${coreDef?.inspiredBy ?? "Production Systems"} • ${coreDef?.whatStudentsBuild ?? "Systems Engineering"}`);
+          const scopeOverview = challengeData?.overview || (isKv ? PROJECT_SCOPE.overview : (coreDef?.overview || challenge.description));
+          const scopeWhyItMatters = challengeData?.whyItMatters || (isKv
             ? PROJECT_SCOPE.whyItMatters
-            : `Signature Question: "${coreDef?.signatureQuestion}". Build real technology from first principles to master ${coreDef?.mainSkill}.`;
-          const layers = isKv
+            : `Signature Question: "${coreDef?.signatureQuestion}". Build real technology from first principles to master ${coreDef?.mainSkill}.`);
+          const layers = challengeData?.architecturalLayers || (isKv
             ? PROJECT_SCOPE.architecturalLayers
             : (coreDef?.progressionLevels || []).map((lvl) => ({
                 number: lvl.level,
@@ -218,7 +234,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
                 focus: lvl.focus,
                 description: lvl.focus,
                 realWorldTech: coreDef?.inspiredBy || "Production Standard",
-              }));
+              })));
           const targetMetric1 = isKv ? "> 100K ops/s" : (coreDef?.benchmarkMetrics[0] || "High Throughput");
           const targetMetric2 = isKv ? "< 0.20 ms" : (coreDef?.benchmarkMetrics[1] || "Sub-ms Latency");
           const targetMetric3 = isKv ? "256 MB" : (coreDef?.benchmarkMetrics[2] || "Bounded RAM");
