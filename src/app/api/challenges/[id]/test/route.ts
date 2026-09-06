@@ -33,7 +33,7 @@ export async function POST(
     let queueError: any = null;
 
     try {
-      result = await enqueueQuickTest({ language, level, code }, 8000);
+      result = await enqueueQuickTest({ language, level, code }, 25000);
     } catch (err: any) {
       console.error("[QuickTest Queue Error]:", err);
       queueError = err;

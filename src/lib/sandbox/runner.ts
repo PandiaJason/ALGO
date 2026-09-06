@@ -314,82 +314,76 @@ export async function runQuickTest(
 ): Promise<TestResult> {
   const suite = LEVEL_TEST_SUITES[level] || LEVEL_TEST_SUITES[1];
   const total = suite.length;
-  let passed = 0;
-  const log: string[] = [];
-  const testResults: TestCaseResult[] = [];
 
-  for (let i = 0; i < suite.length; i++) {
-    const testDef = suite[i];
-    try {
-      const input = testDef.input.trim() + "\nEXIT\n";
-      const res = await runInDocker(code, language, input, 4000);
+  // Execute all test cases concurrently across isolated Docker containers
+  const caseResults = await Promise.all(
+    suite.map(async (testDef) => {
+      try {
+        const input = testDef.input.trim() + "\nEXIT\n";
+        const res = await runInDocker(code, language, input, 4000);
 
-      if (res.exitCode === 124) {
-        log.push(`✗ ${testDef.name}: Execution timed out.`);
-        testResults.push({
+        if (res.exitCode === 124) {
+          return {
+            name: testDef.name,
+            input: testDef.input,
+            expected: testDef.expected,
+            actual: "Execution timed out (Time Limit Exceeded)",
+            passed: false,
+            error: "Time limit exceeded (4000ms)",
+            logMsg: `✗ ${testDef.name}: Execution timed out.`,
+          };
+        }
+
+        if (res.exitCode !== 0 && !res.stdout) {
+          return {
+            name: testDef.name,
+            input: testDef.input,
+            expected: testDef.expected,
+            actual: res.stderr || `Exit code ${res.exitCode}`,
+            passed: false,
+            error: res.stderr,
+            logMsg: `✗ ${testDef.name}: Process failed with exit code ${res.exitCode}`,
+          };
+        }
+
+        const actualTrimmed = res.stdout.trim();
+        const expectedTrimmed = testDef.expected.trim();
+
+        const isPass = testDef.check
+          ? testDef.check(actualTrimmed, expectedTrimmed)
+          : actualTrimmed === expectedTrimmed;
+
+        return {
+          name: testDef.name,
+          input: testDef.input,
+          expected: expectedTrimmed,
+          actual: actualTrimmed,
+          passed: isPass,
+          logMsg: isPass ? `✓ ${testDef.name}: PASSED` : `✗ ${testDef.name}: FAILED`,
+        };
+      } catch (err: any) {
+        return {
           name: testDef.name,
           input: testDef.input,
           expected: testDef.expected,
-          actual: "Execution timed out (Time Limit Exceeded)",
+          actual: `Runtime error: ${err.message}`,
           passed: false,
-          error: "Time limit exceeded (4000ms)",
-        });
-        continue;
+          error: err.message,
+          logMsg: `✗ ${testDef.name}: Runtime failure: ${err.message}`,
+        };
       }
+    })
+  );
 
-      if (res.exitCode !== 0 && !res.stdout) {
-        log.push(`✗ ${testDef.name}: Process failed with exit code ${res.exitCode}`);
-        testResults.push({
-          name: testDef.name,
-          input: testDef.input,
-          expected: testDef.expected,
-          actual: res.stderr || `Exit code ${res.exitCode}`,
-          passed: false,
-          error: res.stderr,
-        });
-        continue;
-      }
-
-      const actualTrimmed = res.stdout.trim();
-      const expectedTrimmed = testDef.expected.trim();
-
-      const isPass = testDef.check
-        ? testDef.check(actualTrimmed, expectedTrimmed)
-        : actualTrimmed === expectedTrimmed;
-
-      if (isPass) {
-        passed++;
-        log.push(`✓ ${testDef.name}: PASSED`);
-      } else {
-        log.push(`✗ ${testDef.name}: FAILED`);
-      }
-
-      testResults.push({
-        name: testDef.name,
-        input: testDef.input,
-        expected: expectedTrimmed,
-        actual: actualTrimmed,
-        passed: isPass,
-      });
-    } catch (err: any) {
-      log.push(`✗ ${testDef.name}: Runtime failure: ${err.message}`);
-      testResults.push({
-        name: testDef.name,
-        input: testDef.input,
-        expected: testDef.expected,
-        actual: `Runtime error: ${err.message}`,
-        passed: false,
-        error: err.message,
-      });
-    }
-  }
+  const passed = caseResults.filter((r) => r.passed).length;
+  const log = caseResults.map((r) => r.logMsg);
 
   return {
     passed,
     total,
     details: log.join("\n"),
     output: `Completed ${passed}/${total} test cases for Level ${level}.`,
-    cases: testResults,
+    cases: caseResults.map(({ logMsg, ...c }) => c),
   };
 }
 

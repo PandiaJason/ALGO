@@ -32,6 +32,7 @@ import {
 export const dynamic = "force-dynamic";
 
 import { PROJECT_SCOPE, LEVEL_DEFINITIONS } from "@/lib/constants/challenge-data";
+import { CORE_CHALLENGES } from "@/lib/constants/core-challenges";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -41,12 +42,14 @@ export default async function ChallengeDetailPage({ params }: Props) {
   const { id } = await params;
   const session = await auth();
 
+  const coreDef = CORE_CHALLENGES.find((c) => c.slug === id || c.number === id);
+
   let challenge = {
-    id: "kv-store",
-    slug: id || "kv-store",
-    title: PROJECT_SCOPE.title,
-    description: PROJECT_SCOPE.overview,
-    difficulty: "MEDIUM",
+    id: coreDef?.slug || id || "kv-store",
+    slug: coreDef?.slug || id || "kv-store",
+    title: coreDef?.title || PROJECT_SCOPE.title,
+    description: coreDef?.overview || PROJECT_SCOPE.overview,
+    difficulty: coreDef?.difficulty || "MEDIUM",
   };
 
   let version: any = null;
@@ -133,15 +136,17 @@ export default async function ChallengeDetailPage({ params }: Props) {
           <div className="space-y-2">
             <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono">
               <Link href="/challenges" className="hover:text-slate-900 transition-colors">
-                Problems
+                Curriculum
               </Link>
+              <ChevronRight className="w-3 h-3 text-slate-300" />
+              <span className="text-slate-500">{coreDef?.domainLabel ?? "SYSTEMS"}</span>
               <ChevronRight className="w-3 h-3 text-slate-300" />
               <span className="text-slate-800 font-semibold">{challenge.title}</span>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-                1. {challenge.title}
+                {coreDef?.number ? `${coreDef.number}. ` : ""}{challenge.title}
               </h1>
               <span className="px-2.5 py-0.5 rounded text-xs font-semibold font-mono border text-amber-600 bg-amber-50 border-amber-200">
                 {challenge.difficulty}
@@ -149,21 +154,27 @@ export default async function ChallengeDetailPage({ params }: Props) {
               <span className="px-2.5 py-0.5 rounded text-xs font-semibold font-mono bg-blue-50 text-blue-700 border border-blue-200">
                 {levelsArray.length} Progressive Levels
               </span>
+              {coreDef?.isFlagship && (
+                <span className="px-2.5 py-0.5 rounded text-xs font-semibold font-mono bg-cyan-50 text-cyan-700 border border-cyan-300 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-cyan-600" />
+                  FLAGSHIP
+                </span>
+              )}
             </div>
 
             {/* Topic Chips */}
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-600 border border-slate-200/60">
-                In-Memory Databases
+              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-700 border border-slate-200/60 font-medium">
+                Domain: {coreDef?.domainLabel ?? "SYSTEMS"}
               </span>
               <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-600 border border-slate-200/60">
-                Redis & RocksDB Internal Architecture
+                Inspired by <strong className="text-slate-900">{coreDef?.inspiredBy ?? "Redis"}</strong>
               </span>
               <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-600 border border-slate-200/60">
                 Python 3.12, C++20
               </span>
               <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
-                Target: &gt;100,000 ops/s
+                Target: {coreDef?.benchmarkMetrics[0] ?? ">100,000 ops/s"}
               </span>
             </div>
           </div>
@@ -186,124 +197,151 @@ export default async function ChallengeDetailPage({ params }: Props) {
         </div>
 
         {/* ========================================================================= */}
-        {/* PROJECT SCOPE & 6-LAYER ARCHITECTURE BLUEPRINT SECTION */}
+        {/* PROJECT SCOPE & ARCHITECTURE BLUEPRINT SECTION */}
         {/* ========================================================================= */}
-        <section className="p-6 rounded-2xl border border-slate-200/90 bg-white shadow-sm space-y-6">
-          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-            <div className="space-y-1.5 max-w-3xl">
-              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-50 border border-blue-200/60 text-[10px] font-mono font-bold uppercase tracking-wider text-blue-700">
-                <Sparkles className="w-3 h-3" />
-                {PROJECT_SCOPE.badge}
-              </div>
-              <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
-                {PROJECT_SCOPE.title}
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
-                {PROJECT_SCOPE.subtitle}
-              </p>
-            </div>
+        {(() => {
+          const isKv = challenge.slug === "kv-store";
+          const scopeBadge = isKv ? PROJECT_SCOPE.badge : `${coreDef?.domainLabel ?? "SYSTEMS"} CAPSTONE`;
+          const scopeTitle = isKv ? PROJECT_SCOPE.title : (coreDef?.title || challenge.title);
+          const scopeSubtitle = isKv
+            ? PROJECT_SCOPE.subtitle
+            : `Inspired by ${coreDef?.inspiredBy ?? "Production Systems"} • ${coreDef?.whatStudentsBuild ?? "Systems Engineering"}`;
+          const scopeOverview = isKv ? PROJECT_SCOPE.overview : (coreDef?.overview || challenge.description);
+          const scopeWhyItMatters = isKv
+            ? PROJECT_SCOPE.whyItMatters
+            : `Signature Question: "${coreDef?.signatureQuestion}". Build real technology from first principles to master ${coreDef?.mainSkill}.`;
+          const layers = isKv
+            ? PROJECT_SCOPE.architecturalLayers
+            : (coreDef?.progressionLevels || []).map((lvl) => ({
+                number: lvl.level,
+                name: lvl.name,
+                focus: lvl.focus,
+                description: lvl.focus,
+                realWorldTech: coreDef?.inspiredBy || "Production Standard",
+              }));
+          const targetMetric1 = isKv ? "> 100K ops/s" : (coreDef?.benchmarkMetrics[0] || "High Throughput");
+          const targetMetric2 = isKv ? "< 0.20 ms" : (coreDef?.benchmarkMetrics[1] || "Sub-ms Latency");
+          const targetMetric3 = isKv ? "256 MB" : (coreDef?.benchmarkMetrics[2] || "Bounded RAM");
 
-            <Link href={`/challenges/${challenge.slug}/workspace`}>
-              <Button size="sm" variant="primary" className="h-9 px-4 text-xs font-semibold gap-1.5 shrink-0">
-                <span>Start Level 1</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Button>
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs leading-relaxed text-slate-600 bg-slate-50/70 p-4 rounded-xl border border-slate-200/70">
-            <div>
-              <div className="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
-                <Database className="w-3.5 h-3.5 text-blue-600" />
-                <span>What You Are Building</span>
-              </div>
-              <p>{PROJECT_SCOPE.overview}</p>
-            </div>
-            <div>
-              <div className="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 text-amber-600" />
-                <span>Why This Systems Engineering Loop Matters</span>
-              </div>
-              <p>{PROJECT_SCOPE.whyItMatters}</p>
-            </div>
-          </div>
-
-          {/* 6 Architectural Layers Grid */}
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center justify-between">
-              <div className="text-xs font-mono font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                <Layers className="w-4 h-4 text-blue-600" />
-                <span>The 6 Core Architectural Layers</span>
-              </div>
-              <span className="text-[11px] font-mono text-slate-400">
-                Production-Grade System Anatomy
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {PROJECT_SCOPE.architecturalLayers.map((layer) => (
-                <div
-                  key={layer.number}
-                  className="p-3.5 rounded-xl border border-slate-200 bg-white hover:border-blue-200 hover:shadow-xs transition-all space-y-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                      Layer {layer.number}
-                    </span>
-                    <span className="text-[10px] font-mono text-blue-600 font-semibold truncate max-w-[150px]">
-                      {layer.realWorldTech.split(",")[0]}
-                    </span>
+          return (
+            <section className="p-6 rounded-2xl border border-slate-200/90 bg-white shadow-sm space-y-6">
+              <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                <div className="space-y-1.5 max-w-3xl">
+                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-50 border border-blue-200/60 text-[10px] font-mono font-bold uppercase tracking-wider text-blue-700">
+                    <Sparkles className="w-3 h-3" />
+                    {scopeBadge}
                   </div>
-
-                  <div>
-                    <h3 className="text-xs font-bold text-slate-900">
-                      {layer.name}
-                    </h3>
-                    <div className="text-[11px] font-mono text-slate-500 font-medium mt-0.5">
-                      {layer.focus}
-                    </div>
-                  </div>
-
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
-                    {layer.description}
+                  <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
+                    {scopeTitle}
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                    {scopeSubtitle}
                   </p>
+                </div>
 
-                  <div className="pt-1.5 border-t border-slate-100 flex items-center gap-1 text-[10px] font-mono text-slate-400">
-                    <span>Parity:</span>
-                    <span className="text-slate-600 truncate">{layer.realWorldTech}</span>
+                <Link href={`/challenges/${challenge.slug}/workspace`}>
+                  <Button size="sm" variant="primary" className="h-9 px-4 text-xs font-semibold gap-1.5 shrink-0">
+                    <span>Start Level 1</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs leading-relaxed text-slate-600 bg-slate-50/70 p-4 rounded-xl border border-slate-200/70">
+                <div>
+                  <div className="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+                    <Database className="w-3.5 h-3.5 text-blue-600" />
+                    <span>What You Are Building</span>
+                  </div>
+                  <p>{scopeOverview}</p>
+                </div>
+                <div>
+                  <div className="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Why This Systems Engineering Loop Matters</span>
+                  </div>
+                  <p>{scopeWhyItMatters}</p>
+                </div>
+              </div>
+
+              {/* Architectural Layers Grid */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-mono font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-blue-600" />
+                    <span>The {layers.length} Core Architectural Layers</span>
+                  </div>
+                  <span className="text-[11px] font-mono text-slate-400">
+                    Production-Grade System Anatomy
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {layers.map((layer) => (
+                    <div
+                      key={layer.number}
+                      className="p-3.5 rounded-xl border border-slate-200 bg-white hover:border-blue-200 hover:shadow-xs transition-all space-y-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                          Layer {layer.number}
+                        </span>
+                        <span className="text-[10px] font-mono text-blue-600 font-semibold truncate max-w-[150px]">
+                          {layer.realWorldTech.split(",")[0]}
+                        </span>
+                      </div>
+
+                      <div>
+                        <h3 className="text-xs font-bold text-slate-900">
+                          {layer.name}
+                        </h3>
+                        <div className="text-[11px] font-mono text-slate-500 font-medium mt-0.5">
+                          {layer.focus}
+                        </div>
+                      </div>
+
+                      <p className="text-[11px] text-slate-600 leading-relaxed">
+                        {layer.description}
+                      </p>
+
+                      <div className="pt-1.5 border-t border-slate-100 flex items-center gap-1 text-[10px] font-mono text-slate-400">
+                        <span>Parity:</span>
+                        <span className="text-slate-600 truncate">{layer.realWorldTech}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Target Outcome Benchmark Callout */}
+              <div className="p-4 rounded-xl bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Capstone Target Outcome</span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
+                    {isKv ? PROJECT_SCOPE.finalOutcome : coreDef?.overview}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0 font-mono text-center">
+                  <div className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/15">
+                    <div className="text-[10px] text-slate-400">THROUGHPUT</div>
+                    <div className="text-sm font-bold text-emerald-400">{targetMetric1}</div>
+                  </div>
+                  <div className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/15">
+                    <div className="text-[10px] text-slate-400">LATENCY</div>
+                    <div className="text-sm font-bold text-cyan-400">{targetMetric2}</div>
+                  </div>
+                  <div className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/15">
+                    <div className="text-[10px] text-slate-400">RESOURCE</div>
+                    <div className="text-sm font-bold text-amber-400">{targetMetric3}</div>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Final Outcome Benchmark Callout */}
-          <div className="p-4 rounded-xl bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Capstone Target Outcome</span>
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
-                {PROJECT_SCOPE.finalOutcome}
-              </p>
-            </div>
-            <div className="flex items-center gap-3 shrink-0 font-mono text-center">
-              <div className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/15">
-                <div className="text-[10px] text-slate-400">THROUGHPUT</div>
-                <div className="text-sm font-bold text-emerald-400">&gt; 100K ops/s</div>
-              </div>
-              <div className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/15">
-                <div className="text-[10px] text-slate-400">P99 LATENCY</div>
-                <div className="text-sm font-bold text-cyan-400">&lt; 0.20 ms</div>
-              </div>
-              <div className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/15">
-                <div className="text-[10px] text-slate-400">MEMORY CAP</div>
-                <div className="text-sm font-bold text-amber-400">256 MB</div>
-              </div>
-            </div>
-          </div>
-        </section>
+            </section>
+          );
+        })()}
 
         {/* ========================================================================= */}
         {/* PROGRESSIVE ENGINEERING CURRICULUM & LEARNING LOOPS (LEVELS 1 - 6) */}
