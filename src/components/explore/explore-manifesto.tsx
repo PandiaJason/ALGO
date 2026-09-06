@@ -24,6 +24,11 @@ import {
   UserCheck,
   Search,
   Check,
+  Globe,
+  BarChart3,
+  FileText,
+  FileDown,
+  Trophy,
 } from "lucide-react";
 import { CORE_CHALLENGES, CoreChallenge } from "@/lib/constants/core-challenges";
 
@@ -72,8 +77,16 @@ export function ExploreManifesto({
           <p>
             Developers are already using it at scale:{" "}
             <strong className="text-slate-900 font-semibold">84%</strong> of
-            respondents to Stack Overflow&apos;s 2025 Developer Survey said they
-            use or plan to use AI tools in development, while{" "}
+            respondents to{" "}
+            <a
+              href="https://survey.stackoverflow.co/2025/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-700 underline decoration-blue-300 font-medium"
+            >
+              Stack Overflow&apos;s 2025 Developer Survey
+            </a>{" "}
+            said they use or plan to use AI tools in development, while{" "}
             <strong className="text-slate-900 font-semibold">46%</strong> said
             they distrust AI output more than they trust it.
           </p>
@@ -126,8 +139,16 @@ export function ExploreManifesto({
             The evidence is already here.
           </h2>
           <p className="text-sm sm:text-base text-slate-600 mt-2 leading-relaxed">
-            This isn&apos;t just our opinion. In HackerRank&apos;s 2025 Developer
-            Skills Report, based on{" "}
+            This isn&apos;t just our opinion. In{" "}
+            <a
+              href="https://www.hackerrank.com/reports/developer-skills-report-2025"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-700 underline decoration-blue-300 font-medium"
+            >
+              HackerRank&apos;s 2025 Developer Skills Report
+            </a>
+            , based on{" "}
             <strong className="text-slate-900">13,732 respondents</strong> across{" "}
             <strong className="text-slate-900">102 countries</strong>, the
             numbers are striking:
@@ -140,32 +161,37 @@ export function ExploreManifesto({
             {
               stat: "66%",
               label: "prefer being evaluated on real-world coding tasks.",
-              source: "HackerRank 2025 Developer Skills Report",
-              url: "https://www.hackerrank.com/research/developer-skills/2025",
+              source: "HackerRank 2025 Report",
+              url: "https://www.hackerrank.com/reports/developer-skills-report-2025",
+              pdfUrl: "https://pages.hackerrank.com/hubfs/PDFs/HackerRank%202025%20Developer%20Skills%20Report.pdf",
             },
             {
               stat: "78%",
               label: "say technical assessments don't align with real-world tasks.",
-              source: "HackerRank 2025 Developer Skills Report",
-              url: "https://www.hackerrank.com/research/developer-skills/2025",
+              source: "HackerRank 2025 Report",
+              url: "https://www.hackerrank.com/reports/developer-skills-report-2025",
+              pdfUrl: "https://pages.hackerrank.com/hubfs/PDFs/HackerRank%202025%20Developer%20Skills%20Report.pdf",
             },
             {
               stat: "56%",
               label: "say algorithm-based questions are irrelevant to their day jobs.",
-              source: "HackerRank 2025 Developer Skills Report",
-              url: "https://www.hackerrank.com/research/developer-skills/2025",
+              source: "HackerRank 2025 Report",
+              url: "https://www.hackerrank.com/reports/developer-skills-report-2025",
+              pdfUrl: "https://pages.hackerrank.com/hubfs/PDFs/HackerRank%202025%20Developer%20Skills%20Report.pdf",
             },
             {
               stat: "62%",
               label: "feel they need to overprepare for algorithm-heavy assessments.",
-              source: "HackerRank 2025 Developer Skills Report",
-              url: "https://www.hackerrank.com/research/developer-skills/2025",
+              source: "HackerRank 2025 Report",
+              url: "https://www.hackerrank.com/reports/developer-skills-report-2025",
+              pdfUrl: "https://pages.hackerrank.com/hubfs/PDFs/HackerRank%202025%20Developer%20Skills%20Report.pdf",
             },
             {
               stat: "96%",
               label: "believe problem-solving should matter more than memorization.",
-              source: "HackerRank 2025 Developer Skills Report",
-              url: "https://www.hackerrank.com/research/developer-skills/2025",
+              source: "HackerRank 2025 Report",
+              url: "https://www.hackerrank.com/reports/developer-skills-report-2025",
+              pdfUrl: "https://pages.hackerrank.com/hubfs/PDFs/HackerRank%202025%20Developer%20Skills%20Report.pdf",
             },
           ].map((card, i) => (
             <div
@@ -182,16 +208,29 @@ export function ExploreManifesto({
               </div>
 
               <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-                <span className="truncate max-w-[190px]">{card.source}</span>
-                <a
-                  href={card.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 font-sans font-semibold ml-2 shrink-0"
-                >
-                  <span>source</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
+                <span className="truncate max-w-[150px]">{card.source}</span>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={card.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-0.5 text-blue-600 hover:text-blue-700 font-sans font-semibold shrink-0"
+                  >
+                    <span>source</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                  {card.pdfUrl && (
+                    <a
+                      href={card.pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-slate-400 hover:text-slate-600 font-sans"
+                      title="Download PDF Report"
+                    >
+                      [pdf]
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           ))}
@@ -210,22 +249,35 @@ export function ExploreManifesto({
           </div>
         </div>
 
-        {/* HackerRank Self-Admission Callout */}
-        <div className="bg-[#f8fafc] border-l-4 border-cyan-600 rounded-r-2xl p-5 sm:p-6 space-y-3">
-          <div className="flex items-center justify-between">
+        {/* HackerRank Self-Admission Callout with Official Blog Articles */}
+        <div className="bg-[#f8fafc] border-l-4 border-cyan-600 rounded-r-2xl p-5 sm:p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider font-mono">
-              Even HackerRank&apos;s Own Report Confirms This
+              Even HackerRank Is Documenting This Gap
             </h3>
-            <a
-              href="https://www.hackerrank.com/research/developer-skills/2025"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1 font-mono"
-            >
-              <span>HackerRank 2025 Report</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
+            <div className="flex items-center gap-2 text-xs font-mono">
+              <a
+                href="https://www.hackerrank.com/reports/developer-skills-report-2025"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1"
+              >
+                <span>Report Overview</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+              <span className="text-slate-300">•</span>
+              <a
+                href="https://pages.hackerrank.com/hubfs/PDFs/HackerRank%202025%20Developer%20Skills%20Report.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-500 hover:text-slate-800 inline-flex items-center gap-1"
+              >
+                <FileDown className="w-3 h-3" />
+                <span>Full PDF</span>
+              </a>
+            </div>
           </div>
+
           <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
             HackerRank itself reports that{" "}
             <strong className="text-slate-900">77% of developers</strong> say most
@@ -234,7 +286,33 @@ export function ExploreManifesto({
             to prepare, and <strong className="text-slate-900">62%</strong> say they
             overprepare because they don&apos;t know what will actually be tested.
           </p>
-          <p className="text-xs sm:text-sm text-slate-600 italic">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+            <a
+              href="https://www.hackerrank.com/blog/why-do-developers-bail-on-assessments/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-3 bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-colors flex items-center justify-between group"
+            >
+              <span className="text-xs font-medium text-slate-800 group-hover:text-blue-600">
+                &ldquo;Why Do Developers Bail on Assessments?&rdquo;
+              </span>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 shrink-0 ml-2" />
+            </a>
+            <a
+              href="https://www.hackerrank.com/blog/is-leetcode-dead/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-3 bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-colors flex items-center justify-between group"
+            >
+              <span className="text-xs font-medium text-slate-800 group-hover:text-blue-600">
+                &ldquo;Is LeetCode Dead?&rdquo;
+              </span>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 shrink-0 ml-2" />
+            </a>
+          </div>
+
+          <p className="text-xs text-slate-600 italic">
             &ldquo;So ALGO isn&apos;t inventing a problem. The ecosystem is
             already telling us the problem exists.&rdquo;
           </p>
@@ -262,8 +340,31 @@ export function ExploreManifesto({
         </div>
 
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-4">
-          <div className="text-xs font-mono uppercase text-slate-500 font-semibold tracking-wider">
-            Stack Overflow 2025 Developer Survey Findings
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span className="text-xs font-mono uppercase text-slate-500 font-semibold tracking-wider">
+              Stack Overflow 2025 Developer &amp; AI Survey Findings
+            </span>
+            <div className="flex items-center gap-3 text-xs font-mono">
+              <a
+                href="https://survey.stackoverflow.co/2025/ai"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1"
+              >
+                <span>AI Section</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+              <span className="text-slate-300">•</span>
+              <a
+                href="https://survey.stackoverflow.co/2025/developers"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1"
+              >
+                <span>Developers Section</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -294,15 +395,15 @@ export function ExploreManifesto({
             </div>
           </div>
 
-          <div className="pt-2 flex items-center justify-between text-xs text-slate-500 font-mono border-t border-slate-100">
-            <span>Stack Overflow Annual Developer Survey (AI Section, 49,000+ respondents)</span>
+          <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 font-mono border-t border-slate-100">
+            <span>Stack Overflow 2025 Annual Developer &amp; AI Survey (49,000+ respondents)</span>
             <a
               href="https://survey.stackoverflow.co/2025/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1 font-sans"
             >
-              <span>source</span>
+              <span>survey.stackoverflow.co/2025</span>
               <ExternalLink className="w-3 h-3" />
             </a>
           </div>
@@ -735,7 +836,112 @@ export function ExploreManifesto({
       </section>
 
       {/* ============================================================== */}
-      {/* 9. THE NEW QUESTION: CONCLUSION                                */}
+      {/* 9. COMPETITIVE LANDSCAPE: HOW PROVING GROUNDS EVOLVED          */}
+      {/* ============================================================== */}
+      <section className="space-y-6 border-b border-slate-200/80 pb-16">
+        <div>
+          <span className="text-xs font-mono uppercase tracking-wider text-indigo-700 font-semibold">
+            Competitive Landscape &amp; Evolution
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-950 mt-1">
+            How developer evaluation evolved.
+          </h2>
+          <p className="text-sm sm:text-base text-slate-600 mt-2 leading-relaxed">
+            Different platforms solved different eras of developer evaluation. Understanding where they succeed reveals the missing layer.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* LeetCode / HackerRank */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-3 flex flex-col justify-between">
+            <div className="space-y-2">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold">
+                ALGORITHMIC PUZZLES
+              </span>
+              <h3 className="font-bold text-slate-900 text-sm">LeetCode &amp; HackerRank</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Standardized algorithmic interviews and syntax correctness through automated unit tests on isolated questions.
+              </p>
+            </div>
+            <div className="pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500">
+              Focus: Array/Tree algorithms &amp; whiteboard puzzles.
+            </div>
+          </div>
+
+          {/* Topcoder */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-3 flex flex-col justify-between">
+            <div className="space-y-2">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 font-semibold">
+                CROWD COMPETITIONS
+              </span>
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-slate-900 text-sm">Topcoder Challenges</h3>
+                <a
+                  href="https://www.topcoder.com/opportunities/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-400 hover:text-slate-700"
+                  title="Visit Topcoder Opportunities"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Pioneered competitive marathon matches and crowdsourced software bounties across global engineering communities.
+              </p>
+            </div>
+            <div className="pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500">
+              Focus: Competitive algorithms &amp; freelance bounties.
+            </div>
+          </div>
+
+          {/* Kaggle */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-3 flex flex-col justify-between">
+            <div className="space-y-2">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200 font-semibold">
+                ML PROVING GROUND
+              </span>
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-slate-900 text-sm">Kaggle Competitions</h3>
+                <a
+                  href="https://www.kaggle.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-400 hover:text-slate-700"
+                  title="Visit Kaggle"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Proved that public leaderboards, empirical loss scores, and hidden holdout sets drive genuine Machine Learning mastery.
+              </p>
+            </div>
+            <div className="pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500">
+              Focus: Predictive models &amp; empirical benchmarks.
+            </div>
+          </div>
+
+          {/* ALGO */}
+          <div className="bg-slate-950 border border-slate-800 text-white rounded-2xl p-5 shadow-xl space-y-3 flex flex-col justify-between">
+            <div className="space-y-2">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800 font-bold">
+                SYSTEMS PROVING GROUND
+              </span>
+              <h3 className="font-bold text-white text-sm">ALGO Proving Ground</h3>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                What Kaggle did for Machine Learning, ALGO does for Systems &amp; Infrastructure. Measuring throughput, p99 latency, and crash recovery.
+              </p>
+            </div>
+            <div className="pt-3 border-t border-slate-800 text-[11px] font-mono text-cyan-400">
+              Focus: Real systems, bare-metal hardware &amp; AI era.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* 10. THE NEW QUESTION: CONCLUSION                               */}
       {/* ============================================================== */}
       <section className="bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 border border-slate-800 text-white rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden space-y-6">
         <div className="absolute right-0 top-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -781,7 +987,7 @@ export function ExploreManifesto({
       </section>
 
       {/* ============================================================== */}
-      {/* 10. PUT IT INTO PRACTICE: THE 10 CORE CHALLENGES               */}
+      {/* 11. PUT IT INTO PRACTICE: THE 10 CORE CHALLENGES              */}
       {/* ============================================================== */}
       <section className="space-y-8 pt-4">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -914,36 +1120,185 @@ export function ExploreManifesto({
       </section>
 
       {/* ============================================================== */}
-      {/* 11. FORMAL REFERENCES & CITATIONS                              */}
+      {/* 12. EMPIRICAL RESEARCH & PRIMARY SOURCES ARCHIVE              */}
       {/* ============================================================== */}
-      <footer className="border-t border-slate-200 pt-8 space-y-3 text-[11px] font-mono text-slate-500">
-        <div className="font-semibold text-slate-700 uppercase tracking-wider">
-          References &amp; Empirical Sources
+      <footer className="border-t border-slate-200 pt-10 space-y-8 text-slate-600">
+        <div>
+          <span className="text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold">
+            Documented Evidence &amp; Citations
+          </span>
+          <h3 className="text-lg font-bold text-slate-900 mt-1">
+            Primary Research &amp; Market Sources
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">
+            The core research reports, empirical survey datasets, and platform architectures underpinning why ALGO exists.
+          </p>
         </div>
-        <ol className="list-decimal pl-4 space-y-1.5">
-          <li>
-            <a
-              href="https://survey.stackoverflow.co/2025/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-slate-600 hover:text-slate-900 underline decoration-slate-300"
-            >
-              Stack Overflow Annual Developer Survey 2025
-            </a>{" "}
-            — AI Usage, Trust, and Developer Sentiment analysis across 49,000+ respondents.
-          </li>
-          <li>
-            <a
-              href="https://www.hackerrank.com/research/developer-skills/2025"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-slate-600 hover:text-slate-900 underline decoration-slate-300"
-            >
-              HackerRank Developer Skills Report 2025
-            </a>{" "}
-            — 13,732 developers and hiring managers across 102 countries on real-world evaluation, overpreparation, and assessment-job skill alignment.
-          </li>
-        </ol>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
+          {/* Group 1: Market / Problem Evidence */}
+          <div className="space-y-3 bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs">
+            <div className="font-mono text-[11px] font-bold uppercase text-cyan-800 tracking-wider flex items-center gap-1.5">
+              <BarChart3 className="w-3.5 h-3.5 text-cyan-600" />
+              <span>1. Market / Problem Evidence</span>
+            </div>
+            <ul className="space-y-3 font-mono text-[11px]">
+              <li className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <a
+                    href="https://www.hackerrank.com/reports/developer-skills-report-2025"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-slate-900 hover:text-blue-600 flex items-center gap-1 group"
+                  >
+                    <span>HackerRank 2025 Skills Report</span>
+                    <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-blue-600" />
+                  </a>
+                  <a
+                    href="https://pages.hackerrank.com/hubfs/PDFs/HackerRank%202025%20Developer%20Skills%20Report.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[10px] text-slate-400 hover:text-slate-600 font-sans"
+                    title="Direct PDF"
+                  >
+                    [PDF]
+                  </a>
+                </div>
+                <p className="font-sans text-slate-500 leading-normal">
+                  13,732 respondents across 102 countries. 78% report assessments don&apos;t align with real work; 66% prefer real tasks.
+                </p>
+              </li>
+
+              <li className="space-y-1 pt-2 border-t border-slate-100">
+                <a
+                  href="https://survey.stackoverflow.co/2025/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-slate-900 hover:text-blue-600 flex items-center justify-between group"
+                >
+                  <span>Stack Overflow 2025 Survey</span>
+                  <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-blue-600" />
+                </a>
+                <p className="font-sans text-slate-500 leading-normal">
+                  84% use/plan AI tools, 46% distrust AI output accuracy, 66% frustrated by &ldquo;almost-right&rdquo; code.
+                </p>
+              </li>
+
+              <li className="space-y-1 pt-2 border-t border-slate-100">
+                <a
+                  href="https://survey.stackoverflow.co/2025/ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-slate-900 hover:text-blue-600 flex items-center justify-between group"
+                >
+                  <span>Stack Overflow 2025 AI Survey</span>
+                  <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-blue-600" />
+                </a>
+                <p className="font-sans text-slate-500 leading-normal">
+                  In-depth analysis of cognitive overhead, debugging time expansion, and the rise of verification-centric engineering.
+                </p>
+              </li>
+            </ul>
+          </div>
+
+          {/* Group 2: Existing Platforms & Competitor Paradigms */}
+          <div className="space-y-3 bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs">
+            <div className="font-mono text-[11px] font-bold uppercase text-amber-800 tracking-wider flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-amber-600" />
+              <span>2. Existing Platforms</span>
+            </div>
+            <ul className="space-y-3 font-mono text-[11px]">
+              <li className="space-y-1">
+                <a
+                  href="https://www.topcoder.com/opportunities/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-slate-900 hover:text-blue-600 flex items-center justify-between group"
+                >
+                  <span>Topcoder — Opportunities &amp; Challenges</span>
+                  <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-blue-600" />
+                </a>
+                <p className="font-sans text-slate-500 leading-normal">
+                  Tournament-based competitive programming and client bounties. Tests functional correctness over hardware telemetry.
+                </p>
+              </li>
+
+              <li className="space-y-1 pt-2 border-t border-slate-100">
+                <a
+                  href="https://www.kaggle.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-slate-900 hover:text-blue-600 flex items-center justify-between group"
+                >
+                  <span>Kaggle — Competitions &amp; Community</span>
+                  <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-blue-600" />
+                </a>
+                <p className="font-sans text-slate-500 leading-normal">
+                  The gold standard empirical proving ground for ML. ALGO translates this model to backend systems &amp; infrastructure.
+                </p>
+              </li>
+            </ul>
+          </div>
+
+          {/* Group 3: Additional Research & Analysis */}
+          <div className="space-y-3 bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs">
+            <div className="font-mono text-[11px] font-bold uppercase text-purple-800 tracking-wider flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5 text-purple-600" />
+              <span>3. Additional Research</span>
+            </div>
+            <ul className="space-y-3 font-mono text-[11px]">
+              <li className="space-y-1">
+                <a
+                  href="https://survey.stackoverflow.co/2025/developers"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-slate-900 hover:text-blue-600 flex items-center justify-between group"
+                >
+                  <span>Stack Overflow — 2025 Developers Data</span>
+                  <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-blue-600" />
+                </a>
+                <p className="font-sans text-slate-500 leading-normal">
+                  Demographics, technology adoption curves, and shift toward AI-assisted development environments.
+                </p>
+              </li>
+
+              <li className="space-y-1 pt-2 border-t border-slate-100">
+                <a
+                  href="https://www.hackerrank.com/blog/why-do-developers-bail-on-assessments/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-slate-900 hover:text-blue-600 flex items-center justify-between group"
+                >
+                  <span>Why Do Developers Bail on Assessments?</span>
+                  <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-blue-600" />
+                </a>
+                <p className="font-sans text-slate-500 leading-normal">
+                  HackerRank&apos;s analysis on candidate drop-off and fatigue caused by synthetic algorithm hurdles.
+                </p>
+              </li>
+
+              <li className="space-y-1 pt-2 border-t border-slate-100">
+                <a
+                  href="https://www.hackerrank.com/blog/is-leetcode-dead/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-slate-900 hover:text-blue-600 flex items-center justify-between group"
+                >
+                  <span>Is LeetCode Dead? — Industry Analysis</span>
+                  <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-blue-600" />
+                </a>
+                <p className="font-sans text-slate-500 leading-normal">
+                  Analysis of why pure algorithmic memorization fails to evaluate real engineering competence in the LLM era.
+                </p>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] font-mono text-slate-400 border-t border-slate-100">
+          <span>ALGO Research • Systems Architecture &amp; Developer Evaluation</span>
+          <span>Updated September 2026</span>
+        </div>
       </footer>
     </div>
   );
