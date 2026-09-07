@@ -151,13 +151,20 @@ export async function POST(req: NextRequest) {
       })
       .returning();
 
-    // 4. Insert starter template files for Python and C++
-    await db.insert(challengeFiles).values([
+    // 4. Insert starter template files for Python, C++, Rust, Go, and Java
+    const templateInserts: Array<{
+      challengeVersionId: string;
+      filename: string;
+      language: string;
+      content: string;
+      isReadonly: boolean;
+      isHidden: boolean;
+    }> = [
       {
         challengeVersionId: version.id,
         filename: "solution.py",
         language: "python",
-        content: data.starterTemplates.python,
+        content: data.starterTemplates.python || "# Python starter",
         isReadonly: false,
         isHidden: false,
       },
@@ -165,11 +172,44 @@ export async function POST(req: NextRequest) {
         challengeVersionId: version.id,
         filename: "solution.cpp",
         language: "cpp",
-        content: data.starterTemplates.cpp,
+        content: data.starterTemplates.cpp || "// C++ starter",
         isReadonly: false,
         isHidden: false,
       },
-    ]);
+    ];
+
+    if ((data.starterTemplates as any)?.rust) {
+      templateInserts.push({
+        challengeVersionId: version.id,
+        filename: "solution.rs",
+        language: "rust",
+        content: (data.starterTemplates as any).rust,
+        isReadonly: false,
+        isHidden: false,
+      });
+    }
+    if ((data.starterTemplates as any)?.go) {
+      templateInserts.push({
+        challengeVersionId: version.id,
+        filename: "main.go",
+        language: "go",
+        content: (data.starterTemplates as any).go,
+        isReadonly: false,
+        isHidden: false,
+      });
+    }
+    if ((data.starterTemplates as any)?.java) {
+      templateInserts.push({
+        challengeVersionId: version.id,
+        filename: "Solution.java",
+        language: "java",
+        content: (data.starterTemplates as any).java,
+        isReadonly: false,
+        isHidden: false,
+      });
+    }
+
+    await db.insert(challengeFiles).values(templateInserts);
 
     // 5. Insert benchmark config
     const [benchConfig] = await db

@@ -8,7 +8,7 @@ import { runQuickTest } from "@/lib/sandbox/runner";
 import { z } from "zod";
 
 const testSchema = z.object({
-  language: z.enum(["python", "cpp"]),
+  language: z.enum(["python", "cpp", "rust", "go", "java"]),
   level: z.number().int().min(1).max(6).default(1),
   code: z.string().min(1),
 });

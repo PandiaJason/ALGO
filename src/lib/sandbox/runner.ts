@@ -1,5 +1,6 @@
 import { spawn } from "child_process";
 import { getChallenge } from "../challenges";
+import { SupportedLanguage } from "../challenges/types";
 
 export interface TestCaseResult {
   name: string;
@@ -36,11 +37,18 @@ export interface BenchmarkMetrics {
  */
 export async function runInDocker(
   code: string,
-  language: "python" | "cpp",
+  language: SupportedLanguage,
   inputData: string,
   timeoutMs?: number
 ): Promise<{ stdout: string; stderr: string; exitCode: number; timedOut?: boolean; oomKilled?: boolean }> {
-  const defaultTimeout = language === "cpp" ? 8000 : 6000;
+  const defaultTimeoutMap: Record<SupportedLanguage, number> = {
+    python: 6000,
+    cpp: 8000,
+    rust: 10000,
+    go: 8000,
+    java: 8000,
+  };
+  const defaultTimeout = defaultTimeoutMap[language] || 6000;
   const effectiveTimeoutMs = timeoutMs ?? (
     process.env.SANDBOX_TIMEOUT_SECONDS
       ? parseInt(process.env.SANDBOX_TIMEOUT_SECONDS, 10) * 1000
@@ -54,13 +62,39 @@ export async function runInDocker(
   const pidsLimit = process.env.SANDBOX_PIDS_LIMIT || "64";
 
   const encodedCode = Buffer.from(code).toString("base64");
-  const filename = language === "python" ? "solution.py" : "solution.cpp";
+  const filenameMap: Record<SupportedLanguage, string> = {
+    python: "solution.py",
+    cpp: "solution.cpp",
+    rust: "solution.rs",
+    go: "main.go",
+    java: "Solution.java",
+  };
+  const filename = filenameMap[language] || "solution.py";
   const timeoutSec = Math.max(Math.ceil(effectiveTimeoutMs / 1000), 2);
 
-  const innerCmd =
-    language === "python"
-      ? `echo "${encodedCode}" | base64 -d > /workspace/${filename} && timeout ${timeoutSec}s python3 /workspace/${filename}`
-      : `echo "${encodedCode}" | base64 -d > /workspace/${filename} && timeout 12s g++ -O3 -std=c++20 /workspace/${filename} -o /workspace/solution && timeout ${timeoutSec}s /workspace/solution`;
+  let innerCmd = "";
+  switch (language) {
+    case "python":
+      innerCmd = `echo "${encodedCode}" | base64 -d > /workspace/${filename} && timeout ${timeoutSec}s python3 /workspace/${filename}`;
+      break;
+    case "cpp":
+      innerCmd = `echo "${encodedCode}" | base64 -d > /workspace/${filename} && timeout 12s g++ -O3 -std=c++20 /workspace/${filename} -o /workspace/solution && timeout ${timeoutSec}s /workspace/solution`;
+      break;
+    case "rust":
+      // TMPDIR=/workspace is required because /tmp is mounted noexec
+      innerCmd = `echo "${encodedCode}" | base64 -d > /workspace/${filename} && TMPDIR=/workspace timeout 15s rustc -C opt-level=3 /workspace/${filename} -o /workspace/solution && timeout ${timeoutSec}s /workspace/solution`;
+      break;
+    case "go":
+      // GOCACHE in /workspace because root filesystem is read-only
+      innerCmd = `echo "${encodedCode}" | base64 -d > /workspace/${filename} && export GOCACHE=/workspace/.gocache && timeout 10s go build -o /workspace/solution /workspace/${filename} && timeout ${timeoutSec}s /workspace/solution`;
+      break;
+    case "java":
+      // Java class must be Solution. -Xmx192m and SerialGC prevent container cgroup OOM kill (cap 256MB)
+      innerCmd = `echo "${encodedCode}" | base64 -d > /workspace/${filename} && timeout 10s javac -d /workspace /workspace/${filename} && timeout ${timeoutSec}s java -Xmx192m -XX:+UseSerialGC -Djava.io.tmpdir=/workspace -cp /workspace Solution`;
+      break;
+    default:
+      innerCmd = `echo "${encodedCode}" | base64 -d > /workspace/${filename} && timeout ${timeoutSec}s python3 /workspace/${filename}`;
+  }
 
   return new Promise((resolve) => {
     const dockerArgs = [
@@ -309,7 +343,7 @@ export const LEVEL_TEST_SUITES: Record<number, TestCaseDef[]> = {
 };
 
 export async function runQuickTest(
-  language: "python" | "cpp",
+  language: SupportedLanguage,
   code: string,
   level: number = 1,
   challengeSlug?: string
@@ -394,7 +428,7 @@ export async function runQuickTest(
 }
 
 export async function runBenchmark(
-  language: "python" | "cpp",
+  language: SupportedLanguage,
   code: string,
   operations = 30000
 ): Promise<BenchmarkMetrics> {

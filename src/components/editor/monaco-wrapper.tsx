@@ -29,11 +29,30 @@ export function MonacoWrapper({
   readOnly = false,
   theme = "vs",
 }: MonacoWrapperProps) {
+  const getMonacoLang = (lang: string) => {
+    switch (lang?.toLowerCase()) {
+      case "python":
+        return "python";
+      case "cpp":
+      case "c++":
+        return "cpp";
+      case "rust":
+        return "rust";
+      case "go":
+      case "golang":
+        return "go";
+      case "java":
+        return "java";
+      default:
+        return lang || "plaintext";
+    }
+  };
+
   return (
     <div className={`w-full h-full min-h-[350px] overflow-hidden ${theme === "vs-dark" ? "bg-[#1e1e1e]" : "bg-white"}`}>
       <Editor
         height="100%"
-        language={language === "cpp" ? "cpp" : "python"}
+        language={getMonacoLang(language)}
         value={value}
         onChange={onChange}
         theme={theme}

@@ -34,6 +34,8 @@ export interface LevelDefinition {
   }>;
 }
 
+export type SupportedLanguage = "python" | "cpp" | "rust" | "go" | "java";
+
 export interface ChallengeData {
   slug: string;
   number: string;
@@ -53,5 +55,8 @@ export interface ChallengeData {
   starterTemplates: {
     python: string;
     cpp: string;
+    rust?: string;
+    go?: string;
+    java?: string;
   };
 }

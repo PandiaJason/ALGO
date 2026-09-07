@@ -8,7 +8,7 @@ import { z } from "zod";
 
 const submissionSchema = z.object({
   challengeVersionId: z.string().uuid(),
-  language: z.enum(["python", "cpp"]),
+  language: z.enum(["python", "cpp", "rust", "go", "java"]),
   level: z.number().int().min(1).max(6).default(1),
   files: z.array(
     z.object({

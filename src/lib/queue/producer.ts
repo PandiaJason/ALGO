@@ -77,8 +77,10 @@ export async function enqueueSubmission(data: SubmissionJobData) {
   });
 }
 
+import { SupportedLanguage } from "@/lib/challenges/types";
+
 export interface QuickTestJobData {
-  language: "python" | "cpp";
+  language: SupportedLanguage;
   level: number;
   code: string;
   challengeSlug?: string;

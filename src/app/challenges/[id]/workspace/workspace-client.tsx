@@ -8,6 +8,7 @@ import { AlgoLogoIcon } from "@/components/layout/algo-logo-icon";
 import { DEFAULT_STARTER_TEMPLATES } from "@/lib/constants/templates";
 import { PROJECT_SCOPE, LEVEL_DEFINITIONS } from "@/lib/constants/challenge-data";
 import { getChallenge } from "@/lib/challenges";
+import { SupportedLanguage } from "@/lib/challenges/types";
 import {
   Play,
   Send,
@@ -107,22 +108,22 @@ export function WorkspaceClient({
     ? dbLevelsRecord
     : (challengeData?.levels || (isKv ? LEVEL_DEFINITIONS : {}));
 
-  const getInitialCode = (lang: "python" | "cpp") => {
+  const getInitialCode = (lang: SupportedLanguage) => {
     let rawTemplates = version.starterTemplates;
     if (typeof rawTemplates === "string") {
       try { rawTemplates = JSON.parse(rawTemplates); } catch {}
     }
-    const dbTemplate = lang === "python" ? rawTemplates?.python : rawTemplates?.cpp;
+    const dbTemplate = (rawTemplates as any)?.[lang];
     if (dbTemplate && typeof dbTemplate === "string" && dbTemplate.length > 20) {
       return dbTemplate;
     }
-    if (challengeData?.starterTemplates?.[lang]) {
-      return challengeData.starterTemplates[lang];
+    if ((challengeData?.starterTemplates as any)?.[lang]) {
+      return (challengeData?.starterTemplates as any)[lang];
     }
-    return isKv ? DEFAULT_STARTER_TEMPLATES[lang] : "";
+    return (DEFAULT_STARTER_TEMPLATES as any)[lang] || "";
   };
 
-  const [language, setLanguage] = useState<"python" | "cpp">("python");
+  const [language, setLanguage] = useState<SupportedLanguage>("python");
   const [selectedLevel, setSelectedLevel] = useState<number>(1);
   const [code, setCode] = useState<string>(() => getInitialCode("python"));
   const [leftTab, setLeftTab] = useState<"description" | "missions" | "submissions" | "leaderboard">("description");
@@ -169,7 +170,7 @@ export function WorkspaceClient({
   const sampleCases = currentLevelInfo?.cases || [];
 
 
-  const handleLanguageChange = (newLang: "python" | "cpp") => {
+  const handleLanguageChange = (newLang: SupportedLanguage) => {
     setLanguage(newLang);
     setCode(getInitialCode(newLang));
   };
@@ -257,7 +258,16 @@ export function WorkspaceClient({
           level: selectedLevel,
           files: [
             {
-              filename: language === "python" ? "store.py" : "store.cpp",
+              filename:
+                language === "python"
+                  ? "store.py"
+                  : language === "cpp"
+                  ? "store.cpp"
+                  : language === "rust"
+                  ? "store.rs"
+                  : language === "go"
+                  ? "main.go"
+                  : "Solution.java",
               content: code,
             },
           ],
@@ -877,11 +887,14 @@ export function WorkspaceClient({
             <div className="flex items-center gap-2">
               <select
                 value={language}
-                onChange={(e) => handleLanguageChange(e.target.value as any)}
+                onChange={(e) => handleLanguageChange(e.target.value as SupportedLanguage)}
                 className="bg-white text-slate-800 text-xs font-mono font-medium rounded-md px-2.5 py-1 border border-slate-300 shadow-2xs focus:outline-none cursor-pointer"
               >
                 <option value="python">Python 3.12</option>
                 <option value="cpp">C++ 20 (g++)</option>
+                <option value="rust">Rust 1.75+</option>
+                <option value="go">Go 1.22+</option>
+                <option value="java">Java 21</option>
               </select>
 
               <select

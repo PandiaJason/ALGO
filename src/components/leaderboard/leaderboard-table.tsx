@@ -73,6 +73,23 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
     ? Math.min(...entries.filter((e) => e.latencyP99Ms).map((e) => Number(e.latencyP99Ms) || 999))
     : 0;
 
+  const formatLanguage = (lang?: string) => {
+    switch (lang?.toLowerCase()) {
+      case "cpp":
+        return "C++20";
+      case "python":
+        return "Python 3.12";
+      case "rust":
+        return "Rust 1.75";
+      case "go":
+        return "Go 1.22";
+      case "java":
+        return "Java 21";
+      default:
+        return lang || "Unknown";
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Stat Summary Cards (LeetCode Style) */}
@@ -130,27 +147,25 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
         </div>
       </div>
 
-      {/* Filter and Search Bar (LeetCode Style) */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
-        {/* Search Input */}
-        <div className="relative w-full sm:w-80">
-          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+      {/* Control Bar: Search + Filter + Sort */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
             placeholder="Search by engineer or challenge..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-4 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 text-slate-800 shadow-2xs"
+            className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono placeholder:text-slate-400 focus:outline-none focus:border-[#099BE9] focus:bg-white transition-colors"
           />
         </div>
 
-        {/* Language & Sorting Controls */}
-        <div className="flex items-center gap-2 overflow-x-auto">
-          {/* Language filters */}
-          <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50 text-xs font-mono">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Language filter */}
+          <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50 text-xs font-mono overflow-x-auto">
             <button
               onClick={() => setSelectedLanguage("ALL")}
-              className={`px-2.5 py-1 rounded transition-colors ${
+              className={`px-2 py-1 rounded transition-colors ${
                 selectedLanguage === "ALL"
                   ? "bg-white text-slate-900 shadow-2xs font-bold"
                   : "text-slate-600 hover:text-slate-900"
@@ -160,7 +175,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
             </button>
             <button
               onClick={() => setSelectedLanguage("python")}
-              className={`px-2.5 py-1 rounded transition-colors ${
+              className={`px-2 py-1 rounded transition-colors ${
                 selectedLanguage === "python"
                   ? "bg-white text-slate-900 shadow-2xs font-bold"
                   : "text-slate-600 hover:text-slate-900"
@@ -170,13 +185,43 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
             </button>
             <button
               onClick={() => setSelectedLanguage("cpp")}
-              className={`px-2.5 py-1 rounded transition-colors ${
+              className={`px-2 py-1 rounded transition-colors ${
                 selectedLanguage === "cpp"
                   ? "bg-white text-slate-900 shadow-2xs font-bold"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
               C++
+            </button>
+            <button
+              onClick={() => setSelectedLanguage("rust")}
+              className={`px-2 py-1 rounded transition-colors ${
+                selectedLanguage === "rust"
+                  ? "bg-white text-slate-900 shadow-2xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Rust
+            </button>
+            <button
+              onClick={() => setSelectedLanguage("go")}
+              className={`px-2 py-1 rounded transition-colors ${
+                selectedLanguage === "go"
+                  ? "bg-white text-slate-900 shadow-2xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Go
+            </button>
+            <button
+              onClick={() => setSelectedLanguage("java")}
+              className={`px-2 py-1 rounded transition-colors ${
+                selectedLanguage === "java"
+                  ? "bg-white text-slate-900 shadow-2xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Java
             </button>
           </div>
 
@@ -284,7 +329,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
                             )}
                           </div>
                           <div className="text-[10px] font-mono text-slate-400 uppercase">
-                            {entry.language === "cpp" ? "C++20" : "Python 3.12"}
+                            {formatLanguage(entry.language)}
                           </div>
                         </div>
                       </div>

@@ -221,26 +221,63 @@ export async function PATCH(
       targetVersionId = newVersion.id;
 
       // Insert files
-      if (mergedStarter.python || mergedStarter.cpp) {
-        await db.insert(challengeFiles).values([
-          {
-            challengeVersionId: targetVersionId,
-            filename: "solution.py",
-            language: "python",
-            content: mergedStarter.python || "# Python starter",
-            isReadonly: false,
-            isHidden: false,
-          },
-          {
-            challengeVersionId: targetVersionId,
-            filename: "solution.cpp",
-            language: "cpp",
-            content: mergedStarter.cpp || "// C++ starter",
-            isReadonly: false,
-            isHidden: false,
-          },
-        ]);
+      const newVersionFiles: Array<{
+        challengeVersionId: string;
+        filename: string;
+        language: string;
+        content: string;
+        isReadonly: boolean;
+        isHidden: boolean;
+      }> = [
+        {
+          challengeVersionId: targetVersionId,
+          filename: "solution.py",
+          language: "python",
+          content: mergedStarter.python || "# Python starter",
+          isReadonly: false,
+          isHidden: false,
+        },
+        {
+          challengeVersionId: targetVersionId,
+          filename: "solution.cpp",
+          language: "cpp",
+          content: mergedStarter.cpp || "// C++ starter",
+          isReadonly: false,
+          isHidden: false,
+        },
+      ];
+
+      if (mergedStarter.rust) {
+        newVersionFiles.push({
+          challengeVersionId: targetVersionId,
+          filename: "solution.rs",
+          language: "rust",
+          content: mergedStarter.rust,
+          isReadonly: false,
+          isHidden: false,
+        });
       }
+      if (mergedStarter.go) {
+        newVersionFiles.push({
+          challengeVersionId: targetVersionId,
+          filename: "main.go",
+          language: "go",
+          content: mergedStarter.go,
+          isReadonly: false,
+          isHidden: false,
+        });
+      }
+      if (mergedStarter.java) {
+        newVersionFiles.push({
+          challengeVersionId: targetVersionId,
+          filename: "Solution.java",
+          language: "java",
+          content: mergedStarter.java,
+          isReadonly: false,
+          isHidden: false,
+        });
+      }
+      await db.insert(challengeFiles).values(newVersionFiles);
 
       // Insert benchmark configs
       await db.insert(benchmarkConfigs).values({
@@ -273,27 +310,45 @@ export async function PATCH(
         .where(eq(challengeVersions.id, targetVersionId));
 
       // Update starter files if provided
-      if (data.starterTemplates?.python) {
-        await db
-          .update(challengeFiles)
-          .set({ content: data.starterTemplates.python })
-          .where(
-            and(
-              eq(challengeFiles.challengeVersionId, targetVersionId),
-              eq(challengeFiles.filename, "solution.py")
-            )
-          );
-      }
-      if (data.starterTemplates?.cpp) {
-        await db
-          .update(challengeFiles)
-          .set({ content: data.starterTemplates.cpp })
-          .where(
-            and(
-              eq(challengeFiles.challengeVersionId, targetVersionId),
-              eq(challengeFiles.filename, "solution.cpp")
-            )
-          );
+      if (data.starterTemplates) {
+        const langEntries = [
+          { key: "python", file: "solution.py", lang: "python" },
+          { key: "cpp", file: "solution.cpp", lang: "cpp" },
+          { key: "rust", file: "solution.rs", lang: "rust" },
+          { key: "go", file: "main.go", lang: "go" },
+          { key: "java", file: "Solution.java", lang: "java" },
+        ];
+        for (const item of langEntries) {
+          const content = (data.starterTemplates as any)[item.key];
+          if (content) {
+            const existing = await db
+              .select()
+              .from(challengeFiles)
+              .where(
+                and(
+                  eq(challengeFiles.challengeVersionId, targetVersionId),
+                  eq(challengeFiles.filename, item.file)
+                )
+              )
+              .limit(1);
+
+            if (existing[0]) {
+              await db
+                .update(challengeFiles)
+                .set({ content })
+                .where(eq(challengeFiles.id, existing[0].id));
+            } else {
+              await db.insert(challengeFiles).values({
+                challengeVersionId: targetVersionId,
+                filename: item.file,
+                language: item.lang,
+                content,
+                isReadonly: false,
+                isHidden: false,
+              });
+            }
+          }
+        }
       }
 
       // Update benchmark config if provided

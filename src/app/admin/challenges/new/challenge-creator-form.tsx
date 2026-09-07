@@ -232,6 +232,56 @@ int main() {
 }
 `);
 
+  const [rustTemplate, setRustTemplate] = useState(`// Rust 1.75+ Starter Template
+use std::io::{self, BufRead};
+
+fn main() {
+    let stdin = io::stdin();
+    for line in stdin.lock().lines().flatten() {
+        let line = line.trim();
+        if line == "EXIT" { break; }
+        println!("OK");
+    }
+}
+`);
+
+  const [goTemplate, setGoTemplate] = useState(`// Go 1.22+ Starter Template
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strings"
+)
+
+func main() {
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "EXIT" { break }
+		fmt.Println("OK")
+	}
+}
+`);
+
+  const [javaTemplate, setJavaTemplate] = useState(`// Java 21 Starter Template
+import java.io.*;
+import java.util.*;
+
+public class Solution {
+    public static void main(String[] args) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            line = line.trim();
+            if ("EXIT".equals(line)) break;
+            System.out.println("OK");
+        }
+    }
+}
+`);
+
   const [testCases, setTestCases] = useState<TestCase[]>([
     {
       name: "Case 1: Capacity & Basic Put/Get",
@@ -380,7 +430,7 @@ int main() {
       description,
       difficulty,
       status,
-      supportedLanguages: ["python", "cpp"],
+      supportedLanguages: ["python", "cpp", "rust", "go", "java"],
       spec: {
         overview: description,
         whatYouLearn: [
@@ -398,6 +448,9 @@ int main() {
       starterTemplates: {
         python: pythonTemplate,
         cpp: cppTemplate,
+        rust: rustTemplate,
+        go: goTemplate,
+        java: javaTemplate,
       },
       testDefinitions: testCases,
       benchmarkConfig: {
@@ -796,6 +849,60 @@ int main() {
                   value={cppTemplate}
                   onChange={(e) => setCppTemplate(e.target.value)}
                   className="w-full text-xs font-mono p-3 bg-slate-900 text-slate-100 rounded-md focus:outline-none focus:ring-1 focus:ring-[#09C899]"
+                  spellCheck={false}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="py-3 px-5 border-b border-slate-100 bg-slate-50/50">
+                <CardTitle className="text-xs font-semibold text-slate-900 flex items-center gap-2">
+                  <Code className="w-4 h-4 text-[#8647E2]" />
+                  Rust 1.75+ Starter Template (solution.rs)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
+                <textarea
+                  rows={14}
+                  value={rustTemplate}
+                  onChange={(e) => setRustTemplate(e.target.value)}
+                  className="w-full text-xs font-mono p-3 bg-slate-900 text-slate-100 rounded-md focus:outline-none focus:ring-1 focus:ring-[#8647E2]"
+                  spellCheck={false}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="py-3 px-5 border-b border-slate-100 bg-slate-50/50">
+                <CardTitle className="text-xs font-semibold text-slate-900 flex items-center gap-2">
+                  <Code className="w-4 h-4 text-[#099BE9]" />
+                  Go 1.22+ Starter Template (main.go)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
+                <textarea
+                  rows={14}
+                  value={goTemplate}
+                  onChange={(e) => setGoTemplate(e.target.value)}
+                  className="w-full text-xs font-mono p-3 bg-slate-900 text-slate-100 rounded-md focus:outline-none focus:ring-1 focus:ring-[#099BE9]"
+                  spellCheck={false}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="py-3 px-5 border-b border-slate-100 bg-slate-50/50">
+                <CardTitle className="text-xs font-semibold text-slate-900 flex items-center gap-2">
+                  <Code className="w-4 h-4 text-[#F78424]" />
+                  Java 21 Starter Template (Solution.java)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
+                <textarea
+                  rows={14}
+                  value={javaTemplate}
+                  onChange={(e) => setJavaTemplate(e.target.value)}
+                  className="w-full text-xs font-mono p-3 bg-slate-900 text-slate-100 rounded-md focus:outline-none focus:ring-1 focus:ring-[#F78424]"
                   spellCheck={false}
                 />
               </CardContent>

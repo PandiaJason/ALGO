@@ -57,6 +57,23 @@ interface Props {
   } | null;
 }
 
+const formatLanguage = (lang?: string) => {
+  switch (lang?.toLowerCase()) {
+    case "cpp":
+      return "C++20";
+    case "python":
+      return "Python 3.12";
+    case "rust":
+      return "Rust 1.75";
+    case "go":
+      return "Go 1.22";
+    case "java":
+      return "Java 21";
+    default:
+      return lang || "Unknown";
+  }
+};
+
 export function ResultClient({
   submittedCode,
   initialSubmission,
@@ -165,7 +182,7 @@ export function ResultClient({
               {result.correctnessPassed} / {result.correctnessTotal} test cases passed.
             </div>
             <div className="text-xs text-slate-400 font-mono pt-1">
-              Submitted at {new Date(submission.submittedAt).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })} • Language: {submission.language === "cpp" ? "C++20" : "Python 3.12"}
+              Submitted at {new Date(submission.submittedAt).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })} • Language: {formatLanguage(submission.language)}
             </div>
           </div>
 
@@ -269,7 +286,7 @@ export function ResultClient({
                 >
                   <span className="flex items-center gap-1.5">
                     <Code2 className="w-3.5 h-3.5 text-slate-600" />
-                    Submitted Code ({submission.language === "cpp" ? "C++20" : "Python 3.12"})
+                    Submitted Code ({formatLanguage(submission.language)})
                   </span>
                 </button>
                 <button
