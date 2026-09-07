@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import {
   Pencil,
@@ -28,7 +27,6 @@ export function EditProfileModal({
   triggerButton,
 }: EditProfileModalProps) {
   const router = useRouter();
-  const { update: updateSession } = useSession();
 
   const [isOpen, setIsOpen] = useState(false);
   const [username, setUsername] = useState(initialUsername);
@@ -166,20 +164,10 @@ export function EditProfileModal({
 
       setSuccessMessage(`ID updated to @${cleanUsername}!`);
 
-      // Update client session token
-      if (updateSession) {
-        await updateSession({
-          username: cleanUsername,
-          name: cleanName,
-        });
-      }
-
       setTimeout(() => {
         setIsOpen(false);
         setSuccessMessage(null);
-        // Navigate to new profile URL
-        router.push(`/u/${cleanUsername}`);
-        router.refresh();
+        window.location.href = `/u/${cleanUsername}`;
       }, 800);
     } catch (err) {
       setErrorMessage("Network error occurred. Please try again.");

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Providers } from "@/components/providers/session-provider";
 
 export const metadata: Metadata = {
   title: "ALGO — GO CURIOUS. The Engineering Proving Ground.",
@@ -18,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased light">
       <body className="min-h-full flex flex-col bg-white text-slate-900 selection:bg-[#099BE9]/20 selection:text-[#099BE9]">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

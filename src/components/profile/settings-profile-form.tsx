@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import {
   CheckCircle2,
@@ -27,7 +26,6 @@ export function SettingsProfileForm({
   email = "",
 }: SettingsProfileFormProps) {
   const router = useRouter();
-  const { update: updateSession } = useSession();
 
   const [username, setUsername] = useState(initialUsername);
   const [name, setName] = useState(initialName);
@@ -154,17 +152,9 @@ export function SettingsProfileForm({
 
       setSuccessMessage(`ID successfully updated to @${cleanUsername}!`);
 
-      if (updateSession) {
-        await updateSession({
-          username: cleanUsername,
-          name: cleanName,
-        });
-      }
-
       setTimeout(() => {
-        router.push(`/u/${cleanUsername}`);
-        router.refresh();
-      }, 1000);
+        window.location.href = `/u/${cleanUsername}`;
+      }, 800);
     } catch (err) {
       setErrorMessage("Network error occurred. Please try again.");
     } finally {
