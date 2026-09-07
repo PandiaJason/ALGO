@@ -238,6 +238,14 @@ export const quickTestWorker = new Worker(
   }
 );
 
+quickTestWorker.on("completed", (job) => {
+  console.log(`[Worker] Quick-test job ${job.id} completed successfully.`);
+});
+
+quickTestWorker.on("failed", (job, err) => {
+  console.error(`[Worker] Quick-test job ${job?.id} failed:`, err);
+});
+
 quickTestWorker.on("error", (err) => {
   console.error("QuickTest worker queue error:", err);
 });

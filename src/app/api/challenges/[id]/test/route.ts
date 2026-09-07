@@ -7,6 +7,9 @@ import { enqueueQuickTest } from "@/lib/queue/producer";
 import { runQuickTest } from "@/lib/sandbox/runner";
 import { z } from "zod";
 
+export const dynamic = "force-dynamic";
+export const maxDuration = 30;
+
 const testSchema = z.object({
   language: z.enum(["python", "cpp", "rust", "go", "java"]),
   level: z.number().int().min(1).max(6).default(1),
@@ -49,7 +52,7 @@ export async function POST(
     let queueError: any = null;
 
     try {
-      result = await enqueueQuickTest({ language, level, code, challengeSlug }, 25000);
+      result = await enqueueQuickTest({ language, level, code, challengeSlug }, 20000);
     } catch (err: any) {
       console.error("[QuickTest Queue Error]:", err);
       queueError = err;
@@ -83,6 +86,11 @@ export async function POST(
       cases: result.cases,
     });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    const isTimeout = err.message?.includes("timed out") || err.message?.includes("timeout");
+    const userFriendlyError = isTimeout
+      ? "Execution timed out. Please check your solution for infinite loops or unhandled standard I/O streams."
+      : err.message || "Failed to execute test suite";
+
+    return NextResponse.json({ error: userFriendlyError }, { status: 500 });
   }
 }
