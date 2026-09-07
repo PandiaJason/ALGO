@@ -35,6 +35,7 @@ const RESERVED_USERNAMES = new Set([
   "sitemap",
   "user",
   "users",
+  "u",
   "system",
   "root",
   "support",

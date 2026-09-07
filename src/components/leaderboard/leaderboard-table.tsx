@@ -320,7 +320,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
                         <div>
                           <div className="flex items-center gap-1.5">
                             <Link
-                              href={`/profile/${entry.username}`}
+                              href={`/u/${entry.username}`}
                               className="font-semibold text-slate-900 hover:text-[#099BE9] transition-colors"
                             >
                               @{entry.username}

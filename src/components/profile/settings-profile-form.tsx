@@ -162,7 +162,7 @@ export function SettingsProfileForm({
       }
 
       setTimeout(() => {
-        router.push(`/profile/${cleanUsername}`);
+        router.push(`/u/${cleanUsername}`);
         router.refresh();
       }, 1000);
     } catch (err) {
@@ -265,7 +265,7 @@ export function SettingsProfileForm({
             </span>
           )}
           <span className="text-slate-400 text-[10px]">
-            Public URL: /profile/{username || "handle"}
+            Public URL: /u/{username || "handle"}
           </span>
         </div>
       </div>

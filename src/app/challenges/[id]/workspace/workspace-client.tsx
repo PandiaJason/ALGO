@@ -345,7 +345,7 @@ export function WorkspaceClient({
         <div className="flex items-center gap-3">
           {user && (
             <Link
-              href={`/profile/${user.username}`}
+              href={`/u/${user.username}`}
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-slate-100 text-xs font-mono text-slate-700 transition-colors"
             >
               <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#099BE9] to-[#09C899] flex items-center justify-center text-[10px] text-white font-bold">

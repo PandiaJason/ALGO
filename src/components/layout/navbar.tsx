@@ -74,7 +74,7 @@ export function Navbar({ user, variant = "default" }: NavbarProps) {
           {user ? (
             <div className="flex items-center gap-2 sm:gap-3">
               <Link
-                href={`/profile/${user.username}`}
+                href={`/u/${user.username}`}
                 className={`text-xs font-medium flex items-center gap-1.5 px-2 py-1 rounded transition-colors ${
                   isDark
                     ? "text-neutral-200 hover:text-white hover:bg-white/10"

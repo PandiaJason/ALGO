@@ -178,7 +178,7 @@ export function EditProfileModal({
         setIsOpen(false);
         setSuccessMessage(null);
         // Navigate to new profile URL
-        router.push(`/profile/${cleanUsername}`);
+        router.push(`/u/${cleanUsername}`);
         router.refresh();
       }, 800);
     } catch (err) {
