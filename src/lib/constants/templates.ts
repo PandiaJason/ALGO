@@ -842,7 +842,7 @@ func (kvs *KeyValueStore) recover() {
 func (kvs *KeyValueStore) logWal(entry string) {
 	file, err := os.OpenFile(kvs.walPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err == nil {
-		_, _ = file.WriteString(entry + "\n")
+		_, _ = file.WriteString(entry + "\\n")
 		_ = file.Close()
 	}
 }
@@ -907,7 +907,7 @@ func (kvs *KeyValueStore) Save() string {
 	}
 	defer file.Close()
 	for k, v := range kvs.store {
-		_, _ = file.WriteString(fmt.Sprintf("%s %s\n", k, v))
+		_, _ = file.WriteString(fmt.Sprintf("%s %s\\n", k, v))
 	}
 	return "OK"
 }

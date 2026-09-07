@@ -360,7 +360,8 @@ export async function runQuickTest(
     suite.map(async (testDef) => {
       try {
         const input = testDef.input.trim() + "\n";
-        const res = await runInDocker(code, language, input, 4000);
+        const testTimeout = language === "python" ? 4000 : 9000;
+        const res = await runInDocker(code, language, input, testTimeout);
 
         if (res.exitCode === 124) {
           return {
@@ -369,7 +370,7 @@ export async function runQuickTest(
             expected: testDef.expected,
             actual: "Execution timed out (Time Limit Exceeded)",
             passed: false,
-            error: "Time limit exceeded (4000ms)",
+            error: `Time limit exceeded (${testTimeout}ms)`,
             logMsg: `✗ ${testDef.name}: Execution timed out.`,
           };
         }
