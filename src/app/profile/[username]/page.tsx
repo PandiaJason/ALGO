@@ -33,6 +33,23 @@ import {
 
 export const dynamic = "force-dynamic";
 
+const formatLanguage = (lang?: string) => {
+  switch (lang?.toLowerCase()) {
+    case "cpp":
+      return "C++ 20";
+    case "python":
+      return "Python 3.12";
+    case "rust":
+      return "Rust 1.75";
+    case "go":
+      return "Go 1.22";
+    case "java":
+      return "Java 21";
+    default:
+      return lang || "Unknown";
+  }
+};
+
 interface Props {
   params: Promise<{ id?: string; username?: string }>;
 }
@@ -316,7 +333,7 @@ export default async function UserProfilePage({ params }: Props) {
                             {sub.throughputOpsSec ? formatThroughput(sub.throughputOpsSec) : "—"}
                           </td>
                           <td className="py-3 px-4 uppercase text-slate-500 text-[11px]">
-                            {sub.language === "cpp" ? "C++20" : "Python 3.12"}
+                            {formatLanguage(sub.language)}
                           </td>
                           <td className="py-3 px-4 text-right text-slate-400 text-[11px]">
                             {new Date(sub.submittedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}

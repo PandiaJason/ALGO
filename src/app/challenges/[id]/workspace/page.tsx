@@ -32,7 +32,7 @@ export default async function WorkspacePage({ params }: Props) {
 
   let version: any = {
     id: "v1",
-    starterTemplates: chData?.starterTemplates || { python: "", cpp: "" },
+    starterTemplates: chData?.starterTemplates || { python: "", cpp: "", rust: "", go: "", java: "" },
     levels: chData ? Object.values(chData.levels).sort((a, b) => a.level - b.level) : [],
     spec: chData ? {
       badge: chData.badge,
@@ -92,7 +92,7 @@ export default async function WorkspacePage({ params }: Props) {
 
         version = {
           ...versions[0],
-          starterTemplates: (rawTemplates && typeof rawTemplates === "object" && ((rawTemplates as any).python || (rawTemplates as any).cpp))
+          starterTemplates: (rawTemplates && typeof rawTemplates === "object" && ((rawTemplates as any).python || (rawTemplates as any).cpp || (rawTemplates as any).rust || (rawTemplates as any).go || (rawTemplates as any).java))
             ? rawTemplates
             : version.starterTemplates,
           levels: (Array.isArray(rawLevels) && rawLevels.length > 0)

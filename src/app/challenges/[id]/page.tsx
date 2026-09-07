@@ -193,7 +193,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
                 Inspired by <strong className="text-slate-900">{coreDef?.inspiredBy ?? "Redis"}</strong>
               </span>
               <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-600 border border-slate-200/60">
-                Python 3.12, C++20
+                Python, C++, Rust, Go, Java
               </span>
               <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-[#09C899]/10 text-[#0AA793] border border-[#09C899]/30">
                 Target: {coreDef?.benchmarkMetrics[0] ?? ">100,000 ops/s"}

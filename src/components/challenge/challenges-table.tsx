@@ -154,7 +154,7 @@ export function ChallengesTable({
                             Levels 1–{challenge.progressionLevels.length} Active
                           </span>
                           <span>•</span>
-                          <span>Python, C++</span>
+                          <span className="text-[#099BE9] font-medium">Python, C++, Rust, Go, Java</span>
                         </div>
                       </div>
                     </td>

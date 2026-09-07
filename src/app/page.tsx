@@ -229,7 +229,7 @@ export default async function HomePage() {
             </h2>
 
             <p className="text-xs sm:text-sm text-slate-500 max-w-2xl mx-auto leading-relaxed">
-              We now support C++20 and Python 3.12. At our core, ALGO is about developers. Our containerized execution sandbox helps you test, benchmark, and optimize real systems online.
+              We now support Rust, Go, Java, Python 3.12, and C++20. At our core, ALGO is about developers. Our containerized execution sandbox helps you test, benchmark, and optimize real systems online.
             </p>
 
             {/* Interactive Code Playground & Quick Selectors */}

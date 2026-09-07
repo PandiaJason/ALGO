@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 
 export function HeroWorkbench() {
   const [activeTab, setActiveTab] = useState<"result" | "code">("result");
-  const [language, setLanguage] = useState<"python" | "cpp">("python");
+  const [language, setLanguage] = useState<"python" | "cpp" | "rust" | "go" | "java">("python");
   const [activeCase, setActiveCase] = useState<number>(1);
   const [isRunning, setIsRunning] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -28,7 +28,7 @@ export function HeroWorkbench() {
   };
 
   const copyCode = () => {
-    const code = language === "python" ? pythonCode : cppCode;
+    const code = codeMap[language];
     navigator.clipboard.writeText(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -111,6 +111,75 @@ public:
         return it->second.value;
     }
 };`;
+
+  const rustCode = `struct KeyValueStore {
+    store: HashMap<String, Entry>,
+    lock: RwLock<()>,
+}
+
+impl KeyValueStore {
+    pub fn set(&mut self, key: String, val: String, ttl_ms: Option<u64>) {
+        let expire_at = ttl_ms.map(|t| Instant::now() + Duration::from_millis(t));
+        self.store.insert(key, Entry { val, expire_at });
+    }
+
+    pub fn get(&self, key: &str) -> Option<&String> {
+        let entry = self.store.get(key)?;
+        if entry.is_expired() { None } else { Some(&entry.val) }
+    }
+}`;
+
+  const goCode = `type KeyValueStore struct {
+    mu    sync.RWMutex
+    store map[string]Entry
+}
+
+func (kvs *KeyValueStore) Set(key, val string, ttlMs int64) {
+    kvs.mu.Lock()
+    defer kvs.mu.Unlock()
+    var exp time.Time
+    if ttlMs > 0 {
+        exp = time.Now().Add(time.Duration(ttlMs) * time.Millisecond)
+    }
+    kvs.store[key] = Entry{val: val, expireAt: exp}
+}
+
+func (kvs *KeyValueStore) Get(key string) (string, bool) {
+    kvs.mu.RLock()
+    defer kvs.mu.RUnlock()
+    entry, ok := kvs.store[key]
+    if !ok || (!entry.expireAt.IsZero() && time.Now().After(entry.expireAt)) {
+        return "", false
+    }
+    return entry.val, true
+}`;
+
+  const javaCode = `public class KeyValueStore {
+    private final ConcurrentHashMap<String, Entry> store = new ConcurrentHashMap<>();
+
+    public void set(String key, String value, Long ttlMs) {
+        long expireAt = ttlMs != null ? System.currentTimeMillis() + ttlMs : -1;
+        store.put(key, new Entry(value, expireAt));
+    }
+
+    public String get(String key) {
+        Entry e = store.get(key);
+        if (e == null) return null;
+        if (e.expireAt > 0 && System.currentTimeMillis() > e.expireAt) {
+            store.remove(key);
+            return null;
+        }
+        return e.value;
+    }
+}`;
+
+  const codeMap = {
+    python: pythonCode,
+    cpp: cppCode,
+    rust: rustCode,
+    go: goCode,
+    java: javaCode,
+  };
 
   return (
     <div className="w-full max-w-4xl mx-auto mt-8 rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden text-left font-sans">
@@ -280,27 +349,28 @@ public:
         /* Source Code Tab */
         <div>
           <div className="flex items-center justify-between px-4 py-2 border-b border-slate-100 bg-slate-50 text-xs font-mono">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setLanguage("python")}
-                className={`px-2 py-0.5 rounded text-xs ${
-                  language === "python"
-                    ? "bg-slate-900 text-white font-semibold"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                Python 3.12
-              </button>
-              <button
-                onClick={() => setLanguage("cpp")}
-                className={`px-2 py-0.5 rounded text-xs ${
-                  language === "cpp"
-                    ? "bg-slate-900 text-white font-semibold"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                C++20
-              </button>
+            <div className="flex items-center gap-1.5 overflow-x-auto">
+              {(
+                [
+                  { id: "python", label: "Python 3.12" },
+                  { id: "cpp", label: "C++ 20" },
+                  { id: "rust", label: "Rust" },
+                  { id: "go", label: "Go" },
+                  { id: "java", label: "Java 21" },
+                ] as const
+              ).map((lang) => (
+                <button
+                  key={lang.id}
+                  onClick={() => setLanguage(lang.id)}
+                  className={`px-2 py-0.5 rounded text-xs transition-colors cursor-pointer ${
+                    language === lang.id
+                      ? "bg-slate-900 text-white font-semibold shadow-2xs"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                  }`}
+                >
+                  {lang.label}
+                </button>
+              ))}
             </div>
 
             <button
@@ -313,7 +383,7 @@ public:
           </div>
 
           <pre className="p-4 text-xs font-mono text-slate-800 bg-white overflow-x-auto max-h-[300px] leading-relaxed select-text">
-            <code>{language === "python" ? pythonCode : cppCode}</code>
+            <code>{codeMap[language]}</code>
           </pre>
         </div>
       )}
