@@ -17,6 +17,7 @@ import { Footer } from "@/components/layout/footer";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EditProfileModal } from "@/components/profile/edit-profile-modal";
 import { formatThroughput, formatLatency } from "@/lib/utils";
 import {
   User,
@@ -149,13 +150,21 @@ export default async function UserProfilePage({ params }: Props) {
             {/* User Profile Card */}
             <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-4">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#099BE9] via-[#09C899] to-[#8647E2] flex items-center justify-center text-white text-2xl font-bold shadow-xs">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#099BE9] via-[#09C899] to-[#8647E2] flex items-center justify-center text-white text-2xl font-bold shadow-xs shrink-0">
                   {profileUser.username.slice(0, 1).toUpperCase()}
                 </div>
-                <div>
-                  <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-                    @{profileUser.username}
-                  </h1>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <h1 className="text-xl font-bold text-slate-900 tracking-tight truncate">
+                      @{profileUser.username}
+                    </h1>
+                    {session?.user && ((session.user as any).username === username || session.user.id === profileUser.id) && (
+                      <EditProfileModal
+                        initialUsername={profileUser.username}
+                        initialName={profileUser.name || ""}
+                      />
+                    )}
+                  </div>
                   <div className="text-xs text-slate-500">
                     {profileUser.name || "Systems Engineer"}
                   </div>
@@ -173,15 +182,17 @@ export default async function UserProfilePage({ params }: Props) {
 
               {session?.user && ((session.user as any).username === username || session.user.id === profileUser.id) && (
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                  {profileUser.role === "ADMIN" ? (
-                    <Link
-                      href="/admin"
-                      className="text-xs font-medium text-[#8647E2] hover:text-[#8937D6] flex items-center gap-1 bg-[#8647E2]/10 hover:bg-[#8647E2]/20 px-2.5 py-1 rounded transition-colors"
-                    >
-                      <Shield className="w-3.5 h-3.5" />
-                      <span>Admin Panel</span>
-                    </Link>
-                  ) : <div />}
+                  <div className="flex items-center gap-2">
+                    {profileUser.role === "ADMIN" && (
+                      <Link
+                        href="/admin"
+                        className="text-xs font-medium text-[#8647E2] hover:text-[#8937D6] flex items-center gap-1 bg-[#8647E2]/10 hover:bg-[#8647E2]/20 px-2.5 py-1 rounded transition-colors"
+                      >
+                        <Shield className="w-3.5 h-3.5" />
+                        <span>Admin Panel</span>
+                      </Link>
+                    )}
+                  </div>
                   <SignOutButton
                     showLabel
                     label="Sign Out"

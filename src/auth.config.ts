@@ -30,11 +30,16 @@ export const authConfig: NextAuthConfig = {
 
       return true;
     },
-    jwt({ token, user }) {
+    jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: string }).role || "STUDENT";
         token.username = (user as { username?: string }).username || user.email?.split("@")[0] || "user";
+        if (user.name) token.name = user.name;
+      }
+      if (trigger === "update" && session) {
+        if (session.username) token.username = session.username;
+        if (session.name) token.name = session.name;
       }
       return token;
     },
@@ -43,6 +48,7 @@ export const authConfig: NextAuthConfig = {
         session.user.id = token.id as string;
         (session.user as { role?: string }).role = token.role as string;
         (session.user as { username?: string }).username = token.username as string;
+        if (token.name) session.user.name = token.name as string;
       }
       return session;
     },

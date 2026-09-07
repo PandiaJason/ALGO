@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { Logo } from "./logo";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield, User, LogOut, Code, Trophy, Sparkles } from "lucide-react";
+import { Shield, User, LogOut, Code, Trophy, Sparkles, Settings } from "lucide-react";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 
 interface NavbarProps {
@@ -72,7 +72,7 @@ export function Navbar({ user, variant = "default" }: NavbarProps) {
 
         <div className="flex items-center gap-3">
           {user ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Link
                 href={`/profile/${user.username}`}
                 className={`text-xs font-medium flex items-center gap-1.5 px-2 py-1 rounded transition-colors ${
@@ -85,6 +85,17 @@ export function Navbar({ user, variant = "default" }: NavbarProps) {
                   {user.username.slice(0, 1).toUpperCase()}
                 </div>
                 <span className="hidden sm:inline">@{user.username}</span>
+              </Link>
+              <Link
+                href="/settings"
+                title="ID & Account Settings"
+                className={`p-1.5 rounded-md transition-colors ${
+                  isDark
+                    ? "text-neutral-400 hover:text-white hover:bg-white/10"
+                    : "text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                <Settings className="w-3.5 h-3.5" />
               </Link>
               <SignOutButton
                 className={`h-8 px-2 ${
