@@ -43,12 +43,15 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
   const filteredEntries = useMemo(() => {
     return entries
       .filter((item) => {
+        const username = item.username || "";
+        const title = item.challengeTitle || "";
+        const lang = item.language || "";
         const matchesSearch =
-          item.username.toLowerCase().includes(search.toLowerCase()) ||
-          item.challengeTitle.toLowerCase().includes(search.toLowerCase());
+          username.toLowerCase().includes(search.toLowerCase()) ||
+          title.toLowerCase().includes(search.toLowerCase());
         const matchesLang =
           selectedLanguage === "ALL" ||
-          item.language.toLowerCase() === selectedLanguage.toLowerCase();
+          lang.toLowerCase() === selectedLanguage.toLowerCase();
         return matchesSearch && matchesLang;
       })
       .sort((a, b) => {
@@ -312,7 +315,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-2.5">
                         <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#099BE9] to-[#09C899] flex items-center justify-center text-white text-[11px] font-bold shrink-0">
-                          {entry.username.slice(0, 1).toUpperCase()}
+                          {(entry.username || "?").slice(0, 1).toUpperCase()}
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5">
