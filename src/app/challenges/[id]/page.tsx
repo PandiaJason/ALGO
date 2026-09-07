@@ -34,6 +34,7 @@ export const dynamic = "force-dynamic";
 import { PROJECT_SCOPE, LEVEL_DEFINITIONS } from "@/lib/constants/challenge-data";
 import { CORE_CHALLENGES } from "@/lib/constants/core-challenges";
 import { getChallenge } from "@/lib/challenges";
+import { ChallengeLevelExplorer } from "@/components/challenges/challenge-level-explorer";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -298,20 +299,24 @@ export default async function ChallengeDetailPage({ params }: Props) {
               {(architectureDiagram || (Array.isArray(levelRoadmap) && levelRoadmap.length > 0)) && (
                 <div className="space-y-4 pt-2 border-t border-slate-200/80">
                   {architectureDiagram && (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="text-xs font-mono font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                    <details className="group rounded-xl border border-slate-200 bg-slate-50/50 overflow-hidden">
+                      <summary className="p-3.5 flex items-center justify-between cursor-pointer select-none hover:bg-slate-100/70 transition-colors">
+                        <div className="flex items-center gap-2 font-mono text-xs font-bold text-slate-800 uppercase tracking-wider">
                           <Terminal className="w-4 h-4 text-[#099BE9]" />
-                          <span>System Architecture Blueprint</span>
+                          <span>System Architecture Blueprint (ASCII Topology)</span>
                         </div>
-                        <span className="text-[11px] font-mono text-slate-400">
-                          Component Interaction Topology
+                        <span className="text-xs font-mono text-[#099BE9] group-open:hidden flex items-center gap-1 font-semibold">
+                          <span>View Topology</span>
+                          <ChevronRight className="w-3.5 h-3.5" />
                         </span>
-                      </div>
-                      <div className="rounded-xl bg-slate-950 p-4 font-mono text-xs text-slate-200 overflow-x-auto border border-slate-800 shadow-md">
+                        <span className="text-xs font-mono text-slate-400 hidden group-open:inline font-semibold">
+                          Collapse Topology
+                        </span>
+                      </summary>
+                      <div className="p-4 bg-slate-950 font-mono text-xs text-slate-200 overflow-x-auto border-t border-slate-800 shadow-inner">
                         <pre className="whitespace-pre leading-relaxed text-[#09C899] font-medium">{architectureDiagram}</pre>
                       </div>
-                    </div>
+                    </details>
                   )}
 
                   {Array.isArray(levelRoadmap) && levelRoadmap.length > 0 && (
@@ -391,239 +396,12 @@ export default async function ChallengeDetailPage({ params }: Props) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Main Description & Levels Column (8 cols) */}
           <div className="lg:col-span-8 space-y-6">
-            <div className="p-6 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-6">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <Cpu className="w-5 h-5 text-[#099BE9]" />
-                    <span>Progressive Curriculum & The Learning Loop</span>
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Each level isolates a fundamental systems engineering bottleneck. Complete all 6 to master production database internals.
-                  </p>
-                </div>
-                <span className="text-xs font-mono font-bold text-slate-400">
-                  L1 → L6
-                </span>
-              </div>
-
-              {/* Each Level with its comprehensive learning loop */}
-              <div className="space-y-6">
-                {levelsArray.map((lvl: any) => (
-                  <div
-                    key={lvl.level}
-                    className="p-5 rounded-xl border border-slate-200 bg-slate-50/40 hover:bg-white hover:border-slate-300 hover:shadow-xs transition-all space-y-4"
-                  >
-                    {/* Level Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/60 pb-3">
-                      <div className="flex items-center gap-2.5">
-                        <span className="flex items-center justify-center w-6 h-6 rounded-md bg-slate-900 text-white font-mono text-xs font-bold">
-                          {lvl.level}
-                        </span>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-sm font-extrabold text-slate-900">
-                              Level {lvl.level}: {lvl.title}
-                            </h3>
-                            <span
-                              className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold ${
-                                lvl.difficulty === "Easy"
-                                  ? "bg-[#09C899]/10 text-[#0AA793] border border-[#09C899]/30"
-                                  : lvl.difficulty === "Medium"
-                                  ? "bg-[#FBAE0C]/10 text-[#F78424] border border-[#FBAE0C]/30"
-                                  : "bg-[#8647E2]/10 text-[#8647E2] border border-[#8647E2]/30"
-                              }`}
-                            >
-                              {lvl.difficulty}
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-slate-500 font-medium">
-                            {lvl.tagline}
-                          </p>
-                        </div>
-                      </div>
-
-                      <Link
-                        href={`/challenges/${challenge.slug}/workspace`}
-                        className="inline-flex items-center gap-1 text-xs font-mono text-[#099BE9] hover:text-[#1984E9] font-bold shrink-0 self-start sm:self-auto"
-                      >
-                        <span>Enter Workspace</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </Link>
-                    </div>
-
-                    {/* Supported Operations (if defined) */}
-                    {Array.isArray(lvl.operations) && lvl.operations.length > 0 && (
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider mr-1">
-                          Operations:
-                        </span>
-                        {lvl.operations.map((op: any, idx: number) => (
-                          <code
-                            key={idx}
-                            className="px-1.5 py-0.5 rounded bg-white text-slate-800 font-mono text-[10px] border border-slate-200/80 font-semibold"
-                            title={op.desc}
-                          >
-                            {op.cmd}
-                          </code>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Level Process & Data Flow Blueprint */}
-                    {lvl.diagram && (
-                      <div className="rounded-xl border border-slate-800 bg-slate-950 p-3.5 space-y-2 text-slate-100 shadow-sm">
-                        <div className="flex items-center justify-between text-[11px] font-mono font-semibold text-slate-400">
-                          <span className="flex items-center gap-1.5 text-[#099BE9]">
-                            <Terminal className="w-3.5 h-3.5" />
-                            Level {lvl.level} Process & Data Flow Blueprint
-                          </span>
-                          <span className="text-[10px] text-slate-500 uppercase">Input ──► Engine ──► Output</span>
-                        </div>
-                        <div className="overflow-x-auto">
-                          <pre className="font-mono text-xs leading-relaxed text-[#09C899] whitespace-pre font-medium">
-                            {lvl.diagram}
-                          </pre>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Critical Systems Gotcha / Important Challenge */}
-                    {lvl.importantChallenge && (
-                      <div className="rounded-xl border border-amber-300/80 bg-amber-500/10 p-3.5 space-y-2 text-amber-950 shadow-2xs">
-                        <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase text-amber-700">
-                          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                          <span>Critical Systems Gotcha: {lvl.importantChallenge.title}</span>
-                        </div>
-                        <p className="text-xs text-slate-800 leading-relaxed font-medium">
-                          {lvl.importantChallenge.description}
-                        </p>
-                        {lvl.importantChallenge.codeOrFormat && (
-                          <div className="bg-slate-900 text-amber-300 p-2.5 rounded font-mono text-[11px] overflow-x-auto border border-amber-500/20">
-                            <pre className="whitespace-pre leading-relaxed">{lvl.importantChallenge.codeOrFormat}</pre>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Level Description */}
-                    {lvl.description && (
-                      <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                        {lvl.description}
-                      </p>
-                    )}
-
-                    {/* Requirements / Constraints */}
-                    {lvl.requirements && (
-                      <div className="p-3 bg-white/80 rounded border border-slate-200/80 text-xs text-slate-600 font-mono">
-                        <span className="font-bold text-slate-700 block mb-1 uppercase text-[10px] tracking-wider">
-                          Key Requirements:
-                        </span>
-                        <span>{lvl.requirements}</span>
-                      </div>
-                    )}
-
-                    {/* The Learning Loop Card for this Level (if present) */}
-                    {lvl.learningLoop && (
-                      <div className="p-3.5 rounded-lg border border-[#099BE9]/20 bg-[#099BE9]/5 space-y-3">
-                        {/* Engineering Bottleneck */}
-                        {lvl.learningLoop.bottleneck && (
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-rose-700">
-                              <AlertTriangle className="w-3 h-3 text-rose-600" />
-                              <span>The Engineering Bottleneck</span>
-                            </div>
-                            <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                              {lvl.learningLoop.bottleneck}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* What You Understand & Master */}
-                        {Array.isArray(lvl.learningLoop.whatYouUnderstand) && (
-                          <div className="space-y-1.5 pt-1 border-t border-[#099BE9]/20">
-                            <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-[#099BE9]">
-                              <Lightbulb className="w-3 h-3 text-[#FBAE0C]" />
-                              <span>What You Understand & Master</span>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
-                              {lvl.learningLoop.whatYouUnderstand.map((concept: string, cIdx: number) => (
-                                <div key={cIdx} className="flex items-start gap-1.5">
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-[#099BE9] shrink-0 mt-0.5" />
-                                  <span className="leading-snug">{concept}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Production Parity & Outcome Takeaway */}
-                        {(lvl.learningLoop.productionParity || lvl.learningLoop.outcomeSummary) && (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-[#099BE9]/20 text-[11px]">
-                            {lvl.learningLoop.productionParity && (
-                              <div className="flex items-start gap-1.5 bg-white/70 p-2 rounded border border-[#099BE9]/20">
-                                <Server className="w-3.5 h-3.5 text-[#8647E2] shrink-0 mt-0.5" />
-                                <div>
-                                  <span className="font-bold text-slate-800 font-mono block">Real-World Parity:</span>
-                                  <span className="text-slate-600">{lvl.learningLoop.productionParity}</span>
-                                </div>
-                              </div>
-                            )}
-
-                            {lvl.learningLoop.outcomeSummary && (
-                              <div className="flex items-start gap-1.5 bg-white/70 p-2 rounded border border-[#099BE9]/20">
-                                <Zap className="w-3.5 h-3.5 text-[#09C899] shrink-0 mt-0.5" />
-                                <div>
-                                  <span className="font-bold text-slate-800 font-mono block">Outcome Takeaway:</span>
-                                  <span className="text-slate-600">{lvl.learningLoop.outcomeSummary}</span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* End-of-Level Terminal Verification Session */}
-                    {lvl.endGoalDemonstration && (
-                      <div className="rounded-xl border border-slate-200 bg-white p-3.5 space-y-2 shadow-2xs">
-                        <div className="flex items-center justify-between text-xs font-mono font-bold text-slate-700">
-                          <span className="flex items-center gap-1.5 text-slate-900">
-                            <Terminal className="w-3.5 h-3.5 text-[#09C899]" />
-                            End-of-Level Terminal Verification Session
-                          </span>
-                          <span className="text-[10px] text-slate-400 uppercase">CLI / REPL Execution</span>
-                        </div>
-                        <div className="bg-slate-950 p-3 rounded-lg font-mono text-xs text-slate-200 overflow-x-auto border border-slate-800">
-                          <pre className="whitespace-pre text-[#09C899] font-medium leading-relaxed">{lvl.endGoalDemonstration}</pre>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Next Level Preview / Teaser */}
-                    {lvl.nextLevelTeaser && (
-                      <div className="p-3.5 rounded-xl bg-gradient-to-r from-[#8647E2]/10 to-[#099BE9]/10 border border-[#8647E2]/30 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
-                        <div className="space-y-0.5">
-                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#8647E2] flex items-center gap-1">
-                            <Sparkles className="w-3 h-3 text-[#8647E2]" />
-                            Next Level Preview
-                          </span>
-                          <p className="text-slate-800 font-medium leading-relaxed">{lvl.nextLevelTeaser}</p>
-                        </div>
-                        <Link
-                          href={`/challenges/${challenge.slug}/workspace`}
-                          className="shrink-0 px-3 py-1.5 rounded-lg bg-[#8647E2] text-white text-[11px] font-mono font-semibold hover:bg-[#723ac5] transition-colors flex items-center gap-1 self-start sm:self-auto shadow-xs"
-                        >
-                          <span>Build L{lvl.level} in IDE</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
+            {/* Interactive 6-Level Roadmap Explorer (Focus Mode + All Levels) */}
+            <ChallengeLevelExplorer
+              levels={levelsArray}
+              challengeSlug={challenge.slug}
+            />
+            
             {/* API Specification Table */}
             <div className="p-6 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-4">
               <div className="flex items-center justify-between">
