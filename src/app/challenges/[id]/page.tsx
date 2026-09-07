@@ -318,8 +318,8 @@ export default async function ChallengeDetailPage({ params }: Props) {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="text-xs font-mono font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                          <Layers className="w-4 h-4 text-[#8647E2]" />
-                          <span>Progressive 6-Level Roadmap</span>
+                          <Layers className="w-4 h-4 text-[#099BE9]" />
+                          <span>Progressive 6-Level Roadmap & Architecture Parity</span>
                         </div>
                         <span className="text-[11px] font-mono text-slate-400">
                           Engineering Evolution (L1 → L6)
@@ -328,73 +328,32 @@ export default async function ChallengeDetailPage({ params }: Props) {
                       <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
                         <div className="grid grid-cols-12 bg-slate-100 p-3 font-mono font-bold text-xs text-slate-700 uppercase border-b border-slate-200">
                           <div className="col-span-2">Level</div>
-                          <div className="col-span-5">What You Build</div>
-                          <div className="col-span-5">Core Systems Concept</div>
+                          <div className="col-span-4">What You Build</div>
+                          <div className="col-span-4">Core Systems Concept</div>
+                          <div className="col-span-2">Production Parity</div>
                         </div>
-                        {levelRoadmap.map((item: any) => (
-                          <div
-                            key={item.level}
-                            className="grid grid-cols-12 p-3 border-b border-slate-100 last:border-b-0 hover:bg-slate-50/80 transition-colors items-center text-xs"
-                          >
-                            <div className="col-span-2 font-mono font-bold text-[#099BE9]">Level {item.level}</div>
-                            <div className="col-span-5 font-semibold text-slate-900">{item.whatWeBuild}</div>
-                            <div className="col-span-5 text-slate-600 font-mono text-[11px] leading-relaxed">{item.mainConcept}</div>
-                          </div>
-                        ))}
+                        {levelRoadmap.map((item: any, idx: number) => {
+                          const matchingLayer = layers[idx] || layers.find((l: any) => l.number === item.level);
+                          const parity = matchingLayer?.realWorldTech?.split(",")[0] || matchingLayer?.realWorldTech || "Production Standard";
+                          return (
+                            <div
+                              key={item.level}
+                              className="grid grid-cols-12 p-3 border-b border-slate-100 last:border-b-0 hover:bg-slate-50/80 transition-colors items-center text-xs"
+                            >
+                              <div className="col-span-2 font-mono font-bold text-[#099BE9]">Level {item.level}</div>
+                              <div className="col-span-4 font-semibold text-slate-900">{item.whatWeBuild}</div>
+                              <div className="col-span-4 text-slate-600 font-mono text-[11px] leading-relaxed">{item.mainConcept}</div>
+                              <div className="col-span-2 text-slate-500 font-mono text-[10px] truncate" title={matchingLayer?.realWorldTech}>
+                                {parity}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
                 </div>
               )}
-
-              {/* Architectural Layers Grid */}
-              <div className="space-y-3 pt-2">
-                <div className="flex items-center justify-between">
-                  <div className="text-xs font-mono font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-[#099BE9]" />
-                    <span>The {layers.length} Core Architectural Layers</span>
-                  </div>
-                  <span className="text-[11px] font-mono text-slate-400">
-                    Production-Grade System Anatomy
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {layers.map((layer) => (
-                    <div
-                      key={layer.number}
-                      className="p-3.5 rounded-xl border border-slate-200 bg-white hover:border-[#099BE9]/40 hover:shadow-xs transition-all space-y-2"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                          Layer {layer.number}
-                        </span>
-                        <span className="text-[10px] font-mono text-[#099BE9] font-semibold truncate max-w-[150px]">
-                          {layer.realWorldTech.split(",")[0]}
-                        </span>
-                      </div>
-
-                      <div>
-                        <h3 className="text-xs font-bold text-slate-900">
-                          {layer.name}
-                        </h3>
-                        <div className="text-[11px] font-mono text-slate-500 font-medium mt-0.5">
-                          {layer.focus}
-                        </div>
-                      </div>
-
-                      <p className="text-[11px] text-slate-600 leading-relaxed">
-                        {layer.description}
-                      </p>
-
-                      <div className="pt-1.5 border-t border-slate-100 flex items-center gap-1 text-[10px] font-mono text-slate-400">
-                        <span>Parity:</span>
-                        <span className="text-slate-600 truncate">{layer.realWorldTech}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
 
               {/* Target Outcome Benchmark Callout */}
               <div className="p-4 rounded-xl bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">

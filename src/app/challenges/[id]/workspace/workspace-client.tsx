@@ -478,64 +478,44 @@ export function WorkspaceClient({
                             </div>
                           )}
 
-                          {/* Progressive 6-Level Roadmap */}
+                          {/* Unified Progressive 6-Level Roadmap & Parity Table */}
                           {Array.isArray(levelRoadmap) && levelRoadmap.length > 0 && (
                             <div className="space-y-1.5">
                               <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
                                 <Layers className="w-3.5 h-3.5 text-[#8647E2]" />
-                                Progressive 6-Level Roadmap
+                                Progressive 6-Level Roadmap & Systems Parity
                               </span>
                               <div className="border border-slate-200 rounded-lg overflow-hidden bg-white text-xs shadow-2xs">
                                 <div className="grid grid-cols-12 bg-slate-100 p-2 font-mono font-bold text-[10px] text-slate-600 uppercase border-b border-slate-200">
                                   <div className="col-span-2">Level</div>
-                                  <div className="col-span-5">What You Build</div>
-                                  <div className="col-span-5">Core Systems Concept</div>
+                                  <div className="col-span-4">What You Build</div>
+                                  <div className="col-span-4">Core Systems Concept</div>
+                                  <div className="col-span-2">Parity</div>
                                 </div>
-                                {levelRoadmap.map((item: any) => (
-                                  <div
-                                    key={item.level}
-                                    onClick={() => handleSelectLevel(item.level)}
-                                    className={`grid grid-cols-12 p-2 border-b border-slate-100 last:border-b-0 cursor-pointer hover:bg-slate-50 transition-colors items-center ${
-                                      selectedLevel === item.level ? "bg-[#099BE9]/10 font-semibold text-slate-900 ring-1 ring-inset ring-[#099BE9]/30" : "text-slate-700"
-                                    }`}
-                                  >
-                                    <div className="col-span-2 font-mono text-[11px] font-bold text-[#099BE9]">L{item.level}</div>
-                                    <div className="col-span-5 text-slate-800 text-[11px]">{item.whatWeBuild}</div>
-                                    <div className="col-span-5 text-slate-500 font-mono text-[10px] leading-tight">{item.mainConcept}</div>
-                                  </div>
-                                ))}
+                                {levelRoadmap.map((item: any, idx: number) => {
+                                  const matchingLayer = layers[idx] || layers.find((l: any) => l.number === item.level);
+                                  const parity = matchingLayer?.realWorldTech?.split(",")[0] || matchingLayer?.realWorldTech || "Production Standard";
+                                  const isActive = selectedLevel === item.level;
+                                  return (
+                                    <div
+                                      key={item.level}
+                                      onClick={() => handleSelectLevel(item.level)}
+                                      className={`grid grid-cols-12 p-2 border-b border-slate-100 last:border-b-0 cursor-pointer hover:bg-slate-50 transition-colors items-center ${
+                                        isActive ? "bg-[#099BE9]/10 font-semibold text-slate-900 ring-1 ring-inset ring-[#099BE9]/30" : "text-slate-700"
+                                      }`}
+                                    >
+                                      <div className="col-span-2 font-mono text-[11px] font-bold text-[#099BE9]">L{item.level}</div>
+                                      <div className="col-span-4 text-slate-800 text-[11px] font-medium">{item.whatWeBuild}</div>
+                                      <div className="col-span-4 text-slate-500 font-mono text-[10px] leading-tight">{item.mainConcept}</div>
+                                      <div className="col-span-2 text-slate-400 font-mono text-[10px] truncate" title={matchingLayer?.realWorldTech}>
+                                        {parity}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
                               </div>
                             </div>
                           )}
-                          <div>
-                            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
-                              The {layers.length} Architectural Engine Layers
-                            </span>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-                              {layers.map((layer: any) => (
-                                <div
-                                  key={layer.number}
-                                  onClick={() => handleSelectLevel(layer.number)}
-                                  className={`p-2.5 rounded-lg border text-xs cursor-pointer transition-all ${
-                                    selectedLevel === layer.number
-                                      ? "bg-white border-[#099BE9] shadow-2xs ring-1 ring-[#099BE9]/30"
-                                      : "bg-white/80 border-slate-200/80 hover:bg-white hover:border-slate-300"
-                                  }`}
-                                >
-                                  <div className="flex items-center justify-between font-bold text-slate-900">
-                                    <span>Layer {layer.number}: {layer.name}</span>
-                                    <span className="text-[10px] font-mono text-[#099BE9]">L{layer.number}</span>
-                                  </div>
-                                  <div className="text-[11px] text-slate-500 font-medium">{layer.focus}</div>
-                                  <p className="text-[11px] text-slate-600 mt-1 leading-snug">{layer.description}</p>
-                                  <div className="mt-1.5 pt-1.5 border-t border-slate-100 flex items-center gap-1 text-[10px] font-mono text-slate-500">
-                                    <Database className="w-3 h-3 text-slate-400" />
-                                    <span>Parity: {layer.realWorldTech}</span>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
 
                           {/* Capstone Outcome Callout */}
                           <div className="p-3 rounded-lg bg-[#09C899]/10 border border-[#09C899]/30 text-slate-900 text-xs space-y-1">
