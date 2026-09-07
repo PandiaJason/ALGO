@@ -18,6 +18,31 @@ export const httpServerChallenge: ChallengeData = {
     "Every web framework is an abstraction over raw TCP streams and HTTP protocol specifications. By building the parser and dispatcher by hand, you master socket byte buffers, Content-Length framing, connection pooling, and how servers handle thousands of concurrent requests.",
   finalOutcome:
     "Upon completing all 6 levels, you have constructed a production-grade HTTP/1.1 server capable of parsing 50,000+ requests/sec, pipelining persistent keep-alive connections, routing parameterized paths, and handling request bursts with sub-millisecond latency.",
+  philosophy: "Build Nginx from the ground up, one networking concept at a time.",
+  architectureDiagram: `                  RAW TCP BYTE STREAM
+                           │
+             ┌─────────────┴─────────────┐
+             │                           │
+          Framing                     Routing
+             │                           │
+   RFC 7230 Tokenizer             Radix Path Trie
+             │                           │
+             └─────────────┬─────────────┘
+                           │
+                 Socket Connection Pool
+                           │
+                 ┌─────────┴─────────┐
+                 │                   │
+               Client             Response
+           "GET /users/42"      "200 OK\\r\\n"`,
+  levelRoadmap: [
+    { level: 1, whatWeBuild: "Request line tokenizer & 200 OK", mainConcept: "RFC 7230 wire protocol, zero-copy method & URI parsing" },
+    { level: 2, whatWeBuild: "Trie-based parameterized router", mainConcept: "Radix trie prefix traversal, O(path length) routing, :param extraction" },
+    { level: 3, whatWeBuild: "RFC 7230 header subsystem", mainConcept: "Case-insensitive header map, Content-Type, Accept & MIME negotiation" },
+    { level: 4, whatWeBuild: "Body framing & chunked transfer", mainConcept: "Content-Length byte streaming vs chunked transfer encoding" },
+    { level: 5, whatWeBuild: "Keep-alive session coordinator", mainConcept: "TCP connection reuse, pipelining, and timeout management" },
+    { level: 6, whatWeBuild: "Non-blocking event loop dispatcher", mainConcept: "epoll/kqueue multiplexing, C10K concurrency, >50,000 req/s" },
+  ],
   architecturalLayers: [
     {
       number: 1,
@@ -69,6 +94,34 @@ export const httpServerChallenge: ChallengeData = {
       title: "Basic Request Line Parsing",
       difficulty: "Easy",
       tagline: "Parse HTTP/1.1 methods and URI paths from raw streams. Return formatted 200 OK or 404 Not Found.",
+      diagram: `INPUT (Raw Stream)            PARSER / ENGINE               OUTPUT (HTTP Wire)
+GET /hello HTTP/1.1    ──────► method="GET", path="/hello" ──► HTTP/1.1 200 OK\\r\\n
+                                                              Content-Length: 11\\r\\n
+                                                              \\r\\n
+                                                              Hello World
+
+GET /missing HTTP/1.1  ──────► path not found              ──► HTTP/1.1 404 Not Found\\r\\n
+                                                              Content-Length: 9\\r\\n
+                                                              \\r\\n
+                                                              Not Found`,
+      importantChallenge: {
+        title: "TCP stream framing vs message boundaries",
+        description:
+          "In real TCP networks, a single read() call might return half an HTTP header, or two pipelined requests stuck together, or split the \\r\\n\\r\\n delimiter across packet boundaries. Your parser must maintain an internal byte buffer and scan for the CRLF delimiter rather than assuming one read = one HTTP request.",
+        codeOrFormat: "GET /hello HTTP/1.1\\r\\nHost: algo.io\\r\\n\\r\\n ──► status line + headers + body",
+      },
+      endGoalDemonstration: `GET /hello
+HTTP/1.1 200 OK
+Content-Length: 11
+
+Hello World
+GET /notfound
+HTTP/1.1 404 Not Found
+Content-Length: 9
+
+Not Found`,
+      nextLevelTeaser:
+        "In Level 2, we introduce a Radix Trie router supporting dynamic parameters (like /users/:id) and prefix wildcards in O(path length) time.",
       learningLoop: {
         bottleneck: "How do web servers extract verbs and paths from incoming byte streams without allocating memory on every space delimiter?",
         whatYouUnderstand: [

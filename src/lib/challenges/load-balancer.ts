@@ -18,6 +18,31 @@ export const loadBalancerChallenge: ChallengeData = {
     "Load balancers represent the single entry point for modern web architectures. A poorly balanced system causes hot-spot server collapses, dropped web transactions during rolling deployments, and total outage during backend node failures.",
   finalOutcome:
     "Upon completing all 6 levels, you have engineered a production load balancer supporting weighted round-robin, least-connections dynamic routing, circuit breaker health checks, consistent hash session affinity, and graceful connection draining.",
+  philosophy: "Build a load balancer from the ground up, one traffic routing concept at a time.",
+  architectureDiagram: `                     CLIENT INGRESS
+                            │
+               ┌────────────┴────────────┐
+               │   Smooth Weighted RR    │
+               └────────────┬────────────┘
+                            │
+                   Virtual Hash Ring
+                 (100 vnodes per host)
+                            │
+        ┌───────────────────┼───────────────────┐
+        ▼                   ▼                   ▼
+    Backend A           Backend B           Backend C
+   (Healthy 🟢)        (Healthy 🟢)        (Dead 🔴)
+                            │
+                            ▼
+                    Circuit Breaker`,
+  levelRoadmap: [
+    { level: 1, whatWeBuild: "Cyclic round-robin dispatcher", mainConcept: "Deterministic backend rotation, pointer wraparound modulo arithmetic, empty pool protection" },
+    { level: 2, whatWeBuild: "Smooth weighted round-robin", mainConcept: "Nginx current_weight interleaved algorithm, capacity-proportional traffic dispersal" },
+    { level: 3, whatWeBuild: "Least-connections dynamic routing", mainConcept: "In-flight connection counters, concurrency balancing across active servers" },
+    { level: 4, whatWeBuild: "Active & passive health checking", mainConcept: "Consecutive failure threshold, dead node circuit breaking, recovery probing" },
+    { level: 5, whatWeBuild: "Consistent hashing ring", mainConcept: "Ketama 32-bit virtual node ring, session affinity, minimal key remapping on node mutation" },
+    { level: 6, whatWeBuild: "Zero-downtime connection draining", mainConcept: "Graceful server deregistration, inflight transaction draining without dropped requests" },
+  ],
   architecturalLayers: [
     {
       number: 1,
@@ -69,6 +94,30 @@ export const loadBalancerChallenge: ChallengeData = {
       title: "Basic Round-Robin Dispatcher",
       difficulty: "Easy",
       tagline: "Distribute incoming requests uniformly across registered backends in cyclical order.",
+      diagram: `CLIENT REQUEST                            LOAD BALANCER                   ROUTED TARGET
+ADD_BACKEND s1                ──► register server in pool  ──► OK
+ADD_BACKEND s2                ──► register server in pool  ──► OK
+ROUTE r1                      ──► (0 % 2) -> select s1     ──► FORWARD -> s1
+ROUTE r2                      ──► (1 % 2) -> select s2     ──► FORWARD -> s2
+ROUTE r3                      ──► (2 % 2) -> select s1     ──► FORWARD -> s1`,
+      importantChallenge: {
+        title: "Stateful Cycling & Dynamic Pool Mutation",
+        description:
+          "A round-robin router must maintain a monotonic sequence index while gracefully handling dynamic backend registration and deregistration. If backends are added or removed mid-stream, indexing must never cause out-of-bounds panics or skip servers unexpectedly.",
+        codeOrFormat: "target_index = current_index % pool.size()\ncurrent_index = (current_index + 1) % pool.size()",
+      },
+      endGoalDemonstration: `ADD_BACKEND web-1
+OK
+ADD_BACKEND web-2
+OK
+ROUTE req-1
+FORWARD -> web-1
+ROUTE req-2
+FORWARD -> web-2
+ROUTE req-3
+FORWARD -> web-1`,
+      nextLevelTeaser:
+        "In Level 2, we implement Nginx's Smooth Weighted Round-Robin algorithm to interleave requests proportionally across heterogeneous backend hardware.",
       learningLoop: {
         bottleneck: "Direct client-to-server connections overwhelm single nodes. Round-robin spreads load across horizontal workers.",
         whatYouUnderstand: [

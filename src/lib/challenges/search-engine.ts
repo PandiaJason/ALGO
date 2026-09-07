@@ -18,6 +18,31 @@ export const searchEngineChallenge: ChallengeData = {
     "Information retrieval powers every modern product: search bars, logging platforms, log observability (ELK), and vector databases. A naive search does O(N) regex scans across terabytes of text. Understanding postings lists, BM25 saturation, and segment merging is fundamental for high-performance data systems.",
   finalOutcome:
     "Upon completing all 6 levels, you have engineered a production-grade search engine supporting inverted index construction, fast boolean query intersections, BM25 probabilistic relevance ranking, positional phrase matching, and immutable segment compaction.",
+  philosophy: "Build an inverted search index from the ground up, one information retrieval concept at a time.",
+  architectureDiagram: `                     DOCUMENT CORPUS
+                            │
+               ┌────────────┴────────────┐
+               │  Tokenizer & Normalizer │
+               └────────────┬────────────┘
+                            │
+                     Inverted Index
+                            │
+         Term ────────► Posting List with Doc IDs
+        "engine"  ──► [ Doc 1, Doc 4, Doc 9 ]
+        "redis"   ──► [ Doc 1, Doc 2 ]
+                            │
+             ┌──────────────┴──────────────┐
+             ▼                             ▼
+       Boolean Query                 BM25 Scorer
+     (AND / OR / NOT)             (TF-IDF Relevance)`,
+  levelRoadmap: [
+    { level: 1, whatWeBuild: "Inverted index & text tokenizer", mainConcept: "Alphanumeric normalization, vocabulary dictionary, sorted posting lists" },
+    { level: 2, whatWeBuild: "Boolean query evaluator", mainConcept: "Two-pointer sorted posting list intersection (AND) and union (OR) without intermediate sets" },
+    { level: 3, whatWeBuild: "TF-IDF vector relevance", mainConcept: "Term frequency (TF) and inverse document frequency (IDF) relevance scoring" },
+    { level: 4, whatWeBuild: "Okapi BM25 ranking engine", mainConcept: "Term frequency saturation curve (k1) and document length normalization (b)" },
+    { level: 5, whatWeBuild: "Positional postings & phrase search", mainConcept: "Word offset indexing, sliding-window exact phrase and proximity queries" },
+    { level: 6, whatWeBuild: "LSM segment merging & compaction", mainConcept: "Immutable mini-segments, tombstone filtering, tiered background compaction" },
+  ],
   architecturalLayers: [
     {
       number: 1,
@@ -69,6 +94,29 @@ export const searchEngineChallenge: ChallengeData = {
       title: "Tokenizer & Inverted Index Postings",
       difficulty: "Easy",
       tagline: "Tokenize input text into lowercase terms. Build an inverted index mapping each term to sorted document IDs.",
+      diagram: `DOCUMENT INPUT                            INDEXING ENGINE                 INVERTED POSTINGS
+INDEX d1 Hello World          ──► tokenize ["hello", "world"] ──► INDEXED d1 2
+INDEX d2 Hello Systems        ──► tokenize ["hello", "systems"]──► INDEXED d2 2
+POSTINGS hello                ──► lookup inverted dictionary ──► POSTINGS hello d1 d2
+POSTINGS world                ──► lookup inverted dictionary ──► POSTINGS world d1`,
+      importantChallenge: {
+        title: "Linear Document Grep vs Inverted Postings",
+        description:
+          "Searching documents by scanning every word of every document is O(D * L), which grinds to a halt on corpora with millions of pages. An inverted index constructs a dictionary of unique vocabulary terms pointing directly to pre-sorted document IDs, reducing keyword lookups from linear scans to O(1) hash lookups.",
+        codeOrFormat: "Dictionary: 'hello' -> [d1, d2]\nDictionary: 'world' -> [d1]\nDictionary: 'systems' -> [d2]",
+      },
+      endGoalDemonstration: `INDEX d1 Hello World
+INDEXED d1 2
+INDEX d2 Hello Systems
+INDEXED d2 2
+DOC_COUNT
+DOCS 2
+POSTINGS hello
+POSTINGS hello d1 d2
+POSTINGS world
+POSTINGS world d1`,
+      nextLevelTeaser:
+        "In Level 2, we implement Boolean Query Evaluation using two-pointer sorted postings list intersection (AND) and union (OR) without allocating high-overhead intermediate sets.",
       learningLoop: {
         bottleneck: "Scanning documents sequentially is O(D * L). An inverted index flips the relationship, allowing immediate O(1) lookup of docs containing a word.",
         whatYouUnderstand: [

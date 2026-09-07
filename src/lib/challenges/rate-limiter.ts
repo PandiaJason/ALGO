@@ -18,6 +18,33 @@ export const rateLimiterChallenge: ChallengeData = {
     "Rate limiters protect infrastructure from denial-of-service attacks, bad bots, and cascading database failure. A flawed rate limiter either throttles legitimate paying enterprise customers during peak events or fails to protect backend services from thundering herds.",
   finalOutcome:
     "Upon completing all 6 levels, you have engineered a production-grade rate limiting engine supporting fixed and sliding window algorithms, high-burst token buckets, smooth traffic shaping, multi-tenant tiers, and atomic CAS safety.",
+  philosophy: "Build an API rate limiter from the ground up, one traffic shaping concept at a time.",
+  architectureDiagram: `                  INCOMING HTTP REQUEST
+                            │
+               ┌────────────┴────────────┐
+               │  Identity Key (IP/User) │
+               └────────────┬────────────┘
+                            │
+                     Refill Clock
+                            │
+                  ┌─────────▼─────────┐
+                  │   Token Bucket    │
+                  │ [ • • • • • ]     │ Max: Burst
+                  └─────────┬─────────┘
+                            │
+             ┌──────────────┴──────────────┐
+             ▼                             ▼
+       Tokens Available             Bucket Empty
+             │                             │
+        200 ALLOW                    429 RATE_LIMITED`,
+  levelRoadmap: [
+    { level: 1, whatWeBuild: "Fixed-window epoch rate limiter", mainConcept: "Epoch-based time bucketing, monotonic counter increments, retry-after calculation" },
+    { level: 2, whatWeBuild: "Sliding-window timestamp log", mainConcept: "Microsecond timestamp deque, sliding window eviction, eliminating 2x boundary spikes" },
+    { level: 3, whatWeBuild: "Continuous-refill token bucket", mainConcept: "Lazy token refill based on delta time, sustained rate limit with burst buffer" },
+    { level: 4, whatWeBuild: "Leaky bucket traffic shaper", mainConcept: "Bounded FIFO queue buffering, constant outbound discharge frequency" },
+    { level: 5, whatWeBuild: "Multi-tenant tiered quotas", mainConcept: "Customer tier resolution (Free/Pro/Enterprise), dynamic capacity limits and burst multipliers" },
+    { level: 6, whatWeBuild: "Atomic CAS concurrency engine", mainConcept: "Lock-free compare-and-swap simulations, race condition elimination under high parallelism" },
+  ],
   architecturalLayers: [
     {
       number: 1,
@@ -69,6 +96,30 @@ export const rateLimiterChallenge: ChallengeData = {
       title: "Fixed-Window Epoch Rate Limiter",
       difficulty: "Easy",
       tagline: "Track request counts per fixed time window. Allow requests under capacity and reject those exceeding the threshold.",
+      diagram: `REQUEST EVALUATION                        RATE LIMIT ENGINE               DECISION
+CONFIG 2 10                   ──► configure global window  ──► OK
+REQUEST alice 1000            ──► epoch 0 (1 req seen)     ──► ALLOWED 1
+REQUEST alice 2000            ──► epoch 0 (2 reqs seen)    ──► ALLOWED 0
+REQUEST alice 3000            ──► epoch 0 (exceeded limit) ──► REJECTED 7000
+REQUEST alice 10500           ──► epoch 1 (new window)     ──► ALLOWED 1`,
+      importantChallenge: {
+        title: "Window Edge Boundary Spikes",
+        description:
+          "Fixed windows count requests within discrete time slices (e.g., [0s, 10s]). If a client sends their full quota at 9.9s and another quota at 10.1s, they successfully deliver 2x their rate limit in 0.2 seconds without triggering rejection. This boundary vulnerability is why sliding logs and token buckets are used in production.",
+        codeOrFormat: "epoch = floor(timestamp_ms / (window_sec * 1000))\nretry_after = ((epoch + 1) * window_sec * 1000) - timestamp_ms",
+      },
+      endGoalDemonstration: `CONFIG 2 10
+OK
+REQUEST alice 1000
+ALLOWED 1
+REQUEST alice 2000
+ALLOWED 0
+REQUEST alice 3000
+REJECTED 7000
+REQUEST alice 10500
+ALLOWED 1`,
+      nextLevelTeaser:
+        "In Level 2, we introduce Sliding Window Logs using timestamp queues to eradicate the 2x burst vulnerability at interval boundaries.",
       learningLoop: {
         bottleneck: "Unbounded API requests can take down application servers. Fixed windows partition time into predictable intervals.",
         whatYouUnderstand: [

@@ -21,6 +21,14 @@ export interface LevelDefinition {
   title: string;
   difficulty: "Easy" | "Medium" | "Hard";
   tagline: string;
+  diagram?: string;
+  importantChallenge?: {
+    title: string;
+    description: string;
+    codeOrFormat?: string;
+  };
+  endGoalDemonstration?: string;
+  nextLevelTeaser?: string;
   learningLoop: LevelLearningLoop;
   operations: Array<{ cmd: string; desc: string }>;
   durabilityRules?: string[];
@@ -33,6 +41,31 @@ export const PROJECT_SCOPE = {
   badge: "SYSTEMS ENGINEERING CAPSTONE",
   title: "Building a Production-Grade Key-Value Storage Engine",
   subtitle: "From bare-metal in-memory dictionaries to a multi-threaded, crash-durable, 100K+ ops/sec engine.",
+  philosophy: "Build Redis from the ground up, one engineering concept at a time.",
+  architectureDiagram: `                    KEY-VALUE ENGINE
+                           │
+        ┌──────────────────┴──────────────────┐
+        │                                     │
+     Commands                              Storage
+        │                                     │
+ SET / GET / DELETE / EXISTS             Hash Table
+        │                                     │
+        └──────────────┬──────────────────────┘
+                       │
+                 In-Memory Store
+                       │
+                 ┌─────┴─────┐
+                 │           │
+              Key         Value
+            "score"       "42"`,
+  levelRoadmap: [
+    { level: 1, whatWeBuild: "Basic in-memory store", mainConcept: "Hash map / O(1) lookup & command routing" },
+    { level: 2, whatWeBuild: "Our own custom hash table", mainConcept: "Hashing algorithms, buckets, & collision handling" },
+    { level: 3, whatWeBuild: "Persistence & Write-Ahead Log", mainConcept: "Crash recovery, durability, & fsync journal replay" },
+    { level: 4, whatWeBuild: "TTL & Automatic Expiration", mainConcept: "Passive on-read eviction + active monotonic timer sweeps" },
+    { level: 5, whatWeBuild: "Multi-threaded Concurrency", mainConcept: "Striped mutexes, thread synchronization, & deadlock avoidance" },
+    { level: 6, whatWeBuild: "Peak Performance & Compaction", mainConcept: "Memory arena fragmentation, log compaction, & 100K+ ops/s" },
+  ],
   overview:
     "In this engineering challenge, you construct a high-throughput, crash-resilient key-value storage engine from first principles — the exact foundational architecture powering systems like Redis, RocksDB, and Bitcask. Rather than relying on black-box libraries, you build the raw protocol parser, collision-resistant hash table, synchronous write-ahead log (WAL), atomic snapshotting engine, dual-mode TTL eviction sweeper, striped-mutex concurrency coordinator, and zero-copy memory arenas.",
   whyItMatters:
@@ -93,6 +126,48 @@ export const LEVEL_DEFINITIONS: Record<number, LevelDefinition> = {
     difficulty: "Easy",
     tagline:
       "Implement fundamental SET, GET, DELETE, and EXISTS operations with direct O(1) in-memory hash resolution.",
+    diagram: `INPUT                         ENGINE                 OUTPUT
+SET name Jason        ──────► memory["name"]="Jason" ───► OK
+GET name              ──────► lookup("name")       ───► Jason
+EXISTS name           ──────► lookup("name")       ───► TRUE
+DELETE name           ──────► remove("name")       ───► OK
+GET name              ──────► lookup("name")       ───► NULL
+
+Internally:
+┌───────────────────────────────┐
+│       Key-Value Store         │
+├───────────────┬───────────────┤
+│ Key           │ Value         │
+├───────────────┼───────────────┤
+│ name          │ Jason         │
+│ score         │ 42            │
+│ language      │ C++           │
+└───────────────┴───────────────┘
+
+Command Dispatcher Loop:
+stdin ──► Parser ──► Router (SET / GET / DELETE / EXISTS) ──► Store ──► stdout`,
+    importantChallenge: {
+      title: "Values may contain spaces or symbols",
+      description:
+        "The specification requires that values can contain spaces. For example: `SET message hello world from Jason` must not split into key=message, value=hello. The protocol needs to preserve the complete trailing value: key=message, value=hello world from Jason. That makes the command parser an actual systems engineering problem rather than just four naive if statements.",
+      codeOrFormat: "SET message hello world from Jason ──► key: 'message', value: 'hello world from Jason'",
+    },
+    endGoalDemonstration: `SET score 10
+OK
+SET score 20
+OK
+GET score
+20
+EXISTS score
+TRUE
+DELETE score
+OK
+GET score
+NULL
+DELETE score
+NOT_FOUND`,
+    nextLevelTeaser:
+      "In Level 2, we remove the language's built-in hash map and make our own hash table from scratch, including custom 64-bit hashing, bucket arrays, collision resolution, and dynamic rehashing at 0.75 load factor.",
     learningLoop: {
       bottleneck:
         "How do modern systems map arbitrary human-readable strings to physical memory addresses in sub-microsecond time without memory leaks or unhandled exception crashes?",

@@ -18,6 +18,31 @@ export const taskSchedulerChallenge: ChallengeData = {
     "Modern cloud computing runs millions of containers across heterogeneous hardware. Poor scheduling creates massive resource strandedness (nodes running out of RAM while CPU sits idle at 5%), job starvation, and cascading outages when worker nodes fail. Mastering scheduling algorithms is the pinnacle of systems engineering.",
   finalOutcome:
     "Upon completing all 6 levels, you have engineered an autonomous cluster scheduler capable of bin-packing multi-resource tasks, preempting low-priority workloads, recovering from node deaths, and balancing fairness across competing tenants.",
+  philosophy: "Build Kubernetes kube-scheduler from the ground up, one scheduling algorithm at a time.",
+  architectureDiagram: `                     TASK SCHEDULER
+                            │
+         ┌──────────────────┴──────────────────┐
+         │                                     │
+     Job Queue                             Cluster
+         │                                     │
+  SUBMIT task cpu=2 ram=2048              Worker Nodes
+         │                                     │
+         └───────────────┬─────────────────────┘
+                         │
+                 Scheduling Filter
+                         │
+            ┌────────────┼────────────┐
+            ▼            ▼            ▼
+       [Node 1]      [Node 2]      [Node 3]
+       4C / 8192M    8C / 16384M   16C / 32768M`,
+  levelRoadmap: [
+    { level: 1, whatWeBuild: "Node registry & FIFO scheduling filter", mainConcept: "Multi-resource capacity checking (CPU + RAM), first-fit node placement" },
+    { level: 2, whatWeBuild: "Priority-based ready queue", mainConcept: "Task priority classes, starvation prevention, deterministic tie-breaking" },
+    { level: 3, whatWeBuild: "Multi-resource bin packing", mainConcept: "Least-allocated / best-fit vector heuristic, minimizing stranded resources" },
+    { level: 4, whatWeBuild: "Task lifecycle & resource deallocation", mainConcept: "State transitions (PENDING -> RUNNING -> COMPLETED), atomic capacity freeing" },
+    { level: 5, whatWeBuild: "Node failure & task rescheduling", mainConcept: "Worker heartbeat timeouts, automatic workload eviction, priority requeueing" },
+    { level: 6, whatWeBuild: "Dominant Resource Fairness (DRF)", mainConcept: "Berkeley DRF multi-tenant max-min fairness, dominant share tracking" },
+  ],
   architecturalLayers: [
     {
       number: 1,
@@ -69,6 +94,27 @@ export const taskSchedulerChallenge: ChallengeData = {
       title: "Cluster Node Registry & FIFO Scheduling",
       difficulty: "Easy",
       tagline: "Register cluster nodes with CPU and RAM capacities. Schedule queued tasks in arrival order on the first eligible node.",
+      diagram: `TASK SUBMISSION                           SCHEDULING ENGINE               ASSIGNMENT
+ADD_NODE worker-1 4 8192      ──► register node capacity   ──► OK
+SUBMIT task-1 2 2048          ──► enqueue pending job      ──► QUEUED
+SCHEDULE                      ──► first-fit capacity check ──► SCHEDULED task-1 -> worker-1
+STATUS task-1                 ──► query task state         ──► RUNNING worker-1`,
+      importantChallenge: {
+        title: "Multi-Dimensional Resource Constraints",
+        description:
+          "A node cannot accept a task unless it simultaneously has sufficient available CPU AND sufficient available RAM. Checking either resource independently causes scheduling collisions, out-of-memory kernel kills, or stranded hardware.",
+        codeOrFormat: "fits = (node.free_cpu >= task.cpu) and (node.free_ram >= task.ram)",
+      },
+      endGoalDemonstration: `ADD_NODE worker-1 4 8192
+OK
+SUBMIT task-1 2 2048
+QUEUED
+SCHEDULE
+SCHEDULED task-1 -> worker-1
+STATUS task-1
+RUNNING worker-1`,
+      nextLevelTeaser:
+        "In Level 2, we introduce Priority-Based Queueing, ensuring mission-critical services preempt background batch processing jobs.",
       learningLoop: {
         bottleneck: "Simple schedulers fail to track multi-resource constraints. A node must have both enough CPU AND enough RAM to accept a task.",
         whatYouUnderstand: [

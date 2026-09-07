@@ -18,6 +18,26 @@ export const databaseIndexChallenge: ChallengeData = {
     "Scanning 10 million rows from disk can take seconds. An indexed B+ Tree finds any row in 3 to 4 disk page hops (sub-millisecond). Mastering B+ Trees bridges software algorithms with physical 4KB hardware page boundaries and OS page cache dynamics.",
   finalOutcome:
     "Upon completing all 6 levels, you have constructed a production-grade B+ Tree indexing engine capable of resolving lookups in sub-0.05ms over 10M simulated records, supporting range scans, maintaining node balance, and caching disk pages in a bounded buffer pool.",
+  philosophy: "Build a database index from the ground up, one storage hierarchy concept at a time.",
+  architectureDiagram: `                     B+TREE ROOT NODE
+                            │
+               ┌────────────┴────────────┐
+               │    Keys: [ 20 | 50 ]    │
+               │   Child Ptrs: [A, B, C] │
+               └────────────┬────────────┘
+                            │
+        ┌───────────────────┼───────────────────┐
+        ▼                   ▼                   ▼
+    Leaf Node A         Leaf Node B         Leaf Node C
+ [1..19] ──Next──►   [20..49] ──Next──►   [50..99] ──Next──► NULL`,
+  levelRoadmap: [
+    { level: 1, whatWeBuild: "Table scan baseline engine", mainConcept: "O(N) sequential record inspection, linear scan penalty" },
+    { level: 2, whatWeBuild: "Sorted array binary search index", mainConcept: "O(log N) binary search on sorted keys, write vs read trade-off" },
+    { level: 3, whatWeBuild: "Self-balancing B-Tree node splitter", mainConcept: "M-way search tree invariants, node splitting, upward median promotion" },
+    { level: 4, whatWeBuild: "B+ Tree linked leaf chain", mainConcept: "Doubly-linked leaf nodes, sequential range scans (min <= k <= max)" },
+    { level: 5, whatWeBuild: "4KB slotted page disk formatter", mainConcept: "Hardware sector alignment (4096 bytes), item offset arrays, tuple serialization" },
+    { level: 6, whatWeBuild: "LRU/Clock buffer pool manager", mainConcept: "Cached page frames, dirty page flushing, memory-bounded disk caching" },
+  ],
   architecturalLayers: [
     {
       number: 1,
@@ -69,6 +89,29 @@ export const databaseIndexChallenge: ChallengeData = {
       title: "Sequential Table Scanning",
       difficulty: "Easy",
       tagline: "Implement INSERT and sequential SCAN. Measure O(N) lookup degradation.",
+      diagram: `COMMANDS                     STORAGE ENGINE                 OUTPUT
+INSERT 42 "Alice"     ──────► table.push({42, "Alice"})   ──► OK
+GET 42                ──────► scan: compare 0..N rows     ──► Alice
+GET 99                ──────► scan entire table (miss)    ──► NULL
+SCAN 10 50            ──────► filter all rows             ──► 42:Alice`,
+      importantChallenge: {
+        title: "Sequential scan scalability bottleneck",
+        description:
+          "Appending rows is fast (O(1)), but finding a row requires linearly traversing every single entry (O(N)). As tables grow from 100 rows to 1,000,000 rows, queries degrade from microseconds to seconds. An index is the mathematical fix.",
+        codeOrFormat: "GET 42 on 1M rows ──► 1,000,000 comparisons without index vs 3 hops with B+Tree",
+      },
+      endGoalDemonstration: `INSERT 10 "Alice"
+OK
+INSERT 20 "Bob"
+OK
+GET 10
+Alice
+GET 99
+NULL
+SCAN 5 15
+10:Alice`,
+      nextLevelTeaser:
+        "In Level 2, we introduce sorted array indexing and binary search, cutting lookup comparisons from N down to log2(N).",
       learningLoop: {
         bottleneck: "Without an index, querying for a single row requires inspecting every row in the table, resulting in catastrophic O(N) latency.",
         whatYouUnderstand: [

@@ -21,6 +21,14 @@ export interface LevelDefinition {
   title: string;
   difficulty: "Easy" | "Medium" | "Hard";
   tagline: string;
+  diagram?: string;
+  importantChallenge?: {
+    title: string;
+    description: string;
+    codeOrFormat?: string;
+  };
+  endGoalDemonstration?: string;
+  nextLevelTeaser?: string;
   learningLoop: LevelLearningLoop;
   operations: Array<{ cmd: string; desc: string }>;
   durabilityRules?: string[];
@@ -36,6 +44,12 @@ export interface LevelDefinition {
 
 export type SupportedLanguage = "python" | "cpp" | "rust" | "go" | "java";
 
+export interface ChallengeRoadmapStep {
+  level: number;
+  whatWeBuild: string;
+  mainConcept: string;
+}
+
 export interface ChallengeData {
   slug: string;
   number: string;
@@ -50,6 +64,9 @@ export interface ChallengeData {
   overview: string;
   whyItMatters: string;
   finalOutcome: string;
+  philosophy?: string;
+  architectureDiagram?: string;
+  levelRoadmap?: ChallengeRoadmapStep[];
   architecturalLayers: ArchitecturalLayer[];
   levels: Record<number, LevelDefinition>;
   starterTemplates: {

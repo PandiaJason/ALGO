@@ -18,6 +18,31 @@ export const messageQueueChallenge: ChallengeData = {
     "Modern cloud microservices rely on asynchronous event streams to decouple services and absorb traffic bursts. Building an event broker teaches you sequential disk I/O, partition key hashing, consumer offset contracts, and at-least-once delivery semantics.",
   finalOutcome:
     "Upon completing all 6 levels, you have built a high-performance message broker capable of sustaining 100,000+ messages/sec, partitioning events deterministically across consumer groups, and surviving sudden process termination with zero message loss.",
+  philosophy: "Build Kafka from the ground up, one event-streaming concept at a time.",
+  architectureDiagram: `                     TOPIC LOG ENGINE
+                            │
+         ┌──────────────────┴──────────────────┐
+         │                                     │
+     Producers                             Consumers
+         │                                     │
+   PUB <topic> <msg>                    POLL <topic> [offset]
+         │                                     │
+         └───────────────┬─────────────────────┘
+                         │
+                 Segmented Commit Log
+                         │
+            ┌────────────┼────────────┐
+            │            │            │
+         [Msg 0]      [Msg 1]      [Msg 2]
+         Offset 0     Offset 1     Offset 2`,
+  levelRoadmap: [
+    { level: 1, whatWeBuild: "In-memory FIFO queue (PUB/POLL)", mainConcept: "Ring buffer / linked deque, topic isolation, zero-allocation tokenizing" },
+    { level: 2, whatWeBuild: "Sequential 64-bit offset assignor", mainConcept: "Monotonic commit log offsets, immutable history, non-destructive replay" },
+    { level: 3, whatWeBuild: "Key-based partition hash router", mainConcept: "Deterministic shard hashing (MurmurHash2), in-order per-key delivery" },
+    { level: 4, whatWeBuild: "Consumer group offset coordinator", mainConcept: "Distributed cursor tracking (__consumer_offsets), group commits & rebalancing" },
+    { level: 5, whatWeBuild: "High-throughput batching engine", mainConcept: "Buffer batching (linger.ms), amortizing system calls, >100,000 msgs/s" },
+    { level: 6, whatWeBuild: "Append-only segmented log recovery", mainConcept: "Segment file rotation (.log + .index), fsync durability, crash recovery" },
+  ],
   architecturalLayers: [
     {
       number: 1,
@@ -69,6 +94,30 @@ export const messageQueueChallenge: ChallengeData = {
       title: "Basic Topic Publishing & Consumption",
       difficulty: "Easy",
       tagline: "Implement foundational PUB and POLL commands across isolated in-memory topics.",
+      diagram: `INPUT (Commands)              BROKER / QUEUE ENGINE          OUTPUT
+PUB orders item_1     ──────► topic["orders"].push(item_1) ──► OK
+PUB orders item_2     ──────► topic["orders"].push(item_2) ──► OK
+POLL orders           ──────► topic["orders"].pop()        ──► item_1
+POLL orders           ──────► topic["orders"].pop()        ──► item_2
+POLL orders           ──────► topic empty                  ──► EMPTY`,
+      importantChallenge: {
+        title: "Whitespace in payloads & empty queue contracts",
+        description:
+          "Message payloads often contain spaces and complex JSON strings (e.g. `PUB orders {\"item\": 42, \"qty\": 1}`). The parser must preserve everything after the topic name. In addition, polling from an empty queue must deterministically return EMPTY without crashing or blocking.",
+        codeOrFormat: "PUB orders {\"user\": 1, \"status\": \"paid\"} ──► topic: 'orders', payload: '{\"user\": 1, \"status\": \"paid\"}'",
+      },
+      endGoalDemonstration: `PUB sensor temp=24.5
+OK
+PUB sensor pressure=1013
+OK
+POLL sensor
+temp=24.5
+POLL sensor
+pressure=1013
+POLL sensor
+EMPTY`,
+      nextLevelTeaser:
+        "In Level 2, we introduce monotonic 64-bit offsets (like Kafka), transforming destructive FIFO queue pops into an immutable commit log where multiple consumers can rewind and read from any point.",
       learningLoop: {
         bottleneck: "How do message brokers guarantee First-In-First-Out (FIFO) delivery without memory leaks or consumer contention?",
         whatYouUnderstand: [

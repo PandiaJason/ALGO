@@ -18,6 +18,31 @@ export const logEngineChallenge: ChallengeData = {
     "Modern cloud platforms generate gigabytes of log lines every minute. A slow parser stalls the observability pipeline and consumes thousands of CPU cores. Building a streaming log aggregator teaches you cache-friendly data structures, probabilistic algorithms, and zero-allocation parsing.",
   finalOutcome:
     "Upon completing all 6 levels, you have constructed a high-speed log aggregation engine capable of ingesting 200,000+ log lines/sec, maintaining rolling error rates, tracking top endpoints with bounded memory, and reporting p99 latency in sub-millisecond time.",
+  philosophy: "Build an observability engine from the ground up, one streaming telemetry concept at a time.",
+  architectureDiagram: `                     LOG STREAM PIPELINE
+                             │
+            ┌────────────────┴────────────────┐
+            │                                 │
+     Ingest Stream                     Query Engine
+            │                                 │
+  Zero-Copy Tokenizer                Metrics & Aggregates
+            │                                 │
+            └────────────────┬────────────────┘
+                             │
+                   Streaming Aggregator
+                             │
+              ┌──────────────┼──────────────┐
+              ▼              ▼              ▼
+         Histograms      Top-K Heavy    Percentiles
+        [2xx/4xx/5xx]    [Endpoints]   [p50/p95/p99]`,
+  levelRoadmap: [
+    { level: 1, whatWeBuild: "Streaming log line tokenizer", mainConcept: "Single-pass forward byte scanning, zero-allocation token extraction" },
+    { level: 2, whatWeBuild: "Status code family histogram", mainConcept: "Direct array-indexed counters (2xx, 3xx, 4xx, 5xx), O(1) bucketing" },
+    { level: 3, whatWeBuild: "Rolling window error rate", mainConcept: "Circular ring buffer time buckets, bounded-memory sliding error rates" },
+    { level: 4, whatWeBuild: "Top-K frequent endpoint sketch", mainConcept: "Count-Min Sketch / HeavyKeeper, bounded-memory frequency estimation" },
+    { level: 5, whatWeBuild: "Percentile latency estimator", mainConcept: "HdrHistogram / T-Digest streaming approximation of p50, p95, and p99" },
+    { level: 6, whatWeBuild: "High-throughput burst pipeline", mainConcept: "SIMD line scanning, lockless batch flushing, >200,000 lines/sec" },
+  ],
   architecturalLayers: [
     {
       number: 1,
@@ -69,6 +94,24 @@ export const logEngineChallenge: ChallengeData = {
       title: "Basic Structured Log Line Ingestion",
       difficulty: "Easy",
       tagline: "Parse structured log lines (timestamp, status, latency_ms, endpoint) and track total line count.",
+      diagram: `RAW LOG INPUT                                  INGESTION ENGINE        OUTPUT
+2026-09-07T12:00:00Z 200 12 /api/v1/checkout  ──► parse line tokens ──► OK
+2026-09-07T12:00:01Z 500 45 /api/v1/payment   ──► parse line tokens ──► OK
+STATS                                         ──► inspect counter   ──► TOTAL: 2`,
+      importantChallenge: {
+        title: "Regex vs Single-Pass Scanning",
+        description:
+          "Using regular expressions to parse high-velocity log streams causes catastrophic regex backtracking and memory allocation spikes. Systems-grade log processors scan for space delimiters in a single forward pass without allocating string arrays for every line.",
+        codeOrFormat: "<TIMESTAMP> <STATUS> <LATENCY_MS> <ENDPOINT> ──► single forward pass delimiter scan",
+      },
+      endGoalDemonstration: `LOG 2026-09-07T12:00:00Z 200 15 /api/health
+OK
+LOG 2026-09-07T12:00:01Z 500 89 /api/checkout
+OK
+STATS
+TOTAL: 2`,
+      nextLevelTeaser:
+        "In Level 2, we introduce status code distribution profiling, categorizing requests into 2xx, 3xx, 4xx, and 5xx families using fast array index mapping.",
       learningLoop: {
         bottleneck: "Regex matching on millions of log lines consumes massive CPU cycles. Single-pass delimiter scanning is orders of magnitude faster.",
         whatYouUnderstand: [

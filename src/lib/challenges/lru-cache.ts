@@ -18,6 +18,26 @@ export const lruCacheChallenge: ChallengeData = {
     "Caches sit directly in front of primary databases. If a cache algorithm evicts the wrong hot keys or suffers O(N) eviction sweeps, downstream databases collapse under thundering herds. Understanding LRU, LFU, and ARC eviction dynamics is essential for distributed systems.",
   finalOutcome:
     "Upon completing all 6 levels, you have engineered a production-grade cache engine supporting both LRU and LFU eviction modes, millisecond TTL expiration, strict byte memory caps, and sub-0.01ms O(1) operations.",
+  philosophy: "Build an in-memory cache from the ground up, one eviction algorithm at a time.",
+  architectureDiagram: `                  HASH MAP (O(1) Lookup)
+                   "alpha" ──► Node A
+                   "beta"  ──► Node B
+                            │
+             ┌──────────────┴──────────────┐
+             ▼                             ▼
+       [Head / MRU]                   [Tail / LRU]
+      ┌─────────────┐               ┌─────────────┐
+      │ Node B: 42  │ ◄───────────► │ Node A: 10  │
+      └─────────────┘               └─────────────┘
+      (Most Recent)                 (Evict First)`,
+  levelRoadmap: [
+    { level: 1, whatWeBuild: "Fixed capacity LRU cache", mainConcept: "Doubly-linked list + Hash map, O(1) tail eviction on overflow" },
+    { level: 2, whatWeBuild: "Access recency MRU promotion", mainConcept: "Read-path pointer splicing, promoting keys to head on GET" },
+    { level: 3, whatWeBuild: "LFU frequency bucket chains", mainConcept: "Frequency count tiers, least-frequently-used eviction, access decay" },
+    { level: 4, whatWeBuild: "Millisecond TTL expiration timer", mainConcept: "Passive on-read check + active timer expiration using monotonic clocks" },
+    { level: 5, whatWeBuild: "Byte-accurate memory budgeter", mainConcept: "Tracking physical payload bytes, evicting under byte RAM pressure" },
+    { level: 6, whatWeBuild: "Hit-ratio telemetry & benchmarking", mainConcept: "Hit/miss ratios, eviction rate instrumentation under 100K ops/s" },
+  ],
   architecturalLayers: [
     {
       number: 1,
@@ -69,6 +89,32 @@ export const lruCacheChallenge: ChallengeData = {
       title: "Basic LRU Eviction & O(1) Linked List",
       difficulty: "Easy",
       tagline: "Build a fixed-capacity LRU cache. When capacity is exceeded, evict the least recently inserted key.",
+      diagram: `INPUT (Capacity=2)            CACHE STATE (MRU ──► LRU)      OUTPUT
+PUT k1 v1              ──────► [k1:v1]                   ──► OK
+PUT k2 v2              ──────► [k2:v2] ──► [k1:v1]       ──► OK
+PUT k3 v3              ──────► [k3:v3] ──► [k2:v2]       ──► OK (k1 evicted!)
+GET k1                 ──────► not found                 ──► NULL
+GET k2                 ──────► hit                       ──► v2`,
+      importantChallenge: {
+        title: "Doubly-linked pointer edge-case bugs",
+        description:
+          "When unlinking a node from the middle, head, or tail of a doubly-linked list, failing to update both prev.next and next.prev corrupts memory. Managing sentinel dummy head and tail nodes eliminates null-pointer checks and prevents memory corruption.",
+        codeOrFormat: "node.prev.next = node.next; node.next.prev = node.prev; (always safe with dummy head/tail)",
+      },
+      endGoalDemonstration: `CAPACITY 2
+OK
+PUT a 1
+OK
+PUT b 2
+OK
+PUT c 3
+OK
+GET a
+NULL
+GET b
+2`,
+      nextLevelTeaser:
+        "In Level 2, reads (GET) become state-mutating operations: whenever a key is accessed, it must be spliced out of its current position and promoted to the head (MRU) of the list in strict O(1) time.",
       learningLoop: {
         bottleneck: "Array-based caches require O(N) shifts on eviction. Combining a hash table with a doubly-linked list enables strict O(1) get, put, and eviction.",
         whatYouUnderstand: [
