@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import {
   Sparkles,
@@ -17,7 +17,6 @@ import {
   ShieldCheck,
   TrendingUp,
   Code2,
-  ChevronRight,
   Play,
   Flame,
   Bot,
@@ -30,24 +29,10 @@ import {
   FileDown,
   Trophy,
 } from "lucide-react";
-import { CORE_CHALLENGES, CoreChallenge } from "@/lib/constants/core-challenges";
 
-interface ExploreManifestoProps {
-  userSolvedIds?: string[];
-  topThroughputMap?: Record<string, string>;
-}
 
-export function ExploreManifesto({
-  userSolvedIds = [],
-  topThroughputMap = {},
-}: ExploreManifestoProps) {
-  const [activeTab, setActiveTab] = useState<"ALL" | "SYSTEMS" | "DISTRIBUTED">("ALL");
 
-  const filteredChallenges = CORE_CHALLENGES.filter((c) => {
-    if (activeTab === "SYSTEMS") return c.domain === "SYSTEMS" || c.domain === "PERFORMANCE";
-    if (activeTab === "DISTRIBUTED") return c.domain === "DISTRIBUTED_SYSTEMS" || c.domain === "SEARCH_DATA";
-    return true;
-  });
+export function ExploreManifesto() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-20 sm:space-y-24 text-slate-800 antialiased selection:bg-[#099BE9]/20 selection:text-[#099BE9] pb-20">
@@ -72,53 +57,70 @@ export function ExploreManifesto({
 
         <div className="text-base sm:text-lg text-slate-800 font-medium leading-relaxed space-y-4 pt-2">
           <p>
-            AI can generate code faster than ever before.
-          </p>
-          <p>
-            Developers are already using it at scale:{" "}
-            <strong className="text-slate-950 font-bold">84%</strong> of
-            respondents to{" "}
+            AI can generate syntax in seconds. Developers are already using it at scale:{" "}
+            <strong className="text-slate-950 font-bold">84%</strong> of respondents to{" "}
             <a
               href="https://survey.stackoverflow.co/2025/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#099BE9] hover:text-[#1984E9] underline decoration-[#099BE9]/30 font-bold"
             >
-              Stack Overflow&apos;s 2025 Developer Survey
+              Stack Overflow&apos;s Developer Survey
             </a>{" "}
-            said they use or plan to use AI tools in development, while{" "}
-            <strong className="text-slate-950 font-bold">46%</strong> said
-            they distrust AI output more than they trust it.
+            use AI tools, while{" "}
+            <strong className="text-slate-950 font-bold">46%</strong> distrust AI output accuracy.
           </p>
           <p className="text-slate-950 font-bold pt-2">
-            That creates a new problem: If producing code becomes cheaper,
-            measuring code production becomes less useful.
+            That creates a new reality: If producing code becomes cheaper, measuring code production becomes less useful.
           </p>
         </div>
 
-        {/* 4 Core Questions Grid */}
-        <div className="pt-4">
-          <div className="text-xs font-mono uppercase tracking-wider text-slate-800 font-bold mb-3">
-            What matters increasingly in the agentic era:
+        {/* 4 Core Competencies Grid */}
+        <div className="pt-4 space-y-3">
+          <div className="text-xs font-mono uppercase tracking-wider text-slate-800 font-bold">
+            What matters in the systems &amp; agentic era:
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             {[
-              { q: "Can you direct the work?", desc: "Define invariants, boundary conditions, and architectural protocols." },
-              { q: "Can you verify it?", desc: "Know definitively whether the code survives concurrency, load, and crash faults." },
-              { q: "Can you find what's wrong?", desc: "Isolate memory leaks, lock contention, and silent data corruption under pressure." },
-              { q: "Can you make it better?", desc: "Re-architect hot paths to push hardware limits beyond textbook baselines." },
-            ].map((item, idx) => (
+              {
+                step: "1",
+                color: "#099BE9",
+                q: "Can you direct the architecture?",
+                desc: "Define boundary invariants, byte protocols, and memory budgets before writing a single line.",
+              },
+              {
+                step: "2",
+                color: "#09C899",
+                q: "Can you verify it empirically?",
+                desc: "Know definitively whether the code survives high concurrency, power cuts (SIGKILL), and partial writes.",
+              },
+              {
+                step: "3",
+                color: "#F78424",
+                q: "Can you isolate the bottleneck?",
+                desc: "Diagnose mutex lock contention, cache misses, memory leaks, and tail-latency spikes under pressure.",
+              },
+              {
+                step: "4",
+                color: "#8647E2",
+                q: "Can you make it faster?",
+                desc: "Re-architect hot paths with striped mutexes, lock-free ring buffers, and zero-copy slicing.",
+              },
+            ].map((item) => (
               <div
-                key={idx}
+                key={item.step}
                 className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs hover:border-slate-300 transition-colors"
               >
-                <div className="flex items-center gap-2.5 text-slate-950 font-bold text-sm">
-                  <span className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-xs font-mono font-bold text-slate-800">
-                    {idx + 1}
+                <div className="flex items-center gap-2.5">
+                  <span
+                    className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-mono font-extrabold text-white shrink-0"
+                    style={{ backgroundColor: item.color }}
+                  >
+                    {item.step}
                   </span>
-                  <span>{item.q}</span>
+                  <span className="font-bold text-slate-950 text-sm">{item.q}</span>
                 </div>
-                <p className="text-xs text-slate-700 font-medium mt-2 pl-7 leading-relaxed">
+                <p className="text-xs text-slate-700 font-medium mt-2 pl-8 leading-relaxed">
                   {item.desc}
                 </p>
               </div>
@@ -984,138 +986,8 @@ export function ExploreManifesto({
         </div>
       </section>
 
-      {/* ============================================================== */}
-      {/* 11. PUT IT INTO PRACTICE: THE 10 CORE CHALLENGES              */}
-      {/* ============================================================== */}
-      <section className="space-y-8 pt-4">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div>
-            <span className="text-xs font-mono uppercase tracking-wider text-slate-700 font-bold">
-              Proving Ground Architecture Tracks
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950 mt-1">
-              Start Proving It: The 10 Core Challenges
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1.5">
-              Reconstruct production-grade systems from first principles — databases, proxies, queues, and schedulers.
-            </p>
-          </div>
 
-          {/* Quick Domain Filter Tabs */}
-          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl shrink-0 font-mono text-xs">
-            <button
-              onClick={() => setActiveTab("ALL")}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
-                activeTab === "ALL" ? "bg-slate-950 text-white shadow-xs" : "text-slate-700 hover:text-slate-950 font-semibold"
-              }`}
-            >
-              All (10)
-            </button>
-            <button
-              onClick={() => setActiveTab("SYSTEMS")}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
-                activeTab === "SYSTEMS" ? "bg-slate-950 text-white shadow-xs" : "text-slate-700 hover:text-slate-950 font-semibold"
-              }`}
-            >
-              Systems
-            </button>
-            <button
-              onClick={() => setActiveTab("DISTRIBUTED")}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
-                activeTab === "DISTRIBUTED" ? "bg-slate-950 text-white shadow-xs" : "text-slate-700 hover:text-slate-950 font-semibold"
-              }`}
-            >
-              Distributed
-            </button>
-          </div>
-        </div>
 
-        {/* Challenges Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredChallenges.map((c) => {
-            const isSolved = userSolvedIds.includes(c.slug);
-            const topOps = topThroughputMap[c.slug];
-
-            return (
-              <div
-                key={c.slug}
-                className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-between space-y-4 group"
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2 text-xs font-mono">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-700">#{c.number}</span>
-                      <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-800 border border-slate-200 font-semibold">
-                        Inspired by <strong className="text-slate-950">{c.inspiredBy}</strong>
-                      </span>
-                    </div>
-                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded border ${
-                      c.difficulty === "Easy"
-                        ? "bg-[#09C899]/15 text-[#0AA793] border-[#09C899]/30"
-                        : c.difficulty === "Medium"
-                        ? "bg-[#FBAE0C]/15 text-[#F78424] border-[#FBAE0C]/30"
-                        : "bg-[#8647E2]/15 text-[#8647E2] border-[#8647E2]/30"
-                    }`}>
-                      {c.difficulty}
-                    </span>
-                  </div>
-
-                  <h3 className="text-base sm:text-lg font-bold text-slate-950 mt-2.5 group-hover:text-[#099BE9] transition-colors">
-                    {c.title}
-                  </h3>
-
-                  <p className="text-xs text-slate-700 mt-1 line-clamp-2 leading-relaxed font-medium">
-                    {c.overview}
-                  </p>
-
-                  <div className="bg-slate-50 border-l-2 border-[#099BE9] px-3 py-1.5 rounded-r-lg mt-3">
-                    <p className="text-xs italic text-slate-800 font-serif font-medium">
-                      &ldquo;{c.signatureQuestion}&rdquo;
-                    </p>
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                  <div className="text-[11px] font-mono text-slate-700 font-semibold">
-                    <span>{c.progressionLevels.length} Architectural Levels</span>
-                    {topOps && (
-                      <span className="text-[#0AA793] font-bold ml-2">
-                        • {topOps}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <Link
-                      href={`/challenges/${c.slug}`}
-                      className="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-800 hover:bg-slate-50 transition-colors"
-                    >
-                      Overview
-                    </Link>
-                    <Link
-                      href={`/challenges/${c.slug}/workspace`}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-950 hover:bg-[#099BE9] text-white transition-all shadow-2xs"
-                    >
-                      <span>Launch</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="text-center pt-4">
-          <Link
-            href="/challenges"
-            className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-blue-600 hover:text-blue-700 font-mono"
-          >
-            <span>View Full Problem Set &amp; Filter Table</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-      </section>
 
       {/* ============================================================== */}
       {/* 12. EMPIRICAL RESEARCH & PRIMARY SOURCES ARCHIVE              */}
