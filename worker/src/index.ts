@@ -33,6 +33,7 @@ export const connection = queueConnection;
 export const queue = new Queue("submission-eval-queue", { connection: queueConnection });
 
 console.log(`🚀 ALGO Execution Worker starting (Concurrency: ${WORKER_CONCURRENCY})...`);
+console.log(`🛡️ Sandbox Engine: ${process.env.SANDBOX_BACKEND || "lima"} (nsjail via Lima Debian VM / vz)`);
 console.log(`📡 Database: ${process.env.DATABASE_URL?.replace(/:[^:@]+@/, ":****@") || "default localhost"}`);
 console.log(`📡 Redis: ${REDIS_URL.replace(/:[^:@]+@/, ":****@")}`);
 

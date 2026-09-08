@@ -1,6 +1,7 @@
 import { spawn } from "child_process";
 import { getChallenge } from "../challenges";
 import { SupportedLanguage } from "../challenges/types";
+import { runInLimaNsjail, isLimaAvailable, SandboxExecutionResult } from "./lima-nsjail";
 
 export interface TestCaseResult {
   name: string;
@@ -166,6 +167,32 @@ export async function runInDocker(
       resolve({ stdout, stderr: err.message, exitCode: 1, timedOut: false, oomKilled: false });
     });
   });
+}
+
+/**
+ * Universal sandbox runner that dispatches to Lima nsjail (Debian ARM64) when active,
+ * or falls back to Docker.
+ */
+export async function runInSandbox(
+  code: string,
+  language: SupportedLanguage,
+  inputData: string,
+  timeoutMs?: number
+): Promise<SandboxExecutionResult> {
+  const preferredBackend = process.env.SANDBOX_BACKEND?.toLowerCase();
+
+  // If explicitly configured for docker
+  if (preferredBackend === "docker") {
+    return runInDocker(code, language, inputData, timeoutMs);
+  }
+
+  // If configured for lima or if Lima Debian VM is running
+  if (preferredBackend === "lima" || isLimaAvailable()) {
+    return runInLimaNsjail(code, language, inputData, timeoutMs);
+  }
+
+  // Default fallback
+  return runInDocker(code, language, inputData, timeoutMs);
 }
 
 export interface TestCaseDef {
@@ -361,7 +388,7 @@ export async function runQuickTest(
       try {
         const input = testDef.input.trim() + "\n";
         const testTimeout = language === "python" ? 4000 : 9000;
-        const res = await runInDocker(code, language, input, testTimeout);
+        const res = await runInSandbox(code, language, input, testTimeout);
 
         if (res.exitCode === 124) {
           return {
@@ -450,7 +477,7 @@ export async function runBenchmark(
   lines.push("EXIT");
   const payload = lines.join("\n") + "\n";
 
-  const res = await runInDocker(code, language, payload, 25000);
+  const res = await runInSandbox(code, language, payload, 25000);
   const endTime = process.hrtime.bigint();
 
   const totalTimeSec = Math.max(Number(endTime - startTime) / 1e9, 0.001);
