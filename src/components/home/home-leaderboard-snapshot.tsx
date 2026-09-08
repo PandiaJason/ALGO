@@ -2,61 +2,24 @@
 
 import React from "react";
 import Link from "next/link";
-import { Trophy, CheckCircle2, ArrowRight, Zap, Gauge } from "lucide-react";
+import { Trophy, CheckCircle2, ArrowRight, Terminal } from "lucide-react";
 
-interface LeaderboardEntry {
-  rank: number;
+export interface RealLeaderboardEntry {
+  id: string;
+  score: string | number;
+  throughputOpsSec: string | number;
+  latencyP99Ms: string | number | null;
   username: string;
+  challengeTitle: string;
+  challengeSlug: string;
   language: string;
-  challenge: string;
-  throughput: string;
-  p99: string;
 }
 
-const SAMPLE_LEADERS: LeaderboardEntry[] = [
-  {
-    rank: 1,
-    username: "systems_core",
-    language: "Rust",
-    challenge: "Key-Value Storage Engine",
-    throughput: "148,220 ops/s",
-    p99: "0.08ms",
-  },
-  {
-    rank: 2,
-    username: "perf_ninja",
-    language: "C++ 20",
-    challenge: "Key-Value Storage Engine",
-    throughput: "139,400 ops/s",
-    p99: "0.09ms",
-  },
-  {
-    rank: 3,
-    username: "concurrency_guru",
-    language: "Go",
-    challenge: "Lock-Free Ring Buffer",
-    throughput: "112,800 ops/s",
-    p99: "0.11ms",
-  },
-  {
-    rank: 4,
-    username: "dev_jason",
-    language: "Python 3.12",
-    challenge: "Key-Value Storage Engine",
-    throughput: "101,170 ops/s",
-    p99: "0.12ms",
-  },
-  {
-    rank: 5,
-    username: "kernel_dev",
-    language: "Java 21",
-    challenge: "Write-Ahead Log Engine",
-    throughput: "94,600 ops/s",
-    p99: "0.15ms",
-  },
-];
+interface HomeLeaderboardSnapshotProps {
+  entries: RealLeaderboardEntry[];
+}
 
-export function HomeLeaderboardSnapshot() {
+export function HomeLeaderboardSnapshot({ entries = [] }: HomeLeaderboardSnapshotProps) {
   return (
     <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
@@ -97,68 +60,101 @@ export function HomeLeaderboardSnapshot() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {SAMPLE_LEADERS.map((entry) => {
-              let rankBadge = null;
-              if (entry.rank === 1) {
-                rankBadge = (
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#FBAE0C]/15 border border-[#FBAE0C]/40 text-[#F78424] font-bold text-xs shadow-2xs">
-                    🥇 1
-                  </span>
-                );
-              } else if (entry.rank === 2) {
-                rankBadge = (
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 border border-slate-300 text-slate-800 font-bold text-xs shadow-2xs">
-                    🥈 2
-                  </span>
-                );
-              } else if (entry.rank === 3) {
-                rankBadge = (
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#8647E2]/15 border border-[#8647E2]/30 text-[#8647E2] font-bold text-xs shadow-2xs">
-                    🥉 3
-                  </span>
-                );
-              } else {
-                rankBadge = (
-                  <span className="font-mono font-bold text-slate-700 text-xs">
-                    #{entry.rank}
-                  </span>
-                );
-              }
+            {entries.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="py-12 text-center text-slate-600 font-mono text-xs">
+                  <div className="max-w-md mx-auto space-y-3">
+                    <p className="font-medium text-slate-700">
+                      No verified submissions recorded yet. Be the first engineer to benchmark on the global leaderboard!
+                    </p>
+                    <Link
+                      href="/challenges/kv-store/workspace"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#09C899] hover:bg-[#0AA793] transition-all"
+                    >
+                      <Terminal className="w-3.5 h-3.5" />
+                      <span>Submit First Benchmark</span>
+                    </Link>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              entries.map((entry, index) => {
+                const rank = index + 1;
+                let rankBadge = null;
+                if (rank === 1) {
+                  rankBadge = (
+                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#FBAE0C]/15 border border-[#FBAE0C]/40 text-[#F78424] font-bold text-xs shadow-2xs">
+                      🥇 1
+                    </span>
+                  );
+                } else if (rank === 2) {
+                  rankBadge = (
+                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 border border-slate-300 text-slate-800 font-bold text-xs shadow-2xs">
+                      🥈 2
+                    </span>
+                  );
+                } else if (rank === 3) {
+                  rankBadge = (
+                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#8647E2]/15 border border-[#8647E2]/30 text-[#8647E2] font-bold text-xs shadow-2xs">
+                      🥉 3
+                    </span>
+                  );
+                } else {
+                  rankBadge = (
+                    <span className="font-mono font-bold text-slate-700 text-xs">
+                      #{rank}
+                    </span>
+                  );
+                }
 
-              return (
-                <tr key={entry.rank} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="py-3.5 px-4 text-center">{rankBadge}</td>
-                  <td className="py-3.5 px-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#099BE9] to-[#09C899] flex items-center justify-center text-white text-[11px] font-bold shrink-0">
-                        {entry.username.slice(0, 1).toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="font-bold text-slate-950">@{entry.username}</div>
-                        <div className="text-[10px] font-mono text-slate-600 font-semibold uppercase">
-                          {entry.language}
+                const throughputDisplay = `${Number(entry.throughputOpsSec).toLocaleString()} ops/s`;
+                const latencyDisplay = entry.latencyP99Ms ? `${Number(entry.latencyP99Ms).toFixed(2)}ms` : "—";
+
+                return (
+                  <tr key={entry.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3.5 px-4 text-center">{rankBadge}</td>
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#099BE9] to-[#09C899] flex items-center justify-center text-white text-[11px] font-bold shrink-0">
+                          {entry.username.slice(0, 1).toUpperCase()}
+                        </div>
+                        <div>
+                          <Link
+                            href={`/u/${entry.username}`}
+                            className="font-bold text-slate-950 hover:text-[#099BE9] transition-colors"
+                          >
+                            @{entry.username}
+                          </Link>
+                          <div className="text-[10px] font-mono text-slate-600 font-semibold uppercase">
+                            {entry.language}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-3.5 px-4 hidden sm:table-cell text-slate-800 font-semibold text-xs">
-                    {entry.challenge}
-                  </td>
-                  <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-950 text-xs">
-                    {entry.throughput}
-                  </td>
-                  <td className="py-3.5 px-4 text-right font-mono font-semibold text-slate-800 text-xs hidden sm:table-cell">
-                    {entry.p99}
-                  </td>
-                  <td className="py-3.5 px-4 text-center">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0AA793] bg-[#09C899]/10 px-2.5 py-0.5 rounded-full border border-[#09C899]/30">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#09C899]" />
-                      <span>Accepted</span>
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
+                    </td>
+                    <td className="py-3.5 px-4 hidden sm:table-cell text-slate-800 font-semibold text-xs">
+                      <Link
+                        href={`/challenges/${entry.challengeSlug}`}
+                        className="hover:text-[#099BE9] transition-colors"
+                      >
+                        {entry.challengeTitle}
+                      </Link>
+                    </td>
+                    <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-950 text-xs">
+                      {throughputDisplay}
+                    </td>
+                    <td className="py-3.5 px-4 text-right font-mono font-semibold text-slate-800 text-xs hidden sm:table-cell">
+                      {latencyDisplay}
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0AA793] bg-[#09C899]/10 px-2.5 py-0.5 rounded-full border border-[#09C899]/30">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#09C899]" />
+                        <span>Accepted</span>
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>

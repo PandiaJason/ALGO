@@ -105,7 +105,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
           <div className="text-2xl font-extrabold text-slate-950 mt-1 font-sans">
             {entries.length}
           </div>
-          <div className="text-[10px] text-slate-600 font-medium mt-0.5">
+          <div className="text-[10px] text-slate-700 font-semibold mt-0.5">
             100% Correctness Gate
           </div>
         </div>
@@ -115,11 +115,11 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
             <span>PEAK THROUGHPUT</span>
             <Zap className="w-3.5 h-3.5 text-[#099BE9]" />
           </div>
-          <div className="text-2xl font-extrabold text-slate-950 mt-1">
+          <div className="text-2xl font-extrabold text-slate-950 mt-1 font-mono">
             {topThroughput ? formatThroughput(topThroughput) : "—"}
           </div>
-          <div className="text-[10px] text-[#0AA793] font-bold mt-0.5">
-            1.01x vs baseline
+          <div className="text-[10px] text-slate-700 font-semibold mt-0.5">
+            {topThroughput ? "Top Verified Score" : "Awaiting submissions"}
           </div>
         </div>
 
@@ -128,11 +128,11 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
             <span>LOWEST p99 LATENCY</span>
             <Activity className="w-3.5 h-3.5 text-[#0AA793]" />
           </div>
-          <div className="text-2xl font-extrabold text-slate-950 mt-1">
-            {bestLatency > 0 && bestLatency < 999 ? formatLatency(bestLatency) : "25µs"}
+          <div className="text-2xl font-extrabold text-slate-950 mt-1 font-mono">
+            {bestLatency > 0 && bestLatency < 999 ? formatLatency(bestLatency) : "—"}
           </div>
-          <div className="text-[10px] text-[#0AA793] font-bold mt-0.5">
-            Deterministic cgroup
+          <div className="text-[10px] text-slate-700 font-semibold mt-0.5">
+            Deterministic cgroups
           </div>
         </div>
 
@@ -144,7 +144,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
           <div className="text-sm font-bold text-slate-950 mt-2 font-mono">
             algo-runner:latest
           </div>
-          <div className="text-[10px] text-slate-600 font-medium mt-0.5">
+          <div className="text-[10px] text-slate-700 font-semibold mt-0.5">
             256MB RAM / 1 CPU cap
           </div>
         </div>
@@ -260,8 +260,24 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
           <tbody className="divide-y divide-slate-100">
             {filteredEntries.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-slate-600 font-mono text-xs font-medium">
-                  No matching entries found.
+                <td colSpan={7} className="py-16 text-center text-slate-700 font-mono text-xs">
+                  <div className="max-w-md mx-auto space-y-3">
+                    <p className="font-bold text-slate-950 text-sm">
+                      {search || selectedLanguage !== "ALL"
+                        ? "No matching entries found for current filter"
+                        : "No verified submissions recorded yet"}
+                    </p>
+                    <p className="text-slate-700 text-xs font-medium leading-relaxed">
+                      Run a challenge test suite in the arena to earn the first verified position on the global leaderboard.
+                    </p>
+                    <Link
+                      href="/challenges/kv-store/workspace"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#09C899] hover:bg-[#0AA793] transition-all"
+                    >
+                      <Terminal className="w-3.5 h-3.5" />
+                      <span>Submit Implementation</span>
+                    </Link>
+                  </div>
                 </td>
               </tr>
             ) : (

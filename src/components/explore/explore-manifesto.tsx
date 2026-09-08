@@ -56,11 +56,11 @@ export function ExploreManifesto({
       {/* ============================================================== */}
       <section className="space-y-6 pt-4 border-b border-slate-200/80 pb-16">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-semibold tracking-wider uppercase bg-slate-900 text-white">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wider uppercase bg-slate-950 text-white">
             <Sparkles className="w-3.5 h-3.5 text-[#099BE9]" />
-            Curriculum &amp; Thesis
+            Systems Architecture &amp; Thesis
           </span>
-          <span className="text-xs font-mono text-slate-400">
+          <span className="text-xs font-mono font-bold text-slate-700">
             // EVIDENCE BRIEF • 2026
           </span>
         </div>
@@ -70,27 +70,27 @@ export function ExploreManifesto({
           The way we measure it hasn&apos;t.
         </h1>
 
-        <div className="text-base sm:text-lg text-slate-700 leading-relaxed space-y-4 pt-2 font-normal">
+        <div className="text-base sm:text-lg text-slate-800 font-medium leading-relaxed space-y-4 pt-2">
           <p>
             AI can generate code faster than ever before.
           </p>
           <p>
             Developers are already using it at scale:{" "}
-            <strong className="text-slate-900 font-semibold">84%</strong> of
+            <strong className="text-slate-950 font-bold">84%</strong> of
             respondents to{" "}
             <a
               href="https://survey.stackoverflow.co/2025/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#099BE9] hover:text-[#1984E9] underline decoration-[#099BE9]/30 font-medium"
+              className="text-[#099BE9] hover:text-[#1984E9] underline decoration-[#099BE9]/30 font-bold"
             >
               Stack Overflow&apos;s 2025 Developer Survey
             </a>{" "}
             said they use or plan to use AI tools in development, while{" "}
-            <strong className="text-slate-900 font-semibold">46%</strong> said
+            <strong className="text-slate-950 font-bold">46%</strong> said
             they distrust AI output more than they trust it.
           </p>
-          <p className="text-slate-900 font-medium pt-2">
+          <p className="text-slate-950 font-bold pt-2">
             That creates a new problem: If producing code becomes cheaper,
             measuring code production becomes less useful.
           </p>
@@ -98,10 +98,10 @@ export function ExploreManifesto({
 
         {/* 4 Core Questions Grid */}
         <div className="pt-4">
-          <div className="text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold mb-3">
+          <div className="text-xs font-mono uppercase tracking-wider text-slate-800 font-bold mb-3">
             What matters increasingly in the agentic era:
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             {[
               { q: "Can you direct the work?", desc: "Define invariants, boundary conditions, and architectural protocols." },
               { q: "Can you verify it?", desc: "Know definitively whether the code survives concurrency, load, and crash faults." },
@@ -110,15 +110,15 @@ export function ExploreManifesto({
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-2xs hover:border-slate-300 transition-colors"
+                className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs hover:border-slate-300 transition-colors"
               >
-                <div className="flex items-center gap-2 text-slate-950 font-semibold text-sm">
-                  <span className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-xs font-mono font-bold text-slate-700">
+                <div className="flex items-center gap-2.5 text-slate-950 font-bold text-sm">
+                  <span className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-xs font-mono font-bold text-slate-800">
                     {idx + 1}
                   </span>
                   <span>{item.q}</span>
                 </div>
-                <p className="text-xs text-slate-600 mt-1.5 pl-7 leading-normal">
+                <p className="text-xs text-slate-700 font-medium mt-2 pl-7 leading-relaxed">
                   {item.desc}
                 </p>
               </div>
@@ -138,19 +138,19 @@ export function ExploreManifesto({
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-950 mt-1">
             The evidence is already here.
           </h2>
-          <p className="text-sm sm:text-base text-slate-600 mt-2 leading-relaxed">
+          <p className="text-sm sm:text-base text-slate-700 font-medium mt-2 leading-relaxed">
             This isn&apos;t just our opinion. In{" "}
             <a
               href="https://www.hackerrank.com/reports/developer-skills-report-2025"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#099BE9] hover:text-[#1984E9] underline decoration-[#099BE9]/30 font-medium"
+              className="text-[#099BE9] hover:text-[#1984E9] underline decoration-[#099BE9]/30 font-semibold"
             >
               HackerRank&apos;s 2025 Developer Skills Report
             </a>
             , based on{" "}
-            <strong className="text-slate-900">13,732 respondents</strong> across{" "}
-            <strong className="text-slate-900">102 countries</strong>, the
+            <strong className="text-slate-950 font-bold">13,732 respondents</strong> across{" "}
+            <strong className="text-slate-950 font-bold">102 countries</strong>, the
             numbers are striking:
           </p>
         </div>
@@ -202,12 +202,12 @@ export function ExploreManifesto({
                 <div className="text-4xl sm:text-5xl font-extrabold font-mono text-slate-950 tracking-tight">
                   {card.stat}
                 </div>
-                <p className="text-xs sm:text-sm font-medium text-slate-800 mt-2 leading-snug">
+                <p className="text-xs sm:text-sm font-semibold text-slate-900 mt-2 leading-snug">
                   {card.label}
                 </p>
               </div>
 
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600 font-mono font-medium">
                 <span className="truncate max-w-[150px]">{card.source}</span>
                 <div className="flex items-center gap-2">
                   <a
@@ -224,7 +224,7 @@ export function ExploreManifesto({
                       href={card.pdfUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-slate-400 hover:text-slate-600 font-sans"
+                      className="text-slate-500 hover:text-slate-700 font-sans"
                       title="Download PDF Report"
                     >
                       [pdf]
@@ -237,10 +237,10 @@ export function ExploreManifesto({
 
           {/* Synthesis Note Card */}
           <div className="bg-slate-50 border border-dashed border-slate-300 rounded-2xl p-5 flex flex-col justify-center space-y-2">
-            <div className="text-xs font-mono uppercase tracking-wider font-semibold text-slate-600">
+            <div className="text-xs font-mono uppercase tracking-wider font-bold text-slate-800">
               The Measurable Gap
             </div>
-            <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-800 font-medium leading-relaxed">
               That&apos;s not evidence that LeetCode or HackerRank are useless.
               They solve real problems and have massive adoption. It is evidence
               that the industry itself recognizes a measurable gap between
@@ -270,7 +270,7 @@ export function ExploreManifesto({
                 href="https://pages.hackerrank.com/hubfs/PDFs/HackerRank%202025%20Developer%20Skills%20Report.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-slate-500 hover:text-slate-800 inline-flex items-center gap-1"
+                className="text-slate-600 hover:text-slate-900 inline-flex items-center gap-1 font-semibold"
               >
                 <FileDown className="w-3 h-3" />
                 <span>Full PDF</span>
@@ -278,12 +278,12 @@ export function ExploreManifesto({
             </div>
           </div>
 
-          <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-800 font-medium leading-relaxed">
             HackerRank itself reports that{" "}
-            <strong className="text-slate-900">77% of developers</strong> say most
+            <strong className="text-slate-950 font-bold">77% of developers</strong> say most
             assessments don&apos;t align with the skills required for the role,{" "}
-            <strong className="text-slate-900">71%</strong> say they grind LeetCode
-            to prepare, and <strong className="text-slate-900">62%</strong> say they
+            <strong className="text-slate-950 font-bold">71%</strong> say they grind LeetCode
+            to prepare, and <strong className="text-slate-950 font-bold">62%</strong> say they
             overprepare because they don&apos;t know what will actually be tested.
           </p>
 
@@ -294,7 +294,7 @@ export function ExploreManifesto({
               rel="noopener noreferrer"
               className="p-3 bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-colors flex items-center justify-between group"
             >
-              <span className="text-xs font-medium text-slate-800 group-hover:text-[#099BE9]">
+              <span className="text-xs font-bold text-slate-900 group-hover:text-[#099BE9]">
                 &ldquo;Why Do Developers Bail on Assessments?&rdquo;
               </span>
               <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#099BE9] shrink-0 ml-2" />
@@ -305,14 +305,14 @@ export function ExploreManifesto({
               rel="noopener noreferrer"
               className="p-3 bg-white rounded-xl border border-slate-200 hover:border-slate-300 transition-colors flex items-center justify-between group"
             >
-              <span className="text-xs font-medium text-slate-800 group-hover:text-[#099BE9]">
+              <span className="text-xs font-bold text-slate-900 group-hover:text-[#099BE9]">
                 &ldquo;Is LeetCode Dead?&rdquo;
               </span>
               <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#099BE9] shrink-0 ml-2" />
             </a>
           </div>
 
-          <p className="text-xs text-slate-600 italic">
+          <p className="text-xs text-slate-700 font-medium italic">
             &ldquo;So ALGO isn&apos;t inventing a problem. The ecosystem is
             already telling us the problem exists.&rdquo;
           </p>
@@ -330,9 +330,9 @@ export function ExploreManifesto({
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-950 mt-1">
             Then AI changed the equation.
           </h2>
-          <p className="text-sm sm:text-base text-slate-600 mt-2 leading-relaxed">
+          <p className="text-sm sm:text-base text-slate-700 font-medium mt-2 leading-relaxed">
             Traditional coding assessment asks:{" "}
-            <em className="font-semibold text-slate-900 font-serif">
+            <em className="font-bold text-slate-950 font-serif">
               &ldquo;Can you produce the solution?&rdquo;
             </em>{" "}
             But now an AI can often produce a solution.
@@ -341,7 +341,7 @@ export function ExploreManifesto({
 
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <span className="text-xs font-mono uppercase text-slate-500 font-semibold tracking-wider">
+            <span className="text-xs font-mono uppercase text-slate-700 font-bold tracking-wider">
               Stack Overflow 2025 Developer &amp; AI Survey Findings
             </span>
             <div className="flex items-center gap-3 text-xs font-mono">
@@ -372,36 +372,36 @@ export function ExploreManifesto({
               <div className="text-2xl sm:text-3xl font-mono font-bold text-[#F78424]">
                 66%
               </div>
-              <p className="text-xs text-slate-800 leading-snug">
+              <p className="text-xs text-slate-900 font-medium leading-snug">
                 of developers are frustrated by AI solutions that are{" "}
                 <strong>almost right</strong>.
               </p>
             </div>
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-              <div className="text-2xl sm:text-3xl font-mono font-bold text-slate-900">
+              <div className="text-2xl sm:text-3xl font-mono font-bold text-slate-950">
                 45%
               </div>
-              <p className="text-xs text-slate-700 leading-snug">
+              <p className="text-xs text-slate-800 font-medium leading-snug">
                 say debugging AI-generated code is <strong>more time-consuming</strong>.
               </p>
             </div>
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-              <div className="text-2xl sm:text-3xl font-mono font-bold text-slate-900">
+              <div className="text-2xl sm:text-3xl font-mono font-bold text-slate-950">
                 46% vs 33%
               </div>
-              <p className="text-xs text-slate-700 leading-snug">
+              <p className="text-xs text-slate-800 font-medium leading-snug">
                 <strong>distrust AI accuracy</strong>, compared with only 33% who trust it.
               </p>
             </div>
           </div>
 
-          <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 font-mono border-t border-slate-100">
+          <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-700 font-mono font-medium border-t border-slate-100">
             <span>Stack Overflow 2025 Annual Developer &amp; AI Survey (49,000+ respondents)</span>
             <a
               href="https://survey.stackoverflow.co/2025/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#099BE9] hover:text-[#1984E9] font-medium inline-flex items-center gap-1 font-sans"
+              className="text-[#099BE9] hover:text-[#1984E9] font-semibold inline-flex items-center gap-1 font-sans"
             >
               <span>survey.stackoverflow.co/2025</span>
               <ExternalLink className="w-3 h-3" />
@@ -413,19 +413,19 @@ export function ExploreManifesto({
           <div className="text-xs font-mono uppercase tracking-wider text-[#099BE9] font-semibold">
             The Fundamental Re-Definition of Skill
           </div>
-          <p className="text-sm sm:text-base leading-relaxed text-slate-300">
+          <p className="text-sm sm:text-base leading-relaxed text-slate-200">
             That creates a completely different engineering skill:{" "}
-            <strong className="text-white font-semibold">Verification.</strong>
+            <strong className="text-white font-bold">Verification.</strong>
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-3">
-              <div className="text-[11px] font-mono uppercase text-slate-400">Old Skill</div>
+              <div className="text-[11px] font-mono uppercase text-slate-300 font-semibold">Old Skill</div>
               <div className="text-sm font-semibold text-[#FBAE0C] mt-1">
                 &ldquo;Can you type the algorithm?&rdquo;
               </div>
             </div>
             <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-3">
-              <div className="text-[11px] font-mono uppercase text-slate-400">New Skill</div>
+              <div className="text-[11px] font-mono uppercase text-slate-300 font-semibold">New Skill</div>
               <div className="text-sm font-semibold text-[#09C899] mt-1">
                 &ldquo;Can you know whether the system actually works?&rdquo;
               </div>
@@ -445,10 +445,10 @@ export function ExploreManifesto({
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-950 mt-1">
             This is where ALGO starts.
           </h2>
-          <p className="text-sm sm:text-base text-slate-600 mt-2 leading-relaxed">
+          <p className="text-sm sm:text-base text-slate-700 font-medium mt-2 leading-relaxed">
             We don&apos;t want to build another platform where you solve
             thousands of isolated problems. We want to create an environment where
-            you <strong className="text-slate-900 font-semibold">engineer</strong>.
+            you <strong className="text-slate-950 font-bold">engineer</strong>.
           </p>
         </div>
 
@@ -458,10 +458,10 @@ export function ExploreManifesto({
           <div className="md:col-span-5 bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400">
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-600">
                   Traditional Loop
                 </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-bold">
                   SURFACE LEVEL
                 </span>
               </div>
@@ -470,15 +470,15 @@ export function ExploreManifesto({
                 {["QUESTION", "WRITE CODE", "TEST CASES", "ACCEPTED", "NEXT QUESTION"].map(
                   (step, idx, arr) => (
                     <React.Fragment key={idx}>
-                      <div className={`p-2.5 rounded-lg border font-semibold ${
+                      <div className={`p-2.5 rounded-lg border font-bold ${
                         step === "ACCEPTED"
                           ? "bg-[#09C899]/10 text-[#0AA793] border-[#09C899]/30"
-                          : "bg-slate-50 text-slate-700 border-slate-200"
+                          : "bg-slate-50 text-slate-900 border-slate-200"
                       }`}>
                         {step}
                       </div>
                       {idx < arr.length - 1 && (
-                        <div className="text-slate-300 flex justify-center py-0.5">
+                        <div className="text-slate-400 flex justify-center py-0.5 font-bold">
                           ↓
                         </div>
                       )}
@@ -488,7 +488,7 @@ export function ExploreManifesto({
               </div>
             </div>
 
-            <p className="text-xs text-slate-500 text-center mt-6 pt-4 border-t border-slate-100">
+            <p className="text-xs text-slate-700 font-medium text-center mt-6 pt-4 border-t border-slate-100">
               Binary pass/fail. Tests memorization, ignores concurrency, I/O, and hardware efficiency.
             </p>
           </div>
@@ -523,10 +523,10 @@ export function ExploreManifesto({
                     className="p-2.5 rounded-lg border border-slate-800/80 bg-slate-900/60 flex flex-col justify-between"
                   >
                     <div className="flex items-center gap-1.5 text-[#09C899] font-bold">
-                      <span className="text-[10px] text-slate-500">0{idx + 1}.</span>
+                      <span className="text-[10px] text-slate-400 font-semibold">0{idx + 1}.</span>
                       <span>{item.step}</span>
                     </div>
-                    <p className="text-[11px] text-slate-400 font-sans mt-1">
+                    <p className="text-[11px] text-slate-300 font-sans mt-1 font-medium">
                       {item.desc}
                     </p>
                   </div>
@@ -534,7 +534,7 @@ export function ExploreManifesto({
               </div>
             </div>
 
-            <p className="relative z-10 text-xs text-slate-400 text-center mt-6 pt-4 border-t border-slate-800">
+            <p className="relative z-10 text-xs text-slate-300 text-center mt-6 pt-4 border-t border-slate-800 font-medium">
               Continuous optimization loop: empirical profiling, architectural redesign, and verified speedups.
             </p>
           </div>
@@ -552,7 +552,7 @@ export function ExploreManifesto({
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-950 mt-1">
             Your code isn&apos;t the final answer.
           </h2>
-          <p className="text-sm sm:text-base text-slate-600 mt-2 leading-relaxed">
+          <p className="text-sm sm:text-base text-slate-700 font-medium mt-2 leading-relaxed">
             Imagine you&apos;re building a key-value engine from scratch.
           </p>
         </div>
@@ -575,24 +575,24 @@ export function ExploreManifesto({
 
             <div className="space-y-2 font-mono text-xs">
               <div className="flex justify-between py-1 border-b border-slate-50">
-                <span className="text-slate-500">Correctness:</span>
-                <span className="font-semibold text-[#0AA793]">100% (Passed 24/24 tests)</span>
+                <span className="text-slate-600 font-semibold">Correctness:</span>
+                <span className="font-bold text-[#0AA793]">100% (Passed 24/24 tests)</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-50">
-                <span className="text-slate-500">Throughput:</span>
-                <span className="font-semibold text-slate-900">18,200 ops/s</span>
+                <span className="text-slate-600 font-semibold">Throughput:</span>
+                <span className="font-bold text-slate-950">18,200 ops/s</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-50">
-                <span className="text-slate-500">P99 Latency:</span>
-                <span className="font-semibold text-slate-900">2.8 ms</span>
+                <span className="text-slate-600 font-semibold">P99 Latency:</span>
+                <span className="font-bold text-slate-950">2.8 ms</span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-slate-500">Memory Footprint:</span>
-                <span className="font-semibold text-slate-900">142 MB</span>
+                <span className="text-slate-600 font-semibold">Memory Footprint:</span>
+                <span className="font-bold text-slate-950">142 MB</span>
               </div>
             </div>
 
-            <div className="bg-slate-50 rounded-xl p-3 text-xs text-slate-600 leading-relaxed">
+            <div className="bg-slate-50 rounded-xl p-3 text-xs text-slate-800 font-medium leading-relaxed">
               It works. Accepted. But ALGO doesn&apos;t stop there. You look at the
               leaderboard: 18K ops/sec. Someone else has 74K.
             </div>
@@ -615,27 +615,27 @@ export function ExploreManifesto({
 
               <div className="space-y-2 font-mono text-xs mt-3">
                 <div className="flex justify-between py-1 border-b border-slate-800">
-                  <span className="text-slate-400">Correctness:</span>
+                  <span className="text-slate-300 font-medium">Correctness:</span>
                   <span className="font-semibold text-[#09C899]">100% Crash-Resilient</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-800">
-                  <span className="text-slate-400">Throughput:</span>
+                  <span className="text-slate-300 font-medium">Throughput:</span>
                   <span className="font-bold text-[#09C899] text-sm">
                     91,700 ops/s
                   </span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-800">
-                  <span className="text-slate-400">P99 Latency:</span>
+                  <span className="text-slate-300 font-medium">P99 Latency:</span>
                   <span className="font-semibold text-white">0.34 ms (-88%)</span>
                 </div>
                 <div className="flex justify-between py-1">
-                  <span className="text-slate-400">Memory Footprint:</span>
+                  <span className="text-slate-300 font-medium">Memory Footprint:</span>
                   <span className="font-semibold text-white">41 MB (-71%)</span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-slate-900/90 rounded-xl p-3 text-xs text-cyan-200/90 border border-cyan-900/50">
+            <div className="bg-slate-900/90 rounded-xl p-3 text-xs text-cyan-200 border border-cyan-800/60 font-medium">
               <strong className="text-white">Why are they faster?</strong> You investigated.
               You profiled mutex locks. You replaced single-threaded maps with 32-shard
               striped mutexes and ring buffers. You ran again.
@@ -644,7 +644,7 @@ export function ExploreManifesto({
         </div>
 
         <div className="text-center py-2">
-          <p className="text-sm sm:text-base font-semibold text-slate-900">
+          <p className="text-sm sm:text-base font-bold text-slate-950">
             Now you haven&apos;t just solved a problem. You&apos;ve{" "}
             <span className="text-[#099BE9] underline decoration-[#099BE9]/40 underline-offset-4">
               engineered something
@@ -665,7 +665,7 @@ export function ExploreManifesto({
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-950 mt-1">
             AI is allowed.
           </h2>
-          <p className="text-sm sm:text-base text-slate-600 mt-2 leading-relaxed">
+          <p className="text-sm sm:text-base text-slate-700 font-medium mt-2 leading-relaxed">
             This is critical to ALGO. We don&apos;t try to detect whether you used AI.
           </p>
         </div>
@@ -684,42 +684,42 @@ export function ExploreManifesto({
           ].map((tool, idx) => (
             <span
               key={idx}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-mono font-medium text-slate-700 shadow-2xs"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-mono font-bold text-slate-800 shadow-2xs"
             >
-              <Bot className="w-3.5 h-3.5 text-slate-400" />
+              <Bot className="w-3.5 h-3.5 text-slate-500" />
               {tool}
             </span>
           ))}
         </div>
 
-        <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
+        <p className="text-sm sm:text-base text-slate-800 font-medium leading-relaxed">
           Use whatever makes you effective. Because the future isn&apos;t{" "}
-          <span className="font-semibold text-slate-900">Human vs AI</span>. It is:
+          <span className="font-bold text-slate-950">Human vs AI</span>. It is:
         </p>
 
         {/* System Execution Pipeline Visual */}
         <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs sm:text-sm text-center">
-            <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-2xs font-bold text-slate-900">
+            <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-2xs font-bold text-slate-950">
               Human + AI
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-400 hidden sm:block" />
-            <span className="sm:hidden text-slate-400">↓</span>
-            <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-2xs font-bold text-slate-900">
+            <ArrowRight className="w-4 h-4 text-slate-500 hidden sm:block" />
+            <span className="sm:hidden text-slate-500 font-bold">↓</span>
+            <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-2xs font-bold text-slate-950">
               System Architecture
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-400 hidden sm:block" />
-            <span className="sm:hidden text-slate-400">↓</span>
-            <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-2xs font-bold text-slate-900">
+            <ArrowRight className="w-4 h-4 text-slate-500 hidden sm:block" />
+            <span className="sm:hidden text-slate-500 font-bold">↓</span>
+            <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-2xs font-bold text-slate-950">
               Physical Reality
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-400 hidden sm:block" />
-            <span className="sm:hidden text-slate-400">↓</span>
+            <ArrowRight className="w-4 h-4 text-slate-500 hidden sm:block" />
+            <span className="sm:hidden text-slate-500 font-bold">↓</span>
             <div className="bg-slate-900 text-white border border-slate-800 rounded-xl px-4 py-3 shadow-sm font-bold">
               Empirical Measurement
             </div>
           </div>
-          <p className="text-xs text-slate-500 text-center mt-4">
+          <p className="text-xs text-slate-700 font-medium text-center mt-4">
             ALGO evaluates the empirical result and the engineering decisions around it.
           </p>
         </div>
@@ -761,7 +761,7 @@ export function ExploreManifesto({
               className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-2 hover:border-slate-300 transition-colors"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs font-mono">
-                <span className="text-slate-400 line-through">
+                <span className="text-slate-500 line-through font-medium">
                   Instead of: {item.instead}
                 </span>
                 <span className="text-[#0AA793] font-bold flex items-center gap-1">
@@ -769,10 +769,10 @@ export function ExploreManifesto({
                   ALGO asks
                 </span>
               </div>
-              <div className="text-base sm:text-lg font-bold text-slate-900 font-sans">
+              <div className="text-base sm:text-lg font-bold text-slate-950 font-sans">
                 {item.algo}
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed font-sans">
+              <p className="text-xs text-slate-700 font-medium leading-relaxed font-sans">
                 {item.sub}
               </p>
             </div>
@@ -791,11 +791,11 @@ export function ExploreManifesto({
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-950 mt-1">
             What we&apos;re trying to build.
           </h2>
-          <div className="text-sm sm:text-base text-slate-600 mt-2 space-y-2 leading-relaxed">
+          <div className="text-sm sm:text-base text-slate-700 font-medium mt-2 space-y-2 leading-relaxed">
             <p>
               ALGO is an engineering proving ground for the agentic era.
             </p>
-            <p className="font-mono text-xs sm:text-sm text-slate-500">
+            <p className="font-mono text-xs sm:text-sm text-slate-700 font-medium">
               Not another course platform. Not another LeetCode clone. <br />
               Not an AI coding assistant. Not a certificate factory.
             </p>
@@ -809,7 +809,7 @@ export function ExploreManifesto({
               <Terminal className="w-4 h-4" />
               <span>1. Reconstruct Real Systems</span>
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-xs text-slate-700 font-medium leading-relaxed">
               Don&apos;t just reverse a linked list. Build the foundation of Redis,
               RocksDB, and Kafka. Write-ahead logs, striped locks, network loops, and memory caches.
             </p>
@@ -820,7 +820,7 @@ export function ExploreManifesto({
               <Activity className="w-4 h-4" />
               <span>2. Measure Empirical Telemetry</span>
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-xs text-slate-700 font-medium leading-relaxed">
               Your score isn&apos;t a test pass/fail checkmark. It&apos;s verified
               throughput (ops/sec), p99 latency distributions, and resident memory size under stress.
             </p>
@@ -831,7 +831,7 @@ export function ExploreManifesto({
               <Bot className="w-4 h-4" />
               <span>3. Engineer With AI</span>
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-xs text-slate-700 font-medium leading-relaxed">
               Use Claude, Cursor, Copilot, or handwritten C++. You aren&apos;t judged
               on whether you typed the syntax yourself. You are judged on whether your architecture survives.
             </p>
@@ -842,7 +842,7 @@ export function ExploreManifesto({
               <Trophy className="w-4 h-4" />
               <span>4. Compete on Empirical Leaderboards</span>
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-xs text-slate-700 font-medium leading-relaxed">
               Transparent rankings evaluated in identical Docker cgroups on bare-metal hardware.
               Optimize hot paths to earn your rank on the leaderboard.
             </p>
@@ -861,7 +861,7 @@ export function ExploreManifesto({
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-950 mt-1">
             Where ALGO fits in the ecosystem.
           </h2>
-          <p className="text-sm sm:text-base text-slate-600 mt-2 leading-relaxed">
+          <p className="text-sm sm:text-base text-slate-700 font-medium mt-2 leading-relaxed">
             Different platforms solved different eras of developer evaluation. Understanding where they succeed reveals the missing layer.
           </p>
         </div>
@@ -870,15 +870,15 @@ export function ExploreManifesto({
           {/* LeetCode / HackerRank */}
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-3 flex flex-col justify-between">
             <div className="space-y-2">
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-bold">
                 ALGORITHMIC PUZZLES
               </span>
-              <h3 className="font-bold text-slate-900 text-sm">LeetCode &amp; HackerRank</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <h3 className="font-bold text-slate-950 text-sm">LeetCode &amp; HackerRank</h3>
+              <p className="text-xs text-slate-700 font-medium leading-relaxed">
                 Standardized algorithmic interviews and syntax correctness through automated unit tests on isolated questions.
               </p>
             </div>
-            <div className="pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500">
+            <div className="pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-600 font-medium">
               Focus: Array/Tree algorithms &amp; whiteboard puzzles.
             </div>
           </div>
@@ -886,11 +886,11 @@ export function ExploreManifesto({
           {/* Topcoder */}
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-3 flex flex-col justify-between">
             <div className="space-y-2">
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#FBAE0C]/10 text-[#F78424] border border-[#FBAE0C]/30 font-semibold">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#FBAE0C]/10 text-[#F78424] border border-[#FBAE0C]/30 font-bold">
                 CROWD COMPETITIONS
               </span>
               <div className="flex items-center justify-between">
-                <h3 className="font-bold text-slate-900 text-sm">Topcoder Challenges</h3>
+                <h3 className="font-bold text-slate-950 text-sm">Topcoder Challenges</h3>
                 <a
                   href="https://www.topcoder.com/opportunities/"
                   target="_blank"
@@ -901,11 +901,11 @@ export function ExploreManifesto({
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-xs text-slate-700 font-medium leading-relaxed">
                 Pioneered competitive marathon matches and crowdsourced software bounties across global engineering communities.
               </p>
             </div>
-            <div className="pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500">
+            <div className="pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-600 font-medium">
               Focus: Competitive algorithms &amp; freelance bounties.
             </div>
           </div>
@@ -913,11 +913,11 @@ export function ExploreManifesto({
           {/* Kaggle */}
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-3 flex flex-col justify-between">
             <div className="space-y-2">
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#099BE9]/10 text-[#099BE9] border border-[#099BE9]/30 font-semibold">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#099BE9]/10 text-[#099BE9] border border-[#099BE9]/30 font-bold">
                 ML PROVING GROUND
               </span>
               <div className="flex items-center justify-between">
-                <h3 className="font-bold text-slate-900 text-sm">Kaggle Competitions</h3>
+                <h3 className="font-bold text-slate-950 text-sm">Kaggle Competitions</h3>
                 <a
                   href="https://www.kaggle.com/"
                   target="_blank"
@@ -928,11 +928,11 @@ export function ExploreManifesto({
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-xs text-slate-700 font-medium leading-relaxed">
                 Proved that public leaderboards, empirical loss scores, and hidden holdout sets drive genuine Machine Learning mastery.
               </p>
             </div>
-            <div className="pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-500">
+            <div className="pt-3 border-t border-slate-100 text-[11px] font-mono text-slate-600 font-medium">
               Focus: Predictive models &amp; empirical benchmarks.
             </div>
           </div>
@@ -944,11 +944,11 @@ export function ExploreManifesto({
                 SYSTEMS PROVING GROUND
               </span>
               <h3 className="font-bold text-white text-sm">ALGO Proving Ground</h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
+              <p className="text-xs text-slate-200 leading-relaxed font-medium">
                 What Kaggle did for Machine Learning, ALGO does for Systems &amp; Infrastructure. Measuring throughput, p99 latency, and crash recovery.
               </p>
             </div>
-            <div className="pt-3 border-t border-slate-800 text-[11px] font-mono text-[#09C899]">
+            <div className="pt-3 border-t border-slate-800 text-[11px] font-mono text-[#09C899] font-bold">
               Focus: Real systems, bare-metal hardware &amp; AI era.
             </div>
           </div>
@@ -969,24 +969,24 @@ export function ExploreManifesto({
             The new question.
           </h2>
 
-          <div className="space-y-3 pt-2 text-sm sm:text-base text-slate-300 leading-relaxed">
+          <div className="space-y-3 pt-2 text-sm sm:text-base text-slate-200 leading-relaxed">
             <p>
               The old question was:{" "}
-              <span className="text-slate-400 font-mono">&ldquo;Can you solve this problem?&rdquo;</span>
+              <span className="text-slate-300 font-mono font-medium">&ldquo;Can you solve this problem?&rdquo;</span>
             </p>
             <p>
               The next question is:{" "}
-              <span className="text-white font-semibold font-mono">&ldquo;Can you engineer this system?&rdquo;</span>
+              <span className="text-white font-bold font-mono">&ldquo;Can you engineer this system?&rdquo;</span>
             </p>
             <p>
               And in the agentic era:{" "}
-              <span className="text-[#09C899] font-semibold font-mono">
+              <span className="text-[#09C899] font-bold font-mono">
                 &ldquo;Can you use AI to build it — and still know whether you built it well?&rdquo;
               </span>
             </p>
           </div>
 
-          <p className="text-slate-400 text-xs sm:text-sm pt-2">
+          <p className="text-slate-300 text-xs sm:text-sm pt-2 font-medium">
             That&apos;s what ALGO is trying to measure.
           </p>
 
@@ -1007,13 +1007,13 @@ export function ExploreManifesto({
       <section className="space-y-8 pt-4">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <span className="text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold">
-              Proving Ground Curriculum
+            <span className="text-xs font-mono uppercase tracking-wider text-slate-700 font-bold">
+              Proving Ground Architecture Tracks
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950 mt-1">
               Start Proving It: The 10 Core Challenges
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1.5">
+            <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1.5">
               Reconstruct production-grade systems from first principles — databases, proxies, queues, and schedulers.
             </p>
           </div>
@@ -1022,24 +1022,24 @@ export function ExploreManifesto({
           <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl shrink-0 font-mono text-xs">
             <button
               onClick={() => setActiveTab("ALL")}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
-                activeTab === "ALL" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                activeTab === "ALL" ? "bg-slate-950 text-white shadow-xs" : "text-slate-700 hover:text-slate-950 font-semibold"
               }`}
             >
               All (10)
             </button>
             <button
               onClick={() => setActiveTab("SYSTEMS")}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
-                activeTab === "SYSTEMS" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                activeTab === "SYSTEMS" ? "bg-slate-950 text-white shadow-xs" : "text-slate-700 hover:text-slate-950 font-semibold"
               }`}
             >
               Systems
             </button>
             <button
               onClick={() => setActiveTab("DISTRIBUTED")}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
-                activeTab === "DISTRIBUTED" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                activeTab === "DISTRIBUTED" ? "bg-slate-950 text-white shadow-xs" : "text-slate-700 hover:text-slate-950 font-semibold"
               }`}
             >
               Distributed
@@ -1061,42 +1061,42 @@ export function ExploreManifesto({
                 <div>
                   <div className="flex items-center justify-between gap-2 text-xs font-mono">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-400">#{c.number}</span>
-                      <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-600 border border-slate-200">
-                        Inspired by <strong className="text-slate-900">{c.inspiredBy}</strong>
+                      <span className="font-bold text-slate-700">#{c.number}</span>
+                      <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-800 border border-slate-200 font-semibold">
+                        Inspired by <strong className="text-slate-950">{c.inspiredBy}</strong>
                       </span>
                     </div>
-                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded border ${
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded border ${
                       c.difficulty === "Easy"
-                        ? "bg-[#09C899]/10 text-[#0AA793] border-[#09C899]/30"
+                        ? "bg-[#09C899]/15 text-[#0AA793] border-[#09C899]/30"
                         : c.difficulty === "Medium"
-                        ? "bg-[#FBAE0C]/10 text-[#F78424] border-[#FBAE0C]/30"
-                        : "bg-[#8647E2]/10 text-[#8647E2] border-[#8647E2]/30"
+                        ? "bg-[#FBAE0C]/15 text-[#F78424] border-[#FBAE0C]/30"
+                        : "bg-[#8647E2]/15 text-[#8647E2] border-[#8647E2]/30"
                     }`}>
                       {c.difficulty}
                     </span>
                   </div>
 
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900 mt-2.5 group-hover:text-[#099BE9] transition-colors">
+                  <h3 className="text-base sm:text-lg font-bold text-slate-950 mt-2.5 group-hover:text-[#099BE9] transition-colors">
                     {c.title}
                   </h3>
 
-                  <p className="text-xs text-slate-600 mt-1 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-slate-700 mt-1 line-clamp-2 leading-relaxed font-medium">
                     {c.overview}
                   </p>
 
                   <div className="bg-slate-50 border-l-2 border-[#099BE9] px-3 py-1.5 rounded-r-lg mt-3">
-                    <p className="text-[11px] italic text-slate-700 font-serif">
+                    <p className="text-xs italic text-slate-800 font-serif font-medium">
                       &ldquo;{c.signatureQuestion}&rdquo;
                     </p>
                   </div>
                 </div>
 
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                  <div className="text-[11px] font-mono text-slate-500">
+                  <div className="text-[11px] font-mono text-slate-700 font-semibold">
                     <span>{c.progressionLevels.length} Architectural Levels</span>
                     {topOps && (
-                      <span className="text-[#09C899] font-bold ml-2">
+                      <span className="text-[#0AA793] font-bold ml-2">
                         • {topOps}
                       </span>
                     )}
@@ -1105,13 +1105,13 @@ export function ExploreManifesto({
                   <div className="flex items-center gap-1.5 shrink-0">
                     <Link
                       href={`/challenges/${c.slug}`}
-                      className="px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-colors"
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-800 hover:bg-slate-50 transition-colors"
                     >
                       Overview
                     </Link>
                     <Link
                       href={`/challenges/${c.slug}/workspace`}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-[#099BE9] text-white transition-all shadow-2xs"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-950 hover:bg-[#099BE9] text-white transition-all shadow-2xs"
                     >
                       <span>Launch</span>
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -1137,19 +1137,19 @@ export function ExploreManifesto({
       {/* ============================================================== */}
       {/* 12. EMPIRICAL RESEARCH & PRIMARY SOURCES ARCHIVE              */}
       {/* ============================================================== */}
-      <footer className="border-t border-slate-200 pt-10 space-y-8 text-slate-600">
+      <footer className="border-t border-slate-200 pt-10 space-y-8 text-slate-700">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono uppercase tracking-wider text-[#099BE9] font-semibold">
+            <span className="text-xs font-mono uppercase tracking-wider text-[#099BE9] font-bold">
               Documented Evidence &amp; Citations
             </span>
             <span className="text-slate-300">•</span>
-            <span className="text-xs font-mono text-slate-400">9 Canonical Sources</span>
+            <span className="text-xs font-mono text-slate-600 font-medium">9 Canonical Sources</span>
           </div>
-          <h3 className="text-xl font-bold text-slate-900 mt-1">
+          <h3 className="text-xl font-bold text-slate-950 mt-1">
             Primary Research &amp; Benchmark Sources
           </h3>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-700 font-medium mt-1">
             The core research reports, empirical survey datasets, and platform architectures underpinning why ALGO exists.
           </p>
         </div>
@@ -1174,12 +1174,12 @@ export function ExploreManifesto({
                       href="https://www.hackerrank.com/reports/developer-skills-report-2025"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-slate-900 hover:text-[#099BE9] inline-flex items-center gap-1 group leading-tight"
+                      className="font-bold text-slate-950 hover:text-[#099BE9] inline-flex items-center gap-1 group leading-tight"
                     >
                       <span>HackerRank — 2025 Developer Skills Report</span>
                       <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-[#099BE9] shrink-0" />
                     </a>
-                    <p className="font-sans text-slate-500 text-[11px] leading-normal mt-1">
+                    <p className="font-sans text-slate-700 text-[11px] leading-normal mt-1 font-medium">
                       13,732 respondents across 102 countries. 78% say assessments don&apos;t align with real work; 66% prefer real tasks.
                     </p>
                   </div>
@@ -1197,12 +1197,12 @@ export function ExploreManifesto({
                       href="https://pages.hackerrank.com/hubfs/PDFs/HackerRank%202025%20Developer%20Skills%20Report.pdf"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-slate-900 hover:text-[#099BE9] inline-flex items-center gap-1 group leading-tight"
+                      className="font-bold text-slate-950 hover:text-[#099BE9] inline-flex items-center gap-1 group leading-tight"
                     >
                       <span>HackerRank — 2025 Skills Report PDF</span>
                       <FileDown className="w-3 h-3 text-slate-400 group-hover:text-[#099BE9] shrink-0" />
                     </a>
-                    <p className="font-sans text-slate-500 text-[11px] leading-normal mt-1">
+                    <p className="font-sans text-slate-700 text-[11px] leading-normal mt-1 font-medium">
                       Direct full-length unedited PDF document containing comprehensive methodology, statistics, and findings.
                     </p>
                   </div>
@@ -1220,12 +1220,12 @@ export function ExploreManifesto({
                       href="https://www.hackerrank.com/blog/why-do-developers-bail-on-assessments/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-slate-900 hover:text-[#099BE9] inline-flex items-center gap-1 group leading-tight"
+                      className="font-bold text-slate-950 hover:text-[#099BE9] inline-flex items-center gap-1 group leading-tight"
                     >
                       <span>HackerRank — Why Do Developers Bail on Assessments?</span>
                       <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-[#099BE9] shrink-0" />
                     </a>
-                    <p className="font-sans text-slate-500 text-[11px] leading-normal mt-1">
+                    <p className="font-sans text-slate-700 text-[11px] leading-normal mt-1 font-medium">
                       HackerRank blog documenting candidate drop-off and frustration caused by synthetic whiteboard puzzles.
                     </p>
                   </div>
@@ -1243,12 +1243,12 @@ export function ExploreManifesto({
                       href="https://www.hackerrank.com/blog/is-leetcode-dead/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-slate-900 hover:text-[#099BE9] inline-flex items-center gap-1 group leading-tight"
+                      className="font-bold text-slate-950 hover:text-[#099BE9] inline-flex items-center gap-1 group leading-tight"
                     >
                       <span>HackerRank — Is LeetCode Dead?</span>
                       <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-[#099BE9] shrink-0" />
                     </a>
-                    <p className="font-sans text-slate-500 text-[11px] leading-normal mt-1">
+                    <p className="font-sans text-slate-700 text-[11px] leading-normal mt-1 font-medium">
                       Industry analysis on why pure syntax memorization is increasingly obsolete with AI code generation.
                     </p>
                   </div>
@@ -1275,12 +1275,12 @@ export function ExploreManifesto({
                       href="https://survey.stackoverflow.co/2025/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-slate-900 hover:text-[#099BE9] inline-flex items-center gap-1 group leading-tight"
+                      className="font-bold text-slate-950 hover:text-[#099BE9] inline-flex items-center gap-1 group leading-tight"
                     >
                       <span>Stack Overflow — 2025 Developer Survey</span>
                       <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-[#099BE9] shrink-0" />
                     </a>
-                    <p className="font-sans text-slate-500 text-[11px] leading-normal mt-1">
+                    <p className="font-sans text-slate-700 text-[11px] leading-normal mt-1 font-medium">
                       Annual global survey with 49,000+ respondents measuring AI adoption, developer sentiments, and tooling shifts.
                     </p>
                   </div>
@@ -1298,12 +1298,12 @@ export function ExploreManifesto({
                       href="https://survey.stackoverflow.co/2025/ai"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-slate-900 hover:text-[#099BE9] inline-flex items-center gap-1 group leading-tight"
+                      className="font-bold text-slate-950 hover:text-[#099BE9] inline-flex items-center gap-1 group leading-tight"
                     >
                       <span>Stack Overflow — 2025 AI Survey</span>
                       <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-[#099BE9] shrink-0" />
                     </a>
-                    <p className="font-sans text-slate-500 text-[11px] leading-normal mt-1">
+                    <p className="font-sans text-slate-700 text-[11px] leading-normal mt-1 font-medium">
                       46% distrust AI output accuracy; 66% frustrated by &ldquo;almost-right&rdquo; code; debugging times expanded.
                     </p>
                   </div>
@@ -1321,12 +1321,12 @@ export function ExploreManifesto({
                       href="https://survey.stackoverflow.co/2025/developers"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-slate-900 hover:text-[#099BE9] inline-flex items-center gap-1 group leading-tight"
+                      className="font-bold text-slate-950 hover:text-[#099BE9] inline-flex items-center gap-1 group leading-tight"
                     >
                       <span>Stack Overflow — 2025 Developers Survey</span>
                       <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-[#099BE9] shrink-0" />
                     </a>
-                    <p className="font-sans text-slate-500 text-[11px] leading-normal mt-1">
+                    <p className="font-sans text-slate-700 text-[11px] leading-normal mt-1 font-medium">
                       Demographic breakdown, engineer profile segments, professional experience, and technology stacks.
                     </p>
                   </div>
@@ -1353,12 +1353,12 @@ export function ExploreManifesto({
                       href="https://www.topcoder.com/opportunities/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-slate-900 hover:text-[#099BE9] inline-flex items-center gap-1 group leading-tight"
+                      className="font-bold text-slate-950 hover:text-[#099BE9] inline-flex items-center gap-1 group leading-tight"
                     >
                       <span>Topcoder — Opportunities</span>
                       <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-[#099BE9] shrink-0" />
                     </a>
-                    <p className="font-sans text-slate-500 text-[11px] leading-normal mt-1">
+                    <p className="font-sans text-slate-700 text-[11px] leading-normal mt-1 font-medium">
                       Pioneer of competitive coding tournaments, client challenges, and algorithmic freelance bounties.
                     </p>
                   </div>
@@ -1376,12 +1376,12 @@ export function ExploreManifesto({
                       href="https://www.kaggle.com/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-slate-900 hover:text-[#099BE9] inline-flex items-center gap-1 group leading-tight"
+                      className="font-bold text-slate-950 hover:text-[#099BE9] inline-flex items-center gap-1 group leading-tight"
                     >
                       <span>Kaggle — Competitions</span>
                       <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-[#099BE9] shrink-0" />
                     </a>
-                    <p className="font-sans text-slate-500 text-[11px] leading-normal mt-1">
+                    <p className="font-sans text-slate-700 text-[11px] leading-normal mt-1 font-medium">
                       The benchmark model for empirical ML competitions. ALGO brings this exact proving ground model to backend systems.
                     </p>
                   </div>
@@ -1391,7 +1391,7 @@ export function ExploreManifesto({
           </div>
         </div>
 
-        <div className="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] font-mono text-slate-400 border-t border-slate-100">
+        <div className="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] font-mono text-slate-600 font-medium border-t border-slate-200">
           <span>ALGO Research • Systems Architecture &amp; Developer Evaluation</span>
           <span>Updated September 2026</span>
         </div>

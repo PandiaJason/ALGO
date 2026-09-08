@@ -1,17 +1,56 @@
 import React from "react";
 import Link from "next/link";
 import { auth } from "@/auth";
+import { db } from "@/db";
+import {
+  challenges,
+  leaderboardEntries,
+  users,
+  submissions,
+  submissionResults,
+} from "@/db/schema";
+import { eq, desc } from "drizzle-orm";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { HeroTerminal } from "@/components/home/hero-terminal";
 import { DailyChallengeBanner } from "@/components/home/daily-challenge-banner";
 import { HomeProblemset } from "@/components/home/home-problemset";
 import { HomeLeaderboardSnapshot } from "@/components/home/home-leaderboard-snapshot";
-import { HomePillars } from "@/components/home/home-pillars";
+import { HomeManifesto } from "@/components/home/home-manifesto";
 import { ChevronRight, Play } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const session = await auth();
+
+  let realLeaderboardEntries: any[] = [];
+  try {
+    realLeaderboardEntries = await db
+      .select({
+        id: leaderboardEntries.id,
+        score: leaderboardEntries.score,
+        throughputOpsSec: leaderboardEntries.throughputOpsSec,
+        latencyP99Ms: leaderboardEntries.latencyP99Ms,
+        username: users.username,
+        challengeTitle: challenges.title,
+        challengeSlug: challenges.slug,
+        language: submissions.language,
+      })
+      .from(leaderboardEntries)
+      .innerJoin(users, eq(leaderboardEntries.userId, users.id))
+      .innerJoin(challenges, eq(leaderboardEntries.challengeId, challenges.id))
+      .innerJoin(submissions, eq(leaderboardEntries.submissionId, submissions.id))
+      .innerJoin(
+        submissionResults,
+        eq(submissions.id, submissionResults.submissionId)
+      )
+      .where(eq(submissionResults.isInvalidated, false))
+      .orderBy(desc(leaderboardEntries.score))
+      .limit(5);
+  } catch (err) {
+    console.warn("Homepage leaderboard query skipped or unavailable:", err);
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-slate-900 selection:bg-[#099BE9]/20 selection:text-[#099BE9] font-sans">
@@ -80,14 +119,14 @@ export default async function HomePage() {
         <HomeProblemset />
 
         {/* ============================================================== */}
-        {/* 4. LIVE GLOBAL LEADERBOARD SNAPSHOT                            */}
+        {/* 4. LIVE GLOBAL LEADERBOARD SNAPSHOT (Real Database Entries)    */}
         {/* ============================================================== */}
-        <HomeLeaderboardSnapshot />
+        <HomeLeaderboardSnapshot entries={realLeaderboardEntries} />
 
         {/* ============================================================== */}
-        {/* 5. HOW SYSTEMS ARE MEASURED: THREE PILLARS                     */}
+        {/* 5. THE PROVING GROUND THESIS & SYSTEMS VERIFICATION LOOP       */}
         {/* ============================================================== */}
-        <HomePillars />
+        <HomeManifesto />
       </main>
 
       <Footer />

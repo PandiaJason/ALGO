@@ -58,14 +58,14 @@ export default async function GlobalLeaderboardPage() {
         {/* LeetCode Header Banner */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
           <div>
-            <div className="text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider mb-1">
+            <div className="text-xs font-mono font-bold text-slate-700 uppercase tracking-wider mb-1">
               GLOBAL RANKINGS
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950 flex items-center gap-2">
               <Trophy className="w-6 h-6 text-[#FBAE0C]" />
               <span>Global Ranking</span>
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1">
               Empirical throughput and latency verified under real workloads in isolated Linux containers.
             </p>
           </div>
