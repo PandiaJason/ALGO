@@ -1121,7 +1121,7 @@ export function WorkspaceClient({
                     {isRunningTests ? (
                       <div className="flex items-center gap-2 text-[#099BE9] py-6 font-sans font-semibold">
                         <Clock className="w-4 h-4 animate-spin" />
-                        <span>Running tests inside isolated Docker sandbox...</span>
+                        <span>Running tests inside isolated Linux sandbox...</span>
                       </div>
                     ) : testResult ? (
                       <div className="space-y-3">
@@ -1146,7 +1146,7 @@ export function WorkspaceClient({
 
                           <span className="text-[11px] font-mono text-[#0AA793] font-semibold flex items-center gap-1.5">
                             <span className="w-2 h-2 rounded-full bg-[#0AA793] animate-pulse" />
-                            Docker Sandbox: Active
+                            Linux Sandbox: Active
                           </span>
                         </div>
 
