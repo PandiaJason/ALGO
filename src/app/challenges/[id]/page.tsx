@@ -27,6 +27,7 @@ import {
   Lock,
   Activity,
   Sparkles,
+  BookOpen,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -386,28 +387,35 @@ export default async function ChallengeDetailPage({ params }: Props) {
               </div>
             </div>
 
-            {/* 2. Progressive 6-Level Systems Curriculum */}
+            {/* 2. LeetCode-Style Table of Contents */}
             {Array.isArray(levelsArray) && levelsArray.length > 0 && (
-              <div className="p-6 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-5">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+                {/* Table of Contents Header */}
+                <div className="p-5 bg-gradient-to-r from-slate-50 via-white to-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#099BE9] mb-1">
-                      Curriculum &amp; Progression
+                    <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-[#099BE9] mb-1">
+                      <BookOpen className="w-3.5 h-3.5 text-[#099BE9]" />
+                      <span>Table of Contents</span>
+                      <span className="text-slate-300">•</span>
+                      <span className="text-slate-500">6 Progressive Levels</span>
                     </div>
                     <h2 className="text-lg font-bold text-slate-950">
-                      Progressive 6-Level Systems Roadmap
+                      Systems Engineering Curriculum
                     </h2>
                     <p className="text-xs text-slate-600 font-medium mt-0.5">
-                      Master one foundational systems concept per level — from raw memory pointers to crash-durable, multi-threaded 100K+ ops/sec.
+                      Progressive architectural milestones from raw memory pointers to crash-durable, 100K+ ops/sec engine.
                     </p>
                   </div>
-                  <span className="text-[11px] font-mono text-slate-600 font-semibold bg-slate-100 px-2.5 py-1 rounded-md self-start sm:self-auto shrink-0">
-                    6 Progressive Levels
-                  </span>
+
+                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                    <span className="text-[11px] font-mono font-semibold text-slate-600 bg-white border border-slate-200 px-3 py-1 rounded-lg shadow-2xs">
+                      POSIX Stream Contract
+                    </span>
+                  </div>
                 </div>
 
-                {/* Level Cards Stack */}
-                <div className="space-y-4">
+                {/* Table of Contents List */}
+                <div className="divide-y divide-slate-100">
                   {levelsArray.map((lvl: any, idx: number) => {
                     const matchingLayer = layers[idx] || layers.find((l: any) => l.number === lvl.level);
                     const rawParity = lvl.learningLoop?.productionParity || matchingLayer?.realWorldTech || "Production Standard";
@@ -416,77 +424,133 @@ export default async function ChallengeDetailPage({ params }: Props) {
                     const ops = Array.isArray(lvl.operations) ? lvl.operations : [];
 
                     return (
-                      <div
+                      <details
                         key={lvl.level}
-                        className="rounded-xl border border-slate-200/90 bg-slate-50/40 p-4 hover:border-slate-300 hover:bg-white hover:shadow-2xs transition-all space-y-3"
+                        className="group hover:bg-slate-50/70 transition-colors"
                       >
-                        {/* Level Header Row */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-200/60">
-                          <div className="flex items-center gap-2.5 flex-wrap">
-                            <span className="px-2.5 py-0.5 rounded-md bg-[#099BE9]/10 text-[#099BE9] font-mono font-bold text-xs">
-                              LEVEL {lvl.level}
-                            </span>
-                            <h3 className="text-sm font-bold text-slate-950">
-                              {lvl.title}
-                            </h3>
-                            <span className={`px-2 py-0.5 rounded text-[11px] font-mono font-bold border ${
-                              lvl.difficulty === "Easy"
-                                ? "text-[#0AA793] bg-[#09C899]/10 border-[#09C899]/30"
-                                : lvl.difficulty === "Medium"
-                                ? "text-[#F78424] bg-[#FBAE0C]/10 border-[#FBAE0C]/30"
-                                : "text-[#8647E2] bg-[#8647E2]/10 border-[#8647E2]/30"
-                            }`}>
-                              {lvl.difficulty}
-                            </span>
+                        <summary className="p-4 sm:p-5 flex items-start sm:items-center justify-between gap-4 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+                          {/* Left: Number & Title & Subtitle */}
+                          <div className="flex items-start sm:items-center gap-3.5 flex-1 min-w-0">
+                            {/* Chapter Number Badge */}
+                            <div className="w-8 h-8 rounded-lg bg-slate-100 group-open:bg-[#099BE9]/10 text-slate-700 group-open:text-[#099BE9] flex items-center justify-center font-mono font-bold text-xs shrink-0 border border-slate-200/80 transition-colors">
+                              {String(lvl.level).padStart(2, "0")}
+                            </div>
+
+                            <div className="space-y-1 min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="font-bold text-slate-950 text-sm hover:text-[#099BE9] transition-colors">
+                                  {lvl.title}
+                                </span>
+                                <span className={`px-2 py-0.2 rounded text-[10px] font-mono font-bold border ${
+                                  lvl.difficulty === "Easy"
+                                    ? "text-[#0AA793] bg-[#09C899]/10 border-[#09C899]/30"
+                                    : lvl.difficulty === "Medium"
+                                    ? "text-[#F78424] bg-[#FBAE0C]/10 border-[#FBAE0C]/30"
+                                    : "text-[#8647E2] bg-[#8647E2]/10 border-[#8647E2]/30"
+                                }`}>
+                                  {lvl.difficulty}
+                                </span>
+                                <span className="hidden md:inline-flex items-center text-[11px] font-mono text-slate-500">
+                                  ≈ {parity}
+                                </span>
+                              </div>
+
+                              <p className="text-xs text-slate-600 font-medium line-clamp-1">
+                                {lvl.tagline || lvl.description}
+                              </p>
+                            </div>
                           </div>
 
-                          <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-mono text-slate-600 bg-white border border-slate-200 px-2.5 py-0.5 rounded-md font-semibold">
-                              Parity: <strong className="text-slate-900 font-bold">{parity}</strong>
-                            </span>
-                            <Link href={`/challenges/${challenge.slug}/workspace?level=${lvl.level}`}>
-                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#099BE9] hover:text-[#1984E9] cursor-pointer">
-                                <span>Start L{lvl.level}</span>
+                          {/* Right: Badges, Actions, Chevron */}
+                          <div className="flex items-center gap-2.5 shrink-0 self-center">
+                            {/* Commands count */}
+                            {ops.length > 0 && (
+                              <div className="hidden lg:flex items-center gap-1 font-mono text-[10px] text-slate-500">
+                                <span className="font-semibold text-slate-400">Ops:</span>
+                                {ops.slice(0, 3).map((op: any, opIdx: number) => (
+                                  <span key={opIdx} className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold border border-slate-200">
+                                    {typeof op.cmd === "string" ? op.cmd.split(" ")[0] : "CMD"}
+                                  </span>
+                                ))}
+                                {ops.length > 3 && (
+                                  <span className="text-slate-400">+{ops.length - 3}</span>
+                                )}
+                              </div>
+                            )}
+
+                            <Link
+                              href={`/challenges/${challenge.slug}/workspace?level=${lvl.level}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="hidden sm:inline-flex"
+                            >
+                              <span className="px-3 py-1 rounded-md text-xs font-semibold bg-white hover:bg-slate-100 text-[#099BE9] border border-slate-200 shadow-2xs inline-flex items-center gap-1 transition-colors cursor-pointer">
+                                <span>Code L{lvl.level}</span>
                                 <ArrowRight className="w-3 h-3" />
                               </span>
                             </Link>
-                          </div>
-                        </div>
 
-                        {/* What You Build / Objective */}
-                        <p className="text-xs text-slate-800 leading-relaxed font-medium">
-                          {lvl.tagline || lvl.description}
-                        </p>
-
-                        {/* Key Systems Bottleneck / Challenge */}
-                        {bottleneck && (
-                          <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-300/60 text-xs flex items-start gap-2">
-                            <AlertTriangle className="w-3.5 h-3.5 text-amber-700 shrink-0 mt-0.5" />
-                            <div className="text-slate-800 leading-relaxed">
-                              <strong className="text-amber-950 font-semibold font-mono text-[11px] uppercase tracking-wide">The Systems Hurdle: </strong>
-                              <span>{bottleneck}</span>
+                            <div className="w-6 h-6 flex items-center justify-center text-slate-400 group-hover:text-slate-700 transition-transform duration-200 group-open:rotate-90">
+                              <ChevronRight className="w-4 h-4" />
                             </div>
                           </div>
-                        )}
+                        </summary>
 
-                        {/* Operations Introduced */}
-                        {ops.length > 0 && (
-                          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                            <span className="text-[10px] font-mono font-bold uppercase text-slate-500 mr-1">
-                              Commands:
-                            </span>
-                            {ops.map((op: any, opIdx: number) => (
-                              <span
-                                key={opIdx}
-                                className="px-2 py-0.5 rounded bg-white border border-slate-200 font-mono text-[11px] text-slate-800 font-semibold shadow-2xs"
-                                title={op.desc}
-                              >
-                                {typeof op.cmd === "string" ? op.cmd.split(" ")[0] : "CMD"}
+                        {/* Expanded Chapter Details */}
+                        <div className="px-5 pb-5 pt-2 space-y-3.5 bg-slate-50/50 border-t border-slate-100 animate-in fade-in-50 duration-150">
+                          {/* Full Objective */}
+                          <p className="text-xs text-slate-800 leading-relaxed font-medium">
+                            {lvl.tagline || lvl.description}
+                          </p>
+
+                          {/* Key Systems Bottleneck */}
+                          {bottleneck && (
+                            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-300/60 text-xs flex items-start gap-2.5">
+                              <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                              <div className="text-slate-800 leading-relaxed">
+                                <strong className="text-amber-950 font-semibold font-mono text-[11px] uppercase tracking-wide">The Engineering Hurdle: </strong>
+                                <span>{bottleneck}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Full Operations List */}
+                          {ops.length > 0 && (
+                            <div className="space-y-1.5 pt-1">
+                              <span className="text-[11px] font-mono font-bold uppercase text-slate-500">
+                                Commands Introduced at Level {lvl.level}:
                               </span>
-                            ))}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {ops.map((op: any, opIdx: number) => (
+                                  <div
+                                    key={opIdx}
+                                    className="p-2 rounded-md bg-white border border-slate-200 text-xs flex items-start gap-2 shadow-2xs"
+                                  >
+                                    <code className="px-1.5 py-0.5 rounded bg-[#099BE9]/10 text-[#099BE9] font-mono text-[11px] font-bold border border-[#099BE9]/20 shrink-0">
+                                      {op.cmd}
+                                    </code>
+                                    <span className="text-slate-600 text-[11px] leading-tight font-medium">
+                                      {op.desc}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Launch Button in Drawer */}
+                          <div className="pt-2 flex items-center justify-between border-t border-slate-200/60">
+                            <span className="text-[11px] font-mono text-slate-500">
+                              Production Parity: <strong className="text-slate-800 font-semibold">{parity}</strong>
+                            </span>
+                            <Link href={`/challenges/${challenge.slug}/workspace?level=${lvl.level}`}>
+                              <Button size="sm" className="h-8 px-3 text-xs font-bold gap-1.5 bg-[#099BE9] hover:bg-[#1984E9] text-white cursor-pointer shadow-xs">
+                                <Terminal className="w-3 h-3" />
+                                <span>Open Level {lvl.level} in Workspace</span>
+                              </Button>
+                            </Link>
                           </div>
-                        )}
-                      </div>
+                        </div>
+                      </details>
                     );
                   })}
                 </div>

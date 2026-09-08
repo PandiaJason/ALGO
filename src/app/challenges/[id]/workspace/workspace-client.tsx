@@ -741,113 +741,112 @@ export function WorkspaceClient({
 
             {leftTab === "missions" && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                  <div>
-                    <h2 className="text-sm font-bold text-slate-950">
-                      Progressive 6-Level Systems Curriculum
-                    </h2>
-                    <p className="text-xs text-slate-600 font-medium mt-0.5">
-                      Reconstruct real technology from first principles, layer by layer.
-                    </p>
+                <div className="rounded-xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+                  {/* Table of Contents Header */}
+                  <div className="p-3.5 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="w-3.5 h-3.5 text-[#099BE9]" />
+                      <span className="text-xs font-mono font-bold uppercase text-slate-900 tracking-wider">
+                        Table of Contents
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono text-slate-600 font-semibold bg-white border border-slate-200 px-2 py-0.5 rounded shadow-2xs">
+                      6 Progressive Levels
+                    </span>
                   </div>
-                  <span className="text-[11px] font-mono text-slate-500 font-semibold bg-slate-100 px-2 py-0.5 rounded">
-                    6 Milestones
-                  </span>
-                </div>
 
-                <div className="space-y-3">
-                  {Object.entries(levelData).map(([lvlNumStr, lvlInfo]) => {
-                    const num = Number(lvlNumStr);
-                    const isActive = selectedLevel === num;
-                    let spec = (version.spec as any) || {};
-                    if (typeof spec === "string") {
-                      try { spec = JSON.parse(spec); } catch { spec = {}; }
-                    }
-                    const layers = (Array.isArray(spec.architecturalLayers) && spec.architecturalLayers.length > 0)
-                      ? spec.architecturalLayers
-                      : (challengeData?.architecturalLayers || []);
-                    const matchingLayer = layers?.[num - 1] || layers?.find((l: any) => l.number === num);
-                    const rawParity = lvlInfo.learningLoop?.productionParity || matchingLayer?.realWorldTech || "Production Standard";
-                    const parity = rawParity.replace(/^The core in-memory hash dictionary design used in /i, "").split(",")[0].trim();
-                    const bottleneck = lvlInfo.learningLoop?.bottleneck || lvlInfo.importantChallenge?.description;
+                  {/* Table of Contents List */}
+                  <div className="divide-y divide-slate-100">
+                    {Object.entries(levelData).map(([lvlNumStr, lvlInfo]) => {
+                      const num = Number(lvlNumStr);
+                      const isActive = selectedLevel === num;
+                      let spec = (version.spec as any) || {};
+                      if (typeof spec === "string") {
+                        try { spec = JSON.parse(spec); } catch { spec = {}; }
+                      }
+                      const layers = (Array.isArray(spec.architecturalLayers) && spec.architecturalLayers.length > 0)
+                        ? spec.architecturalLayers
+                        : (challengeData?.architecturalLayers || []);
+                      const matchingLayer = layers?.[num - 1] || layers?.find((l: any) => l.number === num);
+                      const rawParity = lvlInfo.learningLoop?.productionParity || matchingLayer?.realWorldTech || "Production Standard";
+                      const parity = rawParity.replace(/^The core in-memory hash dictionary design used in /i, "").split(",")[0].trim();
 
-                    return (
-                      <div
-                        key={num}
-                        onClick={() => {
-                          handleSelectLevel(num);
-                          setLeftTab("description");
-                        }}
-                        className={`p-4 rounded-xl border cursor-pointer transition-all space-y-2.5 ${
-                          isActive
-                            ? "bg-[#099BE9]/5 border-[#099BE9]/40 shadow-2xs ring-1 ring-[#099BE9]/30"
-                            : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-2xs"
-                        }`}
-                      >
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <span className="px-2 py-0.5 rounded bg-[#099BE9]/10 text-[#099BE9] font-mono font-bold text-xs">
-                              Level {num}
-                            </span>
-                            <span className="text-xs font-bold text-slate-950">
-                              {lvlInfo.title}
-                            </span>
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${
-                              lvlInfo.difficulty === "Easy"
-                                ? "bg-[#09C899]/10 text-[#0AA793] border-[#09C899]/30"
-                                : lvlInfo.difficulty === "Medium"
-                                ? "bg-[#FBAE0C]/10 text-[#F78424] border-[#FBAE0C]/30"
-                                : "bg-[#8647E2]/10 text-[#8647E2] border-[#8647E2]/30"
-                            }`}>
-                              {lvlInfo.difficulty}
-                            </span>
+                      return (
+                        <div
+                          key={num}
+                          onClick={() => {
+                            handleSelectLevel(num);
+                            setLeftTab("description");
+                          }}
+                          className={`p-3.5 flex items-start gap-3 cursor-pointer transition-all hover:bg-slate-50 ${
+                            isActive ? "bg-[#099BE9]/5 ring-1 ring-inset ring-[#099BE9]/30" : ""
+                          }`}
+                        >
+                          {/* Number Badge */}
+                          <div className={`w-7 h-7 rounded-md flex items-center justify-center font-mono font-bold text-xs shrink-0 border ${
+                            isActive
+                              ? "bg-[#099BE9] text-white border-[#099BE9]"
+                              : "bg-slate-100 text-slate-700 border-slate-200"
+                          }`}>
+                            {String(num).padStart(2, "0")}
                           </div>
 
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-mono text-slate-600 bg-slate-100 px-2 py-0.5 rounded font-semibold">
-                              Parity: {parity}
-                            </span>
+                          {/* Middle Info */}
+                          <div className="space-y-1 flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className={`text-xs font-bold ${isActive ? "text-[#099BE9]" : "text-slate-900"}`}>
+                                {lvlInfo.title}
+                              </span>
+                              <span className={`px-1.5 py-0.2 rounded text-[10px] font-mono font-bold border ${
+                                lvlInfo.difficulty === "Easy"
+                                  ? "text-[#0AA793] bg-[#09C899]/10 border-[#09C899]/30"
+                                  : lvlInfo.difficulty === "Medium"
+                                  ? "text-[#F78424] bg-[#FBAE0C]/10 border-[#FBAE0C]/30"
+                                  : "text-[#8647E2] bg-[#8647E2]/10 border-[#8647E2]/30"
+                              }`}>
+                                {lvlInfo.difficulty}
+                              </span>
+                              <span className="text-[10px] font-mono text-slate-500">
+                                ≈ {parity}
+                              </span>
+                            </div>
+
+                            <p className="text-[11px] text-slate-600 line-clamp-1 leading-snug">
+                              {lvlInfo.tagline}
+                            </p>
+
+                            {/* Operations Pills */}
+                            {Array.isArray(lvlInfo.operations) && lvlInfo.operations.length > 0 && (
+                              <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                                {lvlInfo.operations.map((op: any, idx: number) => (
+                                  <code
+                                    key={idx}
+                                    className="px-1 py-0.2 rounded bg-slate-100 text-slate-700 font-mono text-[9px] border border-slate-200"
+                                  >
+                                    {typeof op.cmd === "string" ? op.cmd.split(" ")[0] : "CMD"}
+                                  </code>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Right Action */}
+                          <div className="shrink-0 self-center">
                             {isActive ? (
-                              <span className="text-[10px] font-mono font-bold text-[#099BE9] bg-[#099BE9]/15 px-2 py-0.5 rounded">
+                              <span className="text-[10px] font-mono font-bold text-[#099BE9] bg-[#099BE9]/10 border border-[#099BE9]/30 px-2 py-0.5 rounded">
                                 Active
                               </span>
                             ) : (
-                              <span className="text-[10px] font-mono text-[#099BE9] font-semibold hover:underline">
-                                Switch to L{num} →
+                              <span className="text-[11px] font-mono text-slate-400 hover:text-[#099BE9] font-medium flex items-center gap-0.5">
+                                <span>Select</span>
+                                <ChevronRight className="w-3 h-3" />
                               </span>
                             )}
                           </div>
                         </div>
-
-                        <p className="text-slate-700 text-xs leading-relaxed font-medium">
-                          {lvlInfo.tagline}
-                        </p>
-
-                        {bottleneck && (
-                          <div className="p-2 rounded bg-amber-500/10 border border-amber-300/50 text-[11px] text-slate-800">
-                            <strong className="text-amber-950 font-semibold font-mono uppercase text-[10px]">Hurdle: </strong>
-                            <span>{bottleneck}</span>
-                          </div>
-                        )}
-
-                        {Array.isArray(lvlInfo.operations) && lvlInfo.operations.length > 0 && (
-                          <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-100">
-                            <span className="text-[10px] font-mono text-slate-400 uppercase font-semibold mr-1">
-                              Ops:
-                            </span>
-                            {lvlInfo.operations.map((op: any, idx: number) => (
-                              <code
-                                key={idx}
-                                className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[10px] border border-slate-200"
-                              >
-                                {typeof op.cmd === "string" ? op.cmd.split(" ")[0] : "CMD"}
-                              </code>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             )}
