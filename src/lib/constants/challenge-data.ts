@@ -231,6 +231,26 @@ NOT_FOUND`,
     difficulty: "Medium",
     tagline:
       "Build a custom internal hash table with 64-bit hashing, collision chaining / open addressing, and dynamic load factor threshold rehashing.",
+    diagram: `INPUT KEY                      HASH ENGINE                  BUCKET ARRAY
+"user:101" ──────► 64-bit Hash (FNV / Murmur3)
+                   0x8f3c...b9a2 ──────► idx = hash % 8 (Slot 2)
+                                                │
+                                                ▼
+                                         ┌──────────────┐
+                                   [0]   │ NULL         │
+                                         ├──────────────┤
+                                   [1]   │ "session"    │
+                                         ├──────────────┤
+"user:101" (collision) ──────────► [2]   │ "user:101" ──┼──► "admin" (Chain Node)
+                                         ├──────────────┤
+                                   [3]   │ "auth"       │
+                                         ├──────────────┤
+                                   ...   │ ...          │
+                                         └──────────────┘
+
+Rehashing Dynamic (Load Factor > 0.75):
+Old Table (Cap: 8, Items: 7) ──► Allocate New Table (Cap: 16)
+Recompute idx = hash % 16 for all nodes ──► Zero Collisions, O(1) Preserved`,
     learningLoop: {
       bottleneck:
         "Why do naive hash tables degrade from O(1) to catastrophic O(N) when bucket collisions occur or under Hash DoS attacks?",
@@ -291,6 +311,32 @@ NOT_FOUND`,
     difficulty: "Medium",
     tagline:
       "Implement append-only write-ahead logging (WAL) and crash recovery replay. Ensure zero data loss across simulated process restarts.",
+    diagram: `WRITE PIPELINE (Synchronous fsync):
+SET user "Alice" ──► 1. Serialize Record  ──► [SET user Alice\\n]
+                            │
+                            ▼
+                     2. Disk Write (WAL)  ──► ./data/wal.log (append-only)
+                            │
+                            ▼
+                     3. OS fsync() flush  ──► Guaranteed on Disk Platter
+                            │
+                            ▼
+                     4. Update In-Memory  ──► memory["user"] = "Alice"
+                            │
+                            ▼
+                     5. Return to Client  ──► "OK"
+
+CRASH RECOVERY PIPELINE (Boot Replay):
+Process Restart / Post-Crash (SIGKILL)
+       │
+       ▼
+Read ./data/wal.log sequentially (Offset 0 ──► EOF)
+       │
+       ├────► Record 1: SET alpha 10   ──► memory["alpha"] = 10
+       ├────► Record 2: SET beta 20    ──► memory["beta"] = 20
+       ├────► Record 3: DELETE alpha   ──► remove("alpha")
+       ▼
+Replay Complete (State 100% Reconstituted) ──► Ready for Traffic`,
     learningLoop: {
       bottleneck:
         "If host power is abruptly cut or the process receives SIGKILL, RAM is instantly wiped. How do databases guarantee zero data loss without slowing down writes?",
@@ -351,6 +397,30 @@ NOT_FOUND`,
     difficulty: "Hard",
     tagline:
       "Implement millisecond-precision key expiration with dual-mode passive eviction on read and active background sweeping.",
+    diagram: `TTL REGISTRATION:
+SET session "token" ──► memory["session"] = "token"
+EXPIRE session 10   ──► expiry_table["session"] = now_monotonic_ms() + 10,000
+
+DUAL-MODE EVICTION ARCHITECTURE:
+
+1. PASSIVE (On-Read Lazy Eviction):
+   GET session
+        │
+        ▼
+   Lookup in expiry_table
+        │
+        ├─── If now_ms() < expiry ────► Return "token" (Valid)
+        │
+        └─── If now_ms() >= expiry ───► DELETE session from memory & expiry
+                                        Return NULL (Expired)
+
+2. ACTIVE (Periodic Background Sweeper):
+   [Timer Interval (e.g. 100ms)] ──► Sample 20 random keys with TTL
+        │
+        ▼
+   Check each sample key:
+        ├─── If expired ──────────────► Evict from store & free memory
+        └─── If > 25% sampled expired ─► Repeat sweep immediately`,
     learningLoop: {
       bottleneck:
         "In high-throughput caches, unbounded data accumulation leads to Out-Of-Memory (OOM) fatal kills. How do you evict expired keys without degrading read/write latency?",
@@ -411,6 +481,25 @@ NOT_FOUND`,
     difficulty: "Hard",
     tagline:
       "Scale across 16+ parallel client threads. Implement striped locking (sharded mutexes) or read-write locks to maximize concurrent throughput.",
+    diagram: `CONCURRENT REQUEST INGRESS:
+Client Thread 1 (SET "user:1")    Client Thread 2 (GET "order:99")
+        │                                  │
+        ▼                                  ▼
+ Hash("user:1") % 16                Hash("order:99") % 16
+   = Shard Index 3                    = Shard Index 11
+        │                                  │
+        ▼                                  ▼
+┌────────────────────────────────────────────────────────┐
+│           STRIPED MUTEX SHARD COORDINATOR              │
+├──────────────┬──────────────┬───────────┬──────────────┤
+│ Shard [0]    │ Shard [3]    │ ...       │ Shard [11]   │
+│ Mutex 0      │ Mutex 3 (LOCKED)         │ Mutex 11 (LOCKED)
+│ Sub-Store 0  │ Sub-Store 3  │           │ Sub-Store 11 │
+│              │ "user:1"     │           │ "order:99"   │
+└──────────────┴──────────────┴───────────┴──────────────┘
+        ▲                                  ▲
+        │                                  │
+    Parallel Execution (Zero Contention / Lock Striping)`,
     learningLoop: {
       bottleneck:
         "A single global mutex (like Python's GIL or a monolithic lock) serializes all incoming requests, reducing a 32-core server to the speed of a single core. How do you scale across parallel threads?",
@@ -471,6 +560,26 @@ NOT_FOUND`,
     difficulty: "Hard",
     tagline:
       "Push hardware limits. Exceed 100,000 ops/sec with sub-0.20ms p99 latency under a strict 256MB memory cap using custom memory pooling and WAL compaction.",
+    diagram: `LOG COMPACTION PIPELINE (Disk Space Reclamation):
+Original WAL (Uncompacted - 100,000 Mutations, 50MB):
+┌────────────────────────────────────────────────────────────┐
+│ SET x 1 │ SET x 2 │ SET y 5 │ DELETE x │ SET y 10 │ ...    │
+└────────────────────────────────────────────────────────────┘
+                              │
+                              ▼ Log Compaction Trigger
+Scan In-Memory Keyspace (Only Live State):
+Live Keys: { "y": "10" } (x is dead, earlier y mutations obsolete)
+                              │
+                              ▼
+Atomic Swap: Write wal.log.tmp ──► rename to wal.log
+Compacted WAL (1 Entry, 24 Bytes - 99.9% Space Reclaimed):
+┌────────────────────────────────────────────────────────────┐
+│ SET y 10                                                   │
+└────────────────────────────────────────────────────────────┘
+
+MEMORY ARENA & ZERO-COPY PIPELINE:
+Raw stdin buffer ──► Custom Arena Pool (Preallocated 64KB Slices)
+                     ──► Zero Syscall Malloc ──► > 100,000 ops/sec`,
     learningLoop: {
       bottleneck:
         "Pushing beyond 100,000 ops/sec with sub-0.20ms latency requires eliminating operating system malloc fragmentation, CPU cache misses, and unbounded log file growth.",

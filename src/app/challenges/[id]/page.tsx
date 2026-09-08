@@ -559,6 +559,19 @@ export default async function ChallengeDetailPage({ params }: Props) {
                             </div>
                           )}
 
+                          {/* Data Flow Diagram for this level */}
+                          {lvl.diagram && (
+                            <div className="space-y-1.5 pt-1">
+                              <span className="text-[11px] font-mono font-bold uppercase text-slate-500 flex items-center gap-1.5">
+                                <Terminal className="w-3.5 h-3.5 text-[#099BE9]" />
+                                <span>Data Flow Architecture (Level {lvl.level}):</span>
+                              </span>
+                              <div className="rounded-xl border border-slate-800 bg-[#141416] p-3.5 font-mono text-[11px] text-[#09C899] overflow-x-auto shadow-sm">
+                                <pre className="whitespace-pre leading-relaxed">{lvl.diagram}</pre>
+                              </div>
+                            </div>
+                          )}
+
                           {/* Launch Button in Drawer */}
                           <div className="pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-slate-200/70">
                             <div className="text-xs font-mono text-slate-600">
