@@ -148,6 +148,17 @@ GET b
       title: "Touch on Read & Pointer Re-linking",
       difficulty: "Medium",
       tagline: "A GET request must 'touch' the accessed key, promoting it to Most Recently Used (MRU) head.",
+      diagram: `GET QUERY                     POINTER SPLICING (MRU PROMOTION)       CACHE ORDER
+State: [a] <-> [b]     ──► GET a touches node "a"             ──► [a] promoted to HEAD
+PUT c 3                ──► Capacity=2: Evicts tail "b"!       ──► Cache: [c] <-> [a]
+GET b                  ──► "b" was evicted                    ──► NULL
+
+Doubly-Linked List Pointer Splicing:
+Before GET(a):  [HEAD] <──► [ b ] <──► [ a ] <──► [TAIL]
+                             ▲           │
+                             │   Splice  │ Unlink from middle
+                             └─── out ───┘
+After GET(a):   [HEAD] <──► [ a ] <──► [ b ] <──► [TAIL]`,
       learningLoop: {
         bottleneck: "If reads don't refresh recency, hot keys accessed a thousand times will be evicted simply because they were inserted earliest. GET must promote keys to head.",
         whatYouUnderstand: [
@@ -179,6 +190,15 @@ GET b
       title: "Least Frequently Used (LFU) Mode",
       difficulty: "Hard",
       tagline: "Implement LFU mode. Track access frequency counts and evict the least frequently queried key.",
+      diagram: `ACCESS WORKLOAD               FREQUENCY BUCKET TRACKING              EVICTION DECISION
+MODE LFU               ──► Switch policy to LFU               ──► OK
+PUT a 1, GET a, GET a  ──► freq["a"] = 3                      ──► 1
+PUT b 2, PUT c 3       ──► freq["b"] = 1, evicts "b" (not a!) ──► OK
+
+LFU Multi-Frequency Lists:
+Freq 1: [ b ] (Least Frequently Used -> Eviction candidate)
+Freq 2: [ c ]
+Freq 3: [ a ] (Protected by high query volume)`,
       learningLoop: {
         bottleneck: "LRU suffers from 'cache pollution': a one-time sequential scan flushes all hot items from the cache. LFU protects frequently accessed keys by tracking access counts.",
         whatYouUnderstand: [
@@ -211,6 +231,14 @@ GET b
       title: "TTL & Key Expiration",
       difficulty: "Hard",
       tagline: "Implement SETEX for millisecond key expiration. Expired keys must never be returned or count against capacity.",
+      diagram: `TEMPORAL OPERATION            TTL LIFECYCLE EVALUATION               RETURN VALUE
+SETEX token 5000 abc   ──► Store val="abc", expire_at=T+5000 ──► OK
+TTL token              ──► Check remaining monotonic ms      ──► 4998 ms
+[After 5000ms] GET     ──► Passive Expire: Purge node!       ──► NULL
+
+Dual-Mode Eviction Engine:
+Read Access (GET / TTL) ──► Is expired? ──► YES ──► Delete & Return NULL
+                                        └──► NO  ──► Return Value & Touch`,
       learningLoop: {
         bottleneck: "Caches must discard stale data before evicting valuable fresh items. Passive lazy evaluation checks expiration on read.",
         whatYouUnderstand: [
@@ -243,6 +271,15 @@ GET b
       title: "Byte-Accurate Memory Caps",
       difficulty: "Hard",
       tagline: "Evict based on payload byte weight (MAXMEMORY <bytes>) rather than fixed item count.",
+      diagram: `BYTE BUDGET                   HEAP CONSUMPTION TRACKER              EVICTION LOOP
+MAXMEMORY 10           ──► Set hard ceiling = 10 bytes        ──► OK
+PUT a 12345 (6 bytes)  ──► Used: 6B <= 10B                   ──► OK
+PUT b 12345 (6 bytes)  ──► Used: 12B > 10B! Evicts "a"!       ──► OK (Used: 6B)
+
+Memory Allocation Accounting:
+Item "a": key(1B) + val(5B) = 6 Bytes
+Item "b": key(1B) + val(5B) = 6 Bytes
+Total = 12 Bytes > 10 Bytes Limit ──► Evict Tail until used <= 10B`,
       learningLoop: {
         bottleneck: "Ten 10-byte strings take 100 bytes; ten 10MB images take 100MB. Item-count limits cannot prevent Out-Of-Memory kills. Memory limits must be enforced in bytes.",
         whatYouUnderstand: [
@@ -275,6 +312,17 @@ GET b
       title: "Hit-Rate Telemetry & Workload Benchmarking",
       difficulty: "Hard",
       tagline: "Track cache hits, misses, and eviction metrics under heavy 1,000,000 request simulation workloads.",
+      diagram: `CACHE WORKLOAD                TELEMETRY COUNTERS                     STATS OUTPUT
+GET a (Found in cache) ──► Hits++ (Hits = 1)                 ──► 1
+GET b (Not in cache)   ──► Misses++ (Misses = 1)             ──► NULL
+STATS                  ──► Hit Ratio = 1 / (1 + 1) = 0.50    ──► HITS: 1 MISSES: 1
+                                                                 RATIO: 0.50 EVICTIONS: 0
+
+Production Telemetry Matrix:
+┌───────────────────────────┬───────────────────────────┐
+│ Cache Hits:      1        │ Hit Ratio:       50.0%    │
+│ Cache Misses:    1        │ Eviction Count:  0        │
+└───────────────────────────┴───────────────────────────┘`,
       learningLoop: {
         bottleneck: "Without telemetry, engineers cannot know whether a cache is absorbing database load or wasting memory thrashing evictions.",
         whatYouUnderstand: [

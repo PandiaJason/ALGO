@@ -177,6 +177,13 @@ ALLOWED 1`,
       title: "Sliding Window Timestamp Log",
       difficulty: "Medium",
       tagline: "Prevent 2x edge bursts. Store timestamps in a sliding window log and evict timestamps outside the active window.",
+      diagram: `REQUEST STREAM (ROLLING WINDOW)           TIMESTAMP LOG DEQUE (c1)              DECISION
+CONFIG_SLIDING 2 5 (limit=2, win=5s)
+REQUEST_SLIDING c1 4000  ──► [t=4000]                                     ──► ALLOWED 1
+REQUEST_SLIDING c1 4500  ──► [t=4000, t=4500]                             ──► ALLOWED 0
+REQUEST_SLIDING c1 5500  ──► [t=4000, t=4500] (win: 500..5500, count=2)   ──► REJECTED 3500
+                                  │ (earliest: 4000 + 5000 - 5500 = 3500)
+REQUEST_SLIDING c1 9100  ──► Evict < 4100 ──► [t=4500, t=9100]           ──► ALLOWED 0`,
       learningLoop: {
         bottleneck: "Fixed windows suffer from boundary spikes: sending the full quota at 00:09 and another at 00:10 yields 2x throughput in 1 second.",
         whatYouUnderstand: [
@@ -233,6 +240,14 @@ ALLOWED 1`,
       title: "Continuous Refill Token Bucket",
       difficulty: "Medium",
       tagline: "Refill tokens lazily based on elapsed time. Allow short bursts up to bucket capacity while enforcing average rate.",
+      diagram: `INCOMING ACQUIRE                          TOKEN BUCKET (c1: cap=5, rate=1/s)     STATUS
+CONFIG_BUCKET c1 5 1                     ┌─────────────────────────────┐
+ACQUIRE c1 3 1000        ──► Deduct 3    │ Tokens: [● ● ● ● ●] (5/5)   │ ──► ALLOWED 2
+ACQUIRE c1 2 1000        ──► Deduct 2    │ Tokens: [● ●]       (2/5)   │ ──► ALLOWED 0
+ACQUIRE c1 1 1000        ──► Empty       │ Tokens: [ ]         (0/5)   │ ──► REJECTED
+                              │          └─────────────────────────────┘
+                              ▼ (Δt = 1000ms: +1 token refilled)
+ACQUIRE c1 1 2000        ──► Deduct 1    │ Tokens: [●]         (1/5)   │ ──► ALLOWED 0`,
       learningLoop: {
         bottleneck: "Sliding window logs consume O(N) memory per client. Token buckets track only two scalar numbers: tokens available and last refill time.",
         whatYouUnderstand: [
@@ -289,6 +304,14 @@ ALLOWED 1`,
       title: "Smooth Outbound Traffic Shaping",
       difficulty: "Medium",
       tagline: "Smooth bursty inbound spikes into a constant outbound flow. Buffer requests up to queue capacity and drop overflows.",
+      diagram: `INBOUND BURST (ENQUEUE)                   LEAKY BUCKET BUFFER (cap=3, leak=1/s)  OUTBOUND FLOW
+ENQUEUE r1 1000 ────────┐                 ┌─────────────────────────────┐
+ENQUEUE r2 1000 ────────┼───────────────► │ [r3] [r2] [r1] (3/3 FULL)   │ ──► QUEUED 1..3
+ENQUEUE r4 1000 ────────┼───────────────► └──────────────┬──────────────┘ ──► DROPPED (Full)
+                        │                                │
+                        ▼                                ▼ (Δt = 1s: 1 req leaked)
+LEAK 2000 ───────────────────────────────────────────────┴──────────────► PROCESSED r1
+                                          Remaining: [r3] [r2] (2/3)`,
       learningLoop: {
         bottleneck: "Token buckets permit burst spikes to hit downstream services. Leaky buckets shape traffic into an exact, steady dispatch frequency.",
         whatYouUnderstand: [
@@ -346,6 +369,16 @@ ALLOWED 1`,
       title: "Multi-Tenant Tiered Quotas & SLA Enforcement",
       difficulty: "Hard",
       tagline: "Assign clients to subscription tiers (FREE, PRO, ENTERPRISE) with independent quotas and burst allowances.",
+      diagram: `CLIENT REQUESTS                           TIER SLA REGISTRY                      QUOTA ENFORCEMENT
+REQUEST_TIER alice 1000                   ┌─────────────────────────────┐
+       │                                  │ FREE: limit=1, window=10s   │ ──► ALLOWED FREE 0
+       ▼ (alice -> FREE)                  ├─────────────────────────────┤
+REQUEST_TIER alice 2000                   │ PRO:  limit=5, window=10s   │ ──► REJECTED FREE
+                                          └─────────────────────────────┘
+REQUEST_TIER bob 1000                     ┌─────────────────────────────┐
+       │                                  │ bob -> PRO (Quota: 5)       │ ──► ALLOWED PRO 4
+       ▼ (bob -> PRO)                     │ Current usage: 1/5          │
+REQUEST_TIER bob 2000                     │ Current usage: 2/5          │ ──► ALLOWED PRO 3`,
       learningLoop: {
         bottleneck: "Hardcoding one limit treats free trial users and paying enterprise customers identically. Tiered limiting enforces monetization SLAs.",
         whatYouUnderstand: [
@@ -403,6 +436,14 @@ ALLOWED 1`,
       title: "Atomic CAS & Concurrency Telemetry",
       difficulty: "Hard",
       tagline: "Simulate concurrent multi-thread requests and prevent limit overshoots with atomic CAS updates and telemetry.",
+      diagram: `CONCURRENT THREAD WORKERS                 ATOMIC CAS TOKEN CORE                  TELEMETRY / METRICS
+Thread-1: ATOMIC_ACQUIRE c1 3 ──┐         ┌─────────────────────────────┐
+Thread-2: ATOMIC_ACQUIRE c1 3 ──┼───────► │ CAS / Redis Lua Engine      │ ──► ALLOWED 2 (c1: 2 rem)
+                                │         │ Prevents Over-allocation    │ ──► RATE_LIMITED
+                                ▼         └──────────────┬──────────────┘
+CLIENT_STATS c1 ─────────────────────────────────────────┴──────────────► STATS c1
+                                                                          ALLOWED 1 REJECTED 1
+                                                                          TOKENS 2`,
       learningLoop: {
         bottleneck: "In distributed clusters, multiple API gateways query Redis concurrently. Non-atomic read-then-write creates race conditions that violate SLAs.",
         whatYouUnderstand: [

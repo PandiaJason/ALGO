@@ -174,6 +174,16 @@ POSTINGS world d1`,
       title: "Boolean Query Evaluator",
       difficulty: "Medium",
       tagline: "Execute multi-term boolean queries. Implement sorted postings intersection (AND) and union (OR).",
+      diagram: `BOOLEAN QUERY                             INVERTED POSTING LISTS                 SET OPERATION / MATCH
+SEARCH_AND distributed systems            ┌──────────────────────────────┐
+       │                                  │ distributed: [ d1, d2 ]      │ ──► Two-Pointer Intersect
+       ▼                                  │ systems:     [ d1 ]          │     [d1, d2] ∩ [d1]
+MATCHES d1                                └──────────────────────────────┘     ──► MATCHES d1
+                                          ┌──────────────────────────────┐
+SEARCH_OR algorithms design               │ algorithms:  [ d1 ]          │ ──► Sorted Union
+       │                                  │ design:      [ d3 ]          │     [d1] ∪ [d3]
+       ▼                                  └──────────────────────────────┘     ──► MATCHES d1 d3
+MATCHES d1 d3`,
       learningLoop: {
         bottleneck: "Naive set intersection takes high memory. Merging two sorted postings lists using two-pointers runs in O(P1 + P2) time.",
         whatYouUnderstand: [
@@ -230,6 +240,15 @@ POSTINGS world d1`,
       title: "TF-IDF Vector Relevance Ranking",
       difficulty: "Medium",
       tagline: "Score and rank documents by term relevance using Term Frequency and Inverse Document Frequency.",
+      diagram: `RELEVANCE QUERY (TF-IDF)                  CORPUS TERM FREQUENCIES                RANKED OUTPUT
+TFIDF redis                               ┌──────────────────────────────┐
+       │                                  │ N = 3 docs, df(redis) = 2    │
+       ▼                                  │ IDF = ln(3/2) + 1.0 = 1.405  │
+Calculate: TF(t,d) * IDF                  ├──────────────────────────────┤
+  • d1: TF=2 ──► 2 * 1.405 = 2.81         │ d1: "redis redis cache" (TF=2│ ──► RANKED d1:2.81 d2:1.41
+  • d2: TF=1 ──► 1 * 1.405 = 1.41         │ d2: "redis database"    (TF=1│     (Sorted by Score Desc,
+  • d3: TF=0 ──► (No Match)               │ d3: "postgresql db"     (TF=0│      Tie-break by Doc ID)
+                                          └──────────────────────────────┘`,
       learningLoop: {
         bottleneck: "Boolean queries treat all matching documents equally. A document where a term appears 10 times is far more relevant than one where it appears once.",
         whatYouUnderstand: [
@@ -285,6 +304,16 @@ POSTINGS world d1`,
       title: "Okapi BM25 Probabilistic Ranking",
       difficulty: "Hard",
       tagline: "Implement Okapi BM25 ranking. Apply term frequency saturation (k1=1.2) and document length normalization (b=0.75).",
+      diagram: `QUERY (OKAPI BM25)                        SATURATION & LENGTH PENALTY            PROBABILISTIC RANK
+BM25 kafka                                ┌──────────────────────────────┐
+       │                                  │ Saturation: k1 = 1.2         │
+       ▼                                  │ Doc Length Norm: b = 0.75    │
+Score Formula:                            ├──────────────────────────────┤
+IDF * (TF*(k1+1)) / (TF + k1*len_norm)    │ d2: "kafka kafka kafka"      │ ──► BM25 d2:0.35 d1:0.25
+                                          │     len=3, TF=3 (Saturated)  │     (Diminishing returns
+                                          │ d1: "kafka streaming msg q"  │      for repeated terms)
+                                          │     len=4, TF=1              │
+                                          └──────────────────────────────┘`,
       learningLoop: {
         bottleneck: "TF-IDF allows keyword stuffing: repeating 'shoes' 1,000 times inflates score 1,000x. BM25 uses an asymptotic saturation curve so extra mentions yield diminishing returns.",
         whatYouUnderstand: [
@@ -340,6 +369,16 @@ POSTINGS world d1`,
       title: "Positional Postings & Exact Phrase Search",
       difficulty: "Hard",
       tagline: "Record token position offsets to match exact multi-word phrases (e.g. 'quick brown fox').",
+      diagram: `PHRASE QUERY                              POSITIONAL INDEX (TERM -> OFFSETS)     EXACT PROXIMITY CHECK
+PHRASE quick brown fox                    ┌──────────────────────────────────┐
+       │                                  │ d1: "the quick brown fox jumps"  │
+       ▼                                  │  • quick: pos 1                  │ ──► Consecutive offsets
+Check: pos(w_i+1) == pos(w_i) + 1         │  • brown: pos 2 (1 + 1 = 2 ✓)    │     1 -> 2 -> 3
+                                          │  • fox:   pos 3 (2 + 1 = 3 ✓)    │     ──► PHRASE_MATCH d1
+                                          ├──────────────────────────────────┤
+                                          │ d2: "fox brown quick"            │
+                                          │  • offsets: 2 -> 1 -> 0 (Reversed│ ──► NO_MATCH (Disordered)
+                                          └──────────────────────────────────┘`,
       learningLoop: {
         bottleneck: "Standard inverted indices lose word sequence. A search for 'president lincoln' matches 'lincoln told the president' without positional postings.",
         whatYouUnderstand: [
@@ -395,6 +434,16 @@ POSTINGS world d1`,
       title: "Immutable Segment Commits & Compaction",
       difficulty: "Hard",
       tagline: "Write incoming documents to immutable segments. Commit and merge segments into a single consolidated index.",
+      diagram: `INGEST & COMMIT                           LSM SEGMENT ARCHITECTURE               CONSOLIDATED INDEX
+INDEX d1 ... ──► COMMIT_SEGMENT ──► seg-1 ┌──────────────────────────────┐
+INDEX d2 ... ──► COMMIT_SEGMENT ──► seg-2 │ seg-1: [d1: "hello world"]   │ ──► Active Segments: 2
+                                          │ seg-2: [d2: "hello systems"] │     Search queries fan-out
+MERGE_SEGMENTS                            └──────────────┬───────────────┘
+       │                                                 │
+       ▼                                                 ▼
+Consolidate Postings Lists ──────────────────────────────┴──────────────► seg-merged (1 Segment)
+                                                                          Total Docs: 2
+                                                                          MERGED 2 -> 1`,
       learningLoop: {
         bottleneck: "Modifying a live inverted index requires locking the entire database. Writing append-only mini-segments and merging in the background gives 100x write throughput.",
         whatYouUnderstand: [

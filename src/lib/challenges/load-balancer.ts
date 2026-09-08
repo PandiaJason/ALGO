@@ -175,6 +175,13 @@ FORWARD -> web-1`,
       title: "Smooth Weighted Round-Robin (Nginx Algorithm)",
       difficulty: "Medium",
       tagline: "Interleave requests smoothly according to server weights using Nginx's current_weight algorithm.",
+      diagram: `INCOMING REQUEST                          NGINX SMOOTH WEIGHT ENGINE             SELECTED UPSTREAM
+ROUTE_WEIGHTED 1 ──┐                      ┌──────────────────────────────┐
+ROUTE_WEIGHTED 2 ──┼────────────────────► │ Weights: a=4, b=2, c=1 (Σ=7)  │ ──► FORWARD -> a
+ROUTE_WEIGHTED 3 ──┤                      │ cur_w += eff_w; pick max;   │ ──► FORWARD -> b
+                   │                      │ cur_w[max] -= total_weight  │ ──► FORWARD -> a
+                   ▼                      └──────────────────────────────┘
+Sequence: a -> b -> a -> a -> c -> b -> a (Smooth interleaving without burst clumps)`,
       learningLoop: {
         bottleneck: "Naive weighted round-robin sends 10 consecutive requests to server A (weight 10) then 1 to B (weight 1). This causes CPU spikes on A. Smooth weighted distributes them evenly: A, A, A, B, A, A...",
         whatYouUnderstand: [
@@ -231,6 +238,14 @@ FORWARD -> web-1`,
       title: "Dynamic Least-Connections Routing",
       difficulty: "Medium",
       tagline: "Track active in-flight requests. Route new requests to the backend with the fewest active connections.",
+      diagram: `INCOMING REQUEST                          ACTIVE CONNECTION TRACKER              ROUTING DECISION
+ROUTE_LEAST_CONN r1 ──┐                   ┌──────────────────────────────┐
+ROUTE_LEAST_CONN r2 ──┼─────────────────► │ [s1] Active Connections: 1   │ ──► FORWARD -> s1
+ROUTE_LEAST_CONN r3 ──┤                   │ [s2] Active Connections: 0   │ ──► FORWARD -> s2
+                      │                   └──────────────┬───────────────┘
+                      ▼                                  │
+TRACK_END s1 r1 ─────────────────────────────────────────┴──────────────► [s1] Conns: 1 -> 0
+ROUTE_LEAST_CONN r4 ────────────────────────────────────────────────────► FORWARD -> s1 (least busy)`,
       learningLoop: {
         bottleneck: "Round-robin fails when some requests take 10 seconds while others take 10ms. Least connections adapts dynamically to slow servers.",
         whatYouUnderstand: [
@@ -289,6 +304,13 @@ FORWARD -> web-1`,
       title: "Passive Health Checks & Failover",
       difficulty: "Hard",
       tagline: "Track consecutive backend errors. Trip unhealthy nodes to DOWN after exceeding threshold, rerouting traffic.",
+      diagram: `SERVER PROBING / TRAFFIC                  CIRCUIT BREAKER STATE (Thresh=2)       TRAFFIC ROUTING
+FAIL s1 (count=1)    ──► s1: UP (1/2)     ┌──────────────────────────────┐
+FAIL s1 (count=2)    ──► s1: DOWN (TRIP!) │ [s1] STATUS: DOWN (Tripped)  │ ──► Excluded from pool
+                                          ├──────────────────────────────┤
+ROUTE r1 ────────────────────────────────►│ [s2] STATUS: UP (Healthy)    │ ──► FORWARD -> s2
+                                          └──────────────────────────────┘
+SUCCESS s1 (Probe)   ──► s1: UP (0/2)     ──► Restored to Pool           ──► FORWARD -> s1`,
       learningLoop: {
         bottleneck: "Routing traffic to dead backends creates cascading 500/502 errors. Passive health checks circuit-break failing nodes automatically.",
         whatYouUnderstand: [
@@ -347,6 +369,14 @@ FORWARD -> web-1`,
       title: "Ketama Consistent Hashing Ring",
       difficulty: "Hard",
       tagline: "Implement a circular hash ring with virtual nodes for sticky session affinity and minimal cache relocation.",
+      diagram: `CACHE KEY REQUEST                         32-BIT CIRCULAR HASH RING              TARGET NODE
+ROUTE_KEY user:100                        ┌──────────────────────────────┐
+      │                                   │          0 / 2^32            │
+      ▼                                   │        c1#0      c2#0        │
+hash(user:100) = 0x4F1A... ─────────────► │    c2#1              c1#1    │ ──► HASH_FORWARD -> c1
+(Clockwise binary search)                 │        c1#2      c2#2        │     (Nearest clockwise
+                                          │                              │      virtual node)
+ROUTE_KEY user:200 ─────────────────────► └──────────────────────────────┘ ──► HASH_FORWARD -> c2`,
       learningLoop: {
         bottleneck: "Modulo routing hash(key) % N invalidates almost all cache keys when a server is added or removed. Consistent hashing remaps only K/N keys.",
         whatYouUnderstand: [
@@ -403,6 +433,14 @@ FORWARD -> web-1`,
       title: "Zero-Downtime Connection Draining",
       difficulty: "Hard",
       tagline: "Drain servers gracefully during rolling deploys: accept 0 new requests, wait for active connections to finish, then remove.",
+      diagram: `MAINTENANCE SIGNAL                        SERVER DRAIN LIFECYCLE                 NEW TRAFFIC ROUTING
+DRAIN s1 (active=1)  ──► State: DRAINING  ┌──────────────────────────────┐
+                                          │ [s1] DRAINING (active: 1)    │ ──► 0 new requests
+ROUTE r2 ────────────────────────────────►│ [s2] UP       (active: 0)    │ ──► FORWARD -> s2
+                                          └──────────────┬───────────────┘
+TRACK_END s1 r1      ──► active: 1 -> 0                  │
+                                                         ▼
+SERVER_STATUS s1     ──► All conns done   ──► STATE REMOVED ACTIVE 0`,
       learningLoop: {
         bottleneck: "Immediately killing an upstream node aborts users mid-checkout. Connection draining waits for in-flight requests to complete before terminating.",
         whatYouUnderstand: [

@@ -144,6 +144,20 @@ TOTAL: 2`,
       title: "Status Code Breakdown",
       difficulty: "Medium",
       tagline: "Categorize log lines into status families (2xx, 3xx, 4xx, 5xx) and track exact status code counts.",
+      diagram: `STREAM INGESTION              STATUS HISTOGRAM BUCKETS              OUTPUT
+INGEST 200 10 /a       ──► status[200]++, family["2XX"]++    ──► OK
+INGEST 500 80 /c       ──► status[500]++, family["5XX"]++    ──► OK
+STATUS_COUNT 200       ──► lookup exact status: 200          ──► 1
+FAMILY_COUNT 5XX       ──► lookup status family: 5XX         ──► 1
+
+Status Code Histogram:
+┌────────┬──────┬────────────────────────────┐
+│ Family │ Code │ Count                      │
+├────────┼──────┼────────────────────────────┤
+│  2XX   │ 200  │ ████████████████ (2)       │
+│  4XX   │ 404  │ ░░░░░░░░░░░░░░░░ (0)       │
+│  5XX   │ 500  │ ████████ (1)               │
+└────────┴──────┴────────────────────────────┘`,
       learningLoop: {
         bottleneck: "Production monitors must alert when 5xx errors spike. Status code counters must resolve in O(1) time.",
         whatYouUnderstand: [
@@ -176,6 +190,16 @@ TOTAL: 2`,
       title: "Real-Time Error Rate Calculation",
       difficulty: "Hard",
       tagline: "Calculate real-time error percentage: (5XX errors / Total requests) with 2 decimal places.",
+      diagram: `STREAM INGESTION              SLO ERROR RATE CALCULATOR             OUTPUT
+INGEST 200 ... x3      ──► total=3, 5xx=0                    ──► OK
+INGEST 500 ... x1      ──► total=4, 5xx=1                    ──► OK
+ERROR_RATE             ──► (5xx_count / total) * 100         ──► 25.00%
+
+Error Rate Ratio:
+Total Requests = 4  [ 200 | 200 | 200 | 500 ]
+                                         ▲
+                                         │ 1 Server Error (5XX)
+Calculation: (1 / 4) * 100 = 25.00%`,
       learningLoop: {
         bottleneck: "Service Level Objectives (SLOs) require calculating error ratios dynamically without scanning historical data.",
         whatYouUnderstand: [
@@ -207,6 +231,15 @@ TOTAL: 2`,
       title: "Top-K Frequent Endpoints",
       difficulty: "Hard",
       tagline: "Track the top K most frequently requested endpoints in bounded memory.",
+      diagram: `ENDPOINT INGESTION            FREQUENCY MAP & HEAVY HITTERS         TOP-K EXTRACTION
+INGEST ... /users (x2) ──► endpoints["/users"] = 2           ──► OK
+INGEST ... /home  (x1) ──► endpoints["/home"]  = 1           ──► OK
+TOP_ENDPOINTS 2        ──► Sort by count DESC, name ASC      ──► /users /home
+
+Heavy Hitters Ranking:
+Rank 1: /users  [Count: 2] ──► Top 1
+Rank 2: /home   [Count: 1] ──► Top 2
+Rank 3: /about  [Count: 0]`,
       learningLoop: {
         bottleneck: "Storing every unique URL in a hash map causes memory explosion under random URL fuzzing attacks. Heavy-hitter algorithms bound memory.",
         whatYouUnderstand: [
@@ -238,6 +271,17 @@ TOTAL: 2`,
       title: "Latency Percentiles (p50 & p99)",
       difficulty: "Hard",
       tagline: "Calculate p50 (median) and p99 (tail latency) across all ingested request durations.",
+      diagram: `REQUEST DURATIONS             ORDERED LATENCY BUFFER                PERCENTILE RANK
+Durations: [10ms, 20ms, 30ms] ──► sorted = [10, 20, 30]
+LATENCY P50                   ──► index = ceil(0.50 * 3) - 1 = 1    ──► 20ms
+LATENCY P99                   ──► index = ceil(0.99 * 3) - 1 = 2    ──► 30ms
+
+Percentile Cumulative Distribution:
+Sorted: [ 10ms , 20ms , 30ms ]
+                 ▲      ▲
+                 │      │
+            p50 (Median)│
+                        p99 (Tail Latency SLA)`,
       learningLoop: {
         bottleneck: "Averages hide severe latency spikes. If 1 in 100 requests takes 5000ms, average latency is fine but p99 is catastrophic.",
         whatYouUnderstand: [
@@ -269,6 +313,16 @@ TOTAL: 2`,
       title: "Batch Ingestion & System Telemetry",
       difficulty: "Hard",
       tagline: "Sustain 100,000+ lines/sec. Report comprehensive engine telemetry under continuous ingestion.",
+      diagram: `CONTINUOUS INGEST STREAM      TELEMETRY AGGREGATOR ENGINE           DASHBOARD STATS
+INGEST 200 10 /ok      ──► Single-pass counter update        ──► OK
+STATS                  ──► Real-time metric snapshot         ──► TOTAL: 1 ERRORS: 0
+                                                                 P99: 10ms STATUS: HEALTHY
+RESET                  ──► O(1) buffer reset                 ──► OK
+
+Engine Architecture:
+Raw Log Stream ──► Ingestion Filter ──► In-Memory Ring Buffer
+                                    ──► P50/P99 Rank Selector ──► STATS
+                                    ──► Error Rate Calculator`,
       learningLoop: {
         bottleneck: "Streaming millions of lines causes CPU cache thrashing. Batching and pre-allocated buffers maintain peak throughput.",
         whatYouUnderstand: [

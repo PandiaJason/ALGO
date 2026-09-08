@@ -150,6 +150,19 @@ EMPTY`,
       title: "Log Offsets & Non-Destructive Reads",
       difficulty: "Medium",
       tagline: "Transition from destructive queue polling to append-only commit logs where messages can be read by offset.",
+      diagram: `INPUT                         COMMIT LOG ARCHITECTURE               OUTPUT
+PUB events click       ──► append(offset=0, "click")         ──► OK 0
+READ_AT events 0       ──► log[0] (non-destructive)          ──► click
+READ_AT events 0       ──► log[0] (re-read allowed)          ──► click
+
+Linear Commit Log:
+Offset:     [ 0 ]         [ 1 ]         [ 2 ]         [ 3 ]
+Message: ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐
+         │ "click" │──►│"signup" │──►│ "login" │──►│ "logout"│
+         └─────────┘   └─────────┘   └─────────┘   └─────────┘
+              ▲
+              │
+          READ_AT 0 (Cursor does not mutate or pop log)`,
       learningLoop: {
         bottleneck: "Traditional queues delete messages on read, preventing replay or multiple independent consumer inspection. How do commit logs enable replayability?",
         whatYouUnderstand: [
@@ -182,6 +195,18 @@ EMPTY`,
       title: "Consumer Groups & Commit Offsets",
       difficulty: "Hard",
       tagline: "Implement consumer groups with independent read cursors and explicit commit acknowledgments.",
+      diagram: `PRODUCER STREAM               CONSUMER GROUP CURSORS                INDEPENDENT OUTPUT
+PUB orders $50         ──► log[0] = "$50"                    ──► OK 0
+GROUP_POLL billing     ──► cursor["billing"]=0 (advances)    ──► OFFSET: 0 MSG: $50
+GROUP_POLL analytics   ──► cursor["analytics"]=0 (advances)  ──► OFFSET: 0 MSG: $50
+
+Consumer Group Isolation:
+Topic: orders log
+[ 0: "$50" ] ──► [ 1: "$120" ] ──► [ 2: "$15" ]
+     ▲                ▲
+     │                │
+     │            Group A ("billing") [Committed: 1]
+ Group B ("analytics") [Committed: 0]`,
       learningLoop: {
         bottleneck: "When multiple worker replicas consume the same topic, how do you prevent duplicate work while allowing other consumer groups (e.g. analytics vs billing) to read the same stream?",
         whatYouUnderstand: [
@@ -214,6 +239,16 @@ EMPTY`,
       title: "Key-Based Partitioning",
       difficulty: "Hard",
       tagline: "Shard topics into multiple independent partitions. Route messages deterministically by key hash.",
+      diagram: `KEY-HASH ROUTER               PARTITION ARRAYS                      CONSUMER STREAMS
+PART_PUB users u1 A    ──► hash("u1") % 4 = Part 1           ──► PARTITION: 1 OFFSET: 0
+PART_PUB users u1 B    ──► hash("u1") % 4 = Part 1 (ordered) ──► PARTITION: 1 OFFSET: 1
+PART_PUB users u2 C    ──► hash("u2") % 4 = Part 3           ──► PARTITION: 3 OFFSET: 0
+
+4-Way Partition Sharding:
+           ┌──► Partition 0: [msg...]  (Independent lock & disk log)
+Key Hash ──┼──► Partition 1: [u1:A] ──► [u1:B]  (Strict ordering for u1)
+Murmur3    ├──► Partition 2: [msg...]
+           └──► Partition 3: [u2:C]`,
       learningLoop: {
         bottleneck: "A single commit log is bottlenecked by single-core disk write throughput. Sharding into partitions allows parallel linear scaling across cores.",
         whatYouUnderstand: [
@@ -246,6 +281,14 @@ EMPTY`,
       title: "Batch Ingestion & Flushes",
       difficulty: "Hard",
       tagline: "Batch multiple messages into single synchronous flushes to maximize throughput over 100,000 msg/sec.",
+      diagram: `BATCH ACCUMULATOR             ATOMIC ALLOCATION                     BATCH COMMIT
+BATCH_PUB e1 e2 e3     ──► Allocate 3 contiguous offsets     ──► BATCH_OK COUNT: 3
+                           log[0]=e1, log[1]=e2, log[2]=e3       FIRST_OFFSET: 0
+
+Micro-Batching Flow:
+Producers ──► [Buffer Queue: e1, e2, e3] ──► Single Mutex Lock
+                                         ──► Bulk Append
+                                         ──► Single Flush ──► OK`,
       learningLoop: {
         bottleneck: "Calling fsync or acquiring mutexes on every single message drops throughput to <5,000 msg/sec. Grouping messages into micro-batches reaches 100K+ msg/sec.",
         whatYouUnderstand: [
@@ -277,6 +320,17 @@ EMPTY`,
       title: "Commit Log Persistence & Crash Recovery",
       difficulty: "Hard",
       tagline: "Guarantee zero message loss across sudden SIGKILL process termination. Reconstitute unconsumed offsets on boot.",
+      diagram: `IN-MEMORY BUFFER              SEGMENTED DISK LOG                    CRASH RECOVERY
+PUB t test             ──► Memory Append                     ──► OK 0
+COMMIT                 ──► fsync() to segment_0001.log       ──► OK
+[Simulated SIGKILL]    ──► Process Reboot & Log Replay       ──► Restored: 1 msgs
+
+Zero-Loss Recovery Pipeline:
+Disk: /data/topics/t/00000000.log
+┌───────────────────────────────────────────────────────────┐
+│ CRC32: 0x9AF2 | Magic: 0x02 | Offset: 0 | Payload: "test"│
+└───────────────────────────────────────────────────────────┘
+Boot Loader: Scans log from offset 0 to EOF -> Reconstitutes index`,
       learningLoop: {
         bottleneck: "If a broker abruptly crashes, RAM is wiped. How do you guarantee zero message loss and exact consumer group cursor reconstitution?",
         whatYouUnderstand: [

@@ -144,6 +144,19 @@ SCAN 5 15
       title: "Sorted Primary Key Array",
       difficulty: "Medium",
       tagline: "Sort primary key pointers to reduce lookup cost from O(N) to O(log N) using binary search.",
+      diagram: `UNSORTED INSERTS              SORTED PRIMARY KEY ARRAY              BINARY SEARCH
+INSERT 50 E            ──► Keep keys sorted: [20, 50]        ──► OK
+INDEX_GET 20           ──► Binary Search: Low=0, High=1      ──► 20 (Found: "B")
+                           Mid=0 -> keys[0] == 20 (1 hop!)
+
+Sorted Primary Key Index vs Heap Rows:
+Index Array (Sorted Keys):
+┌──────┬──────┬──────┬──────┬──────┐
+│  10  │  20  │  30  │  40  │  50  │  ──► O(log N) Binary Search
+└──┬───┴──┬───┴──┬───┴──┬───┴──┬───┘
+   │      │      │      │      │ (Pointer / Tuple ID)
+   ▼      ▼      ▼      ▼      ▼
+Heap: [A]    [B]    [C]    [D]    [E]`,
       learningLoop: {
         bottleneck: "Linear scans check N items. Keeping an array sorted allows binary search in log2(N) steps, reducing 10,000,000 checks to just 24 checks.",
         whatYouUnderstand: [
@@ -175,6 +188,21 @@ SCAN 5 15
       title: "Self-Balancing M-Way B-Tree",
       difficulty: "Hard",
       tagline: "Implement B-Tree node splitting. Keep maximum node size bounded to M keys without O(N) array shifts.",
+      diagram: `KEY INSERTION                 M=3 NODE SPLIT PIPELINE               BALANCED TREE
+BTREE_INSERT 4 D       ──► Node [1, 2, 3] + 4 overflows!     ──► OK
+                           Median key (2) promoted to Parent
+                           Leaves split into [1] and [3, 4]
+
+Node Split Mechanics:
+Before Split (Overflow):
+┌─────────────────────────┐
+│     [ 1 , 2 , 3 , 4 ]   │ (Max M=3 keys exceeded!)
+└─────────────────────────┘
+              │
+              ▼ Split & Promote Median (2)
+             [ 2 ]  <-- New Root / Parent
+            ┌──┴──┐
+         [ 1 ]   [ 3 , 4 ]  <-- Balanced Children`,
       learningLoop: {
         bottleneck: "A flat sorted array requires shifting elements on insertion (O(N)). B-Trees group keys into small bounded nodes (e.g. 4 keys), splitting nodes on overflow.",
         whatYouUnderstand: [
@@ -207,6 +235,22 @@ SCAN 5 15
       title: "B+ Tree Leaf Chaining",
       difficulty: "Hard",
       tagline: "Link leaf nodes sequentially. Execute high-speed range scans (WHERE id BETWEEN min AND max) in O(K) time.",
+      diagram: `RANGE SEARCH (10 to 25)       SEEK + LEAF TRAVERSAL                 RESULT
+RANGE 10 25            ──► 1. Seek min_key (10) via root    ──► "A B"
+                           2. Follow leaf next-pointers
+                           3. Stop when key > max_key (25)
+
+B+ Tree Leaf Chain Topology:
+            [  20  ]  <-- Internal Routing Key
+           ┌───┴───┐
+      [ 10 ]      [ 30 ]
+        │           │
+        ▼           ▼
+   ┌─────────┐   ┌─────────┐   ┌─────────┐
+   │ 10: "A" │──►│ 20: "B" │──►│ 30: "C" │ (Doubly-Linked Leaf List)
+   └─────────┘   └─────────┘   └─────────┘
+        ▲             ▲
+        └─────────────┴── Range [10..25] scanned directly via leaf links!`,
       learningLoop: {
         bottleneck: "Standard B-Trees require expensive in-order tree traversals for range queries. B+ Trees link all leaf nodes into a doubly-linked list, allowing fast sequential scanning.",
         whatYouUnderstand: [
@@ -238,6 +282,21 @@ SCAN 5 15
       title: "4KB Slotted Disk Page Layout",
       difficulty: "Hard",
       tagline: "Format leaf data into realistic 4096-byte slotted pages with page headers and item pointer arrays.",
+      diagram: `COMMAND                       4KB SLOTTED DISK PAGE                 PAGE STATS
+BTREE_INSERT 100 alpha ──► Slot Array grows DOWN (Header)    ──► PAGE: 0
+PAGE_STATS 0           ──► Tuple Data grows UP (End of Page) ──► FREE_BYTES: 4056
+                                                                 ITEMS: 1
+
+4096-Byte Slotted Page Binary Layout:
+┌────────────────────────────────────────────────────────┐
+│ Page Header (LSN, Slot Count: 1, Free Space Pointer)  │
+├────────────────────────────────────────────────────────┤
+│ Slot 0: [Offset: 4070, Length: 26] ──► grows DOWN      │
+│                     ▼                                  │
+│         --- FREE CONTIGUOUS SPACE ---                  │
+│                     ▲                                  │
+│ Tuple 0: {id: 100, val: "alpha"}   ──► grows UP        │
+└────────────────────────────────────────────────────────┘`,
       learningLoop: {
         bottleneck: "Disks and OS file systems operate on 4096-byte pages. Variable-length records cause page fragmentation unless packed using slotted page architectures.",
         whatYouUnderstand: [
@@ -269,6 +328,16 @@ SCAN 5 15
       title: "Buffer Pool Caching & Clock Sweeper",
       difficulty: "Hard",
       tagline: "Implement a bounded memory buffer pool cache. Maximize hit rate using the Clock sweep replacement algorithm.",
+      diagram: `BUFFER POOL QUERY             CLOCK EVICTION SWEEPER                CACHE STATS
+BTREE_GET 1 (cold)     ──► Buffer Miss (Disk Read -> Frame)  ──► MISSES: 1
+BTREE_GET 1 (warm)     ──► Buffer Hit (RAM Frame Return)     ──► HITS: 1
+                                                                 HIT_RATIO: 0.50
+
+Buffer Pool Frame Table (Capacity = 8 Frames):
+Frame 0: [Page 0 | RefBit=1 | Dirty=0] ──► Clock Hand ──► Advances if RefBit=1
+Frame 1: [Page 1 | RefBit=0 | Dirty=1] ──► (Evicted if RefBit=0, flushes dirty)
+Frame 2: [Page 2 | RefBit=1 | Dirty=0]
+RAM Hit Ratio: Keeps hot B-Tree root/internal pages in memory!`,
       learningLoop: {
         bottleneck: "Disk I/O is 10,000x slower than RAM. The buffer pool caches frequently accessed disk pages in memory, evicting cold pages under memory bounds.",
         whatYouUnderstand: [

@@ -173,6 +173,12 @@ RUNNING worker-1`,
       title: "Task Priority Ordering & Starvation Prevention",
       difficulty: "Medium",
       tagline: "Incorporate task priority (1-100). Higher-priority tasks must schedule before lower-priority tasks.",
+      diagram: `TASK SUBMISSION (PRIORITY QUEUE)          READY QUEUE (ORDERED HEAP)             SCHEDULER
+SUBMIT_P low  10 2 2048  ──► ┌──────────────────────────────────────────┐ ──► SCHEDULE
+SUBMIT_P high 90 2 2048  ──► │ P90: [high] (cpu=2, ram=2048)  ▲ HIGHEST │       │
+SUBMIT_P med  50 2 2048  ──► │ P50: [med]  (cpu=2, ram=2048)  │         │       ▼
+                             │ P10: [low]  (cpu=2, ram=2048)  ▼ LOWEST  │   SCHEDULED high -> n1
+                             └──────────────────────────────────────────┘   (FIFO within same P)`,
       learningLoop: {
         bottleneck: "FIFO causes priority inversion: a batch of low-priority reporting jobs blocks critical customer-facing API workers.",
         whatYouUnderstand: [
@@ -229,6 +235,14 @@ RUNNING worker-1`,
       title: "Best-Fit Resource Packing",
       difficulty: "Medium",
       tagline: "Select the node with the least remaining resources that still fits the task (Best-Fit) to minimize fragmentation.",
+      diagram: `INCOMING TASK                               CLUSTER NODES (FIT & SCORE)            PLACEMENT
+SUBMIT_P t1 10 2 2048                        ┌──────────────────────────────┐
+       │                                     │ [n-large] (16c, 32GB)        │
+       ▼                                     │ Leftover: 14c / 30GB  (POOR) │
+SCHEDULE_BEST ──────────────────────────────►├──────────────────────────────┤ ──► SCHEDULED t1 -> n-small
+Score = (rem_cpu + rem_ram/1024)             │ [n-small] (2c, 2048MB)       │     (Tightest Fit /
+Min leftover capacity wins                   │ Leftover: 0c / 0MB   (BEST!) │      Least Stranded)
+                                             └──────────────────────────────┘`,
       learningLoop: {
         bottleneck: "First-Fit spreads tasks thinly across all nodes, leaving no node with enough contiguous capacity for a large upcoming task.",
         whatYouUnderstand: [
@@ -284,6 +298,14 @@ RUNNING worker-1`,
       title: "Task Lifecycle & Dynamic Deallocation",
       difficulty: "Medium",
       tagline: "Support task completion, freeing assigned CPU and RAM, and allowing waiting tasks to schedule immediately.",
+      diagram: `TASK LIFECYCLE                               NODE CAPACITY STATE                   QUEUED JOBS
+COMPLETE t1 (cpu=4, ram=4096)                 ┌─────────────────────────────┐
+       │                                      │ [worker-1] Total: 4c / 4GB  │
+       ▼                                      │ ┌─────────────────────────┐ │
+[RUNNING] ──► [COMPLETED]                     │ │ t1 allocated (4c, 4GB)  │ │ ──► Freed: 4c / 4GB
+       │                                      │ └─────────────────────────┘ │
+       └─────────────────────────────────────►│ Available: 4c / 4096MB      │ ──► Unblocks [t2]
+                                              └─────────────────────────────┘     SCHEDULED t2 -> worker-1`,
       learningLoop: {
         bottleneck: "Schedulers are dynamic: workloads finish and return resources. Resource leaks during deallocation permanently paralyze nodes.",
         whatYouUnderstand: [
@@ -340,6 +362,16 @@ RUNNING worker-1`,
       title: "Node Heartbeat Failure & Pod Eviction",
       difficulty: "Hard",
       tagline: "Handle node crashes. Tasks running on dead nodes must be evicted and returned to PENDING state with original priority.",
+      diagram: `CRASH DETECTOR                               DEAD NODE WORKLOADS                   RE-SCHEDULING
+KILL_NODE n1 (Node Failure)                  ┌─────────────────────────────┐
+       │                                     │ [n1 (DEAD)]                 │
+       ▼                                     │  • t1 (P90) ──► EVICTED     │ ──► Re-enqueue PENDING
+DEAD n1 EVICTED 2                            │  • t2 (P10) ──► EVICTED     │     (Preserves Priority)
+                                             └─────────────────────────────┘            │
+                                             ┌─────────────────────────────┐            ▼
+                                             │ [n2 (HEALTHY)] 4c / 4096MB  │ ◄── SCHEDULE_BEST
+                                             │  • t1 (P90) -> SCHEDULED    │     (t1 takes precedence)
+                                             └─────────────────────────────┘`,
       learningLoop: {
         bottleneck: "Hardware fails constantly in large clusters. If a node loses connection, its tasks must be automatically rescheduled elsewhere.",
         whatYouUnderstand: [
@@ -395,6 +427,14 @@ RUNNING worker-1`,
       title: "Multi-Tenant Dominant Resource Fairness (DRF)",
       difficulty: "Hard",
       tagline: "Implement DRF across multiple tenants. Allocate to the tenant with the lowest dominant share.",
+      diagram: `TENANT SUBMISSIONS                           DOMINANT SHARE TRACKER                DRF ARBITRATOR
+Alice: SUBMIT_USER alice (2c, 100M)  ──►     ┌──────────────────────────────┐ ──► Min dominant share:
+Bob:   SUBMIT_USER bob   (1c, 400M)  ──►     │ Alice: 2c/10c=20%, 100M/1G=10%│     Alice (0.0% -> 20.0%)
+Cluster: 10 Cores / 1000 MB                  │ ──► Dominant Share: 20.0%    │            │
+                                             ├──────────────────────────────┤            ▼
+                                             │ Bob:   1c/10c=10%, 400M/1G=40%│     DRF_SCHEDULED alice
+                                             │ ──► Dominant Share: 40.0%    │     Next: Bob (20% < 40%)
+                                             └──────────────────────────────┘`,
       learningLoop: {
         bottleneck: "Naive priority allows one user with memory-heavy jobs to starve users with CPU-heavy jobs. DRF calculates dominant resource share for true fair-share scheduling.",
         whatYouUnderstand: [

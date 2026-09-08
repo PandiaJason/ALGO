@@ -159,6 +159,20 @@ Not Found`,
       title: "Parameter Routing & Path Matching",
       difficulty: "Medium",
       tagline: "Implement parameterized route matching (e.g. /users/:id) and wildcard subpaths.",
+      diagram: `RADIX TRIE ROUTER                        PARAMETER EXTRACTION            DISPATCH
+GET /users/42          ──► Trie Lookup ──► matches /users/:id (id=42) ──► 200 OK "User 42"
+GET /posts/systems     ──► Trie Lookup ──► matches /posts/:slug       ──► 200 OK "Post systems"
+GET /unknown           ──► Trie Lookup ──► no match in radix tree     ──► 404 Not Found
+
+Trie Node Topology:
+          / (root)
+         ┌────────┴────────┐
+      users/             posts/
+     ┌───┴───┐             │
+    :id     me          :slug
+ (dynamic) (static)    (dynamic)
+
+Lookup: O(path length) prefix traversal without linear route array scanning.`,
       learningLoop: {
         bottleneck: "Linear string comparisons on routes degrade routing latency from O(1) to O(N). How do production routers resolve parameterized paths in sub-microsecond time?",
         whatYouUnderstand: [
@@ -191,6 +205,20 @@ Not Found`,
       title: "Header Parsing & Query Parameters",
       difficulty: "Medium",
       tagline: "Parse case-insensitive HTTP headers and URL query strings (?key=val&sort=asc).",
+      diagram: `HEADER & QUERY PARSER                    EXTRACTION PIPELINE             NORMALIZED OUTPUT
+GET /search?q=redis    ──► Query Tokenizer ──► param["q"] = "redis"   ──► 200 OK "Search: redis"
+user-agent: AlgoClient ──► Lowercase Normalizer──► header["user-agent"] ──► 200 OK "Agent AlgoClient"
+
+Header Normalization Table:
+Raw Wire Header                 Normalized Internal Map
+┌─────────────────────────┐    ┌─────────────────────────┐
+│ User-Agent: AlgoClient  │ ──►│ "user-agent": AlgoClient│
+│ CONTENT-TYPE: text/html │ ──►│ "content-type": text/html
+│ X-Trace-ID: 99482       │ ──►│ "x-trace-id": 99482     │
+└─────────────────────────┘    └─────────────────────────┘
+
+Query String Splitting:
+"/filter?type=db&sort=desc" ──► path: "/filter", params: { type: "db", sort: "desc" }`,
       learningLoop: {
         bottleneck: "HTTP header names are case-insensitive (Host vs host), and query strings require URL decoding. How do servers parse both without redundant allocations?",
         whatYouUnderstand: [
@@ -223,6 +251,20 @@ Not Found`,
       title: "Payload Framing & POST Processing",
       difficulty: "Hard",
       tagline: "Handle POST requests with exact Content-Length body framing. Prevent HTTP request smuggling.",
+      diagram: `POST PAYLOAD INGESTION                   BODY FRAMING ENGINE             PROCESSED RESPONSE
+POST /echo             ──► Read Header: Content-Length: 5 ──► Payload: "hello" (5 bytes)
+Payload: hello         ──► Buffer exact N bytes (no desync) ──► 200 OK "hello"
+
+Framing Lifecycle:
+Wire Stream: [POST /echo\\r\\n][Content-Length: 5\\r\\n\\r\\n][hello][Next Request...]
+             │               │                          │       │
+             ▼               ▼                          ▼       ▼
+       Status Line      Header Map                 Exact 5B   Safe Boundary
+       (Parsed)        (Len = 5)                  (Consumed) (No Smuggling)
+
+Safety Invariant:
+Under-read (Len < actual) ──► Rejects or waits for full packet.
+Over-read (Len > actual)  ──► Reads exactly N bytes, leaving remainder for next message.`,
       learningLoop: {
         bottleneck: "TCP streams have no built-in packet boundaries. If a server reads too few or too many bytes, request smuggling or stream desynchronization occurs.",
         whatYouUnderstand: [
@@ -255,6 +297,19 @@ Not Found`,
       title: "Persistent TCP Keep-Alive Sessions",
       difficulty: "Hard",
       tagline: "Reuse a single persistent connection across multiple sequential HTTP requests without closing socket.",
+      diagram: `CLIENT TCP STREAM                        SESSION COORDINATOR             PIPELINED STREAM
+Request 1: GET /hello  ──► Process Req 1 ──► Keep socket OPEN ──────► Res 1: 200 OK (keep-alive)
+Request 2: GET /ping   ──► Process Req 2 ──► Final req in stream ───► Res 2: 200 OK (close)
+
+Keep-Alive Connection Timeline:
+TCP Handshake (SYN, SYN-ACK, ACK) [Paid ONCE]
+  │
+  ├──► [Request 1: GET /hello] ────► [Response 1: keep-alive]
+  ├──► [Request 2: POST /echo] ────► [Response 2: keep-alive]
+  └──► [Request 3: GET /ping]  ────► [Response 3: close] ──► FIN (Socket Closed)
+
+Throughput Advantage:
+Eliminates 3-way TCP handshake + TLS negotiation on repeated asset requests.`,
       learningLoop: {
         bottleneck: "Opening a new TCP connection (3-way handshake + slow start) for every asset adds 50-100ms latency per request. Keep-alive is mandatory for high throughput.",
         whatYouUnderstand: [
@@ -287,6 +342,23 @@ Not Found`,
       title: "Connection Pooling & Peak Throughput",
       difficulty: "Hard",
       tagline: "Scale to 50,000+ requests/sec. Implement non-blocking I/O event handling with sub-millisecond p99 latency.",
+      diagram: `EVENT LOOP (epoll/kqueue)                WORKER DISPATCHER               CONCURRENCY PEAK
+Socket 1: Ready to Read ──► epoll_wait() ──► Zero-Copy Parse ──► 200 OK
+Socket 2: Ready to Read ──► Non-Blocking ──► Direct Write    ──► 200 OK
+Throughput: > 50,000 req/sec | Latency: p99 < 1.0ms
+
+C10K Event Loop Architecture:
+                 ┌─────────────────────────┐
+Client Sockets ──►   Linux epoll / kqueue  │
+(10,000 Conns)   └────────────┬────────────┘
+                              │ Readiness Events
+                              ▼
+                 ┌─────────────────────────┐
+                 │    Single-Thread Loop   │
+                 │ 1. Read Available Bytes │
+                 │ 2. Dispatch Handler     │
+                 │ 3. Non-Blocking Flush   │
+                 └─────────────────────────┘`,
       learningLoop: {
         bottleneck: "Thread-per-connection architectures crash under 10,000 concurrent clients due to OS stack memory exhaustion. Non-blocking event loops solve the C10K problem.",
         whatYouUnderstand: [
