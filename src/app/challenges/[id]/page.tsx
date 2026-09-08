@@ -26,7 +26,6 @@ import {
   Database,
   Lock,
   Activity,
-  Sparkles,
   BookOpen,
 } from "lucide-react";
 
@@ -345,12 +344,6 @@ export default async function ChallengeDetailPage({ params }: Props) {
                 <span className="px-2.5 py-0.5 rounded text-xs font-bold font-mono bg-[#099BE9]/15 text-[#099BE9] border border-[#099BE9]/40">
                   {levelsArray.length} Progressive Levels
                 </span>
-                {coreDef?.isFlagship && (
-                  <span className="px-2.5 py-0.5 rounded text-xs font-bold font-mono bg-[#099BE9]/15 text-[#099BE9] border border-[#099BE9]/40 flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-[#099BE9]" />
-                    FLAGSHIP
-                  </span>
-                )}
               </div>
 
               <p className="text-sm text-neutral-300 font-medium leading-relaxed">

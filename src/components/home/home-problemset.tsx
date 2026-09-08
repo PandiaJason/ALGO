@@ -130,11 +130,6 @@ export function HomeProblemset() {
                         className="font-bold text-slate-950 text-sm hover:text-[#099BE9] transition-colors flex items-center gap-1.5"
                       >
                         <span>{c.title}</span>
-                        {c.isFlagship && (
-                          <span className="px-1.5 py-0.2 rounded text-[9px] font-bold font-mono bg-[#099BE9]/15 text-[#099BE9]">
-                            FLAGSHIP
-                          </span>
-                        )}
                       </Link>
                       <span className="text-[11px] text-slate-600 font-medium line-clamp-1">
                         {c.whatStudentsBuild}

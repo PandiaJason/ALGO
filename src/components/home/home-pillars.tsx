@@ -64,7 +64,7 @@ export function HomePillars() {
       <div className="mt-12 rounded-2xl bg-slate-900 text-white p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-lg">
         <div className="space-y-1 text-center sm:text-left">
           <h3 className="text-lg font-bold text-white tracking-tight">
-            Begin with Flagship Challenge 01
+            Begin with Challenge 01: Key-Value Engine
           </h3>
           <p className="text-xs sm:text-sm text-neutral-300 font-normal">
             Construct a high-throughput In-Memory Key-Value Storage Engine with WAL replay.

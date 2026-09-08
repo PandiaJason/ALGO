@@ -26,7 +26,6 @@ export interface CoreChallenge {
   signatureQuestion: string;
   difficulty: "Easy" | "Medium" | "Hard" | "Expert";
   status: "ACTIVE" | "COMING_SOON" | "BETA";
-  isFlagship?: boolean;
   benchmarkMetrics: string[];
   progressionLevels: Array<{
     level: number;
@@ -93,7 +92,6 @@ export const CORE_CHALLENGES: CoreChallenge[] = [
     signatureQuestion: "Can you make your storage engine faster?",
     difficulty: "Hard",
     status: "ACTIVE",
-    isFlagship: true,
     benchmarkMetrics: [
       "100,000+ ops/sec",
       "p50 / p95 / p99 < 0.20ms",

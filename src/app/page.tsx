@@ -87,7 +87,7 @@ export default async function HomePage() {
                     className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 text-white border border-white/20 px-5 py-3 rounded-full text-sm font-semibold transition-all active:scale-95"
                   >
                     <Play className="w-3.5 h-3.5 fill-white" />
-                    <span>Flagship: Key-Value Engine</span>
+                    <span>Launch Key-Value Engine</span>
                   </Link>
                 </div>
               </div>
