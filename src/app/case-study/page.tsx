@@ -7,9 +7,9 @@ import { ExploreManifesto } from "@/components/explore/explore-manifesto";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Case Study — The Engineering Proving Ground | ALGO",
+  title: "Case Study: Systems Architecture & Thesis | ALGO",
   description:
-    "Software engineering changed. The way we measure it hasn't. An evidence-led case study of technical assessment in the agentic era, backed by empirical data from Stack Overflow, HackerRank, and real systems benchmarks.",
+    "Software engineering changed. The way we measure it hasn't. An evidence-led analysis of technical assessment in the agentic era, backed by empirical data from HackerRank, Stack Overflow, Karat, and real systems benchmarks.",
 };
 
 export default async function CaseStudyPage() {
