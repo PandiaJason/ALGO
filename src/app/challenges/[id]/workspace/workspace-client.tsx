@@ -41,6 +41,32 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
+function getShortParity(rawParity: string): string {
+  if (!rawParity) return "Production Standard";
+  if (/dict\.c/i.test(rawParity)) return "Redis dict.c";
+  if (/rehashing/i.test(rawParity) || /collision/i.test(rawParity)) return "Redis Rehashing";
+  if (/wal/i.test(rawParity) || /write-ahead/i.test(rawParity)) return "PostgreSQL WAL";
+  if (/ttl|expire/i.test(rawParity)) return "Redis Active Expire";
+  if (/concurrenthashmap|mutex|thread/i.test(rawParity)) return "Java Striped Mutex";
+  if (/compaction|arena|lsm/i.test(rawParity)) return "RocksDB Compaction";
+  if (/resp/i.test(rawParity)) return "Redis RESP";
+  if (/event loop|epoll|kqueue|c10k/i.test(rawParity)) return "Nginx epoll Loop";
+  if (/chunked|http parser/i.test(rawParity)) return "Node.js llhttp";
+  if (/raft|consensus/i.test(rawParity)) return "Raft Consensus";
+  if (/b-tree|btree/i.test(rawParity)) return "B-Tree Page Engine";
+
+  const clean = rawParity
+    .replace(/^The\s+(core\s+)?/i, "")
+    .replace(/^architecture of\s+/i, "")
+    .replace(/^persistence architecture of\s+/i, "")
+    .replace(/^custom\s+/i, "")
+    .split(",")[0]
+    .split(" powered by")[0]
+    .split(" powering")[0]
+    .trim();
+  return clean.length > 20 ? clean.slice(0, 18) + "…" : clean;
+}
+
 interface Props {
   challenge: {
     id: string;
@@ -769,7 +795,7 @@ export function WorkspaceClient({
                         : (challengeData?.architecturalLayers || []);
                       const matchingLayer = layers?.[num - 1] || layers?.find((l: any) => l.number === num);
                       const rawParity = lvlInfo.learningLoop?.productionParity || matchingLayer?.realWorldTech || "Production Standard";
-                      const parity = rawParity.replace(/^The core in-memory hash dictionary design used in /i, "").split(",")[0].trim();
+                      const shortParity = getShortParity(rawParity);
 
                       return (
                         <div
@@ -778,56 +804,48 @@ export function WorkspaceClient({
                             handleSelectLevel(num);
                             setLeftTab("description");
                           }}
-                          className={`p-3.5 flex items-start gap-3 cursor-pointer transition-all hover:bg-slate-50 ${
+                          className={`p-3.5 flex items-center justify-between gap-3 cursor-pointer transition-all hover:bg-slate-50 ${
                             isActive ? "bg-[#099BE9]/5 ring-1 ring-inset ring-[#099BE9]/30" : ""
                           }`}
                         >
-                          {/* Number Badge */}
-                          <div className={`w-7 h-7 rounded-md flex items-center justify-center font-mono font-bold text-xs shrink-0 border ${
-                            isActive
-                              ? "bg-[#099BE9] text-white border-[#099BE9]"
-                              : "bg-slate-100 text-slate-700 border-slate-200"
-                          }`}>
-                            {String(num).padStart(2, "0")}
-                          </div>
-
-                          {/* Middle Info */}
-                          <div className="space-y-1 flex-1 min-w-0">
-                            <div className="flex flex-wrap items-center gap-1.5">
-                              <span className={`text-xs font-bold ${isActive ? "text-[#099BE9]" : "text-slate-900"}`}>
-                                {lvlInfo.title}
-                              </span>
-                              <span className={`px-1.5 py-0.2 rounded text-[10px] font-mono font-bold border ${
-                                lvlInfo.difficulty === "Easy"
-                                  ? "text-[#0AA793] bg-[#09C899]/10 border-[#09C899]/30"
-                                  : lvlInfo.difficulty === "Medium"
-                                  ? "text-[#F78424] bg-[#FBAE0C]/10 border-[#FBAE0C]/30"
-                                  : "text-[#8647E2] bg-[#8647E2]/10 border-[#8647E2]/30"
-                              }`}>
-                                {lvlInfo.difficulty}
-                              </span>
-                              <span className="text-[10px] font-mono text-slate-500">
-                                ≈ {parity}
-                              </span>
+                          {/* Left: Number + Title + Subtitle */}
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            {/* Number Badge */}
+                            <div className={`w-7 h-7 rounded-md flex items-center justify-center font-mono font-bold text-xs shrink-0 border ${
+                              isActive
+                                ? "bg-[#099BE9] text-white border-[#099BE9]"
+                                : "bg-slate-100 text-slate-700 border-slate-200"
+                            }`}>
+                              {String(num).padStart(2, "0")}
                             </div>
 
-                            <p className="text-[11px] text-slate-600 line-clamp-1 leading-snug">
-                              {lvlInfo.tagline}
-                            </p>
-
-                            {/* Operations Pills */}
-                            {Array.isArray(lvlInfo.operations) && lvlInfo.operations.length > 0 && (
-                              <div className="flex flex-wrap items-center gap-1 pt-0.5">
-                                {lvlInfo.operations.map((op: any, idx: number) => (
-                                  <code
-                                    key={idx}
-                                    className="px-1 py-0.2 rounded bg-slate-100 text-slate-700 font-mono text-[9px] border border-slate-200"
-                                  >
-                                    {typeof op.cmd === "string" ? op.cmd.split(" ")[0] : "CMD"}
-                                  </code>
-                                ))}
+                            {/* Middle Info */}
+                            <div className="space-y-0.5 min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span className={`text-xs font-bold truncate ${isActive ? "text-[#099BE9]" : "text-slate-900"}`}>
+                                  {lvlInfo.title}
+                                </span>
+                                <span className={`px-1.5 py-0.2 rounded text-[10px] font-mono font-bold shrink-0 border ${
+                                  lvlInfo.difficulty === "Easy"
+                                    ? "text-[#0AA793] bg-[#09C899]/10 border-[#09C899]/30"
+                                    : lvlInfo.difficulty === "Medium"
+                                    ? "text-[#F78424] bg-[#FBAE0C]/10 border-[#FBAE0C]/30"
+                                    : "text-[#8647E2] bg-[#8647E2]/10 border-[#8647E2]/30"
+                                }`}>
+                                  {lvlInfo.difficulty}
+                                </span>
                               </div>
-                            )}
+
+                              <div className="flex items-center gap-2 text-[11px] text-slate-500 font-mono">
+                                <span>≈ {shortParity}</span>
+                                {Array.isArray(lvlInfo.operations) && lvlInfo.operations.length > 0 && (
+                                  <>
+                                    <span>•</span>
+                                    <span>{lvlInfo.operations.length} ops</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
                           </div>
 
                           {/* Right Action */}
@@ -838,7 +856,7 @@ export function WorkspaceClient({
                               </span>
                             ) : (
                               <span className="text-[11px] font-mono text-slate-400 hover:text-[#099BE9] font-medium flex items-center gap-0.5">
-                                <span>Select</span>
+                                <span>Switch</span>
                                 <ChevronRight className="w-3 h-3" />
                               </span>
                             )}
