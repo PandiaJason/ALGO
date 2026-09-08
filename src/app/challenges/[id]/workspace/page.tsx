@@ -14,13 +14,34 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
+function serializeJsonSafe<T>(val: T): T {
+  try {
+    return JSON.parse(
+      JSON.stringify(val, (_key, value) => {
+        if (typeof value === "function") return undefined;
+        if (value instanceof Date) return value.toISOString();
+        return value;
+      })
+    );
+  } catch {
+    return val;
+  }
+}
+
 export default async function WorkspacePage({ params }: Props) {
-  const { id } = await params;
-  const session = await auth();
+  const { id: rawId } = await params;
+  const id = decodeURIComponent(rawId || "kv-store");
+
+  let session: any = null;
+  try {
+    session = await auth();
+  } catch (authErr) {
+    console.warn("Auth session resolution skipped or failed in WorkspacePage:", authErr);
+  }
 
   // 1. Resolve authentic challenge definition first
   const coreDef = CORE_CHALLENGES.find((c) => c.slug === id || c.number === id);
-  const chData = getChallenge(id);
+  const chData = getChallenge(id) || (coreDef ? getChallenge(coreDef.slug) : undefined);
 
   let challenge = {
     id: chData?.slug || coreDef?.slug || id || "kv-store",
@@ -148,25 +169,75 @@ export default async function WorkspacePage({ params }: Props) {
     console.warn("Database query skipped or failed, using resilient fallback data:", err);
   }
 
+  const safeLevels = Array.isArray(version.levels)
+    ? version.levels.map((l: any, idx: number) => ({
+        level: l.level || idx + 1,
+        title: l.title || `Level ${idx + 1}`,
+        shortTitle: l.shortTitle || l.title || `L${idx + 1}`,
+        difficulty: l.difficulty || "Medium",
+        tagline: l.tagline || l.description || "",
+        diagram: l.diagram || undefined,
+        importantChallenge: l.importantChallenge || undefined,
+        endGoalDemonstration: l.endGoalDemonstration || undefined,
+        nextLevelTeaser: l.nextLevelTeaser || undefined,
+        learningLoop: l.learningLoop || undefined,
+        operations: Array.isArray(l.operations) ? l.operations : [],
+        durabilityRules: Array.isArray(l.durabilityRules) ? l.durabilityRules : [],
+        examples: Array.isArray(l.examples) ? l.examples : [],
+        constraints: Array.isArray(l.constraints) ? l.constraints : [],
+        cases: Array.isArray(l.cases)
+          ? l.cases.map((c: any) => ({
+              name: c.name || "Case",
+              input: c.input || "",
+              expected: c.expected || "",
+            }))
+          : [],
+      }))
+    : [];
+
+  const safeSubmissions = (userSubmissions || []).map((sub: any) => ({
+    ...sub,
+    submittedAt: sub.submittedAt ? new Date(sub.submittedAt).toISOString() : new Date().toISOString(),
+  }));
+
+  const safeLeaders = (topLeaders || []).map((ldr: any) => ({
+    rank: ldr.rank,
+    score: ldr.score,
+    throughputOpsSec: ldr.throughputOpsSec,
+    username: ldr.username,
+    name: ldr.name,
+  }));
+
+  const safeUser = session?.user
+    ? {
+        id: session.user.id,
+        name: session.user.name || null,
+        email: session.user.email || null,
+        image: session.user.image || null,
+        role: (session.user as any)?.role || "STUDENT",
+        username: (session.user as any)?.username || null,
+      }
+    : null;
+
   return (
     <React.Suspense fallback={<div className="flex h-screen items-center justify-center bg-white text-slate-500 font-mono text-xs">Loading Workspace...</div>}>
       <WorkspaceClient
-        challenge={{
+        challenge={serializeJsonSafe({
           id: challenge.id,
           slug: challenge.slug,
           title: challenge.title,
           description: challenge.description,
           difficulty: challenge.difficulty,
-        }}
-        version={{
-          id: version.id,
-          starterTemplates: version.starterTemplates as any,
-          levels: (version.levels as any[]) || [],
+        })}
+        version={serializeJsonSafe({
+          id: String(version.id || "v1"),
+          starterTemplates: version.starterTemplates || {},
+          levels: safeLevels,
           spec: version.spec || undefined,
-        }}
-        user={session?.user as any}
-        pastSubmissions={userSubmissions as any}
-        topLeaders={topLeaders as any}
+        })}
+        user={safeUser}
+        pastSubmissions={serializeJsonSafe(safeSubmissions)}
+        topLeaders={serializeJsonSafe(safeLeaders)}
       />
     </React.Suspense>
   );
