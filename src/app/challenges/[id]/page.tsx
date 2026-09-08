@@ -566,8 +566,8 @@ export default async function ChallengeDetailPage({ params }: Props) {
                                 <Terminal className="w-3.5 h-3.5 text-[#099BE9]" />
                                 <span>Data Flow Architecture (Level {lvl.level}):</span>
                               </span>
-                              <div className="rounded-xl border border-slate-800 bg-[#141416] p-3.5 font-mono text-[11px] text-[#09C899] overflow-x-auto shadow-sm">
-                                <pre className="whitespace-pre leading-relaxed">{lvl.diagram}</pre>
+                              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 font-mono text-[11px] text-slate-800 overflow-x-auto shadow-2xs">
+                                <pre className="whitespace-pre leading-relaxed font-medium">{lvl.diagram}</pre>
                               </div>
                             </div>
                           )}
@@ -593,26 +593,28 @@ export default async function ChallengeDetailPage({ params }: Props) {
               </div>
             )}
 
-            {/* 3. System Architecture Blueprint */}
+            {/* 3. System Architecture */}
             {architectureDiagram && (
-              <div className="rounded-2xl border border-slate-800 bg-[#141416] overflow-hidden shadow-xl">
-                <div className="flex items-center justify-between px-4 py-2.5 bg-[#1a1a1e] border-b border-white/10">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-3 h-3 rounded-full bg-red-500" />
-                      <div className="w-3 h-3 rounded-full bg-amber-500" />
-                      <div className="w-3 h-3 rounded-full bg-emerald-500" />
+              <div className="p-6 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#099BE9] mb-1">
+                      System Topology
                     </div>
-                    <span className="text-[11px] font-mono font-bold text-neutral-300 uppercase tracking-wider">
-                      System Architecture Blueprint // First Principles
-                    </span>
+                    <h2 className="text-lg font-bold text-slate-950">
+                      System Architecture
+                    </h2>
+                    <p className="text-xs text-slate-600 font-medium mt-0.5">
+                      Component hierarchy and stream data flow for {challenge.title}.
+                    </p>
                   </div>
-                  <span className="text-[10px] font-mono font-semibold text-[#099BE9]">
-                    {challenge.title}
+                  <span className="text-[11px] font-mono font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md">
+                    First Principles
                   </span>
                 </div>
-                <div className="p-5 font-mono text-xs text-slate-200 overflow-x-auto">
-                  <pre className="whitespace-pre leading-relaxed text-[#09C899] font-medium">{architectureDiagram}</pre>
+
+                <div className="p-5 rounded-xl bg-slate-50 border border-slate-200/80 font-mono text-xs text-slate-900 overflow-x-auto">
+                  <pre className="whitespace-pre leading-relaxed text-slate-800 font-medium">{architectureDiagram}</pre>
                 </div>
               </div>
             )}
