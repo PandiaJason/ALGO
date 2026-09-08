@@ -255,20 +255,35 @@ export default async function ChallengeDetailPage({ params }: Props) {
     }
   }
 
+  const isKv = (challenge.slug || id) === "kv-store";
+  const chLevelMap: Record<number, any> = challengeData?.levels || (isKv ? LEVEL_DEFINITIONS : {});
+
   const levelsArray = (Array.isArray(version?.levels) && version.levels.length > 0)
-    ? version.levels.map((l: any, idx: number) => ({
-        ...l,
-        level: l.level || idx + 1,
-        title: l.title || `Level ${idx + 1}`,
-        shortTitle: l.title ? (l.title.length > 25 ? l.title.slice(0, 25) + "..." : l.title) : `Level ${idx + 1}`,
-        difficulty: l.difficulty || "Medium",
-        tagline: l.tagline || l.description || "",
-      }))
+    ? version.levels.map((l: any, idx: number) => {
+        const lvlNum = l.level || idx + 1;
+        const codeLevel = chLevelMap[lvlNum] || (challengeData?.levels ? Object.values(challengeData.levels)[idx] : undefined);
+        return {
+          ...codeLevel,
+          ...l,
+          level: lvlNum,
+          title: l.title || codeLevel?.title || `Level ${lvlNum}`,
+          shortTitle: l.shortTitle || (l.title ? (l.title.length > 25 ? l.title.slice(0, 25) + "..." : l.title) : (codeLevel?.shortTitle || `Level ${lvlNum}`)),
+          difficulty: l.difficulty || codeLevel?.difficulty || "Medium",
+          tagline: l.tagline || l.description || codeLevel?.tagline || "",
+          diagram: l.diagram || codeLevel?.diagram || undefined,
+          importantChallenge: l.importantChallenge || codeLevel?.importantChallenge || undefined,
+          endGoalDemonstration: l.endGoalDemonstration || codeLevel?.endGoalDemonstration || undefined,
+          nextLevelTeaser: l.nextLevelTeaser || codeLevel?.nextLevelTeaser || undefined,
+          learningLoop: l.learningLoop || codeLevel?.learningLoop || undefined,
+          operations: (Array.isArray(l.operations) && l.operations.length > 0) ? l.operations : (codeLevel?.operations || []),
+          durabilityRules: (Array.isArray(l.durabilityRules) && l.durabilityRules.length > 0) ? l.durabilityRules : (codeLevel?.durabilityRules || []),
+          examples: (Array.isArray(l.examples) && l.examples.length > 0) ? l.examples : (codeLevel?.examples || []),
+          constraints: (Array.isArray(l.constraints) && l.constraints.length > 0) ? l.constraints : (codeLevel?.constraints || []),
+        };
+      })
     : challengeData
     ? Object.values(challengeData.levels).sort((a, b) => a.level - b.level)
     : Object.values(LEVEL_DEFINITIONS).sort((a, b) => a.level - b.level);
-
-  const isKv = challenge.slug === "kv-store";
   const scopeSubtitle = challengeData?.subtitle || (isKv
     ? PROJECT_SCOPE.subtitle
     : `Inspired by ${coreDef?.inspiredBy ?? "Production Systems"} • ${coreDef?.whatStudentsBuild ?? "Systems Engineering"}`);
@@ -452,6 +467,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
                     return (
                       <details
                         key={lvl.level}
+                        open={idx === 0}
                         className="group transition-colors"
                       >
                         <summary className="p-4 sm:px-6 sm:py-4 flex items-center justify-between gap-4 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden hover:bg-slate-50/80 transition-colors">
@@ -492,6 +508,14 @@ export default async function ChallengeDetailPage({ params }: Props) {
                             <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-mono text-slate-600 bg-slate-100/90 border border-slate-200/80 font-medium">
                               ≈ {shortParity}
                             </span>
+
+                            {/* Data Flow Diagram Indicator */}
+                            {lvl.diagram && (
+                              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono text-[#099BE9] bg-[#099BE9]/10 border border-[#099BE9]/30 font-bold">
+                                <Terminal className="w-3 h-3 text-[#099BE9]" />
+                                <span>Data Flow</span>
+                              </span>
+                            )}
 
                             {/* Command Count */}
                             {ops.length > 0 && (
@@ -562,11 +586,11 @@ export default async function ChallengeDetailPage({ params }: Props) {
                           {/* Data Flow Diagram for this level */}
                           {lvl.diagram && (
                             <div className="space-y-1.5 pt-1">
-                              <span className="text-[11px] font-mono font-bold uppercase text-slate-500 flex items-center gap-1.5">
+                              <span className="text-[11px] font-mono font-bold uppercase text-slate-600 flex items-center gap-1.5">
                                 <Terminal className="w-3.5 h-3.5 text-[#099BE9]" />
                                 <span>Data Flow Architecture (Level {lvl.level}):</span>
                               </span>
-                              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 font-mono text-[11px] text-slate-800 overflow-x-auto shadow-2xs">
+                              <div className="rounded-xl border border-slate-800 bg-[#141416] p-4 font-mono text-[11px] text-[#09C899] overflow-x-auto shadow-sm">
                                 <pre className="whitespace-pre leading-relaxed font-medium">{lvl.diagram}</pre>
                               </div>
                             </div>

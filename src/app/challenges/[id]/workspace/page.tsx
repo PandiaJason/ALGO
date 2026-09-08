@@ -169,30 +169,43 @@ export default async function WorkspacePage({ params }: Props) {
     console.warn("Database query skipped or failed, using resilient fallback data:", err);
   }
 
+  const isKv = challenge.slug === "kv-store" || id === "kv-store";
+  const chLevelMap: Record<number, any> = chData?.levels || {};
+
   const safeLevels = Array.isArray(version.levels)
-    ? version.levels.map((l: any, idx: number) => ({
-        level: l.level || idx + 1,
-        title: l.title || `Level ${idx + 1}`,
-        shortTitle: l.shortTitle || l.title || `L${idx + 1}`,
-        difficulty: l.difficulty || "Medium",
-        tagline: l.tagline || l.description || "",
-        diagram: l.diagram || undefined,
-        importantChallenge: l.importantChallenge || undefined,
-        endGoalDemonstration: l.endGoalDemonstration || undefined,
-        nextLevelTeaser: l.nextLevelTeaser || undefined,
-        learningLoop: l.learningLoop || undefined,
-        operations: Array.isArray(l.operations) ? l.operations : [],
-        durabilityRules: Array.isArray(l.durabilityRules) ? l.durabilityRules : [],
-        examples: Array.isArray(l.examples) ? l.examples : [],
-        constraints: Array.isArray(l.constraints) ? l.constraints : [],
-        cases: Array.isArray(l.cases)
-          ? l.cases.map((c: any) => ({
-              name: c.name || "Case",
-              input: c.input || "",
-              expected: c.expected || "",
-            }))
-          : [],
-      }))
+    ? version.levels.map((l: any, idx: number) => {
+        const lvlNum = l.level || idx + 1;
+        const codeLevel = chLevelMap[lvlNum] || (chData?.levels ? Object.values(chData.levels)[idx] : undefined);
+        return {
+          level: lvlNum,
+          title: l.title || codeLevel?.title || `Level ${lvlNum}`,
+          shortTitle: l.shortTitle || l.title || codeLevel?.shortTitle || `L${lvlNum}`,
+          difficulty: l.difficulty || codeLevel?.difficulty || "Medium",
+          tagline: l.tagline || l.description || codeLevel?.tagline || "",
+          diagram: l.diagram || codeLevel?.diagram || undefined,
+          importantChallenge: l.importantChallenge || codeLevel?.importantChallenge || undefined,
+          endGoalDemonstration: l.endGoalDemonstration || codeLevel?.endGoalDemonstration || undefined,
+          nextLevelTeaser: l.nextLevelTeaser || codeLevel?.nextLevelTeaser || undefined,
+          learningLoop: l.learningLoop || codeLevel?.learningLoop || undefined,
+          operations: (Array.isArray(l.operations) && l.operations.length > 0) ? l.operations : (codeLevel?.operations || []),
+          durabilityRules: (Array.isArray(l.durabilityRules) && l.durabilityRules.length > 0) ? l.durabilityRules : (codeLevel?.durabilityRules || []),
+          examples: (Array.isArray(l.examples) && l.examples.length > 0) ? l.examples : (codeLevel?.examples || []),
+          constraints: (Array.isArray(l.constraints) && l.constraints.length > 0) ? l.constraints : (codeLevel?.constraints || []),
+          cases: (Array.isArray(l.cases) && l.cases.length > 0)
+            ? l.cases.map((c: any) => ({
+                name: c.name || "Case",
+                input: c.input || "",
+                expected: c.expected || "",
+              }))
+            : (Array.isArray(codeLevel?.cases)
+                ? codeLevel.cases.map((c: any) => ({
+                    name: c.name || "Case",
+                    input: c.input || "",
+                    expected: c.expected || "",
+                  }))
+                : []),
+        };
+      })
     : [];
 
   const safeSubmissions = (userSubmissions || []).map((sub: any) => ({

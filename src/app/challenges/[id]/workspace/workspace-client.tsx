@@ -684,7 +684,7 @@ export function WorkspaceClient({
                         </span>
                         <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                       </summary>
-                      <div className="p-3 bg-slate-50 font-mono text-[11px] text-slate-800 overflow-x-auto border-t border-slate-200">
+                      <div className="p-3.5 bg-[#141416] font-mono text-[11px] text-[#09C899] overflow-x-auto border-t border-slate-800">
                         <pre className="whitespace-pre leading-relaxed font-medium">{currentLevelInfo.diagram}</pre>
                       </div>
                     </details>
