@@ -587,10 +587,10 @@ export function WorkspaceClient({
                 <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg border border-slate-200/80 text-[11px] font-mono">
                   <button
                     onClick={() => setDescSubTab("spec")}
-                    className={`flex-1 py-1 px-2 rounded font-semibold transition-all cursor-pointer text-center ${
+                    className={`flex-1 py-1.5 px-2 rounded font-semibold transition-all cursor-pointer text-center ${
                       descSubTab === "spec"
-                        ? "bg-white text-slate-900 shadow-2xs font-bold"
-                        : "text-slate-500 hover:text-slate-800"
+                        ? "bg-white text-slate-950 shadow-2xs font-bold"
+                        : "text-slate-700 hover:text-slate-950 font-semibold"
                     }`}
                   >
                     Spec &amp; Ops
@@ -598,10 +598,10 @@ export function WorkspaceClient({
                   {currentLevelInfo.diagram && (
                     <button
                       onClick={() => setDescSubTab("diagram")}
-                      className={`flex-1 py-1 px-2 rounded font-semibold transition-all cursor-pointer text-center ${
+                      className={`flex-1 py-1.5 px-2 rounded font-semibold transition-all cursor-pointer text-center ${
                         descSubTab === "diagram"
-                          ? "bg-white text-slate-900 shadow-2xs font-bold"
-                          : "text-slate-500 hover:text-slate-800"
+                          ? "bg-white text-slate-950 shadow-2xs font-bold"
+                          : "text-slate-700 hover:text-slate-950 font-semibold"
                       }`}
                     >
                       Flow
@@ -610,10 +610,10 @@ export function WorkspaceClient({
                   {(currentLevelInfo.importantChallenge || currentLevelInfo.learningLoop) && (
                     <button
                       onClick={() => setDescSubTab("gotcha")}
-                      className={`flex-1 py-1 px-2 rounded font-semibold transition-all cursor-pointer text-center ${
+                      className={`flex-1 py-1.5 px-2 rounded font-semibold transition-all cursor-pointer text-center ${
                         descSubTab === "gotcha"
                           ? "bg-white text-amber-800 shadow-2xs font-bold"
-                          : "text-slate-500 hover:text-slate-800"
+                          : "text-slate-700 hover:text-slate-950 font-semibold"
                       }`}
                     >
                       Gotcha
@@ -622,10 +622,10 @@ export function WorkspaceClient({
                   {(Array.isArray(currentLevelInfo.examples) || currentLevelInfo.endGoalDemonstration) && (
                     <button
                       onClick={() => setDescSubTab("examples")}
-                      className={`flex-1 py-1 px-2 rounded font-semibold transition-all cursor-pointer text-center ${
+                      className={`flex-1 py-1.5 px-2 rounded font-semibold transition-all cursor-pointer text-center ${
                         descSubTab === "examples"
-                          ? "bg-white text-slate-900 shadow-2xs font-bold"
-                          : "text-slate-500 hover:text-slate-800"
+                          ? "bg-white text-slate-950 shadow-2xs font-bold"
+                          : "text-slate-700 hover:text-slate-950 font-semibold"
                       }`}
                     >
                       Examples
@@ -640,10 +640,10 @@ export function WorkspaceClient({
                     {Array.isArray(currentLevelInfo.operations) && currentLevelInfo.operations.length > 0 && (
                       <div className="space-y-2.5">
                         <div className="flex items-center justify-between">
-                          <h3 className="text-xs font-mono font-bold text-slate-800 uppercase tracking-wider">
+                          <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">
                             Supported Operations
                           </h3>
-                          <span className="text-[10px] font-mono text-slate-400">
+                          <span className="text-[10px] font-mono text-slate-600 font-semibold">
                             POSIX Stream I/O
                           </span>
                         </div>
@@ -654,7 +654,7 @@ export function WorkspaceClient({
                               <code className="px-1.5 py-0.5 rounded bg-[#099BE9]/10 border border-[#099BE9]/30 font-mono text-[#099BE9] text-[11px] shrink-0 font-bold">
                                 {op.cmd}
                               </code>
-                              <span className="text-slate-600 text-xs leading-snug">
+                              <span className="text-slate-800 font-medium text-xs leading-relaxed">
                                 {op.desc}
                               </span>
                             </div>
@@ -666,13 +666,13 @@ export function WorkspaceClient({
                     {/* Durability / Engineering Protocol */}
                     {Array.isArray(currentLevelInfo.durabilityRules) && currentLevelInfo.durabilityRules.length > 0 && (
                       <div className="space-y-2">
-                        <h3 className="text-xs font-mono font-bold text-slate-800 uppercase tracking-wider">
+                        <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">
                           Durability Protocol
                         </h3>
-                        <div className="p-3 rounded-lg bg-[#fafafa] border border-slate-200 space-y-1.5 text-xs text-slate-700">
+                        <div className="p-3 rounded-lg bg-[#fafafa] border border-slate-200 space-y-1.5 text-xs text-slate-800 font-medium">
                           {currentLevelInfo.durabilityRules.map((rule: any, idx: number) => (
                             <div key={idx} className="flex items-start gap-1.5">
-                              <span className="text-[#09C899] font-bold font-mono">•</span>
+                              <span className="text-[#0AA793] font-bold font-mono">•</span>
                               <span>{rule}</span>
                             </div>
                           ))}
@@ -683,8 +683,8 @@ export function WorkspaceClient({
                     {/* Constraints & Sandbox Limits */}
                     {Array.isArray(currentLevelInfo.constraints) && currentLevelInfo.constraints.length > 0 && (
                       <div className="space-y-2 pt-2 border-t border-slate-200/80">
-                        <h3 className="text-xs font-mono font-bold text-slate-800 uppercase tracking-wider">Constraints</h3>
-                        <ul className="list-disc list-inside space-y-1 text-slate-600 text-xs font-mono">
+                        <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">Constraints</h3>
+                        <ul className="list-disc list-inside space-y-1 text-slate-800 text-xs font-mono font-medium">
                           {currentLevelInfo.constraints.map((c: any, idx: number) => (
                             <li key={idx}>{c}</li>
                           ))}
@@ -1158,8 +1158,8 @@ export function WorkspaceClient({
 
                     {sampleCases[selectedCaseIndex]?.expected && (
                       <div className="space-y-1">
-                        <div className="text-[11px] text-slate-500 font-sans font-semibold">Expected Output:</div>
-                        <pre className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-[#0AA793] font-semibold whitespace-pre-wrap">
+                        <div className="text-xs text-slate-800 font-sans font-bold">Expected Output:</div>
+                        <pre className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-[#0AA793] font-bold whitespace-pre-wrap shadow-2xs">
                           {sampleCases[selectedCaseIndex].expected}
                         </pre>
                       </div>
@@ -1170,7 +1170,7 @@ export function WorkspaceClient({
                 {consoleTab === "result" && (
                   <div className="space-y-3 font-sans">
                     {isRunningTests ? (
-                      <div className="flex items-center gap-2 text-[#099BE9] py-6 font-sans">
+                      <div className="flex items-center gap-2 text-[#099BE9] py-6 font-sans font-semibold">
                         <Clock className="w-4 h-4 animate-spin" />
                         <span>Running tests inside isolated Docker sandbox...</span>
                       </div>
@@ -1180,23 +1180,23 @@ export function WorkspaceClient({
                           <div className="flex items-center gap-2">
                             {testResult.passed === testResult.total ? (
                               <span className="flex items-center gap-1.5 text-sm font-bold text-[#0AA793] bg-[#09C899]/10 px-2.5 py-1 rounded-md border border-[#09C899]/30">
-                                <CheckCircle2 className="w-4 h-4 text-[#09C899]" /> Accepted
+                                <CheckCircle2 className="w-4 h-4 text-[#0AA793]" /> Accepted
                               </span>
                             ) : (
                               <span className="flex items-center gap-1.5 text-sm font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-md border border-rose-200">
                                 <XCircle className="w-4 h-4 text-rose-600" /> Wrong Answer
                               </span>
                             )}
-                            <span className="text-slate-600 font-sans text-xs font-semibold">
+                            <span className="text-slate-800 font-sans text-xs font-bold">
                               Passed {testResult.passed} / {testResult.total} testcases
                             </span>
-                            <span className="text-[11px] text-slate-500 font-medium bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                            <span className="text-[11px] text-slate-700 font-semibold bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
                               Level {selectedLevel}
                             </span>
                           </div>
 
-                          <span className="text-[11px] font-mono text-[#09C899] flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-[#09C899] animate-pulse" />
+                          <span className="text-[11px] font-mono text-[#0AA793] font-semibold flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-[#0AA793] animate-pulse" />
                             Docker Sandbox: Active
                           </span>
                         </div>
@@ -1212,14 +1212,14 @@ export function WorkspaceClient({
                                   className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${
                                     selectedResultCaseIndex === i
                                       ? c.passed
-                                        ? "bg-[#09C899]/10 text-[#0AA793] border border-[#09C899]/30 shadow-2xs font-semibold"
-                                        : "bg-rose-50 text-rose-800 border border-rose-300 shadow-2xs font-semibold"
-                                      : "bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200"
+                                        ? "bg-[#09C899]/10 text-[#0AA793] border border-[#09C899]/30 shadow-2xs font-bold"
+                                        : "bg-rose-50 text-rose-800 border border-rose-300 shadow-2xs font-bold"
+                                      : "text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 font-medium"
                                   }`}
                                 >
                                   <span
                                     className={`w-2 h-2 rounded-full ${
-                                      c.passed ? "bg-[#09C899]" : "bg-rose-500"
+                                      c.passed ? "bg-[#0AA793]" : "bg-rose-500"
                                     }`}
                                   />
                                   Case {i + 1}
@@ -1236,7 +1236,7 @@ export function WorkspaceClient({
                               return (
                                 <div className="space-y-2.5">
                                   <div className="flex items-center justify-between">
-                                    <span className="text-xs font-semibold text-slate-800">
+                                    <span className="text-xs font-bold text-slate-950">
                                       {activeCase.name}
                                     </span>
                                     <span
@@ -1251,39 +1251,39 @@ export function WorkspaceClient({
                                   </div>
 
                                   <div className="space-y-1">
-                                    <span className="text-[11px] text-slate-500 font-sans font-semibold">
+                                    <span className="text-xs text-slate-800 font-sans font-bold">
                                       Standard Input:
                                     </span>
-                                    <pre className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-800 whitespace-pre-wrap shadow-2xs">
+                                    <pre className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-900 font-semibold whitespace-pre-wrap shadow-2xs">
                                       {activeCase.input}
                                     </pre>
                                   </div>
 
                                   <div className="space-y-1">
-                                    <span className="text-[11px] text-slate-500 font-sans font-semibold">
+                                    <span className="text-xs text-slate-800 font-sans font-bold">
                                       Actual Output:
                                     </span>
                                     <pre
-                                      className={`p-2.5 rounded-lg text-xs font-mono whitespace-pre-wrap shadow-2xs border ${
+                                      className={`p-2.5 rounded-lg text-xs font-mono whitespace-pre-wrap shadow-2xs border font-semibold ${
                                         activeCase.passed
-                                          ? "bg-slate-50 border-slate-200 text-slate-800"
-                                          : "bg-rose-50/60 border-rose-200 text-rose-800 font-medium"
+                                          ? "bg-slate-50 border-slate-200 text-slate-900"
+                                          : "bg-rose-50/60 border-rose-200 text-rose-900 font-bold"
                                       }`}
                                     >
                                       {activeCase.actual || "(No output produced)"}
                                     </pre>
                                     {activeCase.error && (
-                                      <div className="text-[11px] text-rose-600 font-mono bg-rose-50 p-2 rounded border border-rose-200">
+                                      <div className="text-[11px] text-rose-700 font-mono font-semibold bg-rose-50 p-2 rounded border border-rose-200">
                                         Error: {activeCase.error}
                                       </div>
                                     )}
                                   </div>
 
                                   <div className="space-y-1">
-                                    <span className="text-[11px] text-slate-500 font-sans font-semibold">
+                                    <span className="text-xs text-slate-800 font-sans font-bold">
                                       Expected Output:
                                     </span>
-                                    <pre className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-[#0AA793] font-semibold whitespace-pre-wrap shadow-2xs">
+                                    <pre className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-[#0AA793] font-bold whitespace-pre-wrap shadow-2xs">
                                       {activeCase.expected}
                                     </pre>
                                   </div>

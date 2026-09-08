@@ -51,14 +51,14 @@ export function Navbar({ user, variant = "default" }: NavbarProps) {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors flex items-center gap-1.5 ${
                     isDark
                       ? isActive
-                        ? "text-white bg-white/10 font-semibold"
-                        : "text-neutral-300 hover:text-white hover:bg-white/5"
+                        ? "text-white bg-white/10 font-bold"
+                        : "text-neutral-200 hover:text-white hover:bg-white/5"
                       : isActive
-                      ? "text-slate-900 bg-slate-100 font-semibold"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                      ? "text-slate-950 bg-slate-100 font-bold shadow-2xs"
+                      : "text-slate-700 hover:text-slate-950 hover:bg-slate-100/70"
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5 opacity-70" />

@@ -98,53 +98,53 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
       {/* Top Stat Summary Cards (LeetCode Style) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
         <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs">
-          <div className="text-slate-400 text-[11px] font-medium flex items-center justify-between">
+          <div className="text-slate-700 text-[11px] font-bold uppercase tracking-wider flex items-center justify-between">
             <span>VERIFIED ENGINEERS</span>
             <Trophy className="w-3.5 h-3.5 text-[#FBAE0C]" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 mt-1 font-sans">
+          <div className="text-2xl font-extrabold text-slate-950 mt-1 font-sans">
             {entries.length}
           </div>
-          <div className="text-[10px] text-slate-400 mt-0.5">
+          <div className="text-[10px] text-slate-600 font-medium mt-0.5">
             100% Correctness Gate
           </div>
         </div>
 
         <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs">
-          <div className="text-slate-400 text-[11px] font-medium flex items-center justify-between">
+          <div className="text-slate-700 text-[11px] font-bold uppercase tracking-wider flex items-center justify-between">
             <span>PEAK THROUGHPUT</span>
             <Zap className="w-3.5 h-3.5 text-[#099BE9]" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 mt-1">
+          <div className="text-2xl font-extrabold text-slate-950 mt-1">
             {topThroughput ? formatThroughput(topThroughput) : "—"}
           </div>
-          <div className="text-[10px] text-[#0AA793] font-semibold mt-0.5">
+          <div className="text-[10px] text-[#0AA793] font-bold mt-0.5">
             1.01x vs baseline
           </div>
         </div>
 
         <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs">
-          <div className="text-slate-400 text-[11px] font-medium flex items-center justify-between">
+          <div className="text-slate-700 text-[11px] font-bold uppercase tracking-wider flex items-center justify-between">
             <span>LOWEST p99 LATENCY</span>
-            <Activity className="w-3.5 h-3.5 text-[#09C899]" />
+            <Activity className="w-3.5 h-3.5 text-[#0AA793]" />
           </div>
-          <div className="text-2xl font-bold text-slate-900 mt-1">
+          <div className="text-2xl font-extrabold text-slate-950 mt-1">
             {bestLatency > 0 && bestLatency < 999 ? formatLatency(bestLatency) : "25µs"}
           </div>
-          <div className="text-[10px] text-[#0AA793] font-semibold mt-0.5">
+          <div className="text-[10px] text-[#0AA793] font-bold mt-0.5">
             Deterministic cgroup
           </div>
         </div>
 
         <div className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs">
-          <div className="text-slate-400 text-[11px] font-medium flex items-center justify-between">
+          <div className="text-slate-700 text-[11px] font-bold uppercase tracking-wider flex items-center justify-between">
             <span>BENCHMARK ENGINE</span>
             <Cpu className="w-3.5 h-3.5 text-[#8647E2]" />
           </div>
-          <div className="text-sm font-bold text-slate-900 mt-2 font-mono">
+          <div className="text-sm font-bold text-slate-950 mt-2 font-mono">
             algo-runner:latest
           </div>
-          <div className="text-[10px] text-slate-400 mt-0.5">
+          <div className="text-[10px] text-slate-600 font-medium mt-0.5">
             256MB RAM / 1 CPU cap
           </div>
         </div>
@@ -159,7 +159,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
             placeholder="Search by engineer or challenge..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono placeholder:text-slate-400 focus:outline-none focus:border-[#099BE9] focus:bg-white transition-colors"
+            className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-950 placeholder:text-slate-500 font-medium focus:outline-none focus:border-[#099BE9] focus:bg-white transition-colors"
           />
         </div>
 
@@ -170,8 +170,8 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
               onClick={() => setSelectedLanguage("ALL")}
               className={`px-2 py-1 rounded transition-colors ${
                 selectedLanguage === "ALL"
-                  ? "bg-white text-slate-900 shadow-2xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-slate-950 shadow-2xs font-bold"
+                  : "text-slate-700 hover:text-slate-950 font-medium"
               }`}
             >
               All
@@ -180,8 +180,8 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
               onClick={() => setSelectedLanguage("python")}
               className={`px-2 py-1 rounded transition-colors ${
                 selectedLanguage === "python"
-                  ? "bg-white text-slate-900 shadow-2xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-slate-950 shadow-2xs font-bold"
+                  : "text-slate-700 hover:text-slate-950 font-medium"
               }`}
             >
               Python
@@ -190,8 +190,8 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
               onClick={() => setSelectedLanguage("cpp")}
               className={`px-2 py-1 rounded transition-colors ${
                 selectedLanguage === "cpp"
-                  ? "bg-white text-slate-900 shadow-2xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-slate-950 shadow-2xs font-bold"
+                  : "text-slate-700 hover:text-slate-950 font-medium"
               }`}
             >
               C++
@@ -200,8 +200,8 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
               onClick={() => setSelectedLanguage("rust")}
               className={`px-2 py-1 rounded transition-colors ${
                 selectedLanguage === "rust"
-                  ? "bg-white text-slate-900 shadow-2xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-slate-950 shadow-2xs font-bold"
+                  : "text-slate-700 hover:text-slate-950 font-medium"
               }`}
             >
               Rust
@@ -210,8 +210,8 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
               onClick={() => setSelectedLanguage("go")}
               className={`px-2 py-1 rounded transition-colors ${
                 selectedLanguage === "go"
-                  ? "bg-white text-slate-900 shadow-2xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-slate-950 shadow-2xs font-bold"
+                  : "text-slate-700 hover:text-slate-950 font-medium"
               }`}
             >
               Go
@@ -220,8 +220,8 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
               onClick={() => setSelectedLanguage("java")}
               className={`px-2 py-1 rounded transition-colors ${
                 selectedLanguage === "java"
-                  ? "bg-white text-slate-900 shadow-2xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-slate-950 shadow-2xs font-bold"
+                  : "text-slate-700 hover:text-slate-950 font-medium"
               }`}
             >
               Java
@@ -229,11 +229,11 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
           </div>
 
           {/* Sort selector */}
-          <div className="flex items-center gap-1 text-xs text-slate-600 font-mono">
+          <div className="flex items-center gap-1 text-xs text-slate-700 font-mono">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="h-8 px-2 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-700 focus:outline-none focus:border-[#099BE9] shadow-2xs"
+              className="h-8 px-2 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-900 font-semibold focus:outline-none focus:border-[#099BE9] shadow-2xs"
             >
               <option value="score">Sort: Normalized Score</option>
               <option value="throughput">Sort: Throughput</option>
@@ -247,20 +247,20 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xs">
         <table className="w-full text-left text-xs font-sans border-collapse">
           <thead>
-            <tr className="border-b border-slate-200 bg-[#f8fafc] text-slate-600 font-mono text-[11px] uppercase">
-              <th className="py-3 px-4 w-20 text-center font-semibold">Rank</th>
-              <th className="py-3 px-4 font-semibold">User</th>
-              <th className="py-3 px-4 font-semibold hidden md:table-cell">Challenge</th>
-              <th className="py-3 px-4 font-semibold text-right">Score</th>
-              <th className="py-3 px-4 font-semibold text-right">Throughput</th>
-              <th className="py-3 px-4 font-semibold text-right hidden sm:table-cell">p99 Latency</th>
-              <th className="py-3 px-4 text-center">Status</th>
+            <tr className="border-b border-slate-200 bg-slate-50/90 text-slate-800 font-mono text-[11px] uppercase tracking-wider">
+              <th className="py-3 px-4 w-20 text-center font-bold">Rank</th>
+              <th className="py-3 px-4 font-bold">User</th>
+              <th className="py-3 px-4 font-bold hidden md:table-cell">Challenge</th>
+              <th className="py-3 px-4 font-bold text-right">Score</th>
+              <th className="py-3 px-4 font-bold text-right">Throughput</th>
+              <th className="py-3 px-4 font-bold text-right hidden sm:table-cell">p99 Latency</th>
+              <th className="py-3 px-4 text-center font-bold">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {filteredEntries.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-slate-400 font-mono text-xs">
+                <td colSpan={7} className="py-12 text-center text-slate-600 font-mono text-xs font-medium">
                   No matching entries found.
                 </td>
               </tr>
@@ -281,7 +281,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
                   );
                 } else if (rank === 2) {
                   rankBadge = (
-                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 border border-slate-300 text-slate-600 font-bold text-xs shadow-2xs">
+                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 border border-slate-300 text-slate-800 font-bold text-xs shadow-2xs">
                       🥈 2
                     </span>
                   );
@@ -293,7 +293,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
                   );
                 } else {
                   rankBadge = (
-                    <span className="font-mono font-semibold text-slate-500 text-xs">
+                    <span className="font-mono font-bold text-slate-700 text-xs">
                       #{rank}
                     </span>
                   );
@@ -321,7 +321,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
                           <div className="flex items-center gap-1.5">
                             <Link
                               href={`/u/${entry.username}`}
-                              className="font-semibold text-slate-900 hover:text-[#099BE9] transition-colors"
+                              className="font-bold text-slate-950 hover:text-[#099BE9] transition-colors"
                             >
                               @{entry.username}
                             </Link>
@@ -331,7 +331,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
                               </span>
                             )}
                           </div>
-                          <div className="text-[10px] font-mono text-slate-400 uppercase">
+                          <div className="text-[10px] font-mono text-slate-600 font-semibold uppercase">
                             {formatLanguage(entry.language)}
                           </div>
                         </div>
@@ -339,7 +339,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
                     </td>
 
                     {/* Challenge Link */}
-                    <td className="py-3.5 px-4 hidden md:table-cell text-slate-600 text-xs font-medium">
+                    <td className="py-3.5 px-4 hidden md:table-cell text-slate-800 text-xs font-semibold">
                       <Link
                         href={`/challenges/${entry.challengeSlug}`}
                         className="hover:text-[#099BE9] transition-colors flex items-center gap-1"
@@ -354,18 +354,18 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
                     </td>
 
                     {/* Throughput */}
-                    <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 text-xs">
+                    <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-950 text-xs">
                       {formatThroughput(entry.throughputOpsSec)}
                     </td>
 
                     {/* p99 Latency */}
-                    <td className="py-3.5 px-4 text-right font-mono text-slate-600 text-xs hidden sm:table-cell">
+                    <td className="py-3.5 px-4 text-right font-mono font-semibold text-slate-800 text-xs hidden sm:table-cell">
                       {entry.latencyP99Ms ? formatLatency(entry.latencyP99Ms) : "—"}
                     </td>
 
                     {/* Status Pill */}
                     <td className="py-3.5 px-4 text-center">
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#0AA793] bg-[#09C899]/10 px-2 py-0.5 rounded-full border border-[#09C899]/30">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0AA793] bg-[#09C899]/10 px-2 py-0.5 rounded-full border border-[#09C899]/30">
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#09C899]" />
                         <span>Accepted</span>
                       </span>
@@ -378,25 +378,25 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
         </table>
 
         {/* LeetCode Table Footer & Pagination Controls */}
-        <div className="px-4 py-3 border-t border-slate-200 bg-[#f8fafc] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 font-mono">
+        <div className="px-4 py-3 border-t border-slate-200 bg-[#f8fafc] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-700 font-mono">
           <div>
-            Showing <span className="font-semibold text-slate-800">{filteredEntries.length}</span> of{" "}
-            <span className="font-semibold text-slate-800">{entries.length}</span> verified engineers
+            Showing <span className="font-bold text-slate-950">{filteredEntries.length}</span> of{" "}
+            <span className="font-bold text-slate-950">{entries.length}</span> verified engineers
           </div>
 
           <div className="flex items-center gap-1">
             <button
               disabled
-              className="px-2.5 py-1 rounded border border-slate-200 bg-white text-slate-400 cursor-not-allowed text-xs"
+              className="px-2.5 py-1 rounded border border-slate-200 bg-white text-slate-500 cursor-not-allowed text-xs font-medium"
             >
               Prev
             </button>
-            <span className="px-3 py-1 rounded bg-slate-900 text-white font-semibold text-xs">
+            <span className="px-3 py-1 rounded bg-slate-950 text-white font-bold text-xs">
               1
             </span>
             <button
               disabled
-              className="px-2.5 py-1 rounded border border-slate-200 bg-white text-slate-400 cursor-not-allowed text-xs"
+              className="px-2.5 py-1 rounded border border-slate-200 bg-white text-slate-500 cursor-not-allowed text-xs font-medium"
             >
               Next
             </button>

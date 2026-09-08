@@ -102,14 +102,14 @@ export function ChallengesTable({
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-medium">
+            <thead className="bg-slate-50/90 border-b border-slate-200 text-slate-800 font-bold font-mono text-[11px] uppercase tracking-wider">
               <tr>
-                <th className="py-3 px-4 w-12 text-center">Status</th>
-                <th className="py-3 px-4">Title</th>
-                <th className="py-3 px-4 hidden md:table-cell">Baseline Speed</th>
-                <th className="py-3 px-4 hidden md:table-cell">Top Speed</th>
-                <th className="py-3 px-4">Difficulty</th>
-                <th className="py-3 px-4 text-right">Action</th>
+                <th className="py-3 px-4 w-12 text-center font-bold">Status</th>
+                <th className="py-3 px-4 font-bold">Title</th>
+                <th className="py-3 px-4 hidden md:table-cell font-bold">Baseline Speed</th>
+                <th className="py-3 px-4 hidden md:table-cell font-bold">Top Speed</th>
+                <th className="py-3 px-4 font-bold">Difficulty</th>
+                <th className="py-3 px-4 text-right font-bold">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -125,7 +125,7 @@ export function ChallengesTable({
                     {/* Status Icon */}
                     <td className="py-4 px-4 text-center">
                       {isSolved ? (
-                        <CheckCircle2 className="w-4 h-4 text-[#09C899] mx-auto" />
+                        <CheckCircle2 className="w-4 h-4 text-[#0AA793] mx-auto" />
                       ) : (
                         <Circle className="w-4 h-4 text-slate-300 mx-auto" />
                       )}
@@ -136,7 +136,7 @@ export function ChallengesTable({
                       <div className="flex flex-col gap-1">
                         <Link
                           href={`/challenges/${challenge.slug}`}
-                          className="font-semibold text-slate-900 hover:text-[#099BE9] transition-colors text-sm flex items-center gap-2"
+                          className="font-bold text-slate-950 hover:text-[#099BE9] transition-colors text-sm sm:text-base flex items-center gap-2"
                         >
                           <span>{challenge.number}. {challenge.title}</span>
                           {challenge.isFlagship && (
@@ -145,27 +145,27 @@ export function ChallengesTable({
                             </span>
                           )}
                         </Link>
-                        <div className="flex items-center gap-2 text-[11px] text-slate-500">
-                          <span className="font-mono text-slate-600 font-medium">
+                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-700">
+                          <span className="font-mono text-slate-800 font-semibold">
                             Inspired by {challenge.inspiredBy}
                           </span>
                           <span>•</span>
-                          <span className="font-mono text-slate-400">
+                          <span className="font-mono text-slate-600 font-medium">
                             Levels 1–{challenge.progressionLevels.length} Active
                           </span>
                           <span>•</span>
-                          <span className="text-[#099BE9] font-medium">Python, C++, Rust, Go, Java</span>
+                          <span className="text-[#099BE9] font-semibold">Python, C++, Rust, Go, Java</span>
                         </div>
                       </div>
                     </td>
 
                     {/* Baseline Speed */}
-                    <td className="py-4 px-4 hidden md:table-cell font-mono text-slate-600">
+                    <td className="py-4 px-4 hidden md:table-cell font-mono text-slate-800 font-medium">
                       {challenge.benchmarkMetrics[0] || "100,000 ops/sec"}
                     </td>
 
                     {/* Top Speed */}
-                    <td className="py-4 px-4 hidden md:table-cell font-mono font-medium text-[#09C899]">
+                    <td className="py-4 px-4 hidden md:table-cell font-mono font-bold text-[#0AA793]">
                       {topSpeed}
                     </td>
 

@@ -7,9 +7,9 @@
   --surface-hover: #e2e8f0;
   --border: #e2e8f0;
   --border-subtle: #f1f5f9;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-tertiary: #94a3b8;
+  --text-primary: #09090b;
+  --text-secondary: #334155;
+  --text-tertiary: #475569;
   --algo-blue: #099BE9;
   --algo-blue-dark: #1984E9;
   --algo-teal: #09C899;
@@ -43,13 +43,21 @@
 body {
   background-color: var(--background);
   color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.01em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #09090b;
+  letter-spacing: -0.02em;
 }
 
 code, pre, .font-mono {
-  font-family: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+  letter-spacing: -0.015em;
 }
 
 /* Custom subtle scrollbar */

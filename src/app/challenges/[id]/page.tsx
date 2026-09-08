@@ -250,21 +250,21 @@ export default async function ChallengeDetailPage({ params }: Props) {
         {/* Breadcrumb & Navigation Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
           <div className="space-y-2">
-            <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono">
-              <Link href="/challenges" className="hover:text-slate-900 transition-colors">
+            <div className="flex items-center gap-1.5 text-xs text-slate-700 font-mono font-medium">
+              <Link href="/challenges" className="hover:text-slate-950 transition-colors">
                 Curriculum
               </Link>
-              <ChevronRight className="w-3 h-3 text-slate-300" />
-              <span className="text-slate-500">{coreDef?.domainLabel ?? "SYSTEMS"}</span>
-              <ChevronRight className="w-3 h-3 text-slate-300" />
-              <span className="text-slate-800 font-semibold">{challenge.title}</span>
+              <ChevronRight className="w-3 h-3 text-slate-400" />
+              <span className="text-slate-700">{coreDef?.domainLabel ?? "SYSTEMS"}</span>
+              <ChevronRight className="w-3 h-3 text-slate-400" />
+              <span className="text-slate-950 font-bold">{challenge.title}</span>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950">
                 {coreDef?.number ? `${coreDef.number}. ` : ""}{challenge.title}
               </h1>
-              <span className={`px-2.5 py-0.5 rounded text-xs font-semibold font-mono border ${
+              <span className={`px-2.5 py-0.5 rounded text-xs font-bold font-mono border ${
                 challenge.difficulty === "Easy"
                   ? "text-[#0AA793] bg-[#09C899]/10 border-[#09C899]/30"
                   : challenge.difficulty === "Medium"
@@ -273,11 +273,11 @@ export default async function ChallengeDetailPage({ params }: Props) {
               }`}>
                 {challenge.difficulty}
               </span>
-              <span className="px-2.5 py-0.5 rounded text-xs font-semibold font-mono bg-[#099BE9]/10 text-[#099BE9] border border-[#099BE9]/30">
+              <span className="px-2.5 py-0.5 rounded text-xs font-bold font-mono bg-[#099BE9]/10 text-[#099BE9] border border-[#099BE9]/30">
                 {levelsArray.length} Progressive Levels
               </span>
               {coreDef?.isFlagship && (
-                <span className="px-2.5 py-0.5 rounded text-xs font-semibold font-mono bg-[#099BE9]/10 text-[#099BE9] border border-[#099BE9]/30 flex items-center gap-1">
+                <span className="px-2.5 py-0.5 rounded text-xs font-bold font-mono bg-[#099BE9]/10 text-[#099BE9] border border-[#099BE9]/30 flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-[#099BE9]" />
                   FLAGSHIP
                 </span>
@@ -286,16 +286,16 @@ export default async function ChallengeDetailPage({ params }: Props) {
 
             {/* Topic Chips */}
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-700 border border-slate-200/60 font-medium">
+              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-800 border border-slate-200/80 font-semibold">
                 Domain: {coreDef?.domainLabel ?? "SYSTEMS"}
               </span>
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-600 border border-slate-200/60">
-                Inspired by <strong className="text-slate-900">{coreDef?.inspiredBy ?? "Redis"}</strong>
+              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-800 border border-slate-200/80 font-medium">
+                Inspired by <strong className="text-slate-950 font-bold">{coreDef?.inspiredBy ?? "Redis"}</strong>
               </span>
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-600 border border-slate-200/60">
+              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-800 border border-slate-200/80 font-medium">
                 Python, C++, Rust, Go, Java
               </span>
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-[#09C899]/10 text-[#0AA793] border border-[#09C899]/30">
+              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-[#09C899]/10 text-[#0AA793] border border-[#09C899]/30 font-bold">
                 Target: {coreDef?.benchmarkMetrics[0] ?? ">100,000 ops/s"}
               </span>
             </div>
@@ -304,7 +304,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
           {/* Action Buttons */}
           <div className="flex items-center gap-2.5">
             <Link href={`/challenges/${challenge.slug}/leaderboard`}>
-              <Button variant="outline" size="sm" className="h-9 px-3 text-xs gap-1.5 border-slate-200 bg-white hover:bg-slate-50">
+              <Button variant="outline" size="sm" className="h-9 px-3 text-xs gap-1.5 border-slate-200 bg-white hover:bg-slate-50 text-slate-800 font-semibold">
                 <Trophy className="w-3.5 h-3.5 text-[#FBAE0C]" />
                 <span>Leaderboard</span>
               </Button>
@@ -354,10 +354,10 @@ export default async function ChallengeDetailPage({ params }: Props) {
                     <Sparkles className="w-3 h-3" />
                     {scopeBadge}
                   </div>
-                  <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
+                  <h2 className="text-xl font-extrabold text-slate-950 tracking-tight">
                     {scopeTitle}
                   </h2>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
                     {scopeSubtitle}
                   </p>
                   {philosophy && (
@@ -375,20 +375,20 @@ export default async function ChallengeDetailPage({ params }: Props) {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs leading-relaxed text-slate-600 bg-slate-50/70 p-4 rounded-xl border border-slate-200/70">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm leading-relaxed text-slate-800 bg-slate-50/90 p-4 sm:p-5 rounded-xl border border-slate-200/80">
                 <div>
-                  <div className="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
-                    <Database className="w-3.5 h-3.5 text-[#099BE9]" />
+                  <div className="font-bold text-slate-950 mb-1.5 flex items-center gap-1.5 text-sm">
+                    <Database className="w-4 h-4 text-[#099BE9]" />
                     <span>What You Are Building</span>
                   </div>
-                  <p>{scopeOverview}</p>
+                  <p className="font-medium text-slate-800 leading-relaxed">{scopeOverview}</p>
                 </div>
                 <div>
-                  <div className="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
-                    <Zap className="w-3.5 h-3.5 text-[#FBAE0C]" />
+                  <div className="font-bold text-slate-950 mb-1.5 flex items-center gap-1.5 text-sm">
+                    <Zap className="w-4 h-4 text-[#F78424]" />
                     <span>Why This Systems Engineering Loop Matters</span>
                   </div>
-                  <p>{scopeWhyItMatters}</p>
+                  <p className="font-medium text-slate-800 leading-relaxed">{scopeWhyItMatters}</p>
                 </div>
               </div>
 
@@ -499,14 +499,14 @@ export default async function ChallengeDetailPage({ params }: Props) {
             <div className="p-6 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-base font-bold text-slate-900">
+                  <h2 className="text-base font-bold text-slate-950">
                     Command Interface Specification
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-700 font-medium mt-0.5">
                     Newline-delimited stream protocol over standard input / standard output.
                   </p>
                 </div>
-                <span className="text-[11px] font-mono text-slate-400">
+                <span className="text-[11px] font-mono text-slate-600 font-semibold">
                   Universal POSIX I/O
                 </span>
               </div>
@@ -514,18 +514,18 @@ export default async function ChallengeDetailPage({ params }: Props) {
               <div className="overflow-x-auto rounded-lg border border-slate-200">
                 <table className="w-full text-left text-xs font-mono border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-200 bg-[#f8fafc] text-slate-600">
-                      <th className="py-2.5 px-3 font-semibold">Command</th>
-                      <th className="py-2.5 px-3 font-semibold">Return Value</th>
-                      <th className="py-2.5 px-3 font-semibold font-sans">Behavior</th>
+                    <tr className="border-b border-slate-200 bg-slate-50/90 text-slate-900 font-bold font-mono text-[11px] uppercase tracking-wider">
+                      <th className="py-2.5 px-3 font-bold">Command</th>
+                      <th className="py-2.5 px-3 font-bold">Return Value</th>
+                      <th className="py-2.5 px-3 font-bold font-sans">Behavior</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 bg-white">
                     {apiSpec.map((item, idx) => (
                       <tr key={idx} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-2 px-3 font-bold text-[#099BE9]">{item.command}</td>
-                        <td className="py-2 px-3 text-[#0AA793]">{item.returns}</td>
-                        <td className="py-2 px-3 font-sans text-slate-600 text-xs">{item.description}</td>
+                        <td className="py-2.5 px-3 font-bold text-[#099BE9]">{item.command}</td>
+                        <td className="py-2.5 px-3 font-bold text-[#0AA793]">{item.returns}</td>
+                        <td className="py-2.5 px-3 font-sans text-slate-800 text-xs font-medium">{item.description}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -535,14 +535,14 @@ export default async function ChallengeDetailPage({ params }: Props) {
 
             {/* What You Will Master Summary */}
             <div className="p-6 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-3">
-              <h2 className="text-base font-bold text-slate-900">
+              <h2 className="text-base font-bold text-slate-950">
                 Engineering Skills Mastered
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-800">
                 {whatYouLearn.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-2 p-2.5 rounded-lg bg-slate-50 border border-slate-200/60 font-medium">
-                    <CheckCircle2 className="w-4 h-4 text-[#09C899] shrink-0" />
-                    <span>{item}</span>
+                  <div key={idx} className="flex items-center gap-2 p-2.5 rounded-lg bg-slate-50/90 border border-slate-200/80 font-medium">
+                    <CheckCircle2 className="w-4 h-4 text-[#0AA793] shrink-0" />
+                    <span className="text-slate-800 font-medium">{item}</span>
                   </div>
                 ))}
               </div>
