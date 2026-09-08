@@ -480,7 +480,6 @@ export default async function ChallengeDetailPage({ params }: Props) {
 
                             <Link
                               href={`/challenges/${challenge.slug}/workspace?level=${lvl.level}`}
-                              onClick={(e) => e.stopPropagation()}
                               className="hidden sm:inline-flex"
                             >
                               <span className="px-3 py-1 rounded-md text-xs font-semibold bg-white hover:bg-slate-100 text-[#099BE9] border border-slate-200 shadow-2xs inline-flex items-center gap-1 transition-colors cursor-pointer">
