@@ -40,24 +40,21 @@ function AdminLoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-12 bg-slate-900 text-slate-100">
+    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-12 bg-[#0f0f11] text-slate-100">
       <div className="w-full max-w-sm space-y-6">
         {/* Header */}
         <div className="text-center space-y-3">
           <div className="flex justify-center">
-            <AlgoLogoIcon size={52} />
+            <AlgoLogoIcon size={48} />
           </div>
-          <h1 className="text-2xl font-black tracking-wider text-white">
-            ALGO
-          </h1>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-mono">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/25 text-purple-300 text-xs font-mono">
             <Shield className="w-3.5 h-3.5 text-purple-400" />
             <span>CONTROL PLANE</span>
           </div>
-          <h1 className="text-lg font-bold tracking-tight text-white">
+          <h1 className="text-xl font-bold tracking-tight text-white">
             Administrative Access
           </h1>
-          <p className="text-xs text-slate-400 max-w-xs mx-auto">
+          <p className="text-xs text-neutral-400 max-w-xs mx-auto leading-relaxed">
             Restricted exclusively to platform owner <span className="text-purple-300 font-semibold font-mono">Jason Pandian (pandiajason@gmail.com)</span>.
           </p>
         </div>
