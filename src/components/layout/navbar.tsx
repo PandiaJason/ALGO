@@ -25,9 +25,9 @@ export function Navbar({ user, variant = "default" }: NavbarProps) {
   const isDark = variant === "dark";
 
   const navLinks = [
-    { href: "/explore", label: "Explore", icon: Sparkles },
-    { href: "/challenges", label: "Challenges", icon: Code },
+    { href: "/challenges", label: "Problems", icon: Code },
     { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+    { href: "/explore", label: "Explore", icon: Sparkles },
   ];
 
   return (
