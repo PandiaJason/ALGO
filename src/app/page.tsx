@@ -54,8 +54,8 @@ export default async function HomePage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-slate-900 selection:bg-[#099BE9]/20 selection:text-[#099BE9] font-sans">
-      {/* Top Navbar with dark variant for hero continuity */}
-      <Navbar user={session?.user as any} variant="dark" />
+      {/* Top Navbar with dark variant and signature brand accent bar */}
+      <Navbar user={session?.user as any} variant="dark" showAccentBar={true} />
 
       <main className="flex-1">
         {/* ============================================================== */}

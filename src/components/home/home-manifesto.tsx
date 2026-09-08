@@ -15,6 +15,10 @@ import {
   Flame,
   Check,
   ExternalLink,
+  FileText,
+  Bot,
+  Activity,
+  Briefcase,
 } from "lucide-react";
 
 export function HomeManifesto() {
@@ -24,7 +28,7 @@ export function HomeManifesto() {
       {/* 1. THE SHIFT: SOFTWARE ENGINEERING CHANGED                      */}
       {/* ============================================================== */}
       <div className="space-y-6">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-slate-950 text-white">
             <Sparkles className="w-3.5 h-3.5 text-[#099BE9]" />
             The Proving Ground Thesis
@@ -42,12 +46,12 @@ export function HomeManifesto() {
         <div className="text-base sm:text-lg text-slate-800 font-medium leading-relaxed space-y-4">
           <p>
             AI can generate syntax in seconds. Developers are already using it at scale:{" "}
-            <strong className="text-slate-950 font-bold">84%</strong> of respondents to Stack Overflow&apos;s Developer Survey use AI tools, while{" "}
-            <strong className="text-slate-950 font-bold">46%</strong> distrust AI output accuracy.
+            <strong className="text-slate-950 font-bold">82%</strong> report using AI tools in their development process, while separately,{" "}
+            <strong className="text-slate-950 font-bold">46%</strong> say they distrust AI-generated output&apos;s accuracy.
           </p>
-          <p className="text-slate-950 font-bold">
-            That creates a new reality: If producing code becomes cheaper, measuring code production becomes less useful.
-          </p>
+          <div className="p-4 rounded-xl bg-slate-100 border-l-4 border-slate-900 text-slate-950 text-base sm:text-lg font-bold">
+            That creates a new reality: if producing code becomes cheap, measuring code production becomes less useful.
+          </div>
         </div>
 
         {/* 4 Core Competencies Grid */}
@@ -105,7 +109,143 @@ export function HomeManifesto() {
       </div>
 
       {/* ============================================================== */}
-      {/* 2. THE ALGO SYSTEMS LOOP VS TRADITIONAL LEETCODE LOOP          */}
+      {/* 2. EMPIRICAL DATA: THE EVIDENCE IS ALREADY HERE               */}
+      {/* ============================================================== */}
+      <div className="space-y-6 pt-4 border-t border-slate-200">
+        <div>
+          <span className="text-xs font-mono uppercase tracking-wider text-[#099BE9] font-bold">
+            Empirical Evidence
+          </span>
+          <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950 mt-1">
+            The evidence is already here.
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1">
+            From HackerRank&apos;s <strong className="text-slate-950 font-bold">2025 Developer Skills Report</strong> (global survey and platform data spanning over 3M assessments/year):
+          </p>
+        </div>
+
+        {/* Survey Data Table */}
+        <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-2xs">
+          <table className="w-full text-left text-xs sm:text-sm">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-mono font-bold uppercase text-[11px]">
+                <th className="py-3 px-4 sm:px-6 w-24">Stat</th>
+                <th className="py-3 px-4 sm:px-6">Finding</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+              <tr>
+                <td className="py-3.5 px-4 sm:px-6 font-mono font-extrabold text-2xl text-[#099BE9]">66%</td>
+                <td className="py-3.5 px-4 sm:px-6 font-semibold text-slate-900">prefer being evaluated on real-world coding tasks</td>
+              </tr>
+              <tr>
+                <td className="py-3.5 px-4 sm:px-6 font-mono font-extrabold text-2xl text-slate-950">78%</td>
+                <td className="py-3.5 px-4 sm:px-6 font-semibold text-slate-900">say technical assessments don&apos;t align with real-world tasks</td>
+              </tr>
+              <tr>
+                <td className="py-3.5 px-4 sm:px-6 font-mono font-extrabold text-2xl text-slate-950">56%</td>
+                <td className="py-3.5 px-4 sm:px-6 font-semibold text-slate-900">say algorithm-based questions are irrelevant to their day jobs</td>
+              </tr>
+              <tr>
+                <td className="py-3.5 px-4 sm:px-6 font-mono font-extrabold text-2xl text-[#F78424]">62%</td>
+                <td className="py-3.5 px-4 sm:px-6 font-semibold text-slate-900">feel they need to overprepare for algorithm-heavy assessments</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* The Measurable Gap Callout */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-2xs space-y-2">
+          <h4 className="text-sm font-bold text-slate-950 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#099BE9]" />
+            The Measurable Gap
+          </h4>
+          <p className="text-xs sm:text-sm text-slate-700 font-medium leading-relaxed">
+            This isn&apos;t evidence that LeetCode or HackerRank are useless — they solve real problems and have massive adoption. It&apos;s evidence that <strong className="text-slate-950 font-bold">the industry itself recognizes a measurable gap</strong> between traditional assessment and actual engineering work. ALGO isn&apos;t the one claiming this gap exists — HackerRank&apos;s own research is.
+          </p>
+        </div>
+      </div>
+
+      {/* ============================================================== */}
+      {/* 3. THE AGENTIC INFLECTION POINT & RE-DEFINITION OF SKILL       */}
+      {/* ============================================================== */}
+      <div className="space-y-6 pt-4 border-t border-slate-200">
+        <div>
+          <span className="text-xs font-mono uppercase tracking-wider text-[#F78424] font-bold">
+            The Agentic Inflection Point
+          </span>
+          <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950 mt-1">
+            The Agentic Inflection Point
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1">
+            Traditional coding assessment asks: <em className="font-bold text-slate-950 font-serif">&ldquo;Can you produce the solution?&rdquo;</em> But now an AI can often produce a solution outright.
+          </p>
+        </div>
+
+        {/* Stack Overflow 2025 Stats Cards */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-4">
+          <div className="text-xs font-mono uppercase text-slate-700 font-bold tracking-wider">
+            From Stack Overflow&apos;s 2025 Developer &amp; AI Survey (49,000+ respondents):
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="p-4 rounded-xl bg-[#FBAE0C]/10 border border-[#FBAE0C]/30 space-y-1">
+              <div className="text-2xl sm:text-3xl font-mono font-extrabold text-[#F78424]">
+                66%
+              </div>
+              <p className="text-xs text-slate-900 font-medium leading-snug">
+                of developers are frustrated by AI solutions that are <strong>&ldquo;almost right&rdquo;</strong>
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+              <div className="text-2xl sm:text-3xl font-mono font-extrabold text-slate-950">
+                45%
+              </div>
+              <p className="text-xs text-slate-800 font-medium leading-snug">
+                say debugging AI-generated code is <strong>more time-consuming</strong>
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+              <div className="text-2xl sm:text-3xl font-mono font-extrabold text-slate-950">
+                46% vs 33%
+              </div>
+              <p className="text-xs text-slate-800 font-medium leading-snug">
+                <strong>distrust AI output accuracy</strong> vs. 33% who trust it
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* The Re-Definition of Skill Table */}
+        <div className="space-y-2">
+          <div className="text-xs font-mono uppercase tracking-wider text-slate-800 font-bold">
+            The Re-Definition of Skill
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-2xs">
+            <table className="w-full text-left text-xs sm:text-sm">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-mono font-bold uppercase text-[11px]">
+                  <th className="py-3 px-4 sm:px-6 w-1/2">Old Skill</th>
+                  <th className="py-3 px-4 sm:px-6 w-1/2">New Skill</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-medium">
+                <tr>
+                  <td className="py-4 px-4 sm:px-6 text-slate-600 font-mono line-through">
+                    &ldquo;Can you type the algorithm?&rdquo;
+                  </td>
+                  <td className="py-4 px-4 sm:px-6 text-[#0AA793] font-bold font-mono text-sm sm:text-base">
+                    &ldquo;Can you know whether the system actually works?&rdquo;
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* ============================================================== */}
+      {/* 4. METHODOLOGY: THE SYSTEMS VERIFICATION LOOP                  */}
       {/* ============================================================== */}
       <div className="space-y-6 pt-4 border-t border-slate-200">
         <div>
@@ -186,7 +326,7 @@ export function HomeManifesto() {
       </div>
 
       {/* ============================================================== */}
-      {/* 3. CONCRETE PROFILING CASE: INITIAL VS OPTIMIZED               */}
+      {/* 5. CONCRETE PROFILING CASE: INITIAL VS OPTIMIZED               */}
       {/* ============================================================== */}
       <div className="space-y-6 pt-4 border-t border-slate-200">
         <div>
@@ -277,7 +417,51 @@ export function HomeManifesto() {
       </div>
 
       {/* ============================================================== */}
-      {/* 4. THE ECOSYSTEM: WHERE ALGO FITS                              */}
+      {/* 6. FIRST-PRINCIPLES POLICY: AI IS ALLOWED                      */}
+      {/* ============================================================== */}
+      <div className="space-y-6 pt-4 border-t border-slate-200">
+        <div>
+          <span className="text-xs font-mono uppercase tracking-wider text-[#0AA793] font-bold">
+            First-Principles Policy
+          </span>
+          <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950 mt-1">
+            First-Principles Policy: AI is allowed
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1 leading-relaxed">
+            We don&apos;t try to detect whether you used AI. Use ChatGPT, Claude, Gemini, Copilot, Cursor, Windsurf, custom agents, or your own tools. The future isn&apos;t Human vs. AI — it&apos;s <strong className="text-slate-950 font-bold">Human + AI, judged against system architecture and physical reality.</strong>
+          </p>
+        </div>
+
+        {/* Pipeline Diagram */}
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs sm:text-sm text-center">
+            <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-2xs font-bold text-slate-950">
+              Human + AI
+            </div>
+            <ArrowRight className="w-4 h-4 text-slate-500 hidden sm:block" />
+            <span className="sm:hidden text-slate-500 font-bold">↓</span>
+            <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-2xs font-bold text-slate-950">
+              System Architecture
+            </div>
+            <ArrowRight className="w-4 h-4 text-slate-500 hidden sm:block" />
+            <span className="sm:hidden text-slate-500 font-bold">↓</span>
+            <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-2xs font-bold text-slate-950">
+              Physical Reality
+            </div>
+            <ArrowRight className="w-4 h-4 text-slate-500 hidden sm:block" />
+            <span className="sm:hidden text-slate-500 font-bold">↓</span>
+            <div className="bg-slate-950 text-white border border-slate-800 rounded-xl px-4 py-3 shadow-sm font-bold">
+              Empirical Measurement
+            </div>
+          </div>
+          <p className="text-xs text-slate-700 font-medium text-center mt-4">
+            ALGO evaluates the empirical result and the engineering decisions around it.
+          </p>
+        </div>
+      </div>
+
+      {/* ============================================================== */}
+      {/* 7. THE ECOSYSTEM: WHERE ALGO FITS & CODECRAFTERS COMPARISON    */}
       {/* ============================================================== */}
       <div className="space-y-6 pt-4 border-t border-slate-200">
         <div>
@@ -324,29 +508,117 @@ export function HomeManifesto() {
           </div>
         </div>
 
-        {/* Action Callout */}
-        <div className="rounded-2xl bg-slate-950 text-white p-7 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-md">
-          <div className="space-y-1 text-center sm:text-left">
-            <div className="text-xs font-mono font-bold text-[#09C899] uppercase tracking-wider">
-              BUILD. OPTIMIZE. PROVE.
+        {/* Where ALGO differs from CodeCrafters */}
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 space-y-3">
+          <h4 className="text-sm font-bold font-mono text-slate-950 uppercase tracking-wider flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#099BE9]" />
+            Where ALGO differs from CodeCrafters specifically
+          </h4>
+          <p className="text-xs sm:text-sm text-slate-800 font-medium leading-relaxed">
+            CodeCrafters is the closest existing platform in <em className="font-semibold text-slate-950 font-serif">subject matter</em> — build-your-own-Redis/Kafka is genuinely the right kind of problem. But it&apos;s structured as guided, stage-gated learning: each stage is pass/fail against a spec, finished once the stage is green.
+          </p>
+          <p className="text-xs sm:text-sm text-slate-800 font-medium leading-relaxed">
+            ALGO&apos;s model doesn&apos;t stop at &ldquo;stage passed&rdquo; — it scores the <strong className="text-slate-950 font-bold">result</strong> (ops/sec, p99 latency, memory footprint, crash recovery under SIGKILL) on a live leaderboard, and rewards going back to optimize a passing solution further. CodeCrafters teaches you to build the thing; ALGO measures how well you built it under adversarial conditions.
+          </p>
+        </div>
+      </div>
+
+      {/* ============================================================== */}
+      {/* 8. INDUSTRY VALIDATION: THE SIGNAL FROM BIG TECH (2026 SHIFT) */}
+      {/* ============================================================== */}
+      <div className="space-y-6 pt-4 border-t border-slate-200">
+        <div>
+          <span className="text-xs font-mono uppercase tracking-wider text-[#8647E2] font-bold">
+            Industry Validation
+          </span>
+          <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950 mt-1">
+            The Signal From Big Tech Hiring Right Now
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1">
+            This isn&apos;t just a developer-sentiment problem — it&apos;s showing up in how the largest employers are actually running interviews in 2026:
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-2.5">
+            <div className="text-3xl font-extrabold font-mono text-[#8647E2]">
+              71%
             </div>
-            <h3 className="text-lg font-extrabold text-white tracking-tight">
-              Ready to benchmark your systems code?
-            </h3>
-            <p className="text-xs text-neutral-300 font-normal">
-              Enter the proving ground and reconstruct real infrastructure from first principles.
+            <h4 className="font-bold text-slate-950 text-sm">
+              Karat Leader Survey
+            </h4>
+            <p className="text-xs text-slate-700 font-medium leading-relaxed">
+              In a Karat survey of 400 engineering leaders across the U.S., India, and China, 71% said AI is making it harder to assess candidates&apos; technical skills using traditional methods.
             </p>
           </div>
 
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-2.5">
+            <div className="text-3xl font-extrabold font-mono text-[#099BE9]">
+              58%
+            </div>
+            <h4 className="font-bold text-slate-950 text-sm">
+              FAANG Interviewer Retooling
+            </h4>
+            <p className="text-xs text-slate-700 font-medium leading-relaxed">
+              A survey of 67 FAANG and startup interviewers found 58% have already retooled the kinds of algorithmic questions they ask, and roughly a third changed <em>how</em> they ask them, in direct response to AI.
+            </p>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-2.5">
+            <div className="text-3xl font-extrabold font-mono text-[#0AA793]">
+              2026 Shift
+            </div>
+            <h4 className="font-bold text-slate-950 text-sm">
+              System Design In Kind
+            </h4>
+            <p className="text-xs text-slate-700 font-medium leading-relaxed">
+              Instead of &ldquo;design Twitter&rdquo; or &ldquo;design a URL shortener,&rdquo; 2026 rounds increasingly ask candidates to design a feature store, a model-serving layer, or a real-time inference pipeline, with latency trade-offs and fault tolerance as the actual signal.
+            </p>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-800 text-xs sm:text-sm font-medium leading-relaxed">
+          <strong className="text-slate-950 font-bold">Put together:</strong> the shift ALGO is betting on isn&apos;t hypothetical or platform-side wishful thinking — it&apos;s already visible in how the biggest employers are rewriting their own interview loops.
+        </div>
+      </div>
+
+      {/* ============================================================== */}
+      {/* 9. CASE STUDY DEEP DIVE PORTAL & CALLOUT                       */}
+      {/* ============================================================== */}
+      <div className="rounded-2xl bg-[#262626] border border-neutral-800 text-white p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
+        <div className="space-y-1.5 text-center sm:text-left">
+          <div className="flex items-center justify-center sm:justify-start gap-2">
+            <span className="text-xs font-mono font-bold text-[#09C899] uppercase tracking-wider">
+              FULL RESEARCH BRIEF
+            </span>
+            <span className="text-xs font-mono text-neutral-400">• 9 Primary Citations</span>
+          </div>
+          <h3 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
+            Read the Complete Case Study &amp; Architectural Thesis
+          </h3>
+          <p className="text-xs text-neutral-300 font-normal max-w-xl">
+            Explore the complete research paper with primary data from HackerRank, Stack Overflow, Karat, and real systems benchmarks.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 shrink-0">
+          <Link
+            href="/case-study"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-white/10 hover:bg-white/15 border border-white/20 transition-all active:scale-95"
+          >
+            <FileText className="w-3.5 h-3.5 text-[#099BE9]" />
+            <span>Read Case Study</span>
+          </Link>
           <Link
             href="/challenges"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold text-white bg-[#09C899] hover:bg-[#0AA793] shadow-md transition-all active:scale-95 shrink-0"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#09C899] hover:bg-[#0AA793] shadow-md transition-all active:scale-95"
           >
-            <span>View All Challenges</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>Explore Challenges</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       </div>
     </section>
   );
 }
+
