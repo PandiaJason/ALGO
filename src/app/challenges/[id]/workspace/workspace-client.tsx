@@ -676,7 +676,7 @@ export function WorkspaceClient({
                 {/* 6. Optional Deep Dive Collapsibles */}
                 <div className="space-y-2 pt-2 border-t border-slate-200">
                   {currentLevelInfo.diagram && (
-                    <details className="rounded-lg border border-slate-200 bg-white overflow-hidden text-xs">
+                    <details open className="rounded-lg border border-slate-200 bg-white overflow-hidden text-xs">
                       <summary className="p-2.5 font-mono font-bold text-slate-800 cursor-pointer select-none hover:bg-slate-50 flex items-center justify-between">
                         <span className="flex items-center gap-1.5 text-[#099BE9]">
                           <Terminal className="w-3.5 h-3.5" />
