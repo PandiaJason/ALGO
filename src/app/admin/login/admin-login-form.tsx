@@ -52,8 +52,6 @@ export function AdminLoginForm({ isAccessDenied = false }: AdminLoginFormProps) 
 
         {/* Card */}
         <Card className="border-slate-800 bg-[#161619] shadow-2xl overflow-hidden relative">
-          {/* Signature 4-Color Brand Accent Bar */}
-          <div className="h-[3px] w-full bg-gradient-to-r from-[#099BE9] via-[#09C899] via-[#8647E2] to-[#F78424]" />
           <CardContent className="p-6 space-y-4">
             {error && (
               <div className="p-3 text-xs bg-rose-950/50 border border-rose-800 text-rose-300 rounded-lg flex items-center gap-2">

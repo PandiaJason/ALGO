@@ -69,8 +69,6 @@ function SignInContent() {
 
         {/* Sign In Card */}
         <Card className="border-slate-200/90 shadow-sm bg-white overflow-hidden relative">
-          {/* Signature 4-Color Brand Accent Bar */}
-          <div className="h-[3px] w-full bg-gradient-to-r from-[#099BE9] via-[#09C899] via-[#8647E2] to-[#F78424]" />
           <CardContent className="p-6 space-y-4">
             {error && (
               <div className="p-3 text-xs bg-rose-50 border border-rose-200 text-rose-700 rounded-lg flex items-center gap-2">

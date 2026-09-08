@@ -41,9 +41,6 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
 
   return (
     <aside className="w-64 border-r border-white/10 bg-[#141416] text-neutral-300 flex flex-col justify-between shrink-0 relative select-none">
-      {/* Signature 4-Color Brand Accent Bar */}
-      <div className="h-[2.5px] w-full bg-gradient-to-r from-[#099BE9] via-[#09C899] via-[#8647E2] to-[#F78424]" />
-
       <div className="p-4 space-y-6">
         {/* Header Branding */}
         <div className="flex items-center justify-between pb-3 border-b border-white/10">
