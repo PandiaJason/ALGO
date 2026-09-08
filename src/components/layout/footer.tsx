@@ -16,10 +16,10 @@ export function Footer() {
 
         <div className="flex items-center gap-5 text-xs text-slate-500">
           <Link
-            href="/explore"
+            href="/case-study"
             className="hover:text-slate-900 transition-colors"
           >
-            Explore
+            Case Study
           </Link>
           <Link
             href="/challenges"

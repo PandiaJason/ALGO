@@ -57,8 +57,8 @@ export function ExploreManifesto({
       <section className="space-y-6 pt-4 border-b border-slate-200/80 pb-16">
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wider uppercase bg-slate-950 text-white">
-            <Sparkles className="w-3.5 h-3.5 text-[#099BE9]" />
-            Systems Architecture &amp; Thesis
+            <FileText className="w-3.5 h-3.5 text-[#099BE9]" />
+            Case Study: Systems Architecture &amp; Thesis
           </span>
           <span className="text-xs font-mono font-bold text-slate-700">
             // EVIDENCE BRIEF • 2026
