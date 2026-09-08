@@ -36,6 +36,105 @@ import { CORE_CHALLENGES } from "@/lib/constants/core-challenges";
 import { getChallenge } from "@/lib/challenges";
 import { ChallengeLevelExplorer } from "@/components/challenges/challenge-level-explorer";
 
+const CHALLENGE_TARGET_SPECS: Record<
+  string,
+  {
+    targetOutcome: string;
+    metrics: Array<{ label: string; value: string; desc: string; color: string }>;
+  }
+> = {
+  "kv-store": {
+    targetOutcome:
+      "Engineered a production-grade, crash-resilient in-memory key-value storage engine with synchronous WAL durability, millisecond TTL eviction, and 32-shard mutex concurrency.",
+    metrics: [
+      { label: "THROUGHPUT", value: "> 100,000 ops/s", desc: "Pipeline stream dispatch", color: "text-[#0AA793]" },
+      { label: "LATENCY", value: "< 0.20ms p99", desc: "Sub-millisecond access", color: "text-[#099BE9]" },
+      { label: "RESOURCE", value: "256 MB RAM", desc: "Hard cgroup memory cap", color: "text-[#F78424]" },
+    ],
+  },
+  "http-server": {
+    targetOutcome:
+      "Engineered an RFC 7230 compliant HTTP/1.1 server from raw TCP sockets with non-blocking epoll/kqueue event loops, trie dynamic routing, and keep-alive connection pooling.",
+    metrics: [
+      { label: "THROUGHPUT", value: "> 50,000 req/s", desc: "Zero-copy file streaming", color: "text-[#0AA793]" },
+      { label: "LATENCY", value: "< 1.0ms p99", desc: "Non-blocking event loop", color: "text-[#099BE9]" },
+      { label: "CONCURRENCY", value: "10,000+ Conn.", desc: "C10K persistent pool", color: "text-[#F78424]" },
+    ],
+  },
+  "message-queue": {
+    targetOutcome:
+      "Engineered an append-only distributed commit log and message broker supporting multi-partition topics, consumer group rebalancing, and zero-copy sendfile delivery.",
+    metrics: [
+      { label: "THROUGHPUT", value: "> 100,000 msg/s", desc: "Segmented batch commit", color: "text-[#0AA793]" },
+      { label: "LATENCY", value: "< 2.0ms p99", desc: "Producer commit latency", color: "text-[#099BE9]" },
+      { label: "DURABILITY", value: "Zero Loss", desc: "Crash recovery fsync", color: "text-[#F78424]" },
+    ],
+  },
+  "database-index": {
+    targetOutcome:
+      "Engineered a disk-backed B+Tree storage engine with 4KB slotted page serialization, binary search node branching, range scans via leaf sibling pointers, and LRU buffer pool management.",
+    metrics: [
+      { label: "THROUGHPUT", value: "> 80,000 ops/s", desc: "Point queries & range scans", color: "text-[#0AA793]" },
+      { label: "LATENCY", value: "< 0.15ms p99", desc: "Slotted page tree traversal", color: "text-[#099BE9]" },
+      { label: "PAGE FORMAT", value: "4 KB Pages", desc: "Slotted disk serialization", color: "text-[#F78424]" },
+    ],
+  },
+  "lru-cache": {
+    targetOutcome:
+      "Engineered high-performance LRU, LFU, and W-TinyLFU cache engines with O(1) pointer relinking, frequency bucket lists, stripe-locked concurrency, and strict byte memory budgets.",
+    metrics: [
+      { label: "THROUGHPUT", value: "> 250,000 ops/s", desc: "O(1) lookup & eviction", color: "text-[#0AA793]" },
+      { label: "LATENCY", value: "< 0.05ms p99", desc: "Sub-microsecond memory hit", color: "text-[#099BE9]" },
+      { label: "HIT RATIO", value: "> 85% Target", desc: "Under 1M access stream", color: "text-[#F78424]" },
+    ],
+  },
+  "log-engine": {
+    targetOutcome:
+      "Engineered a blazingly fast streaming telemetry and observability engine with zero-copy SIMD line parsing, rolling error rate ring buffers, Count-Min Sketches, and streaming p99 estimation.",
+    metrics: [
+      { label: "THROUGHPUT", value: "> 500 MB/sec", desc: "SIMD wire-speed ingest", color: "text-[#0AA793]" },
+      { label: "LATENCY", value: "< 50ms query", desc: "Windowed rollups & Top-K", color: "text-[#099BE9]" },
+      { label: "MEMORY", value: "Zero Leak", desc: "Bounded RAM on 10GB stream", color: "text-[#F78424]" },
+    ],
+  },
+  "task-scheduler": {
+    targetOutcome:
+      "Engineered an autonomous cluster task scheduler modeling Kubernetes kube-scheduler with multi-dimensional vector bin-packing, preemption, and Dominant Resource Fairness (DRF).",
+    metrics: [
+      { label: "THROUGHPUT", value: "> 20,000 jobs/s", desc: "Vector bin-packing", color: "text-[#0AA793]" },
+      { label: "DECISION", value: "< 1.0ms p99", desc: "Optimistic conflict check", color: "text-[#099BE9]" },
+      { label: "FAIRNESS", value: "0% Miss Rate", desc: "Dominant Resource Fairness", color: "text-[#F78424]" },
+    ],
+  },
+  "rate-limiter": {
+    targetOutcome:
+      "Engineered a high-throughput API rate limiter and traffic shaper implementing Sliding Window Logs, Token Bucket, and Leaky Bucket with atomic CAS lock-free concurrency.",
+    metrics: [
+      { label: "THROUGHPUT", value: "> 150,000 req/s", desc: "Atomic CAS state updates", color: "text-[#0AA793]" },
+      { label: "DECISION", value: "< 0.05ms", desc: "Token refill evaluation", color: "text-[#099BE9]" },
+      { label: "CAPACITY", value: "1,000,000 Users", desc: "Bounded window footprint", color: "text-[#F78424]" },
+    ],
+  },
+  "load-balancer": {
+    targetOutcome:
+      "Engineered a Layer 7 reverse proxy and load balancer with smooth weighted round-robin, least-connections dynamic routing, passive circuit breaking, and Ketama consistent hashing.",
+    metrics: [
+      { label: "THROUGHPUT", value: "> 100,000 req/s", desc: "Smooth weighted RR", color: "text-[#0AA793]" },
+      { label: "OVERHEAD", value: "< 0.10ms proxy", desc: "Consistent hash ring", color: "text-[#099BE9]" },
+      { label: "FAILOVER", value: "< 100ms Trip", desc: "Zero-downtime circuit breaker", color: "text-[#F78424]" },
+    ],
+  },
+  "search-engine": {
+    targetOutcome:
+      "Engineered a production-grade search engine from first principles supporting inverted index construction, fast boolean query intersections, BM25 probabilistic relevance ranking, positional phrase matching, and immutable segment compaction.",
+    metrics: [
+      { label: "THROUGHPUT", value: "> 50,000 docs/s", desc: "Inverted index builder", color: "text-[#0AA793]" },
+      { label: "QUERY LATENCY", value: "< 5.0ms p99", desc: "BM25 scoring over 1M docs", color: "text-[#099BE9]" },
+      { label: "COMPRESSION", value: "80% Compact", desc: "Elias-Fano / Varint postings", color: "text-[#F78424]" },
+    ],
+  },
+};
+
 interface Props {
   params: Promise<{ id: string }>;
 }
@@ -242,9 +341,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
                 description: lvl.focus,
                 realWorldTech: coreDef?.inspiredBy || "Production Standard",
               })));
-          const targetMetric1 = isKv ? "> 100K ops/s" : (coreDef?.benchmarkMetrics[0] || "High Throughput");
-          const targetMetric2 = isKv ? "< 0.20 ms" : (coreDef?.benchmarkMetrics[1] || "Sub-ms Latency");
-          const targetMetric3 = isKv ? "256 MB" : (coreDef?.benchmarkMetrics[2] || "Bounded RAM");
+          const targetSpec = CHALLENGE_TARGET_SPECS[challenge.slug] || CHALLENGE_TARGET_SPECS["kv-store"];
           const philosophy = challengeData?.philosophy;
           const architectureDiagram = challengeData?.architectureDiagram;
           const levelRoadmap = challengeData?.levelRoadmap;
@@ -361,29 +458,25 @@ export default async function ChallengeDetailPage({ params }: Props) {
               )}
 
               {/* Target Outcome Benchmark Callout */}
-              <div className="p-4 rounded-xl bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="text-[10px] font-mono font-bold text-[#FBAE0C] uppercase tracking-wider flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#09C899]" />
+              <div className="p-5 rounded-xl bg-slate-50/90 border border-slate-200/90 space-y-4 shadow-2xs">
+                <div className="space-y-1.5">
+                  <div className="text-xs font-mono font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-[#0AA793]" />
                     <span>Capstone Target Outcome</span>
                   </div>
-                  <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
-                    {isKv ? PROJECT_SCOPE.finalOutcome : coreDef?.overview}
+                  <p className="text-xs sm:text-sm text-slate-900 leading-relaxed font-semibold">
+                    {targetSpec.targetOutcome}
                   </p>
                 </div>
-                <div className="flex items-center gap-3 shrink-0 font-mono text-center">
-                  <div className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/15">
-                    <div className="text-[10px] text-slate-400">THROUGHPUT</div>
-                    <div className="text-sm font-bold text-[#09C899]">{targetMetric1}</div>
-                  </div>
-                  <div className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/15">
-                    <div className="text-[10px] text-slate-400">LATENCY</div>
-                    <div className="text-sm font-bold text-[#099BE9]">{targetMetric2}</div>
-                  </div>
-                  <div className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/15">
-                    <div className="text-[10px] text-slate-400">RESOURCE</div>
-                    <div className="text-sm font-bold text-[#FBAE0C]">{targetMetric3}</div>
-                  </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-200">
+                  {targetSpec.metrics.map((spec, i) => (
+                    <div key={i} className="p-3.5 rounded-lg bg-white border border-slate-200/90 shadow-2xs flex flex-col justify-between space-y-1">
+                      <div className="text-[10px] font-mono text-slate-700 font-bold tracking-wider">{spec.label}</div>
+                      <div className={`text-base font-bold tracking-tight font-mono ${spec.color}`}>{spec.value}</div>
+                      <div className="text-[11px] text-slate-700 font-mono font-medium">{spec.desc}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </section>
@@ -460,7 +553,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
           <div className="lg:col-span-4 space-y-4">
             {/* Quick Level Navigator */}
             <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-3">
-              <div className="text-xs font-mono font-bold text-slate-700 uppercase tracking-wider">
+              <div className="text-xs font-mono font-bold text-slate-900 uppercase tracking-wider">
                 Progressive Levels Map
               </div>
               <div className="space-y-1.5">
@@ -471,12 +564,18 @@ export default async function ChallengeDetailPage({ params }: Props) {
                     className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-colors text-xs"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded flex items-center justify-center bg-slate-100 font-mono text-[11px] font-bold text-slate-700">
+                      <span className="w-5 h-5 rounded flex items-center justify-center bg-slate-900 font-mono text-[11px] font-bold text-white shadow-2xs">
                         {lvl.level}
                       </span>
-                      <span className="font-medium text-slate-800">{lvl.shortTitle}</span>
+                      <span className="font-semibold text-slate-900">{lvl.shortTitle}</span>
                     </div>
-                    <span className="text-[10px] font-mono text-slate-400">
+                    <span className={`text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded border ${
+                      lvl.difficulty === "Easy"
+                        ? "text-[#0AA793] bg-[#09C899]/10 border-[#09C899]/30"
+                        : lvl.difficulty === "Medium"
+                        ? "text-[#F78424] bg-[#FBAE0C]/10 border-[#FBAE0C]/30"
+                        : "text-[#8647E2] bg-[#8647E2]/10 border-[#8647E2]/30"
+                    }`}>
                       {lvl.difficulty}
                     </span>
                   </Link>
@@ -495,69 +594,77 @@ export default async function ChallengeDetailPage({ params }: Props) {
 
             {/* Constraints Card */}
             <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-3">
-              <div className="text-xs font-mono font-bold text-slate-700 uppercase tracking-wider">
+              <div className="text-xs font-mono font-bold text-slate-900 uppercase tracking-wider">
                 Execution Constraints
               </div>
-              <ul className="text-xs font-mono text-slate-600 space-y-2">
+              <ul className="text-xs font-mono text-slate-700 space-y-2">
                 <li className="flex items-center justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">Memory Cap:</span>
+                  <span className="text-slate-600 font-medium">Memory Cap:</span>
                   <span className="font-semibold text-slate-900">256 MB (Hard cgroup)</span>
                 </li>
                 <li className="flex items-center justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">CPU Quota:</span>
+                  <span className="text-slate-600 font-medium">CPU Quota:</span>
                   <span className="font-semibold text-slate-900">1.0 Core</span>
                 </li>
                 <li className="flex items-center justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">Network Access:</span>
+                  <span className="text-slate-600 font-medium">Network Access:</span>
                   <span className="font-semibold text-rose-600">Disabled (isolated)</span>
                 </li>
                 <li className="flex items-center justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">Execution Timeout:</span>
+                  <span className="text-slate-600 font-medium">Execution Timeout:</span>
                   <span className="font-semibold text-slate-900">30 seconds</span>
                 </li>
                 <li className="flex items-center justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">WAL Log Path:</span>
-                  <span className="font-semibold text-slate-800">./data/wal.log</span>
+                  <span className="text-slate-600 font-medium">WAL Log Path:</span>
+                  <span className="font-semibold text-slate-900">./data/wal.log</span>
                 </li>
                 <li className="flex items-center justify-between py-1">
-                  <span className="text-slate-500">Sandbox User:</span>
+                  <span className="text-slate-600 font-medium">Sandbox User:</span>
                   <span className="font-semibold text-slate-900">Non-Root (1000)</span>
                 </li>
               </ul>
             </div>
 
             {/* Performance Target Card */}
-            <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-3">
-              <div className="text-xs font-mono font-bold text-slate-700 uppercase tracking-wider">
-                Production Performance Target
-              </div>
-              <div className="space-y-2 text-xs font-mono">
-                <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200/70">
-                  <div className="text-[11px] text-slate-400">BASELINE SPEED</div>
-                  <div className="text-base font-bold text-slate-800 mt-0.5">
-                    72,296 ops/s
+            {(() => {
+              const rightSpec = CHALLENGE_TARGET_SPECS[challenge.slug] || CHALLENGE_TARGET_SPECS["kv-store"];
+              return (
+                <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-3">
+                  <div className="text-xs font-mono font-bold text-slate-700 uppercase tracking-wider">
+                    Production Performance Target
                   </div>
-                </div>
-                <div className="p-2.5 rounded-lg bg-[#09C899]/10 border border-[#09C899]/30">
-                  <div className="text-[11px] text-[#0AA793] font-semibold">HIGH-PERFORMANCE TARGET</div>
-                  <div className="text-base font-bold text-[#0AA793] mt-0.5">
-                    &gt; 100,000 ops/s
+                  <div className="space-y-2 text-xs font-mono">
+                    <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200/70">
+                      <div className="text-[11px] text-slate-400 font-semibold">{rightSpec.metrics[0].label}</div>
+                      <div className="text-base font-bold text-slate-800 mt-0.5">
+                        {rightSpec.metrics[0].value}
+                      </div>
+                      <div className="text-[10px] text-slate-500 mt-0.5 font-medium">
+                        {rightSpec.metrics[0].desc}
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-[#09C899]/10 border border-[#09C899]/30">
+                      <div className="text-[11px] text-[#0AA793] font-semibold">{rightSpec.metrics[1].label}</div>
+                      <div className="text-base font-bold text-[#0AA793] mt-0.5">
+                        {rightSpec.metrics[1].value}
+                      </div>
+                      <div className="text-[10px] text-[#09C899] mt-0.5 font-medium">
+                        {rightSpec.metrics[1].desc}
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-[10px] text-[#09C899] mt-0.5 font-medium">
-                    Sub-0.20ms p99 latency
-                  </div>
-                </div>
-              </div>
 
-              <div className="pt-2">
-                <Link href="/leaderboard" className="w-full block">
-                  <Button variant="outline" className="w-full text-xs font-semibold h-9 border-slate-200 bg-white hover:bg-slate-50 gap-1.5">
-                    <Trophy className="w-3.5 h-3.5 text-[#FBAE0C]" />
-                    <span>View Global Leaderboard</span>
-                  </Button>
-                </Link>
-              </div>
-            </div>
+                  <div className="pt-2">
+                    <Link href="/leaderboard" className="w-full block">
+                      <Button variant="outline" className="w-full text-xs font-semibold h-9 border-slate-200 bg-white hover:bg-slate-50 gap-1.5">
+                        <Trophy className="w-3.5 h-3.5 text-[#FBAE0C]" />
+                        <span>View Global Leaderboard</span>
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
       </main>

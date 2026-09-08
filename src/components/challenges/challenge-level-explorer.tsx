@@ -87,7 +87,7 @@ export function ChallengeLevelExplorer({
             <Layers className="w-5 h-5 text-[#099BE9]" />
             <span>Progressive 6-Level Roadmap</span>
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-700 font-medium mt-0.5">
             Select a level to explore its architectural bottleneck, data flow, and operations.
           </p>
         </div>
@@ -99,7 +99,7 @@ export function ChallengeLevelExplorer({
             className={`px-3 py-1 rounded-md transition-all font-semibold flex items-center gap-1.5 cursor-pointer ${
               viewMode === "focus"
                 ? "bg-white text-slate-900 shadow-2xs"
-                : "text-slate-500 hover:text-slate-900"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             <Eye className="w-3.5 h-3.5 text-[#099BE9]" />
@@ -110,7 +110,7 @@ export function ChallengeLevelExplorer({
             className={`px-3 py-1 rounded-md transition-all font-semibold flex items-center gap-1.5 cursor-pointer ${
               viewMode === "all"
                 ? "bg-white text-slate-900 shadow-2xs"
-                : "text-slate-500 hover:text-slate-900"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             <ListFilter className="w-3.5 h-3.5 text-slate-500" />
@@ -140,7 +140,7 @@ export function ChallengeLevelExplorer({
                 <span className={`text-[11px] font-mono font-bold px-1.5 py-0.5 rounded ${
                   isSelected && viewMode === "focus"
                     ? "bg-[#099BE9] text-white"
-                    : "bg-slate-200 text-slate-700 group-hover:bg-slate-300"
+                    : "bg-slate-200 text-slate-800 group-hover:bg-slate-300"
                 }`}>
                   L{lvl.level}
                 </span>
@@ -151,7 +151,7 @@ export function ChallengeLevelExplorer({
               <div className="text-xs font-bold text-slate-900 line-clamp-1">
                 {lvl.shortTitle || lvl.title}
               </div>
-              <div className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
+              <div className="text-[10px] text-slate-700 font-medium line-clamp-1 mt-0.5">
                 {lvl.tagline || `Level ${lvl.level}`}
               </div>
             </button>
@@ -178,7 +178,7 @@ export function ChallengeLevelExplorer({
                   {currentLevel.difficulty}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-slate-600 font-medium">
+              <p className="text-xs sm:text-sm text-slate-800 font-medium leading-relaxed">
                 {currentLevel.tagline}
               </p>
             </div>
@@ -279,7 +279,7 @@ export function ChallengeLevelExplorer({
                           <code className="px-2 py-0.5 rounded bg-slate-900 text-white font-mono text-xs font-bold inline-block">
                             {op.cmd}
                           </code>
-                          <p className="text-xs text-slate-600 font-sans leading-snug">
+                          <p className="text-xs text-slate-700 font-sans leading-snug font-medium">
                             {op.desc}
                           </p>
                         </div>
@@ -404,7 +404,7 @@ export function ChallengeLevelExplorer({
                         {lvl.difficulty}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500 font-medium">
+                    <p className="text-xs text-slate-700 font-medium">
                       {lvl.tagline}
                     </p>
                   </div>
@@ -417,7 +417,7 @@ export function ChallengeLevelExplorer({
                       setViewMode("focus");
                       setActiveSubTab("overview");
                     }}
-                    className="text-xs font-mono text-slate-600 hover:text-slate-900 font-semibold px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200/70 transition-colors cursor-pointer"
+                    className="text-xs font-mono text-slate-700 hover:text-slate-900 font-semibold px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200/70 transition-colors cursor-pointer"
                   >
                     Focus Mode
                   </button>
@@ -434,7 +434,7 @@ export function ChallengeLevelExplorer({
               {/* Operations row */}
               {Array.isArray(lvl.operations) && lvl.operations.length > 0 && (
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider mr-1">
+                  <span className="text-[10px] font-mono font-bold text-slate-600 uppercase tracking-wider mr-1">
                     Ops:
                   </span>
                   {lvl.operations.map((op, idx) => (
