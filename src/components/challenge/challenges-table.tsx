@@ -54,18 +54,8 @@ export function ChallengesTable({
 
   return (
     <div className="space-y-6">
-      {/* LeetCode Header Banner */}
+      {/* Search & Filter Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950">
-            Problem Set
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1">
-            Reconstruct real technology from first principles. Measure throughput and optimize against official baselines.
-          </p>
-        </div>
-
-        {/* Search bar */}
         <div className="relative w-full sm:w-72">
           <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
           <input

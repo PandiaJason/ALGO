@@ -243,80 +243,84 @@ export default async function ChallengeDetailPage({ params }: Props) {
     : Object.values(LEVEL_DEFINITIONS).sort((a, b) => a.level - b.level);
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#fafafa] font-sans">
-      <Navbar user={session?.user as any} />
+    <div className="flex min-h-screen flex-col bg-white font-sans">
+      <Navbar user={session?.user as any} variant="dark" />
 
-      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Breadcrumb & Navigation Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
-          <div className="space-y-2">
-            <div className="flex items-center gap-1.5 text-xs text-slate-700 font-mono font-medium">
-              <Link href="/challenges" className="hover:text-slate-950 transition-colors">
-                Curriculum
-              </Link>
-              <ChevronRight className="w-3 h-3 text-slate-400" />
-              <span className="text-slate-700">{coreDef?.domainLabel ?? "SYSTEMS"}</span>
-              <ChevronRight className="w-3 h-3 text-slate-400" />
-              <span className="text-slate-950 font-bold">{challenge.title}</span>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950">
-                {coreDef?.number ? `${coreDef.number}. ` : ""}{challenge.title}
-              </h1>
-              <span className={`px-2.5 py-0.5 rounded text-xs font-bold font-mono border ${
-                challenge.difficulty === "Easy"
-                  ? "text-[#0AA793] bg-[#09C899]/10 border-[#09C899]/30"
-                  : challenge.difficulty === "Medium"
-                  ? "text-[#F78424] bg-[#FBAE0C]/10 border-[#FBAE0C]/30"
-                  : "text-[#8647E2] bg-[#8647E2]/10 border-[#8647E2]/30"
-              }`}>
-                {challenge.difficulty}
-              </span>
-              <span className="px-2.5 py-0.5 rounded text-xs font-bold font-mono bg-[#099BE9]/10 text-[#099BE9] border border-[#099BE9]/30">
-                {levelsArray.length} Progressive Levels
-              </span>
-              {coreDef?.isFlagship && (
-                <span className="px-2.5 py-0.5 rounded text-xs font-bold font-mono bg-[#099BE9]/10 text-[#099BE9] border border-[#099BE9]/30 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3 text-[#099BE9]" />
-                  FLAGSHIP
-                </span>
-              )}
-            </div>
-
-            {/* Topic Chips */}
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-800 border border-slate-200/80 font-semibold">
-                Domain: {coreDef?.domainLabel ?? "SYSTEMS"}
-              </span>
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-800 border border-slate-200/80 font-medium">
-                Inspired by <strong className="text-slate-950 font-bold">{coreDef?.inspiredBy ?? "Redis"}</strong>
-              </span>
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-100 text-slate-800 border border-slate-200/80 font-medium">
-                Python, C++, Rust, Go, Java
-              </span>
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-[#09C899]/10 text-[#0AA793] border border-[#09C899]/30 font-bold">
-                Target: {coreDef?.benchmarkMetrics[0] ?? ">100,000 ops/s"}
-              </span>
-            </div>
+      {/* Dark Hero Masthead */}
+      <section className="relative bg-[#262626] pt-8 pb-20 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-mono font-medium mb-4">
+            <Link href="/challenges" className="hover:text-white transition-colors">
+              Curriculum
+            </Link>
+            <ChevronRight className="w-3 h-3 text-neutral-600" />
+            <span className="text-neutral-400">{coreDef?.domainLabel ?? "SYSTEMS"}</span>
+            <ChevronRight className="w-3 h-3 text-neutral-600" />
+            <span className="text-white font-bold">{challenge.title}</span>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2.5">
-            <Link href={`/challenges/${challenge.slug}/leaderboard`}>
-              <Button variant="outline" size="sm" className="h-9 px-3 text-xs gap-1.5 border-slate-200 bg-white hover:bg-slate-50 text-slate-800 font-semibold">
-                <Trophy className="w-3.5 h-3.5 text-[#FBAE0C]" />
-                <span>Leaderboard</span>
-              </Button>
-            </Link>
-            <Link href={`/challenges/${challenge.slug}/workspace`}>
-              <Button size="sm" variant="primary" className="h-9 px-4 text-xs font-semibold gap-1.5 shadow-xs">
-                <Terminal className="w-3.5 h-3.5" />
-                <span>Launch IDE & Workspace</span>
-              </Button>
-            </Link>
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+                  {coreDef?.number ? `${coreDef.number}. ` : ""}{challenge.title}
+                </h1>
+                <span className={`px-2.5 py-0.5 rounded text-xs font-bold font-mono border ${
+                  challenge.difficulty === "Easy"
+                    ? "text-[#09C899] bg-[#09C899]/15 border-[#09C899]/40"
+                    : challenge.difficulty === "Medium"
+                    ? "text-[#FBAE0C] bg-[#FBAE0C]/15 border-[#FBAE0C]/40"
+                    : "text-[#8647E2] bg-[#8647E2]/15 border-[#8647E2]/40"
+                }`}>
+                  {challenge.difficulty}
+                </span>
+                <span className="px-2.5 py-0.5 rounded text-xs font-bold font-mono bg-[#099BE9]/15 text-[#099BE9] border border-[#099BE9]/40">
+                  {levelsArray.length} Progressive Levels
+                </span>
+                {coreDef?.isFlagship && (
+                  <span className="px-2.5 py-0.5 rounded text-xs font-bold font-mono bg-[#099BE9]/15 text-[#099BE9] border border-[#099BE9]/40 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-[#099BE9]" />
+                    FLAGSHIP
+                  </span>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-white/10 text-neutral-200 border border-white/10 font-semibold">
+                  Domain: {coreDef?.domainLabel ?? "SYSTEMS"}
+                </span>
+                <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-white/10 text-neutral-200 border border-white/10 font-medium">
+                  Inspired by <strong className="text-white font-bold">{coreDef?.inspiredBy ?? "Redis"}</strong>
+                </span>
+                <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-white/10 text-neutral-200 border border-white/10 font-medium">
+                  Python, C++, Rust, Go, Java
+                </span>
+                <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-[#09C899]/15 text-[#09C899] border border-[#09C899]/40 font-bold">
+                  Target: {coreDef?.benchmarkMetrics[0] ?? "> 100,000 ops/s"}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 shrink-0">
+              <Link href={`/challenges/${challenge.slug}/leaderboard`}>
+                <Button variant="outline" size="sm" className="h-9 px-3 text-xs gap-1.5 border-white/20 bg-white/10 hover:bg-white/15 text-white font-semibold">
+                  <Trophy className="w-3.5 h-3.5 text-[#FBAE0C]" />
+                  <span>Leaderboard</span>
+                </Button>
+              </Link>
+              <Link href={`/challenges/${challenge.slug}/workspace`}>
+                <Button size="sm" variant="primary" className="h-9 px-4 text-xs font-semibold gap-1.5 shadow-xs">
+                  <Terminal className="w-3.5 h-3.5" />
+                  <span>Launch IDE & Workspace</span>
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
+        <div className="absolute bottom-0 left-0 right-0 h-12 bg-white" style={{ clipPath: "polygon(0 100%, 100% 100%, 100% 0)" }} />
+      </section>
+
+      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
         {/* ========================================================================= */}
         {/* PROJECT SCOPE & ARCHITECTURE BLUEPRINT SECTION */}
@@ -396,24 +400,26 @@ export default async function ChallengeDetailPage({ params }: Props) {
               {(architectureDiagram || (Array.isArray(levelRoadmap) && levelRoadmap.length > 0)) && (
                 <div className="space-y-4 pt-2 border-t border-slate-200/80">
                   {architectureDiagram && (
-                    <details className="group rounded-xl border border-slate-200 bg-slate-50/50 overflow-hidden">
-                      <summary className="p-3.5 flex items-center justify-between cursor-pointer select-none hover:bg-slate-100/70 transition-colors">
-                        <div className="flex items-center gap-2 font-mono text-xs font-bold text-slate-800 uppercase tracking-wider">
-                          <Terminal className="w-4 h-4 text-[#099BE9]" />
-                          <span>System Architecture Blueprint (ASCII Topology)</span>
+                    <div className="rounded-2xl border border-slate-800 bg-[#141416] overflow-hidden shadow-xl">
+                      <div className="flex items-center justify-between px-4 py-2.5 bg-[#1a1a1e] border-b border-white/10">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-3 h-3 rounded-full bg-red-500" />
+                            <div className="w-3 h-3 rounded-full bg-amber-500" />
+                            <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                          </div>
+                          <span className="text-[11px] font-mono font-bold text-neutral-400 uppercase tracking-wider">
+                            System Architecture Blueprint // First Principles
+                          </span>
                         </div>
-                        <span className="text-xs font-mono text-[#099BE9] group-open:hidden flex items-center gap-1 font-semibold">
-                          <span>View Topology</span>
-                          <ChevronRight className="w-3.5 h-3.5" />
+                        <span className="text-[10px] font-mono font-semibold text-[#099BE9]">
+                          {challenge.title}
                         </span>
-                        <span className="text-xs font-mono text-slate-400 hidden group-open:inline font-semibold">
-                          Collapse Topology
-                        </span>
-                      </summary>
-                      <div className="p-4 bg-slate-950 font-mono text-xs text-slate-200 overflow-x-auto border-t border-slate-800 shadow-inner">
+                      </div>
+                      <div className="p-5 font-mono text-xs text-slate-200 overflow-x-auto">
                         <pre className="whitespace-pre leading-relaxed text-[#09C899] font-medium">{architectureDiagram}</pre>
                       </div>
-                    </details>
+                    </div>
                   )}
 
                   {Array.isArray(levelRoadmap) && levelRoadmap.length > 0 && (

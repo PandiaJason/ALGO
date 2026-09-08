@@ -51,26 +51,22 @@ export default async function GlobalLeaderboardPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#fafafa]">
-      <Navbar user={session?.user as any} />
+    <div className="flex min-h-screen flex-col bg-white">
+      <Navbar user={session?.user as any} variant="dark" />
 
-      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10 space-y-6">
-        {/* LeetCode Header Banner */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-          <div>
-            <div className="text-xs font-mono font-bold text-slate-700 uppercase tracking-wider mb-1">
-              GLOBAL RANKINGS
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950 flex items-center gap-2">
-              <Trophy className="w-6 h-6 text-[#FBAE0C]" />
-              <span>Global Ranking</span>
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1">
-              Empirical throughput and latency verified under real workloads in isolated Linux containers.
-            </p>
+      <section className="relative bg-[#262626] pt-10 pb-16 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-xs font-mono font-bold text-neutral-400 uppercase tracking-wider mb-1.5">
+            GLOBAL RANKINGS
           </div>
-
-          <div className="flex items-center gap-2">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2.5">
+            <Trophy className="w-6 h-6 text-[#FBAE0C]" />
+            <span>Global Ranking</span>
+          </h1>
+          <p className="text-sm text-neutral-300 font-medium mt-1.5 max-w-2xl">
+            Empirical throughput and latency verified under real workloads in isolated Linux containers.
+          </p>
+          <div className="flex items-center gap-2 mt-4">
             <Link href="/challenges/kv-store/workspace">
               <Button size="sm" variant="primary" className="h-8 gap-1.5 text-xs font-semibold px-3 shadow-xs">
                 <Terminal className="w-3.5 h-3.5" />
@@ -79,8 +75,11 @@ export default async function GlobalLeaderboardPage() {
             </Link>
           </div>
         </div>
+        <div className="absolute bottom-0 left-0 right-0 h-10 bg-white" style={{ clipPath: "polygon(0 100%, 100% 100%, 100% 0)" }} />
+      </section>
 
-        {/* Interactive LeetCode Ranking Table with Medals & KPIs */}
+      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Interactive Ranking Table with Medals & KPIs */}
         <LeaderboardTable
           entries={entries}
           currentUsername={(session?.user as any)?.username}

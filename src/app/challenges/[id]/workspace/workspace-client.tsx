@@ -468,12 +468,18 @@ export function WorkspaceClient({
                         <div className="space-y-4 pt-2 border-t border-[#099BE9]/20 animate-in fade-in duration-200">
                           {/* System Architecture ASCII Blueprint */}
                           {architectureDiagram && (
-                            <div className="space-y-1.5">
-                              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-                                <Terminal className="w-3.5 h-3.5 text-[#099BE9]" />
-                                System Architecture Blueprint
-                              </span>
-                              <div className="rounded-lg bg-slate-950 p-3 text-slate-100 font-mono text-[11px] overflow-x-auto border border-slate-800 shadow-inner">
+                            <div className="rounded-xl border border-slate-800 bg-[#141416] overflow-hidden shadow-lg">
+                              <div className="flex items-center gap-2.5 px-3 py-2 bg-[#1a1a1e] border-b border-white/10">
+                                <div className="flex items-center gap-1.5">
+                                  <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                                </div>
+                                <span className="text-[10px] font-mono font-bold text-neutral-400 uppercase tracking-wider">
+                                  System Architecture Blueprint
+                                </span>
+                              </div>
+                              <div className="p-3 font-mono text-[11px] overflow-x-auto">
                                 <pre className="whitespace-pre leading-relaxed text-[#09C899] font-medium">{architectureDiagram}</pre>
                               </div>
                             </div>
