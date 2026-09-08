@@ -34,7 +34,6 @@ export const dynamic = "force-dynamic";
 import { PROJECT_SCOPE, LEVEL_DEFINITIONS } from "@/lib/constants/challenge-data";
 import { CORE_CHALLENGES } from "@/lib/constants/core-challenges";
 import { getChallenge } from "@/lib/challenges";
-import { ChallengeLevelExplorer } from "@/components/challenges/challenge-level-explorer";
 
 const CHALLENGE_TARGET_SPECS: Record<
   string,
@@ -242,6 +241,33 @@ export default async function ChallengeDetailPage({ params }: Props) {
     ? Object.values(challengeData.levels).sort((a, b) => a.level - b.level)
     : Object.values(LEVEL_DEFINITIONS).sort((a, b) => a.level - b.level);
 
+  const isKv = challenge.slug === "kv-store";
+  const scopeSubtitle = challengeData?.subtitle || (isKv
+    ? PROJECT_SCOPE.subtitle
+    : `Inspired by ${coreDef?.inspiredBy ?? "Production Systems"} • ${coreDef?.whatStudentsBuild ?? "Systems Engineering"}`);
+  const scopeOverview = challengeData?.overview || (isKv ? PROJECT_SCOPE.overview : (coreDef?.overview || challenge.description));
+  const scopeWhyItMatters = challengeData?.whyItMatters || (isKv
+    ? PROJECT_SCOPE.whyItMatters
+    : `Signature Question: "${coreDef?.signatureQuestion}". Build real technology from first principles to master ${coreDef?.mainSkill}.`);
+  const layers = challengeData?.architecturalLayers || (isKv
+    ? PROJECT_SCOPE.architecturalLayers
+    : (coreDef?.progressionLevels || []).map((lvl) => ({
+        number: lvl.level,
+        name: lvl.name,
+        focus: lvl.focus,
+        description: lvl.focus,
+        realWorldTech: coreDef?.inspiredBy || "Production Standard",
+      })));
+  const targetSpec = CHALLENGE_TARGET_SPECS[challenge.slug] || CHALLENGE_TARGET_SPECS["kv-store"];
+  const philosophy = challengeData?.philosophy;
+  const architectureDiagram = challengeData?.architectureDiagram;
+  const levelRoadmap = challengeData?.levelRoadmap || levelsArray.map((l: any) => ({
+    level: l.level,
+    whatWeBuild: l.title,
+    mainConcept: l.tagline || l.description || "Core Systems Engineering",
+    parity: coreDef?.inspiredBy || "Production Standard",
+  }));
+
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans">
       <Navbar user={session?.user as any} variant="dark" />
@@ -260,7 +286,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
-            <div className="space-y-3">
+            <div className="space-y-3 max-w-3xl">
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
                   {coreDef?.number ? `${coreDef.number}. ` : ""}{challenge.title}
@@ -285,7 +311,17 @@ export default async function ChallengeDetailPage({ params }: Props) {
                 )}
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
+              <p className="text-sm text-neutral-300 font-medium leading-relaxed">
+                {scopeSubtitle}
+              </p>
+
+              {philosophy && (
+                <p className="text-xs font-mono text-[#09C899] italic font-semibold">
+                  &ldquo;{philosophy}&rdquo;
+                </p>
+              )}
+
+              <div className="flex flex-wrap items-center gap-2 pt-1">
                 <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-white/10 text-neutral-200 border border-white/10 font-semibold">
                   Domain: {coreDef?.domainLabel ?? "SYSTEMS"}
                 </span>
@@ -303,15 +339,15 @@ export default async function ChallengeDetailPage({ params }: Props) {
 
             <div className="flex items-center gap-2.5 shrink-0">
               <Link href={`/challenges/${challenge.slug}/leaderboard`}>
-                <Button variant="outline" size="sm" className="h-9 px-3 text-xs gap-1.5 border-white/20 bg-white/10 hover:bg-white/15 text-white font-semibold">
+                <Button variant="outline" size="sm" className="h-9 px-3 text-xs gap-1.5 border-white/20 bg-white/10 hover:bg-white/15 text-white font-semibold cursor-pointer">
                   <Trophy className="w-3.5 h-3.5 text-[#FBAE0C]" />
                   <span>Leaderboard</span>
                 </Button>
               </Link>
               <Link href={`/challenges/${challenge.slug}/workspace`}>
-                <Button size="sm" variant="primary" className="h-9 px-4 text-xs font-semibold gap-1.5 shadow-xs">
+                <Button size="sm" className="h-9 px-4 text-xs font-bold gap-1.5 shadow-sm bg-[#09C899] hover:bg-[#0AA793] text-white border-0 cursor-pointer">
                   <Terminal className="w-3.5 h-3.5" />
-                  <span>Launch IDE & Workspace</span>
+                  <span>Launch Workspace</span>
                 </Button>
               </Link>
             </div>
@@ -320,188 +356,120 @@ export default async function ChallengeDetailPage({ params }: Props) {
         <div className="absolute bottom-0 left-0 right-0 h-12 bg-white" style={{ clipPath: "polygon(0 100%, 100% 100%, 100% 0)" }} />
       </section>
 
-      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-
-        {/* ========================================================================= */}
-        {/* PROJECT SCOPE & ARCHITECTURE BLUEPRINT SECTION */}
-        {/* ========================================================================= */}
-        {(() => {
-          const isKv = challenge.slug === "kv-store";
-          const scopeBadge = challengeData?.badge || (isKv ? PROJECT_SCOPE.badge : `${coreDef?.domainLabel ?? "SYSTEMS"} CAPSTONE`);
-          const scopeTitle = challengeData?.title || (isKv ? PROJECT_SCOPE.title : (coreDef?.title || challenge.title));
-          const scopeSubtitle = challengeData?.subtitle || (isKv
-            ? PROJECT_SCOPE.subtitle
-            : `Inspired by ${coreDef?.inspiredBy ?? "Production Systems"} • ${coreDef?.whatStudentsBuild ?? "Systems Engineering"}`);
-          const scopeOverview = challengeData?.overview || (isKv ? PROJECT_SCOPE.overview : (coreDef?.overview || challenge.description));
-          const scopeWhyItMatters = challengeData?.whyItMatters || (isKv
-            ? PROJECT_SCOPE.whyItMatters
-            : `Signature Question: "${coreDef?.signatureQuestion}". Build real technology from first principles to master ${coreDef?.mainSkill}.`);
-          const layers = challengeData?.architecturalLayers || (isKv
-            ? PROJECT_SCOPE.architecturalLayers
-            : (coreDef?.progressionLevels || []).map((lvl) => ({
-                number: lvl.level,
-                name: lvl.name,
-                focus: lvl.focus,
-                description: lvl.focus,
-                realWorldTech: coreDef?.inspiredBy || "Production Standard",
-              })));
-          const targetSpec = CHALLENGE_TARGET_SPECS[challenge.slug] || CHALLENGE_TARGET_SPECS["kv-store"];
-          const philosophy = challengeData?.philosophy;
-          const architectureDiagram = challengeData?.architectureDiagram;
-          const levelRoadmap = challengeData?.levelRoadmap;
-
-          return (
-            <section className="p-6 rounded-2xl border border-slate-200/90 bg-white shadow-sm space-y-6">
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                <div className="space-y-1.5 max-w-3xl">
-                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#099BE9]/10 border border-[#099BE9]/30 text-[10px] font-mono font-bold uppercase tracking-wider text-[#099BE9]">
-                    <Sparkles className="w-3 h-3" />
-                    {scopeBadge}
-                  </div>
-                  <h2 className="text-xl font-extrabold text-slate-950 tracking-tight">
-                    {scopeTitle}
-                  </h2>
-                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
-                    {scopeSubtitle}
-                  </p>
-                  {philosophy && (
-                    <p className="text-xs font-mono text-[#8647E2] italic font-semibold pt-0.5">
-                      &ldquo;{philosophy}&rdquo;
-                    </p>
-                  )}
-                </div>
-
-                <Link href={`/challenges/${challenge.slug}/workspace`}>
-                  <Button size="sm" variant="primary" className="h-9 px-4 text-xs font-semibold gap-1.5 shrink-0">
-                    <span>Start Level 1</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Button>
-                </Link>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm leading-relaxed text-slate-800 bg-slate-50/90 p-4 sm:p-5 rounded-xl border border-slate-200/80">
-                <div>
-                  <div className="font-bold text-slate-950 mb-1.5 flex items-center gap-1.5 text-sm">
-                    <Database className="w-4 h-4 text-[#099BE9]" />
-                    <span>What You Are Building</span>
-                  </div>
-                  <p className="font-medium text-slate-800 leading-relaxed">{scopeOverview}</p>
-                </div>
-                <div>
-                  <div className="font-bold text-slate-950 mb-1.5 flex items-center gap-1.5 text-sm">
-                    <Zap className="w-4 h-4 text-[#F78424]" />
-                    <span>Why This Systems Engineering Loop Matters</span>
-                  </div>
-                  <p className="font-medium text-slate-800 leading-relaxed">{scopeWhyItMatters}</p>
-                </div>
-              </div>
-
-              {/* System Architecture Blueprint ASCII Diagram & Roadmap */}
-              {(architectureDiagram || (Array.isArray(levelRoadmap) && levelRoadmap.length > 0)) && (
-                <div className="space-y-4 pt-2 border-t border-slate-200/80">
-                  {architectureDiagram && (
-                    <div className="rounded-2xl border border-slate-800 bg-[#141416] overflow-hidden shadow-xl">
-                      <div className="flex items-center justify-between px-4 py-2.5 bg-[#1a1a1e] border-b border-white/10">
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-3 h-3 rounded-full bg-red-500" />
-                            <div className="w-3 h-3 rounded-full bg-amber-500" />
-                            <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                          </div>
-                          <span className="text-[11px] font-mono font-bold text-neutral-400 uppercase tracking-wider">
-                            System Architecture Blueprint // First Principles
-                          </span>
-                        </div>
-                        <span className="text-[10px] font-mono font-semibold text-[#099BE9]">
-                          {challenge.title}
-                        </span>
-                      </div>
-                      <div className="p-5 font-mono text-xs text-slate-200 overflow-x-auto">
-                        <pre className="whitespace-pre leading-relaxed text-[#09C899] font-medium">{architectureDiagram}</pre>
-                      </div>
-                    </div>
-                  )}
-
-                  {Array.isArray(levelRoadmap) && levelRoadmap.length > 0 && (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="text-xs font-mono font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                          <Layers className="w-4 h-4 text-[#099BE9]" />
-                          <span>Progressive 6-Level Roadmap & Architecture Parity</span>
-                        </div>
-                        <span className="text-[11px] font-mono text-slate-400">
-                          Engineering Evolution (L1 → L6)
-                        </span>
-                      </div>
-                      <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
-                        <div className="grid grid-cols-12 bg-slate-100 p-3 font-mono font-bold text-xs text-slate-700 uppercase border-b border-slate-200">
-                          <div className="col-span-2">Level</div>
-                          <div className="col-span-4">What You Build</div>
-                          <div className="col-span-4">Core Systems Concept</div>
-                          <div className="col-span-2">Production Parity</div>
-                        </div>
-                        {levelRoadmap.map((item: any, idx: number) => {
-                          const matchingLayer = layers[idx] || layers.find((l: any) => l.number === item.level);
-                          const parity = matchingLayer?.realWorldTech?.split(",")[0] || matchingLayer?.realWorldTech || "Production Standard";
-                          return (
-                            <div
-                              key={item.level}
-                              className="grid grid-cols-12 p-3 border-b border-slate-100 last:border-b-0 hover:bg-slate-50/80 transition-colors items-center text-xs"
-                            >
-                              <div className="col-span-2 font-mono font-bold text-[#099BE9]">Level {item.level}</div>
-                              <div className="col-span-4 font-semibold text-slate-900">{item.whatWeBuild}</div>
-                              <div className="col-span-4 text-slate-600 font-mono text-[11px] leading-relaxed">{item.mainConcept}</div>
-                              <div className="col-span-2 text-slate-500 font-mono text-[10px] truncate" title={matchingLayer?.realWorldTech}>
-                                {parity}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Target Outcome Benchmark Callout */}
-              <div className="p-5 rounded-xl bg-slate-50/90 border border-slate-200/90 space-y-4 shadow-2xs">
-                <div className="space-y-1.5">
-                  <div className="text-xs font-mono font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-[#0AA793]" />
-                    <span>Capstone Target Outcome</span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-slate-900 leading-relaxed font-semibold">
-                    {targetSpec.targetOutcome}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-200">
-                  {targetSpec.metrics.map((spec, i) => (
-                    <div key={i} className="p-3.5 rounded-lg bg-white border border-slate-200/90 shadow-2xs flex flex-col justify-between space-y-1">
-                      <div className="text-[10px] font-mono text-slate-700 font-bold tracking-wider">{spec.label}</div>
-                      <div className={`text-base font-bold tracking-tight font-mono ${spec.color}`}>{spec.value}</div>
-                      <div className="text-[11px] text-slate-700 font-mono font-medium">{spec.desc}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          );
-        })()}
-
-        {/* ========================================================================= */}
-        {/* PROGRESSIVE ENGINEERING CURRICULUM & LEARNING LOOPS (LEVELS 1 - 6) */}
-        {/* ========================================================================= */}
+      {/* Main 2-Column Content Layout */}
+      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Main Description & Levels Column (8 cols) */}
+
+          {/* Main Column (8 cols) */}
           <div className="lg:col-span-8 space-y-6">
-            {/* Interactive 6-Level Roadmap Explorer (Focus Mode + All Levels) */}
-            <ChallengeLevelExplorer
-              levels={levelsArray}
-              challengeSlug={challenge.slug}
-            />
-            
-            {/* API Specification Table */}
+
+            {/* 1. Architecture Blueprint Card (Front & Center) */}
+            {architectureDiagram && (
+              <div className="rounded-2xl border border-slate-800 bg-[#141416] overflow-hidden shadow-xl">
+                <div className="flex items-center justify-between px-4 py-2.5 bg-[#1a1a1e] border-b border-white/10">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-3 h-3 rounded-full bg-red-500" />
+                      <div className="w-3 h-3 rounded-full bg-amber-500" />
+                      <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                    </div>
+                    <span className="text-[11px] font-mono font-bold text-neutral-300 uppercase tracking-wider">
+                      System Architecture Blueprint // First Principles
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono font-semibold text-[#099BE9]">
+                    {challenge.title}
+                  </span>
+                </div>
+                <div className="p-5 font-mono text-xs text-slate-200 overflow-x-auto">
+                  <pre className="whitespace-pre leading-relaxed text-[#09C899] font-medium">{architectureDiagram}</pre>
+                </div>
+              </div>
+            )}
+
+            {/* 2. Overview: What You Are Building & Why It Matters */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm leading-relaxed text-slate-800 bg-slate-50/90 p-5 rounded-2xl border border-slate-200">
+              <div>
+                <div className="font-bold text-slate-950 mb-1.5 flex items-center gap-1.5 text-sm">
+                  <Database className="w-4 h-4 text-[#099BE9]" />
+                  <span>What You Are Building</span>
+                </div>
+                <p className="font-medium text-slate-800 leading-relaxed">{scopeOverview}</p>
+              </div>
+              <div>
+                <div className="font-bold text-slate-950 mb-1.5 flex items-center gap-1.5 text-sm">
+                  <Zap className="w-4 h-4 text-[#F78424]" />
+                  <span>Why This Matters</span>
+                </div>
+                <p className="font-medium text-slate-800 leading-relaxed">{scopeWhyItMatters}</p>
+              </div>
+            </div>
+
+            {/* 3. Capstone Target Outcome */}
+            <div className="p-5 rounded-2xl bg-white border border-slate-200 space-y-4 shadow-2xs">
+              <div className="space-y-1">
+                <div className="text-xs font-mono font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-[#0AA793]" />
+                  <span>Capstone Target Outcome</span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-900 leading-relaxed font-semibold">
+                  {targetSpec.targetOutcome}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100">
+                {targetSpec.metrics.map((spec, i) => (
+                  <div key={i} className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between space-y-0.5">
+                    <div className="text-[10px] font-mono text-slate-600 font-bold tracking-wider">{spec.label}</div>
+                    <div className={`text-base font-bold tracking-tight font-mono ${spec.color}`}>{spec.value}</div>
+                    <div className="text-[11px] text-slate-600 font-mono font-medium">{spec.desc}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 4. Progressive 6-Level Roadmap */}
+            {Array.isArray(levelRoadmap) && levelRoadmap.length > 0 && (
+              <div className="p-6 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-bold text-slate-950 flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-[#099BE9]" />
+                    <span>Progressive 6-Level Roadmap</span>
+                  </div>
+                  <span className="text-[11px] font-mono text-slate-500 font-medium">
+                    Evolution (Level 1 → Level 6)
+                  </span>
+                </div>
+
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+                  <div className="grid grid-cols-12 bg-slate-50 p-3 font-mono font-bold text-[11px] text-slate-700 uppercase border-b border-slate-200">
+                    <div className="col-span-2">Level</div>
+                    <div className="col-span-4">What You Build</div>
+                    <div className="col-span-4">Core Systems Concept</div>
+                    <div className="col-span-2 text-right">Parity</div>
+                  </div>
+                  {levelRoadmap.map((item: any, idx: number) => {
+                    const matchingLayer = layers[idx] || layers.find((l: any) => l.number === item.level);
+                    const parity = item.parity || matchingLayer?.realWorldTech?.split(",")[0] || matchingLayer?.realWorldTech || "Production Standard";
+                    return (
+                      <div
+                        key={item.level}
+                        className="grid grid-cols-12 p-3 border-b border-slate-100 last:border-b-0 hover:bg-slate-50/80 transition-colors items-center text-xs"
+                      >
+                        <div className="col-span-2 font-mono font-bold text-[#099BE9]">Level {item.level}</div>
+                        <div className="col-span-4 font-semibold text-slate-900">{item.whatWeBuild}</div>
+                        <div className="col-span-4 text-slate-600 font-mono text-[11px] leading-relaxed">{item.mainConcept}</div>
+                        <div className="col-span-2 text-slate-500 font-mono text-[10px] text-right truncate" title={matchingLayer?.realWorldTech}>
+                          {parity}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 5. Command Interface Specification Table */}
             <div className="p-6 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -539,7 +507,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
               </div>
             </div>
 
-            {/* What You Will Master Summary */}
+            {/* 6. What You Will Master Summary */}
             <div className="p-6 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-3">
               <h2 className="text-base font-bold text-slate-950">
                 Engineering Skills Mastered
@@ -553,52 +521,29 @@ export default async function ChallengeDetailPage({ params }: Props) {
                 ))}
               </div>
             </div>
+
           </div>
 
-          {/* Right Sidebar: Constraints & Benchmark Targets (4 cols) */}
+          {/* Right Sidebar (4 cols) */}
           <div className="lg:col-span-4 space-y-4">
-            {/* Quick Level Navigator */}
+            
+            {/* Quick Action Card */}
             <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-3">
               <div className="text-xs font-mono font-bold text-slate-900 uppercase tracking-wider">
-                Progressive Levels Map
+                Engineering Workspace
               </div>
-              <div className="space-y-1.5">
-                {levelsArray.map((lvl: any) => (
-                  <Link
-                    key={lvl.level}
-                    href={`/challenges/${challenge.slug}/workspace`}
-                    className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-colors text-xs"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded flex items-center justify-center bg-slate-900 font-mono text-[11px] font-bold text-white shadow-2xs">
-                        {lvl.level}
-                      </span>
-                      <span className="font-semibold text-slate-900">{lvl.shortTitle}</span>
-                    </div>
-                    <span className={`text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded border ${
-                      lvl.difficulty === "Easy"
-                        ? "text-[#0AA793] bg-[#09C899]/10 border-[#09C899]/30"
-                        : lvl.difficulty === "Medium"
-                        ? "text-[#F78424] bg-[#FBAE0C]/10 border-[#FBAE0C]/30"
-                        : "text-[#8647E2] bg-[#8647E2]/10 border-[#8647E2]/30"
-                    }`}>
-                      {lvl.difficulty}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-
-              <div className="pt-2 border-t border-slate-100">
-                <Link href={`/challenges/${challenge.slug}/workspace`} className="w-full block">
-                  <Button variant="primary" className="w-full text-xs font-semibold h-9 shadow-xs gap-1.5">
-                    <Terminal className="w-3.5 h-3.5" />
-                    <span>Enter Challenge IDE</span>
-                  </Button>
-                </Link>
-              </div>
+              <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                Build and stress-test your implementation against our bare-metal verification runner.
+              </p>
+              <Link href={`/challenges/${challenge.slug}/workspace`} className="w-full block pt-1">
+                <Button className="w-full text-xs font-bold h-10 shadow-xs gap-1.5 bg-[#09C899] hover:bg-[#0AA793] text-white border-0 cursor-pointer">
+                  <Terminal className="w-3.5 h-3.5" />
+                  <span>Enter Challenge IDE</span>
+                </Button>
+              </Link>
             </div>
 
-            {/* Constraints Card */}
+            {/* Execution Constraints Card */}
             <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-3">
               <div className="text-xs font-mono font-bold text-slate-900 uppercase tracking-wider">
                 Execution Constraints
@@ -632,46 +577,43 @@ export default async function ChallengeDetailPage({ params }: Props) {
             </div>
 
             {/* Performance Target Card */}
-            {(() => {
-              const rightSpec = CHALLENGE_TARGET_SPECS[challenge.slug] || CHALLENGE_TARGET_SPECS["kv-store"];
-              return (
-                <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-3">
-                  <div className="text-xs font-mono font-bold text-slate-700 uppercase tracking-wider">
-                    Production Performance Target
+            <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-3">
+              <div className="text-xs font-mono font-bold text-slate-700 uppercase tracking-wider">
+                Production Performance Target
+              </div>
+              <div className="space-y-2 text-xs font-mono">
+                <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200/70">
+                  <div className="text-[11px] text-slate-400 font-semibold">{targetSpec.metrics[0].label}</div>
+                  <div className="text-base font-bold text-slate-800 mt-0.5">
+                    {targetSpec.metrics[0].value}
                   </div>
-                  <div className="space-y-2 text-xs font-mono">
-                    <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200/70">
-                      <div className="text-[11px] text-slate-400 font-semibold">{rightSpec.metrics[0].label}</div>
-                      <div className="text-base font-bold text-slate-800 mt-0.5">
-                        {rightSpec.metrics[0].value}
-                      </div>
-                      <div className="text-[10px] text-slate-500 mt-0.5 font-medium">
-                        {rightSpec.metrics[0].desc}
-                      </div>
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-[#09C899]/10 border border-[#09C899]/30">
-                      <div className="text-[11px] text-[#0AA793] font-semibold">{rightSpec.metrics[1].label}</div>
-                      <div className="text-base font-bold text-[#0AA793] mt-0.5">
-                        {rightSpec.metrics[1].value}
-                      </div>
-                      <div className="text-[10px] text-[#09C899] mt-0.5 font-medium">
-                        {rightSpec.metrics[1].desc}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="pt-2">
-                    <Link href="/leaderboard" className="w-full block">
-                      <Button variant="outline" className="w-full text-xs font-semibold h-9 border-slate-200 bg-white hover:bg-slate-50 gap-1.5">
-                        <Trophy className="w-3.5 h-3.5 text-[#FBAE0C]" />
-                        <span>View Global Leaderboard</span>
-                      </Button>
-                    </Link>
+                  <div className="text-[10px] text-slate-500 mt-0.5 font-medium">
+                    {targetSpec.metrics[0].desc}
                   </div>
                 </div>
-              );
-            })()}
+                <div className="p-2.5 rounded-lg bg-[#09C899]/10 border border-[#09C899]/30">
+                  <div className="text-[11px] text-[#0AA793] font-semibold">{targetSpec.metrics[1].label}</div>
+                  <div className="text-base font-bold text-[#0AA793] mt-0.5">
+                    {targetSpec.metrics[1].value}
+                  </div>
+                  <div className="text-[10px] text-[#09C899] mt-0.5 font-medium">
+                    {targetSpec.metrics[1].desc}
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <Link href={`/challenges/${challenge.slug}/leaderboard`} className="w-full block">
+                  <Button variant="outline" className="w-full text-xs font-semibold h-9 border-slate-200 bg-white hover:bg-slate-50 gap-1.5 cursor-pointer">
+                    <Trophy className="w-3.5 h-3.5 text-[#FBAE0C]" />
+                    <span>View Challenge Leaderboard</span>
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
           </div>
+
         </div>
       </main>
 
