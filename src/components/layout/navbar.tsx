@@ -20,7 +20,7 @@ interface NavbarProps {
   variant?: "default" | "dark";
 }
 
-export function Navbar({ user, variant = "default" }: NavbarProps) {
+export function Navbar({ user, variant = "dark" }: NavbarProps) {
   const pathname = usePathname();
   const isDark = variant === "dark";
 

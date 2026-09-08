@@ -335,28 +335,28 @@ export function WorkspaceClient({
     <div className="flex flex-col h-screen bg-white text-slate-900 overflow-hidden font-sans">
       {/* Signature 4-Color Brand Accent Bar */}
       <div className="h-[2.5px] w-full bg-gradient-to-r from-[#099BE9] via-[#09C899] via-[#8647E2] to-[#F78424] shrink-0" />
-      {/* 1. TOP NAVBAR (LeetCode Light Style) */}
-      <header className="h-12 border-b border-slate-200/90 bg-white px-4 flex items-center justify-between shrink-0 select-none shadow-2xs">
+      {/* 1. TOP NAVBAR (Dark Systems Style matching other pages) */}
+      <header className="h-12 border-b border-neutral-800 bg-[#262626] px-4 flex items-center justify-between shrink-0 select-none text-white">
         <div className="flex items-center gap-3">
           <Link
             href="/challenges"
-            className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors group"
+            className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors group"
           >
             <AlgoLogoIcon size={24} className="transition-transform group-hover:scale-105" />
-            <span className="font-black tracking-wider text-sm text-slate-900">
+            <span className="font-black tracking-wider text-sm text-white">
               ALGO
             </span>
-            <ArrowLeft className="w-3.5 h-3.5 ml-1 text-slate-400 group-hover:text-slate-700 transition-colors" />
-            <span className="text-xs font-semibold text-slate-700 hover:text-slate-950">Challenges</span>
+            <ArrowLeft className="w-3.5 h-3.5 ml-1 text-neutral-400 group-hover:text-white transition-colors" />
+            <span className="text-xs font-semibold text-neutral-300 hover:text-white">Challenges</span>
           </Link>
 
-          <span className="text-slate-200">|</span>
+          <span className="text-neutral-600">|</span>
 
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-slate-900">
+            <span className="text-sm font-semibold text-white">
               {challenge.title}
             </span>
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[#FBAE0C]/10 text-[#F78424] border border-[#FBAE0C]/30">
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#FBAE0C]/15 text-[#FBAE0C] border border-[#FBAE0C]/40">
               Level {selectedLevel}: {currentLevelInfo.shortTitle}
             </span>
           </div>
@@ -367,7 +367,7 @@ export function WorkspaceClient({
           <button
             onClick={handleRunCode}
             disabled={isRunningTests || isSubmitting}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 transition-colors disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-white/10 hover:bg-white/15 text-white border border-white/15 transition-colors disabled:opacity-50 cursor-pointer"
           >
             <Play className="w-3.5 h-3.5 text-[#099BE9] fill-[#099BE9]" />
             <span>{isRunningTests ? "Running..." : "Run"}</span>
@@ -388,7 +388,7 @@ export function WorkspaceClient({
           {user && (
             <Link
               href={`/u/${user.username}`}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-slate-100 text-xs font-mono text-slate-700 transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white/10 text-xs font-mono text-neutral-200 hover:text-white transition-colors"
             >
               <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#099BE9] to-[#09C899] flex items-center justify-center text-[10px] text-white font-bold">
                 {user.username.charAt(0).toUpperCase()}
