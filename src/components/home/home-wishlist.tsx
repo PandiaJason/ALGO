@@ -13,7 +13,13 @@ export function HomeWishlist() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    const cleanEmail = email.toLowerCase().trim();
+    if (!cleanEmail) return;
+
+    if (!cleanEmail.endsWith("@gmail.com") && !cleanEmail.endsWith("@googlemail.com")) {
+      setErrorMessage("ALGO authenticates exclusively via Google OAuth. Please provide a valid Gmail address (@gmail.com).");
+      return;
+    }
 
     setIsSubmitting(true);
     setErrorMessage(null);
@@ -25,7 +31,7 @@ export function HomeWishlist() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: email.trim(),
+          email: cleanEmail,
           message: message.trim() || undefined,
         }),
       });
@@ -102,19 +108,27 @@ export function HomeWishlist() {
               )}
 
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-300 flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-[#099BE9]" />
-                  <span>Your Email Address</span>
-                  <span className="text-[#ef4444]">*</span>
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-300 flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-[#099BE9]" />
+                    <span>Google / Gmail Address</span>
+                    <span className="text-[#ef4444]">*</span>
+                  </label>
+                  <span className="text-[10px] font-mono font-bold text-[#09C899] bg-[#09C899]/10 px-2 py-0.5 rounded border border-[#09C899]/20">
+                    Google OAuth Only
+                  </span>
+                </div>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="developer@systems.io"
-                  className="w-full px-4 py-3 rounded-xl bg-[#222226] border border-white/10 text-white placeholder:text-neutral-500 text-sm focus:outline-none focus:border-[#09C899] transition-colors"
+                  placeholder="username@gmail.com"
+                  className="w-full px-4 py-3 rounded-xl bg-[#222226] border border-white/10 text-white placeholder:text-neutral-500 text-sm focus:outline-none focus:border-[#09C899] transition-colors font-mono"
                 />
+                <p className="text-[11px] text-neutral-400">
+                  Must be an active <strong className="text-neutral-200">@gmail.com</strong> address. ALGO uses Google OAuth exclusively for authentication and access control.
+                </p>
               </div>
 
               <div className="space-y-1.5">

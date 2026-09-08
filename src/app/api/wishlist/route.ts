@@ -5,7 +5,19 @@ import { sendWishlistNotificationEmail } from "@/lib/email";
 import { z } from "zod";
 
 const wishlistSchema = z.object({
-  email: z.string().email("Please provide a valid email address").max(255),
+  email: z
+    .string()
+    .email("Please provide a valid email address")
+    .max(255)
+    .refine(
+      (val) => {
+        const lower = val.toLowerCase().trim();
+        return lower.endsWith("@gmail.com") || lower.endsWith("@googlemail.com");
+      },
+      {
+        message: "Only Gmail accounts (@gmail.com) are accepted. ALGO uses Google OAuth for access.",
+      }
+    ),
   message: z.string().max(1000).optional(),
 });
 
