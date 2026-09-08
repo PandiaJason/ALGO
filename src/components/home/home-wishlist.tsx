@@ -51,7 +51,7 @@ export function HomeWishlist() {
   };
 
   return (
-    <section className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-20">
+    <section className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-10">
       <div className="relative rounded-3xl bg-[#18181b] border border-neutral-800 text-white p-6 sm:p-10 lg:p-12 shadow-2xl overflow-hidden">
         {/* Subtle background glow */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#09C899]/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
