@@ -165,7 +165,7 @@ export function HomeManifesto() {
               </div>
               <div className="space-y-2 font-mono text-xs">
                 <div className="p-2.5 rounded-lg bg-[#099BE9]/5 border border-[#099BE9]/20 flex items-center gap-2 text-slate-950 font-bold">
-                  <span className="text-[#099BE9]">01.</span> Build raw protocol, WAL &amp; memory engine from scratch
+                  <span className="text-[#099BE9]">01.</span> Build raw protocol, core architecture &amp; engine from scratch
                 </div>
                 <div className="p-2.5 rounded-lg bg-[#09C899]/5 border border-[#09C899]/20 flex items-center gap-2 text-slate-950 font-bold">
                   <span className="text-[#0AA793]">02.</span> Run inside isolated Linux container sandbox

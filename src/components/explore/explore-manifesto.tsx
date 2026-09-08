@@ -435,106 +435,89 @@ export function ExploreManifesto({
       </section>
 
       {/* ============================================================== */}
-      {/* 4. THIS IS WHERE ALGO STARTS: THE TWO LOOPS                    */}
+      {/* 4. THE SYSTEMS VERIFICATION LOOP                              */}
       {/* ============================================================== */}
       <section className="space-y-8 border-b border-slate-200/80 pb-16">
         <div>
-          <span className="text-xs font-mono uppercase tracking-wider text-[#0AA793] font-semibold">
-            The Architectural Loop
+          <span className="text-xs font-mono uppercase tracking-wider text-[#0AA793] font-bold">
+            Methodology
           </span>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-950 mt-1">
-            This is where ALGO starts.
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950 mt-1">
+            The Systems Verification Loop
           </h2>
           <p className="text-sm sm:text-base text-slate-700 font-medium mt-2 leading-relaxed">
-            We don&apos;t want to build another platform where you solve
-            thousands of isolated problems. We want to create an environment where
-            you <strong className="text-slate-950 font-bold">engineer</strong>.
+            We don&apos;t build another platform where you solve isolated algorithm puzzles. We create an environment where you engineer.
           </p>
         </div>
 
         {/* Dual Loop Visual Comparison */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          {/* Traditional Loop */}
-          <div className="md:col-span-5 bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs flex flex-col justify-between">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+          {/* Traditional Algorithmic Loop */}
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-6 flex flex-col justify-between space-y-4">
             <div>
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-600">
-                  Traditional Loop
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-700">
+                  Traditional Coding Platforms
                 </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-bold">
-                  SURFACE LEVEL
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-200 text-slate-800">
+                  SYNTAX TEST
                 </span>
               </div>
-
-              <div className="mt-6 space-y-2 font-mono text-xs text-center max-w-[200px] mx-auto">
-                {["QUESTION", "WRITE CODE", "TEST CASES", "ACCEPTED", "NEXT QUESTION"].map(
-                  (step, idx, arr) => (
-                    <React.Fragment key={idx}>
-                      <div className={`p-2.5 rounded-lg border font-bold ${
-                        step === "ACCEPTED"
-                          ? "bg-[#09C899]/10 text-[#0AA793] border-[#09C899]/30"
-                          : "bg-slate-50 text-slate-900 border-slate-200"
-                      }`}>
-                        {step}
-                      </div>
-                      {idx < arr.length - 1 && (
-                        <div className="text-slate-400 flex justify-center py-0.5 font-bold">
-                          ↓
-                        </div>
-                      )}
-                    </React.Fragment>
-                  )
-                )}
+              <div className="space-y-2.5 font-mono text-xs text-slate-800 font-medium mt-4">
+                <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center gap-2.5">
+                  <span className="text-slate-400 font-bold">1.</span>
+                  <span>Read synthetic problem description</span>
+                </div>
+                <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center gap-2.5">
+                  <span className="text-slate-400 font-bold">2.</span>
+                  <span>Write function in isolated namespace</span>
+                </div>
+                <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center gap-2.5">
+                  <span className="text-slate-400 font-bold">3.</span>
+                  <span>Run against hidden input/output arrays</span>
+                </div>
+                <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center gap-2.5 text-slate-950 font-bold">
+                  <span className="text-slate-400 font-bold">4.</span>
+                  <span>Binary Accepted checkmark → Next Question</span>
+                </div>
               </div>
             </div>
-
-            <p className="text-xs text-slate-700 font-medium text-center mt-6 pt-4 border-t border-slate-100">
-              Binary pass/fail. Tests memorization, ignores concurrency, I/O, and hardware efficiency.
+            <p className="text-xs text-slate-700 font-medium border-t border-slate-200 pt-3">
+              Binary pass/fail. Tests memorization; ignores concurrency, I/O bottlenecks, and hardware durability.
             </p>
           </div>
 
-          {/* ALGO Loop */}
-          <div className="md:col-span-7 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 border border-slate-800 text-white rounded-2xl p-6 shadow-xl flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute right-0 top-0 w-64 h-64 bg-[#099BE9]/10 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="relative z-10">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#099BE9]">
-                  The ALGO Loop
+          {/* The ALGO Proving Ground Loop */}
+          <div className="rounded-2xl border-2 border-[#09C899]/50 bg-white p-6 shadow-xs flex flex-col justify-between space-y-4">
+            <div>
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#0AA793]">
+                  The ALGO Proving Ground Loop
                 </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#099BE9]/20 text-[#099BE9] border border-[#099BE9]/40 font-semibold">
-                  SYSTEMS VERIFICATION
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#09C899]/15 text-[#0AA793] border border-[#09C899]/30">
+                  EMPIRICAL SYSTEMS
                 </span>
               </div>
-
-              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2 font-mono text-xs">
-                {[
-                  { step: "REAL PROBLEM", desc: "Build a raw KV engine, proxy, or log stream from first principles." },
-                  { step: "BUILD", desc: "Construct the wire protocol and raw memory arenas." },
-                  { step: "RUN", desc: "Spin up isolated Docker container sandboxes." },
-                  { step: "MEASURE", desc: "Capture cold baseline ops/sec, latency, and heap memory." },
-                  { step: "BREAK", desc: "Subject code to 10× spikes, SIGKILL, and lock contention." },
-                  { step: "FIND WHY", desc: "Profile CPU flamegraphs and memory allocations." },
-                  { step: "OPTIMIZE", desc: "Striped mutexes, lock-free rings, and zero-copy buffers." },
-                  { step: "PROVE", desc: "Verify measurable speedups on empirical leaderboards." },
-                ].map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="p-2.5 rounded-lg border border-slate-800/80 bg-slate-900/60 flex flex-col justify-between"
-                  >
-                    <div className="flex items-center gap-1.5 text-[#09C899] font-bold">
-                      <span className="text-[10px] text-slate-400 font-semibold">0{idx + 1}.</span>
-                      <span>{item.step}</span>
-                    </div>
-                    <p className="text-[11px] text-slate-300 font-sans mt-1 font-medium">
-                      {item.desc}
-                    </p>
-                  </div>
-                ))}
+              <div className="space-y-2.5 font-mono text-xs mt-4">
+                <div className="p-3 rounded-xl bg-[#099BE9]/5 border border-[#099BE9]/20 flex items-center gap-2.5 text-slate-950 font-bold">
+                  <span className="text-[#099BE9]">01.</span>
+                  <span>Build raw protocol, core architecture &amp; engine from scratch</span>
+                </div>
+                <div className="p-3 rounded-xl bg-[#09C899]/5 border border-[#09C899]/20 flex items-center gap-2.5 text-slate-950 font-bold">
+                  <span className="text-[#0AA793]">02.</span>
+                  <span>Run inside isolated Linux container sandbox</span>
+                </div>
+                <div className="p-3 rounded-xl bg-[#FBAE0C]/5 border border-[#FBAE0C]/20 flex items-center gap-2.5 text-slate-950 font-bold">
+                  <span className="text-[#F78424]">03.</span>
+                  <span>Hammer with 100K concurrent ops, SIGKILL &amp; contention</span>
+                </div>
+                <div className="p-3 rounded-xl bg-[#8647E2]/5 border border-[#8647E2]/20 flex items-center gap-2.5 text-slate-950 font-bold">
+                  <span className="text-[#8647E2]">04.</span>
+                  <span>Optimize hot paths and verify speedup on global leaderboard</span>
+                </div>
               </div>
             </div>
-
-            <p className="relative z-10 text-xs text-slate-300 text-center mt-6 pt-4 border-t border-slate-800 font-medium">
+            <p className="text-xs text-slate-800 font-semibold border-t border-slate-100 pt-3">
               Continuous optimization loop: empirical profiling, architectural redesign, and verified speedups.
             </p>
           </div>
