@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { MonacoWrapper } from "@/components/editor/monaco-wrapper";
 import { AlgoLogoIcon } from "@/components/layout/algo-logo-icon";
 import { DEFAULT_STARTER_TEMPLATES } from "@/lib/constants/templates";
@@ -25,6 +25,7 @@ import {
   History,
   Trophy,
   ArrowLeft,
+  ArrowRight,
   Copy,
   Check,
   BookOpen,
@@ -125,8 +126,22 @@ export function WorkspaceClient({
     return (DEFAULT_STARTER_TEMPLATES as any)[lang] || "";
   };
 
+  let spec = (version.spec as any) || {};
+  if (typeof spec === "string") {
+    try { spec = JSON.parse(spec); } catch { spec = {}; }
+  }
+  const layers = (Array.isArray(spec.architecturalLayers) && spec.architecturalLayers.length > 0)
+    ? spec.architecturalLayers
+    : (challengeData?.architecturalLayers || (isKv ? PROJECT_SCOPE.architecturalLayers : []));
+  const architectureDiagram = challengeData?.architectureDiagram || (isKv ? PROJECT_SCOPE.architectureDiagram : "");
+
+  const searchParams = useSearchParams();
+  const levelParam = Number(searchParams?.get("level"));
+  const initialLevel = (levelParam >= 1 && levelParam <= 6) ? levelParam : 1;
+
   const [language, setLanguage] = useState<SupportedLanguage>("python");
-  const [selectedLevel, setSelectedLevel] = useState<number>(1);
+  const [selectedLevel, setSelectedLevel] = useState<number>(initialLevel);
+  const [showBlueprintModal, setShowBlueprintModal] = useState(false);
   const [code, setCode] = useState<string>(() => getInitialCode("python"));
   const [leftTab, setLeftTab] = useState<"description" | "missions" | "submissions" | "leaderboard">("description");
   const [descSubTab, setDescSubTab] = useState<"spec" | "diagram" | "gotcha" | "examples">("spec");
@@ -363,40 +378,40 @@ export function WorkspaceClient({
         {/* LEFT PANEL: Problem Description, Missions, Submissions, Leaderboard */}
         <div className="w-full md:w-1/2 flex flex-col border-r border-slate-200 bg-white overflow-hidden">
           {/* Left Panel Tabs */}
-          <div className="h-10 border-b border-slate-200 bg-slate-50/90 px-3 flex items-center gap-2 shrink-0">
+          <div className="h-10 border-b border-slate-200 bg-slate-50/90 px-3 flex items-center gap-1.5 shrink-0 select-none">
             <button
               onClick={() => setLeftTab("description")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                 leftTab === "description"
-                  ? "bg-white text-slate-900 font-semibold shadow-2xs border border-slate-200/80"
-                  : "text-slate-500 hover:text-slate-900"
+                  ? "bg-white text-slate-900 font-bold shadow-2xs border border-slate-200/80"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               <FileText className="w-3.5 h-3.5 text-[#099BE9]" />
-              <span>Description</span>
+              <span>Level Spec</span>
             </button>
 
             <button
               onClick={() => setLeftTab("missions")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                 leftTab === "missions"
-                  ? "bg-white text-slate-900 font-semibold shadow-2xs border border-slate-200/80"
-                  : "text-slate-500 hover:text-slate-900"
+                  ? "bg-white text-slate-900 font-bold shadow-2xs border border-slate-200/80"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <Target className="w-3.5 h-3.5 text-[#FBAE0C]" />
-              <span>Missions</span>
+              <Target className="w-3.5 h-3.5 text-[#0AA793]" />
+              <span>All 6 Levels</span>
             </button>
 
             <button
               onClick={() => setLeftTab("submissions")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                 leftTab === "submissions"
-                  ? "bg-white text-slate-900 font-semibold shadow-2xs border border-slate-200/80"
-                  : "text-slate-500 hover:text-slate-900"
+                  ? "bg-white text-slate-900 font-bold shadow-2xs border border-slate-200/80"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <History className="w-3.5 h-3.5 text-[#09C899]" />
+              <History className="w-3.5 h-3.5 text-[#8647E2]" />
               <span>Submissions ({pastSubmissions.length})</span>
             </button>
 
@@ -404,161 +419,77 @@ export function WorkspaceClient({
               onClick={() => setLeftTab("leaderboard")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                 leftTab === "leaderboard"
-                  ? "bg-white text-slate-900 font-semibold shadow-2xs border border-slate-200/80"
-                  : "text-slate-500 hover:text-slate-900"
+                  ? "bg-white text-slate-900 font-bold shadow-2xs border border-slate-200/80"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <Trophy className="w-3.5 h-3.5 text-[#8647E2]" />
+              <Trophy className="w-3.5 h-3.5 text-[#FBAE0C]" />
               <span>Leaderboard</span>
             </button>
+
+            {(() => {
+              let spec = (version.spec as any) || {};
+              if (typeof spec === "string") {
+                try { spec = JSON.parse(spec); } catch { spec = {}; }
+              }
+              const architectureDiagram = challengeData?.architectureDiagram || spec.architectureDiagram;
+              return architectureDiagram ? (
+                <button
+                  onClick={() => setShowBlueprintModal(!showBlueprintModal)}
+                  className={`ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-mono font-semibold transition-colors cursor-pointer ${
+                    showBlueprintModal
+                      ? "bg-slate-900 text-[#09C899]"
+                      : "text-slate-600 hover:text-slate-950 hover:bg-slate-200/60"
+                  }`}
+                  title="Toggle System Architecture Blueprint"
+                >
+                  <Terminal className="w-3 h-3 text-[#099BE9]" />
+                  <span>Blueprint</span>
+                </button>
+              ) : null;
+            })()}
           </div>
 
           {/* Left Panel Content */}
-          <div className="flex-1 overflow-y-auto p-6 text-slate-700 text-xs leading-relaxed space-y-6">
+          <div className="flex-1 overflow-y-auto p-5 text-slate-700 text-xs leading-relaxed space-y-5">
             {leftTab === "description" && (
-              <div className="space-y-6">
-                {/* Project Scope & Engineering Capstone Architecture Banner */}
+              <div className="space-y-5">
                 {(() => {
                   let spec = (version.spec as any) || {};
                   if (typeof spec === "string") {
                     try { spec = JSON.parse(spec); } catch { spec = {}; }
                   }
-                  const layers = (Array.isArray(spec.architecturalLayers) && spec.architecturalLayers.length > 0)
-                    ? spec.architecturalLayers
-                    : (challengeData?.architecturalLayers || (isKv ? PROJECT_SCOPE.architecturalLayers : []));
-                  const badge = spec.badge || challengeData?.badge || `${challenge.title.toUpperCase()} CAPSTONE`;
-                  const title = challengeData?.title || spec.title || challenge.title;
-                  const overview = challengeData?.overview || spec.overview || challenge.description;
-                  const outcome = challengeData?.finalOutcome || spec.finalOutcome || (isKv ? PROJECT_SCOPE.finalOutcome : overview);
-                  const philosophy = challengeData?.philosophy;
-                  const architectureDiagram = challengeData?.architectureDiagram;
-                  const levelRoadmap = challengeData?.levelRoadmap;
-
-                  return (
-                    <div className="rounded-xl border border-[#099BE9]/30 bg-gradient-to-br from-[#099BE9]/10 via-slate-50 to-[#8647E2]/10 p-4 shadow-2xs space-y-3">
-                      <div className="flex items-center justify-between">
+                  const architectureDiagram = challengeData?.architectureDiagram || spec.architectureDiagram;
+                  return showBlueprintModal && architectureDiagram ? (
+                    <div className="rounded-xl border border-slate-800 bg-[#141416] overflow-hidden shadow-lg animate-in fade-in duration-200">
+                      <div className="flex items-center justify-between px-3 py-2 bg-[#1a1a1e] border-b border-white/10">
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-[#099BE9] text-white shadow-2xs">
-                            {badge}
-                          </span>
-                          <span className="text-xs font-bold text-slate-900">
-                            {title}
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                            <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                          </div>
+                          <span className="text-[10px] font-mono font-bold text-neutral-400 uppercase tracking-wider">
+                            System Architecture Blueprint // Full System
                           </span>
                         </div>
                         <button
-                          onClick={() => setIsScopeExpanded(!isScopeExpanded)}
-                          className="text-xs font-mono text-[#099BE9] hover:text-[#1984E9] flex items-center gap-1 font-semibold cursor-pointer"
+                          onClick={() => setShowBlueprintModal(false)}
+                          className="text-[10px] font-mono text-neutral-400 hover:text-white cursor-pointer"
                         >
-                          <span>{isScopeExpanded ? "Collapse Scope" : "Explore Full System Scope"}</span>
-                          {isScopeExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                          ✕ Close
                         </button>
                       </div>
-
-                      {philosophy && (
-                        <p className="text-[11px] font-mono text-[#8647E2] italic font-semibold">
-                          &ldquo;{philosophy}&rdquo;
-                        </p>
-                      )}
-
-                      <p className="text-xs text-slate-700 leading-relaxed">
-                        {overview}
-                      </p>
-
-                      {isScopeExpanded && (
-                        <div className="space-y-4 pt-2 border-t border-[#099BE9]/20 animate-in fade-in duration-200">
-                          {/* System Architecture ASCII Blueprint */}
-                          {architectureDiagram && (
-                            <div className="rounded-xl border border-slate-800 bg-[#141416] overflow-hidden shadow-lg">
-                              <div className="flex items-center gap-2.5 px-3 py-2 bg-[#1a1a1e] border-b border-white/10">
-                                <div className="flex items-center gap-1.5">
-                                  <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                                </div>
-                                <span className="text-[10px] font-mono font-bold text-neutral-400 uppercase tracking-wider">
-                                  System Architecture Blueprint
-                                </span>
-                              </div>
-                              <div className="p-3 font-mono text-[11px] overflow-x-auto">
-                                <pre className="whitespace-pre leading-relaxed text-[#09C899] font-medium">{architectureDiagram}</pre>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Unified Progressive 6-Level Roadmap & Parity Table */}
-                          {Array.isArray(levelRoadmap) && levelRoadmap.length > 0 && (
-                            <div className="space-y-1.5">
-                              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-                                <Layers className="w-3.5 h-3.5 text-[#8647E2]" />
-                                Progressive 6-Level Roadmap & Systems Parity
-                              </span>
-                              <div className="border border-slate-200 rounded-lg overflow-hidden bg-white text-xs shadow-2xs">
-                                <div className="grid grid-cols-12 bg-slate-100 p-2 font-mono font-bold text-[10px] text-slate-600 uppercase border-b border-slate-200">
-                                  <div className="col-span-2">Level</div>
-                                  <div className="col-span-4">What You Build</div>
-                                  <div className="col-span-4">Core Systems Concept</div>
-                                  <div className="col-span-2">Parity</div>
-                                </div>
-                                {levelRoadmap.map((item: any, idx: number) => {
-                                  const matchingLayer = layers[idx] || layers.find((l: any) => l.number === item.level);
-                                  const parity = matchingLayer?.realWorldTech?.split(",")[0] || matchingLayer?.realWorldTech || "Production Standard";
-                                  const isActive = selectedLevel === item.level;
-                                  return (
-                                    <div
-                                      key={item.level}
-                                      onClick={() => handleSelectLevel(item.level)}
-                                      className={`grid grid-cols-12 p-2 border-b border-slate-100 last:border-b-0 cursor-pointer hover:bg-slate-50 transition-colors items-center ${
-                                        isActive ? "bg-[#099BE9]/10 font-semibold text-slate-900 ring-1 ring-inset ring-[#099BE9]/30" : "text-slate-700"
-                                      }`}
-                                    >
-                                      <div className="col-span-2 font-mono text-[11px] font-bold text-[#099BE9]">L{item.level}</div>
-                                      <div className="col-span-4 text-slate-800 text-[11px] font-medium">{item.whatWeBuild}</div>
-                                      <div className="col-span-4 text-slate-500 font-mono text-[10px] leading-tight">{item.mainConcept}</div>
-                                      <div className="col-span-2 text-slate-400 font-mono text-[10px] truncate" title={matchingLayer?.realWorldTech}>
-                                        {parity}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Capstone Outcome Callout */}
-                          <div className="p-3 rounded-lg bg-[#09C899]/10 border border-[#09C899]/30 text-slate-900 text-xs space-y-1">
-                            <div className="font-bold flex items-center gap-1.5 font-mono text-[11px] text-[#0AA793] uppercase">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-[#09C899]" />
-                              <span>Final System Outcome & Target Benchmark</span>
-                            </div>
-                            <p className="text-slate-800 leading-relaxed">
-                              {outcome}
-                            </p>
-                          </div>
-                        </div>
-                      )}
+                      <div className="p-3.5 font-mono text-[11px] overflow-x-auto">
+                        <pre className="whitespace-pre leading-relaxed text-[#09C899] font-medium">{architectureDiagram}</pre>
+                      </div>
                     </div>
-                  );
+                  ) : null;
                 })()}
 
-                {/* Header with Title & Level Selector Pills */}
-                <div className="space-y-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-                      {challenge.title}
-                    </h1>
-                    <span className={`px-2.5 py-0.5 rounded text-xs font-semibold font-mono border ${
-                      currentLevelInfo.difficulty === "Easy"
-                        ? "text-[#0AA793] bg-[#09C899]/10 border-[#09C899]/30"
-                        : currentLevelInfo.difficulty === "Medium"
-                        ? "text-[#F78424] bg-[#FBAE0C]/10 border-[#FBAE0C]/30"
-                        : "text-[#8647E2] bg-[#8647E2]/10 border-[#8647E2]/30"
-                    }`}>
-                      {currentLevelInfo.difficulty}
-                    </span>
-                  </div>
-
-                  {/* Level Switcher Pills (LeetCode Sub-Topic Style) */}
-                  <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100 rounded-lg border border-slate-200/80 text-xs font-mono">
+                {/* 1. Level Navigation Segmented Control (L1 - L6) */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg border border-slate-200/80 text-xs font-mono overflow-x-auto">
                     {Object.entries(levelData).map(([lvlNumStr, lvlInfo]) => {
                       const num = Number(lvlNumStr);
                       const isActive = selectedLevel === num;
@@ -566,196 +497,190 @@ export function WorkspaceClient({
                         <button
                           key={num}
                           onClick={() => handleSelectLevel(num)}
-                          className={`px-3 py-1 rounded transition-colors cursor-pointer ${
+                          className={`flex-1 min-w-[68px] py-1.5 px-1.5 rounded-md font-bold transition-all text-center cursor-pointer ${
                             isActive
-                              ? "bg-white text-slate-900 font-bold shadow-2xs"
+                              ? "bg-white text-[#099BE9] shadow-2xs border border-slate-200 ring-1 ring-[#099BE9]/30"
                               : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
                           }`}
                         >
-                          L{num}: {lvlInfo.shortTitle}
+                          L{num}: {lvlInfo.shortTitle?.split(" ")[0] || `L${num}`}
                         </button>
                       );
                     })}
                   </div>
 
-                  {/* Level Mission Banner */}
-                  <div className="p-3 rounded-lg bg-[#099BE9]/10 border border-[#099BE9]/30 text-slate-900 text-xs font-medium space-y-1">
-                    <div className="font-bold flex items-center gap-1.5 font-mono text-[11px] text-[#099BE9] uppercase">
-                      <span>Level {selectedLevel}: {currentLevelInfo.title}</span>
+                  {/* Active Level Header & Mission */}
+                  <div className="p-4 rounded-xl border border-slate-200/90 bg-white shadow-2xs space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-md bg-[#099BE9]/10 text-[#099BE9] font-mono font-bold text-xs">
+                          Level {selectedLevel} of 6
+                        </span>
+                        <span className="text-xs font-mono font-semibold text-slate-500">
+                          {challenge.title}
+                        </span>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded text-xs font-bold font-mono border ${
+                        currentLevelInfo.difficulty === "Easy"
+                          ? "text-[#0AA793] bg-[#09C899]/10 border-[#09C899]/30"
+                          : currentLevelInfo.difficulty === "Medium"
+                          ? "text-[#F78424] bg-[#FBAE0C]/10 border-[#FBAE0C]/30"
+                          : "text-[#8647E2] bg-[#8647E2]/10 border-[#8647E2]/30"
+                      }`}>
+                        {currentLevelInfo.difficulty}
+                      </span>
                     </div>
-                    <p className="text-slate-700 leading-relaxed">
+
+                    <h2 className="text-base font-bold text-slate-950 pt-1">
+                      {currentLevelInfo.title}
+                    </h2>
+                    <p className="text-xs text-slate-700 leading-relaxed font-medium">
                       {currentLevelInfo.tagline}
                     </p>
                   </div>
                 </div>
 
-                {/* Level Detail Sub-Tabs Navigation */}
-                <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg border border-slate-200/80 text-[11px] font-mono">
-                  <button
-                    onClick={() => setDescSubTab("spec")}
-                    className={`flex-1 py-1.5 px-2 rounded font-semibold transition-all cursor-pointer text-center ${
-                      descSubTab === "spec"
-                        ? "bg-white text-slate-950 shadow-2xs font-bold"
-                        : "text-slate-700 hover:text-slate-950 font-semibold"
-                    }`}
-                  >
-                    Spec &amp; Ops
-                  </button>
-                  {currentLevelInfo.diagram && (
-                    <button
-                      onClick={() => setDescSubTab("diagram")}
-                      className={`flex-1 py-1.5 px-2 rounded font-semibold transition-all cursor-pointer text-center ${
-                        descSubTab === "diagram"
-                          ? "bg-white text-slate-950 shadow-2xs font-bold"
-                          : "text-slate-700 hover:text-slate-950 font-semibold"
-                      }`}
-                    >
-                      Flow
-                    </button>
+                {/* 2. Operations & Protocol Specification */}
+                {Array.isArray(currentLevelInfo.operations) && currentLevelInfo.operations.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">
+                        Supported Operations
+                      </h3>
+                      <span className="text-[10px] font-mono text-slate-500 font-semibold">
+                        POSIX Stream Protocol
+                      </span>
+                    </div>
+
+                    <div className="border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs divide-y divide-slate-100">
+                      {currentLevelInfo.operations.map((op: any, idx: number) => (
+                        <div key={idx} className="p-2.5 flex flex-col sm:flex-row sm:items-start gap-2 hover:bg-slate-50/60 transition-colors">
+                          <code className="px-1.5 py-0.5 rounded bg-[#099BE9]/10 border border-[#099BE9]/30 font-mono text-[#099BE9] text-[11px] shrink-0 font-bold">
+                            {op.cmd}
+                          </code>
+                          <span className="text-slate-800 font-medium text-xs leading-relaxed">
+                            {op.desc}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. Concrete Example Session */}
+                {Array.isArray(currentLevelInfo.examples) && currentLevelInfo.examples.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">
+                      Example Protocol Session
+                    </h3>
+                    <div className="space-y-2">
+                      {currentLevelInfo.examples.map((ex: any, idx: number) => (
+                        <div key={idx} className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1.5">
+                          <div className="text-[10px] font-mono text-slate-500 font-bold uppercase tracking-wide">
+                            {ex.title}
+                          </div>
+                          <div className="bg-white p-2.5 rounded border border-slate-200 font-mono text-xs text-slate-800 space-y-1.5">
+                            <div>
+                              <span className="text-slate-400 font-semibold block text-[10px]">Input (stdin):</span>
+                              <pre className="text-slate-900 font-medium whitespace-pre-wrap">{ex.input}</pre>
+                            </div>
+                            <div className="pt-1.5 border-t border-slate-100">
+                              <span className="text-slate-400 font-semibold block text-[10px]">Expected Output (stdout):</span>
+                              <pre className="text-[#0AA793] font-semibold whitespace-pre-wrap">{ex.output}</pre>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. Critical Systems Hurdle / Watch Out */}
+                {currentLevelInfo.importantChallenge && (
+                  <div className="rounded-xl border border-amber-300/80 bg-amber-500/10 p-3.5 space-y-2 text-amber-950 shadow-2xs">
+                    <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase text-amber-700">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span>The Engineering Hurdle: {currentLevelInfo.importantChallenge.title}</span>
+                    </div>
+                    <p className="text-xs text-slate-800 leading-relaxed font-medium">
+                      {currentLevelInfo.importantChallenge.description}
+                    </p>
+                    {currentLevelInfo.importantChallenge.codeOrFormat && (
+                      <div className="bg-slate-900 text-amber-300 p-2.5 rounded font-mono text-[11px] overflow-x-auto border border-amber-500/20">
+                        <pre className="whitespace-pre leading-relaxed">{currentLevelInfo.importantChallenge.codeOrFormat}</pre>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 5. Durability Protocol & Constraints */}
+                <div className="space-y-3 pt-1">
+                  {Array.isArray(currentLevelInfo.durabilityRules) && currentLevelInfo.durabilityRules.length > 0 && (
+                    <div className="space-y-1.5">
+                      <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">
+                        Engineering Rules &amp; Invariants
+                      </h3>
+                      <div className="p-3 rounded-lg bg-slate-50/80 border border-slate-200 space-y-1 text-xs text-slate-800 font-medium">
+                        {currentLevelInfo.durabilityRules.map((rule: any, idx: number) => (
+                          <div key={idx} className="flex items-start gap-2">
+                            <span className="text-[#0AA793] font-bold font-mono">•</span>
+                            <span>{rule}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
-                  {(currentLevelInfo.importantChallenge || currentLevelInfo.learningLoop) && (
-                    <button
-                      onClick={() => setDescSubTab("gotcha")}
-                      className={`flex-1 py-1.5 px-2 rounded font-semibold transition-all cursor-pointer text-center ${
-                        descSubTab === "gotcha"
-                          ? "bg-white text-amber-800 shadow-2xs font-bold"
-                          : "text-slate-700 hover:text-slate-950 font-semibold"
-                      }`}
-                    >
-                      Gotcha
-                    </button>
-                  )}
-                  {(Array.isArray(currentLevelInfo.examples) || currentLevelInfo.endGoalDemonstration) && (
-                    <button
-                      onClick={() => setDescSubTab("examples")}
-                      className={`flex-1 py-1.5 px-2 rounded font-semibold transition-all cursor-pointer text-center ${
-                        descSubTab === "examples"
-                          ? "bg-white text-slate-950 shadow-2xs font-bold"
-                          : "text-slate-700 hover:text-slate-950 font-semibold"
-                      }`}
-                    >
-                      Examples
-                    </button>
+
+                  {Array.isArray(currentLevelInfo.constraints) && currentLevelInfo.constraints.length > 0 && (
+                    <div className="space-y-1.5">
+                      <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">
+                        Sandbox Constraints
+                      </h3>
+                      <div className="p-3 rounded-lg bg-slate-50/80 border border-slate-200 space-y-1 text-xs text-slate-800 font-mono font-medium">
+                        {currentLevelInfo.constraints.map((c: any, idx: number) => (
+                          <div key={idx} className="flex items-start gap-2">
+                            <span className="text-[#099BE9] font-bold">•</span>
+                            <span>{c}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
 
-                {/* 1. SPEC & OPERATIONS SUB-TAB */}
-                {descSubTab === "spec" && (
-                  <div className="space-y-4 animate-in fade-in-50 duration-150">
-                    {/* Operations Section */}
-                    {Array.isArray(currentLevelInfo.operations) && currentLevelInfo.operations.length > 0 && (
-                      <div className="space-y-2.5">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">
-                            Supported Operations
-                          </h3>
-                          <span className="text-[10px] font-mono text-slate-600 font-semibold">
-                            POSIX Stream I/O
-                          </span>
-                        </div>
-
-                        <div className="border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs divide-y divide-slate-100">
-                          {currentLevelInfo.operations.map((op: any, idx: number) => (
-                            <div key={idx} className="p-2.5 flex flex-col sm:flex-row sm:items-start gap-2 hover:bg-slate-50/60 transition-colors">
-                              <code className="px-1.5 py-0.5 rounded bg-[#099BE9]/10 border border-[#099BE9]/30 font-mono text-[#099BE9] text-[11px] shrink-0 font-bold">
-                                {op.cmd}
-                              </code>
-                              <span className="text-slate-800 font-medium text-xs leading-relaxed">
-                                {op.desc}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
+                {/* 6. Optional Deep Dive Collapsibles */}
+                <div className="space-y-2 pt-2 border-t border-slate-200">
+                  {currentLevelInfo.diagram && (
+                    <details className="rounded-lg border border-slate-200 bg-white overflow-hidden text-xs">
+                      <summary className="p-2.5 font-mono font-bold text-slate-800 cursor-pointer select-none hover:bg-slate-50 flex items-center justify-between">
+                        <span className="flex items-center gap-1.5 text-[#099BE9]">
+                          <Terminal className="w-3.5 h-3.5" />
+                          <span>Data Flow Diagram (L{selectedLevel})</span>
+                        </span>
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                      </summary>
+                      <div className="p-3 bg-slate-950 font-mono text-[11px] text-[#09C899] overflow-x-auto border-t border-slate-800">
+                        <pre className="whitespace-pre leading-relaxed">{currentLevelInfo.diagram}</pre>
                       </div>
-                    )}
+                    </details>
+                  )}
 
-                    {/* Durability / Engineering Protocol */}
-                    {Array.isArray(currentLevelInfo.durabilityRules) && currentLevelInfo.durabilityRules.length > 0 && (
-                      <div className="space-y-2">
-                        <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">
-                          Durability Protocol
-                        </h3>
-                        <div className="p-3 rounded-lg bg-[#fafafa] border border-slate-200 space-y-1.5 text-xs text-slate-800 font-medium">
-                          {currentLevelInfo.durabilityRules.map((rule: any, idx: number) => (
-                            <div key={idx} className="flex items-start gap-1.5">
-                              <span className="text-[#0AA793] font-bold font-mono">•</span>
-                              <span>{rule}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Constraints & Sandbox Limits */}
-                    {Array.isArray(currentLevelInfo.constraints) && currentLevelInfo.constraints.length > 0 && (
-                      <div className="space-y-2 pt-2 border-t border-slate-200/80">
-                        <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">Constraints</h3>
-                        <ul className="list-disc list-inside space-y-1 text-slate-800 text-xs font-mono font-medium">
-                          {currentLevelInfo.constraints.map((c: any, idx: number) => (
-                            <li key={idx}>{c}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* 2. DATA FLOW DIAGRAM SUB-TAB */}
-                {descSubTab === "diagram" && currentLevelInfo.diagram && (
-                  <div className="space-y-3 animate-in fade-in-50 duration-150">
-                    <div className="flex items-center justify-between text-[11px] font-mono font-semibold text-slate-500">
-                      <span className="flex items-center gap-1.5 text-[#099BE9]">
-                        <Terminal className="w-3.5 h-3.5" />
-                        Data Flow Blueprint
-                      </span>
-                      <span className="text-[10px] text-slate-400 uppercase">Input ──► Engine ──► Output</span>
-                    </div>
-                    <div className="rounded-xl border border-slate-800 bg-slate-950 p-3.5 text-slate-100 shadow-md overflow-x-auto">
-                      <pre className="font-mono text-xs leading-relaxed text-[#09C899] whitespace-pre selection:bg-[#09C899]/20 font-medium">
-                        {currentLevelInfo.diagram}
-                      </pre>
-                    </div>
-                  </div>
-                )}
-
-                {/* 3. GOTCHA & MENTAL MODEL SUB-TAB */}
-                {descSubTab === "gotcha" && (
-                  <div className="space-y-4 animate-in fade-in-50 duration-150">
-                    {/* Critical Gotcha */}
-                    {currentLevelInfo.importantChallenge && (
-                      <div className="rounded-xl border border-amber-300/80 bg-amber-500/10 p-3.5 space-y-2 text-amber-950 shadow-2xs">
-                        <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase text-amber-700">
-                          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                          <span>Watch Out: {currentLevelInfo.importantChallenge.title}</span>
-                        </div>
-                        <p className="text-xs text-slate-800 leading-relaxed font-medium">
-                          {currentLevelInfo.importantChallenge.description}
-                        </p>
-                        {currentLevelInfo.importantChallenge.codeOrFormat && (
-                          <div className="bg-slate-900 text-amber-300 p-2.5 rounded font-mono text-[11px] overflow-x-auto border border-amber-500/20">
-                            <pre className="whitespace-pre leading-relaxed">{currentLevelInfo.importantChallenge.codeOrFormat}</pre>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Learning Loop & Concepts */}
-                    {currentLevelInfo.learningLoop && (
-                      <div className="rounded-xl border border-[#8647E2]/30 bg-gradient-to-br from-[#8647E2]/10 via-slate-50 to-[#099BE9]/10 p-3.5 space-y-3 shadow-2xs text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold font-mono text-[11px] text-[#8647E2] uppercase flex items-center gap-1.5">
-                            <Lightbulb className="w-3.5 h-3.5" />
-                            <span>Mental Model L{selectedLevel}</span>
-                          </span>
-                        </div>
-
+                  {currentLevelInfo.learningLoop && (
+                    <details className="rounded-lg border border-slate-200 bg-white overflow-hidden text-xs">
+                      <summary className="p-2.5 font-mono font-bold text-slate-800 cursor-pointer select-none hover:bg-slate-50 flex items-center justify-between">
+                        <span className="flex items-center gap-1.5 text-[#8647E2]">
+                          <Lightbulb className="w-3.5 h-3.5" />
+                          <span>Mental Model &amp; Systems Takeaways (L{selectedLevel})</span>
+                        </span>
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                      </summary>
+                      <div className="p-3 space-y-2.5 bg-slate-50/50 border-t border-slate-200 text-xs text-slate-800">
                         {currentLevelInfo.learningLoop.bottleneck && (
-                          <div className="p-2.5 rounded bg-white border border-slate-200/80 space-y-0.5">
+                          <div className="p-2 rounded bg-white border border-slate-200 space-y-0.5">
                             <span className="font-bold font-mono text-[10px] text-rose-700 uppercase block">The Systems Bottleneck:</span>
-                            <span className="text-slate-700">{currentLevelInfo.learningLoop.bottleneck}</span>
+                            <span className="text-slate-700 font-medium">{currentLevelInfo.learningLoop.bottleneck}</span>
                           </div>
                         )}
-
                         {Array.isArray(currentLevelInfo.learningLoop.whatYouUnderstand) && (
                           <div className="space-y-1">
                             <span className="font-bold font-mono text-[10px] text-slate-600 uppercase block">Key Takeaways:</span>
@@ -768,81 +693,65 @@ export function WorkspaceClient({
                           </div>
                         )}
                       </div>
-                    )}
-                  </div>
-                )}
+                    </details>
+                  )}
 
-                {/* 4. EXAMPLES & CLI VERIFICATION SUB-TAB */}
-                {descSubTab === "examples" && (
-                  <div className="space-y-4 animate-in fade-in-50 duration-150">
-                    {/* Concrete Examples */}
-                    {Array.isArray(currentLevelInfo.examples) && currentLevelInfo.examples.length > 0 && (
-                      <div className="space-y-3">
-                        {currentLevelInfo.examples.map((ex: any, idx: number) => (
-                          <div key={idx} className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1.5">
-                            <div className="text-[10px] font-mono text-slate-500 font-bold uppercase tracking-wide">
-                              {ex.title}
-                            </div>
-                            <div className="bg-white p-2.5 rounded border border-slate-200 font-mono text-xs text-slate-800 space-y-1.5">
-                              <div>
-                                <span className="text-slate-400 font-semibold block text-[10px]">Input:</span>
-                                <pre className="text-slate-900 font-medium whitespace-pre-wrap">{ex.input}</pre>
-                              </div>
-                              <div className="pt-1.5 border-t border-slate-100">
-                                <span className="text-slate-400 font-semibold block text-[10px]">Output:</span>
-                                <pre className="text-[#0AA793] font-semibold whitespace-pre-wrap">{ex.output}</pre>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                  {currentLevelInfo.endGoalDemonstration && (
+                    <details className="rounded-lg border border-slate-200 bg-white overflow-hidden text-xs">
+                      <summary className="p-2.5 font-mono font-bold text-slate-800 cursor-pointer select-none hover:bg-slate-50 flex items-center justify-between">
+                        <span className="flex items-center gap-1.5 text-[#0AA793]">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>CLI Verification Session</span>
+                        </span>
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                      </summary>
+                      <div className="p-3 bg-slate-950 font-mono text-[11px] text-[#09C899] overflow-x-auto border-t border-slate-800">
+                        <pre className="whitespace-pre leading-relaxed">{currentLevelInfo.endGoalDemonstration}</pre>
                       </div>
-                    )}
+                    </details>
+                  )}
+                </div>
 
-                    {/* End-of-Level Terminal Verification Session */}
-                    {currentLevelInfo.endGoalDemonstration && (
-                      <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 space-y-2 text-slate-100 shadow-sm">
-                        <div className="flex items-center justify-between text-[11px] font-mono font-semibold text-slate-400">
-                          <span className="flex items-center gap-1.5 text-[#09C899]">
-                            <Terminal className="w-3.5 h-3.5" />
-                            CLI Execution Session
-                          </span>
-                          <span className="text-[10px] text-slate-500 uppercase">Verification Contract</span>
-                        </div>
-                        <div className="overflow-x-auto">
-                          <pre className="whitespace-pre text-[#09C899] font-medium leading-relaxed font-mono text-xs">{currentLevelInfo.endGoalDemonstration}</pre>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Level Advancer Footer */}
-                {selectedLevel < 6 && (
-                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
-                    <span className="text-slate-400">Level {selectedLevel} of 6</span>
+                {/* 7. Level Advancer Footer */}
+                <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-xs font-mono">
+                  {selectedLevel > 1 ? (
                     <button
-                      onClick={() => {
-                        handleSelectLevel(selectedLevel + 1);
-                        setDescSubTab("spec");
-                      }}
-                      className="px-2.5 py-1 rounded-md bg-slate-900 hover:bg-slate-800 text-white font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                      onClick={() => handleSelectLevel(selectedLevel - 1)}
+                      className="px-3 py-1.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                      <span>Previous: L{selectedLevel - 1}</span>
+                    </button>
+                  ) : <div />}
+
+                  <span className="text-slate-500 font-semibold">Level {selectedLevel} of 6</span>
+
+                  {selectedLevel < 6 ? (
+                    <button
+                      onClick={() => handleSelectLevel(selectedLevel + 1)}
+                      className="px-3 py-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-white font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                     >
                       <span>Next: L{selectedLevel + 1}</span>
                       <ChevronRight className="w-3.5 h-3.5" />
                     </button>
-                  </div>
-                )}
+                  ) : <div />}
+                </div>
               </div>
             )}
 
             {leftTab === "missions" && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-semibold text-slate-900">
-                    Progressive Engineering Missions (Levels 1 – 6)
-                  </h2>
-                  <span className="text-[11px] font-mono text-slate-400">
-                    6 Progressive Milestones
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-950">
+                      Progressive 6-Level Systems Curriculum
+                    </h2>
+                    <p className="text-xs text-slate-600 font-medium mt-0.5">
+                      Reconstruct real technology from first principles, layer by layer.
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-mono text-slate-500 font-semibold bg-slate-100 px-2 py-0.5 rounded">
+                    6 Milestones
                   </span>
                 </div>
 
@@ -850,63 +759,81 @@ export function WorkspaceClient({
                   {Object.entries(levelData).map(([lvlNumStr, lvlInfo]) => {
                     const num = Number(lvlNumStr);
                     const isActive = selectedLevel === num;
+                    let spec = (version.spec as any) || {};
+                    if (typeof spec === "string") {
+                      try { spec = JSON.parse(spec); } catch { spec = {}; }
+                    }
+                    const layers = (Array.isArray(spec.architecturalLayers) && spec.architecturalLayers.length > 0)
+                      ? spec.architecturalLayers
+                      : (challengeData?.architecturalLayers || []);
+                    const matchingLayer = layers?.[num - 1] || layers?.find((l: any) => l.number === num);
+                    const rawParity = lvlInfo.learningLoop?.productionParity || matchingLayer?.realWorldTech || "Production Standard";
+                    const parity = rawParity.replace(/^The core in-memory hash dictionary design used in /i, "").split(",")[0].trim();
+                    const bottleneck = lvlInfo.learningLoop?.bottleneck || lvlInfo.importantChallenge?.description;
+
                     return (
                       <div
                         key={num}
-                        onClick={() => handleSelectLevel(num)}
-                        className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                        onClick={() => {
+                          handleSelectLevel(num);
+                          setLeftTab("description");
+                        }}
+                        className={`p-4 rounded-xl border cursor-pointer transition-all space-y-2.5 ${
                           isActive
-                            ? "bg-[#099BE9]/10 border-[#099BE9]/40 shadow-2xs ring-1 ring-[#099BE9]/30"
+                            ? "bg-[#099BE9]/5 border-[#099BE9]/40 shadow-2xs ring-1 ring-[#099BE9]/30"
                             : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-2xs"
                         }`}
                       >
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-slate-900">
-                              Mission {num}: {lvlInfo.title}
+                            <span className="px-2 py-0.5 rounded bg-[#099BE9]/10 text-[#099BE9] font-mono font-bold text-xs">
+                              Level {num}
                             </span>
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold ${
+                            <span className="text-xs font-bold text-slate-950">
+                              {lvlInfo.title}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${
                               lvlInfo.difficulty === "Easy"
-                                ? "bg-[#09C899]/10 text-[#0AA793] border border-[#09C899]/30"
+                                ? "bg-[#09C899]/10 text-[#0AA793] border-[#09C899]/30"
                                 : lvlInfo.difficulty === "Medium"
-                                ? "bg-[#FBAE0C]/10 text-[#F78424] border border-[#FBAE0C]/30"
-                                : "bg-[#8647E2]/10 text-[#8647E2] border border-[#8647E2]/30"
+                                ? "bg-[#FBAE0C]/10 text-[#F78424] border-[#FBAE0C]/30"
+                                : "bg-[#8647E2]/10 text-[#8647E2] border-[#8647E2]/30"
                             }`}>
                               {lvlInfo.difficulty}
                             </span>
                           </div>
-                          {isActive ? (
-                            <span className="text-[10px] font-mono font-semibold text-[#099BE9] bg-[#099BE9]/15 px-2.5 py-0.5 rounded-full">
-                              Active Mission
+
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-mono text-slate-600 bg-slate-100 px-2 py-0.5 rounded font-semibold">
+                              Parity: {parity}
                             </span>
-                          ) : (
-                            <span className="text-[10px] font-mono text-slate-400 hover:text-slate-700 font-medium">
-                              Select L{num} →
-                            </span>
-                          )}
+                            {isActive ? (
+                              <span className="text-[10px] font-mono font-bold text-[#099BE9] bg-[#099BE9]/15 px-2 py-0.5 rounded">
+                                Active
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-mono text-[#099BE9] font-semibold hover:underline">
+                                Switch to L{num} →
+                              </span>
+                            )}
+                          </div>
                         </div>
 
-                        <p className="text-slate-600 text-xs leading-relaxed mb-2.5">
+                        <p className="text-slate-700 text-xs leading-relaxed font-medium">
                           {lvlInfo.tagline}
                         </p>
 
-                        {/* Learning Loop Outcome Summary */}
-                        {lvlInfo.learningLoop?.outcomeSummary && (
-                          <div className="mb-2.5 p-2 rounded-md bg-[#8647E2]/10 border border-[#8647E2]/30 text-[11px] text-slate-900 space-y-1">
-                            <div className="font-bold flex items-center gap-1 text-[10px] font-mono uppercase text-[#8647E2]">
-                              <Lightbulb className="w-3 h-3" />
-                              <span>What You Understand & Master</span>
-                            </div>
-                            <p className="leading-snug text-slate-700">
-                              {lvlInfo.learningLoop.outcomeSummary}
-                            </p>
+                        {bottleneck && (
+                          <div className="p-2 rounded bg-amber-500/10 border border-amber-300/50 text-[11px] text-slate-800">
+                            <strong className="text-amber-950 font-semibold font-mono uppercase text-[10px]">Hurdle: </strong>
+                            <span>{bottleneck}</span>
                           </div>
                         )}
 
                         {Array.isArray(lvlInfo.operations) && lvlInfo.operations.length > 0 && (
-                          <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-100">
+                          <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-100">
                             <span className="text-[10px] font-mono text-slate-400 uppercase font-semibold mr-1">
-                              Operations:
+                              Ops:
                             </span>
                             {lvlInfo.operations.map((op: any, idx: number) => (
                               <code

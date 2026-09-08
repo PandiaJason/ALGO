@@ -149,23 +149,25 @@ export default async function WorkspacePage({ params }: Props) {
   }
 
   return (
-    <WorkspaceClient
-      challenge={{
-        id: challenge.id,
-        slug: challenge.slug,
-        title: challenge.title,
-        description: challenge.description,
-        difficulty: challenge.difficulty,
-      }}
-      version={{
-        id: version.id,
-        starterTemplates: version.starterTemplates as any,
-        levels: (version.levels as any[]) || [],
-        spec: version.spec || undefined,
-      }}
-      user={session?.user as any}
-      pastSubmissions={userSubmissions as any}
-      topLeaders={topLeaders as any}
-    />
+    <React.Suspense fallback={<div className="flex h-screen items-center justify-center bg-white text-slate-500 font-mono text-xs">Loading Workspace...</div>}>
+      <WorkspaceClient
+        challenge={{
+          id: challenge.id,
+          slug: challenge.slug,
+          title: challenge.title,
+          description: challenge.description,
+          difficulty: challenge.difficulty,
+        }}
+        version={{
+          id: version.id,
+          starterTemplates: version.starterTemplates as any,
+          levels: (version.levels as any[]) || [],
+          spec: version.spec || undefined,
+        }}
+        user={session?.user as any}
+        pastSubmissions={userSubmissions as any}
+        topLeaders={topLeaders as any}
+      />
+    </React.Suspense>
   );
 }
