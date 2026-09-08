@@ -342,7 +342,7 @@ export function HomeManifesto() {
             href="/challenges"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold text-white bg-[#09C899] hover:bg-[#0AA793] shadow-md transition-all active:scale-95 shrink-0"
           >
-            <span>View All Problems</span>
+            <span>View All Challenges</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

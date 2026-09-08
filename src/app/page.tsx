@@ -79,7 +79,7 @@ export default async function HomePage() {
                     href="/challenges"
                     className="inline-flex items-center gap-2 bg-[#09C899] hover:bg-[#0AA793] text-white px-7 py-3 rounded-full text-sm font-bold shadow-lg shadow-[#09C899]/25 transition-all hover:translate-x-0.5 active:scale-95"
                   >
-                    <span>Explore Problems</span>
+                    <span>Explore Challenges</span>
                     <ChevronRight className="w-4 h-4" />
                   </Link>
                   <Link

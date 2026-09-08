@@ -57,7 +57,7 @@ export function ChallengesTable({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search problems, technologies..."
+            placeholder="Search challenges, technologies..."
             className="w-full pl-9 pr-4 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-[#099BE9] text-slate-950 font-medium placeholder:text-slate-400 shadow-2xs"
           />
         </div>

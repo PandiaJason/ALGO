@@ -132,7 +132,7 @@ export function ResultClient({
       {/* Breadcrumb Navigation (LeetCode Style) */}
       <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
         <Link href="/challenges" className="hover:text-slate-900 transition-colors">
-          Problems
+          Challenges
         </Link>
         <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
         <Link

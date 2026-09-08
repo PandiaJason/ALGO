@@ -278,7 +278,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-mono font-medium mb-4">
             <Link href="/challenges" className="hover:text-white transition-colors">
-              Curriculum
+              Challenges
             </Link>
             <ChevronRight className="w-3 h-3 text-neutral-600" />
             <span className="text-neutral-400">{coreDef?.domainLabel ?? "SYSTEMS"}</span>

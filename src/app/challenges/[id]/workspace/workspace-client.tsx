@@ -321,7 +321,7 @@ export function WorkspaceClient({
               ALGO
             </span>
             <ArrowLeft className="w-3.5 h-3.5 ml-1 text-slate-400 group-hover:text-slate-700 transition-colors" />
-            <span className="text-xs font-semibold text-slate-700 hover:text-slate-950">Problem List</span>
+            <span className="text-xs font-semibold text-slate-700 hover:text-slate-950">Challenges</span>
           </Link>
 
           <span className="text-slate-200">|</span>

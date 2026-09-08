@@ -28,7 +28,7 @@ export function HomeProblemset() {
             </span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950">
-            Systems Engineering Problemset
+            Systems Engineering Challenges
           </h2>
           <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1">
             Build production-grade systems from first principles in C++, Rust, Go, Python, or Java.
