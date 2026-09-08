@@ -17,6 +17,7 @@ import { DailyChallengeBanner } from "@/components/home/daily-challenge-banner";
 import { HomeProblemset } from "@/components/home/home-problemset";
 import { HomeLeaderboardSnapshot } from "@/components/home/home-leaderboard-snapshot";
 import { HomeManifesto } from "@/components/home/home-manifesto";
+import { HomeWishlist } from "@/components/home/home-wishlist";
 import { ChevronRight, Play } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -127,6 +128,11 @@ export default async function HomePage() {
         {/* 5. THE PROVING GROUND THESIS & SYSTEMS VERIFICATION LOOP       */}
         {/* ============================================================== */}
         <HomeManifesto />
+
+        {/* ============================================================== */}
+        {/* 6. JOIN WISHLIST & DIRECT MESSAGE (Queued in Admin Control)    */}
+        {/* ============================================================== */}
+        <HomeWishlist />
       </main>
 
       <Footer />

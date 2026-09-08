@@ -18,6 +18,7 @@ import {
   X,
   Check,
   Save,
+  MessageSquare,
 } from "lucide-react";
 
 export interface WhitelistEntry {
@@ -420,8 +421,20 @@ export function WhitelistManager({ initialEntries, adminEmail }: Props) {
                           {e.registeredRole || (isOwner ? "ADMIN" : "STUDENT")}
                         </Badge>
                       </td>
-                      <td className="py-3 px-4 font-sans text-slate-500 text-[11px]">
-                        {e.notes || "—"}
+                      <td className="py-3 px-4 font-sans text-slate-700 text-[11px] max-w-xs">
+                        {e.notes?.includes("[DM]") ? (
+                          <div className="space-y-1">
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#09C899]/15 text-[#0AA793] border border-[#09C899]/30">
+                              <MessageSquare className="w-2.5 h-2.5" />
+                              <span>DM Attached</span>
+                            </span>
+                            <p className="text-slate-900 font-medium whitespace-pre-wrap leading-relaxed">
+                              {e.notes.replace(/^\[DM\]:\s*/, "")}
+                            </p>
+                          </div>
+                        ) : (
+                          <span className="text-slate-500">{e.notes || "—"}</span>
+                        )}
                       </td>
                       <td className="py-3 px-4 text-slate-400 font-sans text-[11px]">
                         {new Date(e.createdAt).toLocaleDateString()}
