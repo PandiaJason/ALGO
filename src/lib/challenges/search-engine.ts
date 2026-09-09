@@ -4,21 +4,21 @@ import { ChallengeData } from "./types";
 export const searchEngineChallenge: ChallengeData = {
   slug: "search-engine",
   number: "10",
-  title: "Build a Search Engine",
+  title: "Inverted-Index Search Engine",
   subtitle: "From inverted index postings lists to BM25 probabilistic relevance ranking and positional phrase matching.",
   badge: "DATA INFRASTRUCTURE CAPSTONE",
   domain: "SEARCH_DATA",
-  inspiredBy: "Elasticsearch / Lucene",
-  whatStudentsBuild: "Inverted-index search engine",
+  inspiredBy: "Lucene, Elasticsearch, Meilisearch",
+  whatStudentsBuild: "Inverted-index full-text search engine",
   mainSkill: "Indexing, ranking, text processing",
-  signatureQuestion: "How does Google return results from 50 billion pages in 12 milliseconds?",
+  signatureQuestion: "Can you search millions of documents quickly?",
   overview:
-    "In this engineering challenge, you construct a high-throughput full-text search engine from first principles — the architecture powering Apache Lucene, Elasticsearch, and Vespa. Rather than using sqlite FTS or regex grep, you build raw text tokenizers, inverted index postings lists, skip-pointer boolean query intersections, Okapi BM25 ranking, positional phrase proximity matchers, and LSM-style segment merging.",
+    "In this engineering challenge, you construct a high-throughput full-text search engine from first principles — inspired by the information retrieval architectures of Apache Lucene, Elasticsearch, and Meilisearch. Rather than using sqlite FTS or regex grep, you build raw text tokenizers, inverted index postings lists, fast boolean query intersections, Okapi BM25 statistical ranking, positional phrase proximity matchers, and immutable segment compaction.",
   whyItMatters:
     "Information retrieval powers every modern product: search bars, logging platforms, log observability (ELK), and vector databases. A naive search does O(N) regex scans across terabytes of text. Understanding postings lists, BM25 saturation, and segment merging is fundamental for high-performance data systems.",
   finalOutcome:
     "Upon completing all 6 levels, you have engineered a production-grade search engine supporting inverted index construction, fast boolean query intersections, BM25 probabilistic relevance ranking, positional phrase matching, and immutable segment compaction.",
-  philosophy: "Build an inverted search index from the ground up, one information retrieval concept at a time.",
+  philosophy: "Encounter real information retrieval problems: vocabulary growth, postings list intersections, term frequency saturation curves, and positional proximity matching.",
   architectureDiagram: `                     DOCUMENT CORPUS
                             │
                ┌────────────┴────────────┐

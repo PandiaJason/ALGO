@@ -4,21 +4,21 @@ import { ChallengeData } from "./types";
 export const lruCacheChallenge: ChallengeData = {
   slug: "lru-cache",
   number: "05",
-  title: "Build a Cache",
-  subtitle: "From doubly-linked LRU lists to LFU frequency heaps and byte-budgeted evictions.",
+  title: "Concurrent Cache & Eviction Engine",
+  subtitle: "From doubly-linked LRU lists and LFU frequency tiers to memory-budgeted evictions and Adaptive Replacement Caching (ARC).",
   badge: "PERFORMANCE ENGINEERING CAPSTONE",
   domain: "PERFORMANCE",
-  inspiredBy: "Redis / Memcached",
-  whatStudentsBuild: "LRU / LFU cache",
+  inspiredBy: "Redis, Memcached, Guava",
+  whatStudentsBuild: "Workload-adaptive concurrent cache",
   mainSkill: "Caching, eviction, memory",
   signatureQuestion: "Can you increase hit rate without increasing memory?",
   overview:
-    "In this engineering challenge, you construct an ultra-low latency in-memory cache engine from first principles — the architecture powering Redis keyspace eviction and Memcached slab allocators. Rather than using collections.OrderedDict, you build raw doubly-linked list node pointers, frequency buckets, millisecond TTL expiration, and byte-accurate memory budgeting.",
+    "In this engineering challenge, you construct an ultra-low latency concurrent cache engine from first principles — inspired by the caching architectures of Redis, Memcached, and Guava. You build raw doubly-linked list node pointer splicing (LRU), frequency count tiering (LFU), millisecond TTL expiration, byte-accurate memory budgeting, and Adaptive Replacement Caching (ARC) to adaptively balance recency and frequency signals.",
   whyItMatters:
     "Caches sit directly in front of primary databases. If a cache algorithm evicts the wrong hot keys or suffers O(N) eviction sweeps, downstream databases collapse under thundering herds. Understanding LRU, LFU, and ARC eviction dynamics is essential for distributed systems.",
   finalOutcome:
     "Upon completing all 6 levels, you have engineered a production-grade cache engine supporting both LRU and LFU eviction modes, millisecond TTL expiration, strict byte memory caps, and sub-0.01ms O(1) operations.",
-  philosophy: "Build an in-memory cache from the ground up, one eviction algorithm at a time.",
+  philosophy: "Encounter real caching engineering problems: recency vs frequency trade-offs, O(1) pointer splicing, timer min-heap sweeps, and workload-adaptive replacement.",
   architectureDiagram: `                  HASH MAP (O(1) Lookup)
                    "alpha" ──► Node A
                    "beta"  ──► Node B

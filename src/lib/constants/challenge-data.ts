@@ -39,9 +39,9 @@ export interface LevelDefinition {
 
 export const PROJECT_SCOPE = {
   badge: "SYSTEMS ENGINEERING CAPSTONE",
-  title: "Building a Production-Grade Key-Value Storage Engine",
+  title: "Key-Value Storage Engine",
   subtitle: "From bare-metal in-memory dictionaries to a multi-threaded, crash-durable, 100K+ ops/sec engine.",
-  philosophy: "Build Redis from the ground up, one engineering concept at a time.",
+  philosophy: "Encounter real storage engineering problems: hash collisions, write-ahead logs, monotonic TTL sweeps, and striped-mutex concurrency.",
   architectureDiagram: `                    KEY-VALUE ENGINE
                            │
         ┌──────────────────┴──────────────────┐

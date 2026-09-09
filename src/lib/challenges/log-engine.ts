@@ -4,21 +4,21 @@ import { ChallengeData } from "./types";
 export const logEngineChallenge: ChallengeData = {
   slug: "log-engine",
   number: "06",
-  title: "Build a Log Engine",
-  subtitle: "From line-delimited regex parsers to SIMD zero-copy streaming aggregators and Count-Min Sketches.",
+  title: "Streaming Log Analytics Engine",
+  subtitle: "From line-delimited byte tokenization to streaming aggregators, rolling window error rates, Count-Min Sketches, and quantiles.",
   badge: "PERFORMANCE ENGINEERING CAPSTONE",
   domain: "PERFORMANCE",
-  inspiredBy: "Observability Systems",
-  whatStudentsBuild: "High-throughput log processor",
+  inspiredBy: "ClickHouse, Loki, Vector",
+  whatStudentsBuild: "Streaming log processor & analytics engine",
   mainSkill: "Streaming, parsing, aggregation",
   signatureQuestion: "Can your system process the stream faster than it arrives?",
   overview:
-    "In this engineering challenge, you construct a high-throughput log processing engine from first principles — the architecture powering Datadog, Prometheus, and VictoriaMetrics. Rather than using bloated regex engines, you build fast byte tokenizers, rolling window metric accumulators, Count-Min Sketches for top-K estimation, and streaming p95/p99 latency calculations.",
+    "In this engineering challenge, you construct a high-throughput streaming log analytics engine from first principles — inspired by core concepts found in systems like ClickHouse, Loki, and Vector. Rather than relying on heavyweight regex libraries or external databases, you engineer the raw stream processing pipeline: zero-copy byte tokenization, status family histogram counters, circular ring-buffer sliding windows, Count-Min Sketches for bounded-memory heavy hitters, and streaming quantile estimators.",
   whyItMatters:
     "Modern cloud platforms generate gigabytes of log lines every minute. A slow parser stalls the observability pipeline and consumes thousands of CPU cores. Building a streaming log aggregator teaches you cache-friendly data structures, probabilistic algorithms, and zero-allocation parsing.",
   finalOutcome:
     "Upon completing all 6 levels, you have constructed a high-speed log aggregation engine capable of ingesting 200,000+ log lines/sec, maintaining rolling error rates, tracking top endpoints with bounded memory, and reporting p99 latency in sub-millisecond time.",
-  philosophy: "Build an observability engine from the ground up, one streaming telemetry concept at a time.",
+  philosophy: "Encounter real observability and streaming telemetry problems: zero-copy stream tokenization, bounded-memory frequency sketches, circular ring-buffer windowing, and quantile approximation.",
   architectureDiagram: `                     LOG STREAM PIPELINE
                              │
             ┌────────────────┴────────────────┐

@@ -4,21 +4,21 @@ import { ChallengeData } from "./types";
 export const taskSchedulerChallenge: ChallengeData = {
   slug: "task-scheduler",
   number: "07",
-  title: "Build a Task Scheduler",
-  subtitle: "From priority queues and resource bin-packing to worker failure preemption and dominant resource fairness.",
+  title: "Multi-Resource Task Scheduler",
+  subtitle: "From priority queues and multi-resource bin-packing to worker failure preemption and dominant resource fairness (DRF).",
   badge: "DISTRIBUTED SYSTEMS CAPSTONE",
   domain: "DISTRIBUTED_SYSTEMS",
-  inspiredBy: "Kubernetes / Borg",
-  whatStudentsBuild: "Job scheduling system",
+  inspiredBy: "Kubernetes (kube-scheduler), Mesos",
+  whatStudentsBuild: "Multi-resource cluster task scheduler",
   mainSkill: "Scheduling, priorities, concurrency",
-  signatureQuestion: "How do you schedule 10,000 tasks across constrained nodes without starving low-priority jobs?",
+  signatureQuestion: "Can you schedule more work with the same resources?",
   overview:
-    "In this engineering challenge, you construct a production-grade cluster task scheduler from first principles — the foundational architecture behind Kubernetes kube-scheduler and Google Borg. Rather than using simplistic first-in queues, you engineer multi-dimensional resource bin-packing, priority-ordered preemption, node affinity filtering, heartbeat health monitoring, and dominant resource fairness (DRF).",
+    "In this engineering challenge, you construct a production-grade multi-resource cluster task scheduler from first principles — inspired by the scheduling architectures of Kubernetes (kube-scheduler) and Apache Mesos. Rather than using simplistic first-in queues, you engineer multi-dimensional resource bin-packing across CPU and RAM, priority-ordered ready queues, node capacity filtering, heartbeat failure recovery, and Dominant Resource Fairness (DRF).",
   whyItMatters:
     "Modern cloud computing runs millions of containers across heterogeneous hardware. Poor scheduling creates massive resource strandedness (nodes running out of RAM while CPU sits idle at 5%), job starvation, and cascading outages when worker nodes fail. Mastering scheduling algorithms is the pinnacle of systems engineering.",
   finalOutcome:
     "Upon completing all 6 levels, you have engineered an autonomous cluster scheduler capable of bin-packing multi-resource tasks, preempting low-priority workloads, recovering from node deaths, and balancing fairness across competing tenants.",
-  philosophy: "Build Kubernetes kube-scheduler from the ground up, one scheduling algorithm at a time.",
+  philosophy: "Encounter real cluster scheduling problems: multi-dimensional bin packing, resource fragmentation, priority preemption, failure rescheduling, and max-min tenant fairness.",
   architectureDiagram: `                     TASK SCHEDULER
                             │
          ┌──────────────────┴──────────────────┐

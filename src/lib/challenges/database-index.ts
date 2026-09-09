@@ -4,21 +4,21 @@ import { ChallengeData } from "./types";
 export const databaseIndexChallenge: ChallengeData = {
   slug: "database-index",
   number: "04",
-  title: "Build a Database Index",
+  title: "B+ Tree Database Index Engine",
   subtitle: "From 10M-row linear table scans to a slotted-page B+ Tree with buffer pool caching.",
   badge: "SYSTEMS ENGINEERING CAPSTONE",
   domain: "SYSTEMS",
-  inspiredBy: "PostgreSQL",
-  whatStudentsBuild: "B-Tree index",
+  inspiredBy: "PostgreSQL, SQLite, InnoDB",
+  whatStudentsBuild: "Slotted-page B+ Tree indexing engine",
   mainSkill: "Storage, indexing, disk I/O",
   signatureQuestion: "Why doesn't a database scan every row?",
   overview:
-    "In this engineering challenge, you construct a high-performance database indexing engine from first principles — the exact storage subsystem powering PostgreSQL btree and SQLite. You start by experiencing catastrophic O(N) table scans, then engineer in-memory B-Trees, 4KB slotted page serialization, doubly-linked leaf range scanning, and buffer pool caching.",
+    "In this engineering challenge, you construct a high-performance database indexing engine from first principles — inspired by the storage and indexing architectures of PostgreSQL, SQLite, and InnoDB. You start by experiencing catastrophic O(N) table scans, then engineer in-memory B-Trees, 4KB slotted page serialization, doubly-linked leaf range scanning, and buffer pool caching.",
   whyItMatters:
     "Scanning 10 million rows from disk can take seconds. An indexed B+ Tree finds any row in 3 to 4 disk page hops (sub-millisecond). Mastering B+ Trees bridges software algorithms with physical 4KB hardware page boundaries and OS page cache dynamics.",
   finalOutcome:
     "Upon completing all 6 levels, you have constructed a production-grade B+ Tree indexing engine capable of resolving lookups in sub-0.05ms over 10M simulated records, supporting range scans, maintaining node balance, and caching disk pages in a bounded buffer pool.",
-  philosophy: "Build a database index from the ground up, one storage hierarchy concept at a time.",
+  philosophy: "Encounter real database engine problems: O(N) disk penalties, self-balancing node splits, 4KB slotted page framing, and clock buffer pool cache eviction.",
   architectureDiagram: `                     B+TREE ROOT NODE
                             │
                ┌────────────┴────────────┐

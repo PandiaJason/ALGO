@@ -4,21 +4,21 @@ import { ChallengeData } from "./types";
 export const loadBalancerChallenge: ChallengeData = {
   slug: "load-balancer",
   number: "09",
-  title: "Build a Load Balancer",
-  subtitle: "From weighted round-robin and active connection tracking to consistent ring hashing and zero-downtime draining.",
+  title: "Dynamic Layer-7 Load Balancer",
+  subtitle: "From weighted round-robin and active connection tracking to circuit breaker failover and consistent ring hashing.",
   badge: "DISTRIBUTED NETWORKING CAPSTONE",
   domain: "DISTRIBUTED_SYSTEMS",
-  inspiredBy: "Nginx / HAProxy",
-  whatStudentsBuild: "Layer 4 / 7 load balancer",
+  inspiredBy: "HAProxy, Nginx, Envoy",
+  whatStudentsBuild: "Layer-7 reverse proxy & dynamic load balancer",
   mainSkill: "Load balancing algorithms, routing, health checking",
-  signatureQuestion: "When 3 of your 10 backends die simultaneously, how do you route traffic without cascading failures?",
+  signatureQuestion: "Can your load balancer survive a failing server?",
   overview:
-    "In this engineering challenge, you construct an enterprise-grade Layer 4/7 reverse proxy load balancer from first principles — the architecture powering Nginx upstream routing, HAProxy runtime pools, and AWS ALB. Rather than using standard libraries, you build smooth weighted round-robin dispatchers, dynamic least-connections trackers, passive failure circuit breakers, Ketama consistent hash rings, and zero-downtime connection draining.",
+    "In this engineering challenge, you construct an enterprise-grade Layer-7 reverse proxy and load balancer from first principles — inspired by the routing and resilience architectures of HAProxy, Nginx, and Envoy. You build smooth weighted round-robin dispatchers, dynamic least-connections trackers, passive failure circuit breakers, Ketama consistent hash rings with virtual nodes, and zero-downtime connection draining.",
   whyItMatters:
     "Load balancers represent the single entry point for modern web architectures. A poorly balanced system causes hot-spot server collapses, dropped web transactions during rolling deployments, and total outage during backend node failures.",
   finalOutcome:
     "Upon completing all 6 levels, you have engineered a production load balancer supporting weighted round-robin, least-connections dynamic routing, circuit breaker health checks, consistent hash session affinity, and graceful connection draining.",
-  philosophy: "Build a load balancer from the ground up, one traffic routing concept at a time.",
+  philosophy: "Encounter real load balancing problems: traffic hot-spotting, least-connections tracking, circuit breaking with failure thresholds, and session affinity under pool mutation.",
   architectureDiagram: `                     CLIENT INGRESS
                             │
                ┌────────────┴────────────┐

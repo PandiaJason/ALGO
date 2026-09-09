@@ -4,21 +4,21 @@ import { ChallengeData } from "./types";
 export const rateLimiterChallenge: ChallengeData = {
   slug: "rate-limiter",
   number: "08",
-  title: "Build a Rate Limiter",
-  subtitle: "From fixed windows and sliding token buckets to distributed concurrency limits and atomic CAS rate enforcement.",
+  title: "Concurrent Rate Limiter & Traffic Shaper",
+  subtitle: "From fixed windows and sliding token buckets to atomic CAS rate enforcement and distributed sync extensions.",
   badge: "SYSTEM DESIGN CAPSTONE",
-  domain: "PERFORMANCE",
-  inspiredBy: "Cloud APIs / Stripe / Envoy",
-  whatStudentsBuild: "Multi-tier rate limiter",
-  mainSkill: "Rate limiting algorithms, time windows, atomicity",
-  signatureQuestion: "How do you stop a DDoS attack without throttling legitimate high-volume paying customers?",
+  domain: "DISTRIBUTED_SYSTEMS",
+  inspiredBy: "Envoy, Cloudflare-style gateways",
+  whatStudentsBuild: "Concurrent rate limiter & traffic shaper",
+  mainSkill: "Algorithms, time, concurrency",
+  signatureQuestion: "Can you enforce the limit without becoming the bottleneck?",
   overview:
-    "In this engineering challenge, you construct a high-performance distributed rate limiter from first principles — the mission-critical traffic gatekeeper powering Stripe, GitHub, Cloudflare, and Envoy. Rather than using third-party libraries, you build raw fixed-window epoch counters, memory-efficient sliding-window logs, continuous-refill token buckets, leaky bucket shapers, and multi-tenant tiered quotas.",
+    "In this engineering challenge, you construct a high-performance concurrent rate limiter and traffic shaper from first principles — inspired by traffic-control systems in Envoy and Cloudflare-style API gateways. You build raw fixed-window epoch counters, memory-efficient sliding-window logs, continuous-refill token buckets, leaky bucket queue shapers, lockless atomic CAS state updates, and distributed sync extensions.",
   whyItMatters:
     "Rate limiters protect infrastructure from denial-of-service attacks, bad bots, and cascading database failure. A flawed rate limiter either throttles legitimate paying enterprise customers during peak events or fails to protect backend services from thundering herds.",
   finalOutcome:
     "Upon completing all 6 levels, you have engineered a production-grade rate limiting engine supporting fixed and sliding window algorithms, high-burst token buckets, smooth traffic shaping, multi-tenant tiers, and atomic CAS safety.",
-  philosophy: "Build an API rate limiter from the ground up, one traffic shaping concept at a time.",
+  philosophy: "Encounter real traffic shaping problems: boundary burst spikes, continuous lazy token refill, lockless atomic CAS synchronization, and multi-tenant quota tiers.",
   architectureDiagram: `                  INCOMING HTTP REQUEST
                             │
                ┌────────────┴────────────┐

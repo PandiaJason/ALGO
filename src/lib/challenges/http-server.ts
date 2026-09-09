@@ -4,21 +4,21 @@ import { ChallengeData } from "./types";
 export const httpServerChallenge: ChallengeData = {
   slug: "http-server",
   number: "02",
-  title: "Build an HTTP Server",
+  title: "High-Concurrency HTTP Server",
   subtitle: "From raw byte stream parsing to an RFC-compliant, keep-alive, high-concurrency web server.",
   badge: "SYSTEMS ENGINEERING CAPSTONE",
   domain: "SYSTEMS",
-  inspiredBy: "Nginx",
-  whatStudentsBuild: "HTTP/1.1 web server",
+  inspiredBy: "Nginx, Envoy",
+  whatStudentsBuild: "Non-blocking HTTP/1.1 web server",
   mainSkill: "Networking, I/O, concurrency",
   signatureQuestion: "How many requests can your server handle?",
   overview:
-    "In this engineering challenge, you construct a high-throughput HTTP/1.1 server from first principles — the foundational networking engine powering Nginx, Envoy, and Node.js http_parser. Rather than using express or frameworks, you build the raw byte tokenizer, status line parser, wildcard router, header parser, keep-alive session coordinator, and non-blocking I/O event dispatcher.",
+    "In this engineering challenge, you construct a high-throughput HTTP/1.1 server from first principles — inspired by the networking architectures of Nginx and Envoy. Rather than using express or frameworks, you build the raw byte tokenizer, status line parser, radix trie router, header parser, keep-alive session coordinator, and non-blocking I/O event dispatcher.",
   whyItMatters:
     "Every web framework is an abstraction over raw TCP streams and HTTP protocol specifications. By building the parser and dispatcher by hand, you master socket byte buffers, Content-Length framing, connection pooling, and how servers handle thousands of concurrent requests.",
   finalOutcome:
     "Upon completing all 6 levels, you have constructed a production-grade HTTP/1.1 server capable of parsing 50,000+ requests/sec, pipelining persistent keep-alive connections, routing parameterized paths, and handling request bursts with sub-millisecond latency.",
-  philosophy: "Build Nginx from the ground up, one networking concept at a time.",
+  philosophy: "Encounter real networking engineering problems: RFC 7230 stream framing, radix trie routing, persistent keep-alive pools, and non-blocking I/O event loops.",
   architectureDiagram: `                  RAW TCP BYTE STREAM
                            │
              ┌─────────────┴─────────────┐

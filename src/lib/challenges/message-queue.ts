@@ -4,21 +4,21 @@ import { ChallengeData } from "./types";
 export const messageQueueChallenge: ChallengeData = {
   slug: "message-queue",
   number: "03",
-  title: "Build a Message Queue",
-  subtitle: "From in-memory FIFO queues to partitioned, high-throughput, crash-durable log brokers.",
+  title: "Commit Log & Message Queue",
+  subtitle: "From in-memory FIFO queues and sequential commit logs to partition routing, consumer groups, and crash-durable segment files.",
   badge: "SYSTEMS ENGINEERING CAPSTONE",
   domain: "SYSTEMS",
-  inspiredBy: "Kafka / RabbitMQ",
-  whatStudentsBuild: "Producer/consumer broker",
+  inspiredBy: "Kafka, Redpanda",
+  whatStudentsBuild: "Commit log & message broker",
   mainSkill: "Queues, batching, throughput",
   signatureQuestion: "Can you increase throughput without losing messages?",
   overview:
-    "In this engineering challenge, you construct a high-throughput, fault-tolerant message broker from first principles — the architecture powering Apache Kafka, RabbitMQ, and Redpanda. You build topic dispatchers, sequential offset assignment, consumer group rebalancing, partitioned commit logs, and zero-data-loss crash recovery.",
+    "In this engineering challenge, you construct a high-throughput commit log and message broker from first principles — inspired by the architectural designs of Apache Kafka and Redpanda. You follow a rigorous pedagogical path: starting with an in-memory queue, progressing to immutable commit logs and sequential 64-bit offsets, introducing topic partitioning and distributed consumer groups, and building zero-data-loss segmented disk recovery.",
   whyItMatters:
     "Modern cloud microservices rely on asynchronous event streams to decouple services and absorb traffic bursts. Building an event broker teaches you sequential disk I/O, partition key hashing, consumer offset contracts, and at-least-once delivery semantics.",
   finalOutcome:
     "Upon completing all 6 levels, you have built a high-performance message broker capable of sustaining 100,000+ messages/sec, partitioning events deterministically across consumer groups, and surviving sudden process termination with zero message loss.",
-  philosophy: "Build Kafka from the ground up, one event-streaming concept at a time.",
+  philosophy: "Encounter real event-streaming problems: queue vs log semantics, monotonic offset invariant tracking, deterministic partition hashing, consumer offset cursors, and segmented log recovery.",
   architectureDiagram: `                     TOPIC LOG ENGINE
                             │
          ┌──────────────────┴──────────────────┐
