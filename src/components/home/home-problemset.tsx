@@ -21,14 +21,14 @@ export function HomeProblemset() {
           <div className="flex items-center gap-2 mb-1.5">
             <span className="w-2 h-2 rounded-full bg-[#09C899]" />
             <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
-              Core Curriculum
+              // THE 10 PROBLEMS
             </span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950">
-            Systems Engineering Challenges
+            The Problem Set
           </h2>
-          <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1">
-            Build production-grade systems from first principles in C++, Rust, Go, Python, or Java.
+          <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1 max-w-2xl">
+            Encounter 10 real engineering problems that force you to understand how modern infrastructure works — from hash collisions and WAL crash recovery to cache eviction and thread contention.
           </p>
         </div>
 

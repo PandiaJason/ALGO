@@ -63,7 +63,7 @@ function SignInContent() {
             GO CURIOUS.
           </div>
           <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
-            Where the next generation of engineers learn by building real technology, measuring what they create, and pushing it further through an agentic flow state.
+            Reconstruct the foundational systems that power modern computing. Measure throughput and optimize against official baselines.
           </p>
         </div>
 

@@ -59,11 +59,14 @@ export default async function ChallengesPage() {
 
       <section className="relative bg-[#262626] pt-10 pb-16 overflow-hidden">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-xs font-mono font-bold text-neutral-400 uppercase tracking-wider mb-1.5">
+            // THE 10 PROBLEMS
+          </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-            Systems Engineering Challenges
+            The Problem Set
           </h1>
           <p className="text-sm text-neutral-300 font-medium mt-1.5 max-w-2xl">
-            Build production-grade systems from first principles in C++, Rust, Go, Python, or Java.
+            10 real engineering problems that force you to understand how modern infrastructure works — from hash collisions and WAL crash recovery to cache eviction and thread contention.
           </p>
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-10 bg-white" style={{ clipPath: "polygon(0 100%, 100% 100%, 100% 0)" }} />

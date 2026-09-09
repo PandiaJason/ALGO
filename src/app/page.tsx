@@ -73,7 +73,7 @@ export default async function HomePage() {
                 </h1>
 
                 <p className="text-sm sm:text-base text-neutral-200 max-w-xl mx-auto lg:mx-0 leading-relaxed font-normal">
-                  ALGO is where the next generation of engineers learn by building real technology, measuring what they create, and pushing it further through an agentic flow state.
+                  Reconstruct the foundational systems that power modern computing. Measure throughput, profile latency percentiles, and optimize against verified baselines.
                 </p>
 
                 <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-3">
