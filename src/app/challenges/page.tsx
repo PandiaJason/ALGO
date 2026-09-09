@@ -63,7 +63,7 @@ export default async function ChallengesPage() {
             Challenges
           </h1>
           <p className="text-sm text-neutral-300 font-medium mt-1.5 max-w-2xl">
-            10 challenges designed to help you understand systems engineering — by building the internals instead of just calling APIs.
+            10 challenges designed to help you understand systems engineering and boost your agentic workflow.
           </p>
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-10 bg-white" style={{ clipPath: "polygon(0 100%, 100% 100%, 100% 0)" }} />
