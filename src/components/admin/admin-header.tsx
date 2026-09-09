@@ -28,27 +28,8 @@ export function AdminHeader() {
         <span className="text-slate-900 font-bold">{getSectionName()}</span>
       </div>
 
-      {/* System Status Telemetry Badges */}
+      {/* Header Actions */}
       <div className="flex items-center gap-3">
-        <div className="hidden md:flex items-center gap-2">
-          {/* Worker Status */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 text-[11px] font-mono font-semibold">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>WORKER: ACTIVE</span>
-          </div>
-
-          {/* DB Status */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#099BE9]/10 border border-[#099BE9]/25 text-[#099BE9] text-[11px] font-mono font-semibold">
-            <Database className="w-3 h-3" />
-            <span>DB: READY</span>
-          </div>
-
-          {/* Sandbox Status */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-[11px] font-mono font-semibold">
-            <ShieldCheck className="w-3 h-3 text-slate-500" />
-            <span>CONTAINERS: ISOLATED</span>
-          </div>
-        </div>
 
         <Link
           href="/challenges"

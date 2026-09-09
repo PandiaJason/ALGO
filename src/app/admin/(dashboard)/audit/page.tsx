@@ -19,7 +19,7 @@ export default async function AdminAuditPage() {
       adminUsername: users.username,
     })
     .from(auditLogs)
-    .innerJoin(users, eq(auditLogs.adminId, users.id))
+    .leftJoin(users, eq(auditLogs.adminId, users.id))
     .orderBy(desc(auditLogs.createdAt))
     .limit(50);
 
@@ -58,7 +58,7 @@ export default async function AdminAuditPage() {
                     {log.action}
                   </td>
                   <td className="py-3 px-4 font-sans text-slate-900">
-                    @{log.adminUsername}
+                    {log.adminUsername ? `@${log.adminUsername}` : "system"}
                   </td>
                   <td className="py-3 px-4 text-slate-600">
                     {log.resource}

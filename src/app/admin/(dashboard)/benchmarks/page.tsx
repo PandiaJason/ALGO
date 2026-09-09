@@ -42,57 +42,87 @@ export default async function AdminBenchmarksPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {configs.map((c) => (
-          <Card key={c.id} className="border-slate-200 shadow-2xs">
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <div className="flex items-center justify-between">
-                <Badge variant="blue" className="text-[10px] font-mono">
-                  BENCHMARK CONFIG v{c.version}.0
-                </Badge>
-                <Badge variant={c.isActive ? "success" : "secondary"}>
-                  {c.isActive ? "ACTIVE" : "INACTIVE"}
-                </Badge>
-              </div>
-              <CardTitle className="text-base font-bold text-slate-900 mt-2">
-                {c.challengeTitle}
-              </CardTitle>
-            </CardHeader>
+      {configs.length === 0 ? (
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-2xs space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <h2 className="text-base font-bold text-slate-900">Standard Container Baselines</h2>
+              <p className="text-xs text-slate-500">Default POSIX resource quotas enforced during code evaluation.</p>
+            </div>
+            <Badge variant="blue" className="text-[10px] font-mono">POSIX CGROUPS</Badge>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs">
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
+              <div className="text-[10px] text-slate-400 uppercase">CPU Quota</div>
+              <div className="text-slate-900 font-bold">1.0 Core</div>
+            </div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
+              <div className="text-[10px] text-slate-400 uppercase">Memory Quota</div>
+              <div className="text-slate-900 font-bold">256 MB Hard Cap</div>
+            </div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
+              <div className="text-[10px] text-slate-400 uppercase">Exec Timeout</div>
+              <div className="text-slate-900 font-bold">60 seconds</div>
+            </div>
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
+              <div className="text-[10px] text-slate-400 uppercase">Watchdog Signal</div>
+              <div className="text-emerald-700 font-bold">SIGKILL</div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {configs.map((c) => (
+            <Card key={c.id} className="border-slate-200 shadow-2xs">
+              <CardHeader className="pb-3 border-b border-slate-100">
+                <div className="flex items-center justify-between">
+                  <Badge variant="blue" className="text-[10px] font-mono">
+                    BENCHMARK CONFIG v{c.version}.0
+                  </Badge>
+                  <Badge variant={c.isActive ? "success" : "secondary"}>
+                    {c.isActive ? "ACTIVE" : "INACTIVE"}
+                  </Badge>
+                </div>
+                <CardTitle className="text-base font-bold text-slate-900 mt-2">
+                  {c.challengeTitle}
+                </CardTitle>
+              </CardHeader>
 
-            <CardContent className="space-y-4 pt-4 text-xs">
-              <div className="grid grid-cols-2 gap-3 font-mono">
-                <div className="p-2.5 bg-slate-50 rounded border border-slate-200/60">
-                  <div className="text-[10px] text-slate-400">CPU QUOTA</div>
-                  <div className="text-slate-900 font-bold">{c.cpuLimit} Core</div>
-                </div>
-                <div className="p-2.5 bg-slate-50 rounded border border-slate-200/60">
-                  <div className="text-[10px] text-slate-400">MEMORY QUOTA</div>
-                  <div className="text-slate-900 font-bold">{c.memoryLimitMb} MB</div>
-                </div>
-                <div className="p-2.5 bg-slate-50 rounded border border-slate-200/60">
-                  <div className="text-[10px] text-slate-400">ITERATIONS</div>
-                  <div className="text-slate-900 font-bold">
-                    {c.iterations} ({c.warmupIterations} warmup)
+              <CardContent className="space-y-4 pt-4 text-xs">
+                <div className="grid grid-cols-2 gap-3 font-mono">
+                  <div className="p-2.5 bg-slate-50 rounded border border-slate-200/60">
+                    <div className="text-[10px] text-slate-400">CPU QUOTA</div>
+                    <div className="text-slate-900 font-bold">{c.cpuLimit} Core</div>
+                  </div>
+                  <div className="p-2.5 bg-slate-50 rounded border border-slate-200/60">
+                    <div className="text-[10px] text-slate-400">MEMORY QUOTA</div>
+                    <div className="text-slate-900 font-bold">{c.memoryLimitMb} MB</div>
+                  </div>
+                  <div className="p-2.5 bg-slate-50 rounded border border-slate-200/60">
+                    <div className="text-[10px] text-slate-400">ITERATIONS</div>
+                    <div className="text-slate-900 font-bold">
+                      {c.iterations} ({c.warmupIterations} warmup)
+                    </div>
+                  </div>
+                  <div className="p-2.5 bg-slate-50 rounded border border-slate-200/60">
+                    <div className="text-[10px] text-slate-400">TIMEOUT</div>
+                    <div className="text-slate-900 font-bold">{c.timeoutSeconds}s</div>
                   </div>
                 </div>
-                <div className="p-2.5 bg-slate-50 rounded border border-slate-200/60">
-                  <div className="text-[10px] text-slate-400">TIMEOUT</div>
-                  <div className="text-slate-900 font-bold">{c.timeoutSeconds}s</div>
-                </div>
-              </div>
 
-              <div>
-                <div className="text-[11px] font-mono text-slate-500 mb-1.5 uppercase">
-                  Configured Workloads
+                <div>
+                  <div className="text-[11px] font-mono text-slate-500 mb-1.5 uppercase">
+                    Configured Workloads
+                  </div>
+                  <pre className="p-3 bg-slate-50 rounded border border-slate-200 font-mono text-[10px] text-slate-700 overflow-x-auto">
+                    {JSON.stringify(c.workloads, null, 2)}
+                  </pre>
                 </div>
-                <pre className="p-3 bg-slate-50 rounded border border-slate-200 font-mono text-[10px] text-slate-700 overflow-x-auto">
-                  {JSON.stringify(c.workloads, null, 2)}
-                </pre>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

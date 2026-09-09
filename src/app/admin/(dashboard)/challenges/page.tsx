@@ -35,55 +35,61 @@ export default async function AdminChallengesPage() {
         </Link>
       </div>
 
-      <div className="border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-mono text-[11px] uppercase">
-            <tr>
-              <th className="py-3 px-4">Title</th>
-              <th className="py-3 px-4">Slug</th>
-              <th className="py-3 px-4">Difficulty</th>
-              <th className="py-3 px-4">Version</th>
-              <th className="py-3 px-4">Status</th>
-              <th className="py-3 px-4 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 font-mono">
-            {allChallenges.map((c) => (
-              <tr key={c.id} className="hover:bg-slate-50/50">
-                <td className="py-3 px-4 font-sans font-semibold text-slate-900">
-                  {c.title}
-                </td>
-                <td className="py-3 px-4 text-slate-500">{c.slug}</td>
-                <td className="py-3 px-4">
-                  <Badge variant="blue" className="text-[10px]">
-                    {c.difficulty}
-                  </Badge>
-                </td>
-                <td className="py-3 px-4 text-slate-700">
-                  v{c.currentVersionNumber}.0
-                </td>
-                <td className="py-3 px-4">
-                  <Badge
-                    variant={
-                      c.status === "PUBLISHED"
-                        ? "success"
-                        : c.status === "DRAFT"
-                        ? "secondary"
-                        : "destructive"
-                    }
-                    className="text-[10px]"
-                  >
-                    {c.status}
-                  </Badge>
-                </td>
-                <td className="py-3 px-4 text-right">
-                  <ChallengeRowActions id={c.id} slug={c.slug} status={c.status} />
-                </td>
+      {allChallenges.length === 0 ? (
+        <div className="p-12 text-center border border-dashed border-slate-200 rounded-lg text-xs text-slate-500 bg-white font-mono">
+          No challenge records found in database.
+        </div>
+      ) : (
+        <div className="border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-mono text-[11px] uppercase">
+              <tr>
+                <th className="py-3 px-4">Title</th>
+                <th className="py-3 px-4">Slug</th>
+                <th className="py-3 px-4">Difficulty</th>
+                <th className="py-3 px-4">Version</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4 text-right">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-slate-100 font-mono">
+              {allChallenges.map((c) => (
+                <tr key={c.id} className="hover:bg-slate-50/50">
+                  <td className="py-3 px-4 font-sans font-semibold text-slate-900">
+                    {c.title}
+                  </td>
+                  <td className="py-3 px-4 text-slate-500">{c.slug}</td>
+                  <td className="py-3 px-4">
+                    <Badge variant="blue" className="text-[10px]">
+                      {c.difficulty}
+                    </Badge>
+                  </td>
+                  <td className="py-3 px-4 text-slate-700">
+                    v{c.currentVersionNumber}.0
+                  </td>
+                  <td className="py-3 px-4">
+                    <Badge
+                      variant={
+                        c.status === "PUBLISHED"
+                          ? "success"
+                          : c.status === "DRAFT"
+                          ? "secondary"
+                          : "destructive"
+                      }
+                      className="text-[10px]"
+                    >
+                      {c.status}
+                    </Badge>
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    <ChallengeRowActions id={c.id} slug={c.slug} status={c.status} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

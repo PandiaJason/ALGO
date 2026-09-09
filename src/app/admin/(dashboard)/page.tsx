@@ -12,6 +12,7 @@ import { count, eq, desc } from "drizzle-orm";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { CHALLENGES_LIST } from "@/lib/challenges";
+import { CORE_CHALLENGES } from "@/lib/constants/core-challenges";
 import {
   Users,
   Code,
@@ -19,13 +20,8 @@ import {
   Cpu,
   CheckCircle2,
   XCircle,
-  Activity,
   ArrowRight,
   Plus,
-  Server,
-  ShieldCheck,
-  Terminal,
-  Database,
   UserCheck,
 } from "lucide-react";
 
@@ -84,30 +80,26 @@ export default async function AdminDashboardPage() {
     console.warn("Database telemetry query error in AdminDashboardPage:", err);
   }
 
+  const totalMilestoneLevels = CHALLENGES_LIST.reduce(
+    (acc, c) => acc + Object.keys(c.levels || {}).length,
+    0
+  );
+
   const passRate =
     submissionCountVal > 0
       ? Math.round((passedCountVal / submissionCountVal) * 100)
-      : 100;
+      : null;
 
   return (
     <div className="p-6 sm:p-8 max-w-7xl mx-auto w-full space-y-8 font-sans">
       {/* Top Banner / Masthead */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#099BE9]">
-              // PLATFORM CONTROL PLANE
-            </span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/60 font-semibold">
-              SYSTEM HEALTHY
-            </span>
-          </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950">
             Control Plane Overview
           </h1>
-          <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
-            Real-time platform telemetry, sandbox worker orchestration, and verification pipelines.
+          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+            Real-time platform telemetry, user submissions, and verified systems curricula.
           </p>
         </div>
 
@@ -151,7 +143,7 @@ export default async function AdminDashboardPage() {
           <div className="text-2xl font-black font-mono text-slate-950 tracking-tight">
             {challengeCountVal}
           </div>
-          <span className="text-[10px] font-mono text-slate-400 block">60 milestone levels</span>
+          <span className="text-[10px] font-mono text-slate-400 block">{totalMilestoneLevels} milestone levels</span>
         </div>
 
         {/* Submissions */}
@@ -173,9 +165,11 @@ export default async function AdminDashboardPage() {
             <CheckCircle2 className="w-4 h-4 text-[#0AA793]" />
           </div>
           <div className="text-2xl font-black font-mono text-[#0AA793] tracking-tight">
-            {passRate}%
+            {passRate !== null ? `${passRate}%` : "—"}
           </div>
-          <span className="text-[10px] font-mono text-[#0AA793] font-semibold block">{passedCountVal} passed</span>
+          <span className="text-[10px] font-mono text-[#0AA793] font-semibold block">
+            {submissionCountVal > 0 ? `${passedCountVal} passed` : "No runs yet"}
+          </span>
         </div>
 
         {/* Failed */}
@@ -187,7 +181,9 @@ export default async function AdminDashboardPage() {
           <div className="text-2xl font-black font-mono text-rose-600 tracking-tight">
             {failedCountVal}
           </div>
-          <span className="text-[10px] font-mono text-rose-500 font-semibold block">Failed asserts</span>
+          <span className="text-[10px] font-mono text-rose-500 font-semibold block">
+            {failedCountVal === 0 ? "0 failed asserts" : `${failedCountVal} failed asserts`}
+          </span>
         </div>
 
         {/* Benchmarks */}
@@ -203,66 +199,7 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* 2. Systems Engine Architecture & Infrastructure Diagnostics */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-2xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
-          <div>
-            <div className="text-xs font-mono font-bold uppercase text-[#099BE9] tracking-wider mb-0.5">
-              INFRASTRUCTURE INTEGRITY
-            </div>
-            <h2 className="text-base font-bold text-slate-950">
-              Execution Engine &amp; Worker Diagnostics
-            </h2>
-          </div>
-          <span className="text-xs font-mono font-semibold text-slate-500 bg-slate-50 px-3 py-1 rounded-md border border-slate-200 self-start sm:self-auto">
-            Sandbox: Isolated POSIX
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
-            <div className="flex items-center gap-2 text-slate-900 font-bold font-mono">
-              <Server className="w-4 h-4 text-[#099BE9]" />
-              <span>Container Sandbox</span>
-            </div>
-            <p className="text-slate-600 text-[11px] leading-relaxed">
-              Docker Linux containers with 256MB hard memory cap, SIGKILL watchdog, and read-only test harness bindings.
-            </p>
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
-            <div className="flex items-center gap-2 text-slate-900 font-bold font-mono">
-              <Activity className="w-4 h-4 text-[#09C899]" />
-              <span>Queue Stream</span>
-            </div>
-            <p className="text-slate-600 text-[11px] leading-relaxed">
-              BullMQ async priority queue with Redis / Valkey broker managing concurrent compilation and verification jobs.
-            </p>
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
-            <div className="flex items-center gap-2 text-slate-900 font-bold font-mono">
-              <Database className="w-4 h-4 text-[#8647E2]" />
-              <span>Database Persistence</span>
-            </div>
-            <p className="text-slate-600 text-[11px] leading-relaxed">
-              Serverless PostgreSQL with connection pooling via Neon, running type-safe Drizzle migrations.
-            </p>
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
-            <div className="flex items-center gap-2 text-slate-900 font-bold font-mono">
-              <Terminal className="w-4 h-4 text-[#F78424]" />
-              <span>Benchmark Telemetry</span>
-            </div>
-            <p className="text-slate-600 text-[11px] leading-relaxed">
-              Real-time measurement of ops/sec throughput, P50/P90/P99 latency, and heap memory delta verification.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Recent Submissions Section */}
+      {/* 2. Recent Submissions Section */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
@@ -344,7 +281,7 @@ export default async function AdminDashboardPage() {
         )}
       </div>
 
-      {/* 4. Core Challenges Curriculum Registry */}
+      {/* 3. Core Challenges Curriculum Registry */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
@@ -406,10 +343,10 @@ export default async function AdminDashboardPage() {
                       {c.inspiredBy}
                     </td>
                     <td className="py-3 px-4 font-mono text-xs">
-                      <span className="text-[#099BE9] font-bold">6</span> / 6 Levels
+                      <span className="text-[#099BE9] font-bold">{Object.keys(c.levels || {}).length}</span> Levels
                     </td>
                     <td className="py-3 px-4 font-mono text-[11px] text-emerald-600 font-medium">
-                      Sub-0.2ms P99
+                      {CORE_CHALLENGES.find((core) => core.slug === c.slug)?.benchmarkMetrics?.[0] || "Target SLA"}
                     </td>
                     <td className="py-3 px-4 text-right space-x-2 font-mono">
                       <Link
