@@ -43,6 +43,10 @@ export default async function WorkspacePage({ params }: Props) {
   const coreDef = CORE_CHALLENGES.find((c) => c.slug === id || c.number === id);
   const chData = getChallenge(id) || (coreDef ? getChallenge(coreDef.slug) : undefined);
 
+  if (!coreDef && !chData) {
+    notFound();
+  }
+
   let challenge = {
     id: chData?.slug || coreDef?.slug || id || "kv-store",
     slug: chData?.slug || coreDef?.slug || id || "kv-store",

@@ -33,9 +33,10 @@ export interface LeaderboardItem {
 interface Props {
   entries: LeaderboardItem[];
   currentUsername?: string | null;
+  challengeSlug?: string;
 }
 
-export function LeaderboardTable({ entries, currentUsername }: Props) {
+export function LeaderboardTable({ entries, currentUsername, challengeSlug }: Props) {
   const [search, setSearch] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState<string>("ALL");
   const [sortBy, setSortBy] = useState<"score" | "throughput" | "latency">("score");
@@ -271,7 +272,7 @@ export function LeaderboardTable({ entries, currentUsername }: Props) {
                       Run a challenge test suite in the arena to earn the first verified position on the global leaderboard.
                     </p>
                     <Link
-                      href="/challenges/kv-store/workspace"
+                      href={`/challenges/${challengeSlug || "kv-store"}/workspace`}
                       className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#09C899] hover:bg-[#0AA793] transition-all"
                     >
                       <Terminal className="w-3.5 h-3.5" />

@@ -171,6 +171,10 @@ export default async function ChallengeDetailPage({ params }: Props) {
   const coreDef = CORE_CHALLENGES.find((c) => c.slug === id || c.number === id);
   const challengeData = getChallenge(id);
 
+  if (!coreDef && !challengeData) {
+    notFound();
+  }
+
   let challenge = {
     id: coreDef?.slug || challengeData?.slug || id || "kv-store",
     slug: coreDef?.slug || challengeData?.slug || id || "kv-store",
@@ -227,11 +231,18 @@ export default async function ChallengeDetailPage({ params }: Props) {
   if (!apiSpec || apiSpec.length === 0) {
     if (challengeData) {
       apiSpec = Object.values(challengeData.levels).flatMap((l) =>
-        l.operations.map((op) => ({
-          command: op.cmd,
-          returns: "Response",
-          description: op.desc,
-        }))
+        l.operations.map((op) => {
+          let returns = "OK";
+          const match = op.desc.match(/Returns\s+([^.]+)/i);
+          if (match && match[1]) {
+            returns = match[1].trim();
+          }
+          return {
+            command: op.cmd,
+            returns,
+            description: op.desc,
+          };
+        })
       );
     } else {
       apiSpec = [
@@ -364,7 +375,9 @@ export default async function ChallengeDetailPage({ params }: Props) {
                   Inspired by <strong className="text-white font-bold">{coreDef?.inspiredBy ?? "Redis"}</strong>
                 </span>
                 <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-white/10 text-neutral-200 border border-white/10 font-medium">
-                  Python, C++, Rust, Go, Java
+                  {challenge.slug === "kv-store"
+                    ? "Python, C++, Rust, Go, Java"
+                    : "Python 3.12, C++20 (Rust/Go in Preview)"}
                 </span>
                 <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-[#09C899]/15 text-[#09C899] border border-[#09C899]/40 font-bold">
                   Target: {coreDef?.benchmarkMetrics[0] ?? "> 100,000 ops/s"}
@@ -776,10 +789,12 @@ export default async function ChallengeDetailPage({ params }: Props) {
                   <span className="text-slate-600 font-medium">Execution Timeout:</span>
                   <span className="font-semibold text-slate-900">30 seconds</span>
                 </li>
-                <li className="flex items-center justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-600 font-medium">WAL Log Path:</span>
-                  <span className="font-semibold text-slate-900">./data/wal.log</span>
-                </li>
+                {(challenge.slug === "kv-store" || challenge.slug === "message-queue") && (
+                  <li className="flex items-center justify-between py-1 border-b border-slate-100">
+                    <span className="text-slate-600 font-medium">WAL Log Path:</span>
+                    <span className="font-semibold text-slate-900">./data/wal.log</span>
+                  </li>
+                )}
                 <li className="flex items-center justify-between py-1">
                   <span className="text-slate-600 font-medium">Sandbox User:</span>
                   <span className="font-semibold text-slate-900">Non-Root (1000)</span>

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { submissions, submissionFiles, challenges, events } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { submissions, submissionFiles, challenges, challengeVersions, events } from "@/db/schema";
+import { eq, desc } from "drizzle-orm";
 import { enqueueSubmission } from "@/lib/queue/producer";
 import { z } from "zod";
 
 const submissionSchema = z.object({
-  challengeVersionId: z.string().uuid(),
+  challengeVersionId: z.string().optional(),
   language: z.enum(["python", "cpp", "rust", "go", "java"]),
   level: z.number().int().min(1).max(6).default(1),
   files: z.array(
@@ -30,16 +30,27 @@ export async function POST(
 
     const { id: challengeIdOrSlug } = await params;
 
-    // Find challenge
-    const foundChallenges = await db
-      .select()
-      .from(challenges)
-      .where(eq(challenges.id, challengeIdOrSlug))
-      .limit(1);
+    // Safe challenge lookup: check if parameter is UUID or slug
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(challengeIdOrSlug);
+    let challenge = null;
 
-    const challenge = foundChallenges[0] || (
-      await db.select().from(challenges).where(eq(challenges.slug, challengeIdOrSlug)).limit(1)
-    )[0];
+    if (isUuid) {
+      const found = await db
+        .select()
+        .from(challenges)
+        .where(eq(challenges.id, challengeIdOrSlug))
+        .limit(1);
+      challenge = found[0];
+    }
+
+    if (!challenge) {
+      const found = await db
+        .select()
+        .from(challenges)
+        .where(eq(challenges.slug, challengeIdOrSlug))
+        .limit(1);
+      challenge = found[0];
+    }
 
     if (!challenge) {
       return NextResponse.json({ error: "Challenge not found" }, { status: 404 });
@@ -56,13 +67,33 @@ export async function POST(
 
     const { challengeVersionId, language, level, files } = parsed.data;
 
+    // Auto-resolve version UUID if not valid UUID (e.g. "v1" or missing)
+    let finalVersionId = challengeVersionId;
+    const isVerUuid =
+      finalVersionId &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(finalVersionId);
+
+    if (!isVerUuid) {
+      const latestVer = await db
+        .select({ id: challengeVersions.id })
+        .from(challengeVersions)
+        .where(eq(challengeVersions.challengeId, challenge.id))
+        .orderBy(desc(challengeVersions.version))
+        .limit(1);
+
+      if (!latestVer[0]) {
+        return NextResponse.json({ error: "No active challenge version found" }, { status: 404 });
+      }
+      finalVersionId = latestVer[0].id;
+    }
+
     // 1. Create submission record in PostgreSQL
     const [submission] = await db
       .insert(submissions)
       .values({
-        userId: session.user.id,
+        userId: session.user.id!,
         challengeId: challenge.id,
-        challengeVersionId,
+        challengeVersionId: finalVersionId!,
         language,
         level,
         status: "QUEUED",
@@ -80,7 +111,7 @@ export async function POST(
 
     // 3. Track analytics event
     await db.insert(events).values({
-      userId: session.user.id,
+      userId: session.user.id!,
       eventType: "submission_created",
       challengeId: challenge.id,
       submissionId: submission.id,
@@ -93,8 +124,8 @@ export async function POST(
         submissionId: submission.id,
         challengeId: challenge.id,
         challengeSlug: challenge.slug,
-        challengeVersionId,
-        userId: session.user.id,
+        challengeVersionId: finalVersionId!,
+        userId: session.user.id!,
         language,
         level,
         files,

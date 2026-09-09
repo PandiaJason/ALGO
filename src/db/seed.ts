@@ -6,13 +6,29 @@ import {
   challengeFiles,
   benchmarkConfigs,
 } from "./schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import crypto from "crypto";
-import { DEFAULT_STARTER_TEMPLATES } from "@/lib/constants/templates";
+import { CHALLENGES_LIST } from "@/lib/challenges";
+import { CORE_CHALLENGES } from "@/lib/constants/core-challenges";
 
 export function hashPassword(password: string): string {
   const salt = "algo_dev_salt_2026";
   return crypto.scryptSync(password, salt, 64).toString("hex");
+}
+
+function mapDifficulty(diff: string): "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT" {
+  switch (diff) {
+    case "Easy":
+      return "BEGINNER";
+    case "Medium":
+      return "INTERMEDIATE";
+    case "Hard":
+      return "ADVANCED";
+    case "Expert":
+      return "EXPERT";
+    default:
+      return "INTERMEDIATE";
+  }
 }
 
 async function seed() {
@@ -42,138 +58,155 @@ async function seed() {
 
   console.log(`✓ Admin user: ${adminUser.email} (role: ${adminUser.role})`);
 
-  // 2. Seed Challenge: Key-Value Store
-  const challengeSlug = "kv-store";
-  const existingChallenge = await db
-    .select()
-    .from(challenges)
-    .where(eq(challenges.slug, challengeSlug))
-    .limit(1);
+  // 2. Seed All 10 Core Challenges
+  for (const chData of CHALLENGES_LIST) {
+    const coreDef = CORE_CHALLENGES.find((c) => c.slug === chData.slug);
+    const difficulty = mapDifficulty(coreDef?.difficulty || "Medium");
 
-  let challengeId = existingChallenge[0]?.id;
+    const existingChallenges = await db
+      .select()
+      .from(challenges)
+      .where(eq(challenges.slug, chData.slug))
+      .limit(1);
 
-  if (!existingChallenge[0]) {
-    const [createdChallenge] = await db
-      .insert(challenges)
-      .values({
-        slug: challengeSlug,
-        title: "Build a Key-Value Store",
-        tagline: "Understand Redis from first principles. Build, measure, and optimize.",
-        description: `Reconstruct a high-performance in-memory key-value store inspired by Redis.
-Build the foundational data structures, implement durable persistence, and optimize throughput and latency against rigorous automated benchmarks.`,
-        difficulty: "INTERMEDIATE",
-        status: "PUBLISHED",
-        supportedLanguages: ["python", "cpp"],
-        currentVersionNumber: 1,
-      })
-      .returning();
-    challengeId = createdChallenge.id;
+    let challengeId: string;
+
+    if (!existingChallenges[0]) {
+      const [createdChallenge] = await db
+        .insert(challenges)
+        .values({
+          slug: chData.slug,
+          title: chData.title,
+          tagline: chData.subtitle || chData.badge || chData.whatStudentsBuild,
+          description: chData.overview,
+          difficulty,
+          status: "PUBLISHED",
+          supportedLanguages: ["python", "cpp", "rust", "go", "java"],
+          currentVersionNumber: 1,
+        })
+        .returning();
+      challengeId = createdChallenge.id;
+      console.log(`+ Created challenge: ${chData.slug} (${chData.title})`);
+    } else {
+      challengeId = existingChallenges[0].id;
+      await db
+        .update(challenges)
+        .set({
+          title: chData.title,
+          tagline: chData.subtitle || chData.badge || chData.whatStudentsBuild,
+          description: chData.overview,
+          difficulty,
+          status: "PUBLISHED",
+          supportedLanguages: ["python", "cpp", "rust", "go", "java"],
+          updatedAt: new Date(),
+        })
+        .where(eq(challenges.id, challengeId));
+      console.log(`✓ Updated challenge: ${chData.slug} (${chData.title})`);
+    }
+
+    // Build spec and levels
+    const levelsArray = Object.values(chData.levels).sort((a, b) => a.level - b.level);
+    const spec = {
+      badge: chData.badge,
+      title: chData.title,
+      subtitle: chData.subtitle,
+      overview: chData.overview,
+      whyItMatters: chData.whyItMatters,
+      philosophy: chData.philosophy,
+      signatureQuestion: chData.signatureQuestion,
+      finalOutcome: chData.finalOutcome,
+      architectureDiagram: chData.architectureDiagram,
+      architecturalLayers: chData.architecturalLayers,
+      levelRoadmap: chData.levelRoadmap,
+    };
+
+    const testDefinitions = {
+      correctnessSuites: levelsArray.map((l) => ({
+        name: `level_${l.level}_suite`,
+        level: l.level,
+        title: l.title,
+        casesCount: l.cases?.length || 0,
+        weight: Math.round(100 / levelsArray.length),
+        description: l.tagline || `Level ${l.level} verification suite`,
+      })),
+    };
+
+    // Challenge Version 1
+    const existingVersions = await db
+      .select()
+      .from(challengeVersions)
+      .where(
+        and(
+          eq(challengeVersions.challengeId, challengeId),
+          eq(challengeVersions.version, 1)
+        )
+      )
+      .limit(1);
+
+    let versionId: string;
+
+    if (!existingVersions[0]) {
+      const [version] = await db
+        .insert(challengeVersions)
+        .values({
+          challengeId,
+          version: 1,
+          spec,
+          levels: levelsArray,
+          starterTemplates: chData.starterTemplates,
+          testDefinitions,
+          createdBy: adminUser.id,
+        })
+        .returning();
+      versionId = version.id;
+      console.log(`  + Version 1 seeded for ${chData.slug}`);
+    } else {
+      versionId = existingVersions[0].id;
+      await db
+        .update(challengeVersions)
+        .set({
+          spec,
+          levels: levelsArray,
+          starterTemplates: chData.starterTemplates,
+          testDefinitions,
+        })
+        .where(eq(challengeVersions.id, versionId));
+      console.log(`  ✓ Version 1 updated for ${chData.slug}`);
+    }
+
+    // Benchmark Config
+    const existingConfigs = await db
+      .select()
+      .from(benchmarkConfigs)
+      .where(eq(benchmarkConfigs.challengeVersionId, versionId))
+      .limit(1);
+
+    if (!existingConfigs[0]) {
+      await db.insert(benchmarkConfigs).values({
+        challengeVersionId: versionId,
+        version: 1,
+        workloads: [
+          { name: "standard_workload", count: 100000, description: "Automated benchmark workload" },
+        ],
+        iterations: 5,
+        warmupIterations: 2,
+        timeoutSeconds: 60,
+        cpuLimit: "1.00",
+        memoryLimitMb: 256,
+        baselineMetrics: {
+          throughputOpsSec: 100000.0,
+          latencyP50Ms: 0.08,
+          latencyP95Ms: 0.25,
+          latencyP99Ms: 0.52,
+          memoryBytes: 32 * 1024 * 1024,
+        },
+        isActive: true,
+      });
+      console.log(`  + Benchmark config seeded for ${chData.slug}`);
+    }
   }
 
-  // Challenge Version 1
-  const spec = {
-    overview: `Reconstruct a key-value store from first principles.
-In this challenge, you will implement an in-memory data engine capable of handling core commands, persistent logging, and fast lookups under heavy simulated load.`,
-    whatYouLearn: [
-      "Low-overhead hash table architecture and collision resolution",
-      "Write-ahead logging (WAL) and durable crash recovery",
-      "Memory layout optimization and cache-line locality",
-      "Latency percentiles (p50, p95, p99) under adversarial throughput",
-    ],
-    apiSpecification: [
-      { command: "SET key value", returns: "OK", description: "Stores value at key." },
-      { command: "GET key", returns: "value | NULL", description: "Retrieves value at key or NULL if missing." },
-      { command: "DELETE key", returns: "OK | NOT_FOUND", description: "Removes key from store." },
-      { command: "EXISTS key", returns: "TRUE | FALSE", description: "Checks if key exists." },
-    ],
-    levels: [
-      {
-        level: 1,
-        title: "Basic In-Memory Store",
-        description: "Implement fundamental SET, GET, DELETE, and EXISTS operations with 100% correctness.",
-        requirements: "Support basic key-value semantics with arbitrary string keys and values.",
-      },
-      {
-        level: 2,
-        title: "Efficient Lookup",
-        description: "Implement an optimized hash table with custom hashing and collision resolution. Target O(1) lookups.",
-        requirements: "Handle dynamic resizing, uniform distribution, and load factor thresholding.",
-      },
-      {
-        level: 3,
-        title: "Durable Persistence",
-        description: "Implement an append-only write-ahead log (WAL) and restart snapshot recovery.",
-        requirements: "All mutations must survive process restarts and recover to consistent state.",
-      },
-      {
-        level: 4,
-        title: "TTL & Key Expiration",
-        description: "Support EXPIRE key seconds. Clean up expired keys using passive and active expiration loops.",
-        requirements: "Architected for future release.",
-      },
-      {
-        level: 5,
-        title: "Concurrency & Lock-Free Reads",
-        description: "Scale across multiple CPU threads using striped locking or lock-free data structures.",
-        requirements: "Architected for future release.",
-      },
-      {
-        level: 6,
-        title: "Extreme Optimization",
-        description: "Push hardware limits. Optimize cache lines, minimize memory allocations, and maximize ops/sec.",
-        requirements: "Architected for future release.",
-      },
-    ],
-  };
-
-  const [version] = await db
-    .insert(challengeVersions)
-    .values({
-      challengeId: challengeId!,
-      version: 1,
-      spec,
-      levels: spec.levels,
-      starterTemplates: DEFAULT_STARTER_TEMPLATES,
-      testDefinitions: {
-        correctnessSuites: [
-          { name: "test_basic_crud", weight: 30, description: "Validates SET, GET, DELETE, and EXISTS" },
-          { name: "test_lookup_collisions", weight: 30, description: "10,000 keys with high collision risk" },
-          { name: "test_persistence_recovery", weight: 40, description: "Simulates restart and validates recovered data" },
-        ],
-      },
-      createdBy: adminUser.id,
-    })
-    .returning();
-
-  // 3. Seed Benchmark Config
-  const baselineThroughput = 100000.0; // 100,000 ops/sec baseline
-
-  await db.insert(benchmarkConfigs).values({
-    challengeVersionId: version.id,
-    version: 1,
-    workloads: [
-      { name: "sequential_set", count: 100000, description: "100K sequential SETs" },
-      { name: "sequential_get", count: 100000, description: "100K sequential GETs" },
-      { name: "mixed_operations", count: 100000, description: "70% GET, 20% SET, 10% DELETE" },
-      { name: "large_payloads", count: 10000, description: "10K SETs with 1KB payloads" },
-    ],
-    iterations: 5,
-    warmupIterations: 2,
-    timeoutSeconds: 60,
-    cpuLimit: "1.00",
-    memoryLimitMb: 256,
-    baselineMetrics: {
-      throughputOpsSec: baselineThroughput,
-      latencyP50Ms: 0.08,
-      latencyP95Ms: 0.25,
-      latencyP99Ms: 0.52,
-      memoryBytes: 32 * 1024 * 1024, // 32MB
-    },
-    isActive: true,
-  });
-
-  console.log("✓ Key-Value Store challenge seeded with v1 spec, starter templates, and benchmark configs.");
-  console.log("🌱 Database seeding complete!");
+  console.log("🌱 Database seeding complete! All 10 challenges active.");
   process.exit(0);
 }
 

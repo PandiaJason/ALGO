@@ -17,7 +17,8 @@ import { Button } from "@/components/ui/button";
 import { LeaderboardTable, LeaderboardItem } from "@/components/leaderboard/leaderboard-table";
 import { Trophy, ChevronRight, Terminal, ArrowLeft } from "lucide-react";
 
-import { PROJECT_SCOPE } from "@/lib/constants/challenge-data";
+import { getChallenge } from "@/lib/challenges";
+import { CORE_CHALLENGES } from "@/lib/constants/core-challenges";
 
 export const dynamic = "force-dynamic";
 
@@ -29,11 +30,14 @@ export default async function ChallengeLeaderboardPage({ params }: Props) {
   const { id } = await params;
   const session = await auth();
 
+  const coreDef = CORE_CHALLENGES.find((c) => c.slug === id || c.number === id);
+  const chData = getChallenge(id) || (coreDef ? getChallenge(coreDef.slug) : undefined);
+
   let challenge: any = {
-    id: "kv-store",
-    slug: id || "kv-store",
-    title: PROJECT_SCOPE.title,
-    description: PROJECT_SCOPE.overview,
+    id: chData?.slug || coreDef?.slug || id || "kv-store",
+    slug: chData?.slug || coreDef?.slug || id || "kv-store",
+    title: chData?.title || coreDef?.title || "Systems Engineering Challenge",
+    description: chData?.overview || coreDef?.overview || "",
   };
 
   let mappedEntries: LeaderboardItem[] = [];
@@ -146,6 +150,7 @@ export default async function ChallengeLeaderboardPage({ params }: Props) {
         <LeaderboardTable
           entries={mappedEntries}
           currentUsername={(session?.user as any)?.username}
+          challengeSlug={challenge.slug}
         />
       </main>
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { submissions, leaderboardEntries } from "@/db/schema";
+import { submissions, leaderboardEntries, challenges } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
@@ -18,29 +18,33 @@ export default async function ChallengesPage() {
   try {
     if (session?.user?.id) {
       const userSubs = await db
-        .select({ challengeId: submissions.challengeId })
+        .select({ slug: challenges.slug })
         .from(submissions)
+        .innerJoin(challenges, eq(submissions.challengeId, challenges.id))
         .where(
           and(
             eq(submissions.userId, session.user.id),
             eq(submissions.status, "COMPLETED")
           )
         );
-      userSubs.forEach((s) => userSolvedIds.push(s.challengeId));
+      userSubs.forEach((s) => {
+        if (s.slug) userSolvedIds.push(s.slug);
+      });
     }
 
     const leaders = await db
       .select({
-        challengeId: leaderboardEntries.challengeId,
+        slug: challenges.slug,
         throughputOpsSec: leaderboardEntries.throughputOpsSec,
         score: leaderboardEntries.score,
       })
       .from(leaderboardEntries)
+      .innerJoin(challenges, eq(leaderboardEntries.challengeId, challenges.id))
       .orderBy(desc(leaderboardEntries.score));
 
     leaders.forEach((l) => {
-      if (!topThroughputMap[l.challengeId]) {
-        topThroughputMap[l.challengeId] = `${Number(
+      if (l.slug && !topThroughputMap[l.slug]) {
+        topThroughputMap[l.slug] = `${Number(
           l.throughputOpsSec
         ).toLocaleString()} ops/s`;
       }

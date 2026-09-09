@@ -7,7 +7,7 @@ import {
   Search,
   ChevronRight,
 } from "lucide-react";
-import { CORE_CHALLENGES } from "@/lib/constants/core-challenges";
+import { CORE_CHALLENGES, DOMAINS, EngineeringDomain } from "@/lib/constants/core-challenges";
 
 interface ChallengesTableProps {
   userSolvedIds?: string[];
@@ -25,14 +25,8 @@ export function ChallengesTable({
 
   const filtered = useMemo(() => {
     return CORE_CHALLENGES.filter((c) => {
-      let matchesDomain = true;
-      if (domainFilter === "STORAGE") {
-        matchesDomain = c.domain === "SYSTEMS" || c.domain === "SEARCH_DATA";
-      } else if (domainFilter === "NETWORK") {
-        matchesDomain = c.domain === "PERFORMANCE";
-      } else if (domainFilter === "DISTRIBUTED") {
-        matchesDomain = c.domain === "DISTRIBUTED_SYSTEMS";
-      }
+      const matchesDomain =
+        domainFilter === "ALL" || c.domain === domainFilter;
 
       const q = searchQuery.trim().toLowerCase();
       const matchesSearch =
@@ -72,38 +66,21 @@ export function ChallengesTable({
                 : "text-slate-700 hover:text-slate-950"
             }`}
           >
-            All (10)
+            All ({CORE_CHALLENGES.length})
           </button>
-          <button
-            onClick={() => setDomainFilter("STORAGE")}
-            className={`px-3 py-1.5 rounded-lg transition-colors font-semibold cursor-pointer ${
-              domainFilter === "STORAGE"
-                ? "bg-white text-slate-950 shadow-2xs font-bold"
-                : "text-slate-700 hover:text-slate-950"
-            }`}
-          >
-            Storage &amp; Memory
-          </button>
-          <button
-            onClick={() => setDomainFilter("NETWORK")}
-            className={`px-3 py-1.5 rounded-lg transition-colors font-semibold cursor-pointer ${
-              domainFilter === "NETWORK"
-                ? "bg-white text-slate-950 shadow-2xs font-bold"
-                : "text-slate-700 hover:text-slate-950"
-            }`}
-          >
-            Networking
-          </button>
-          <button
-            onClick={() => setDomainFilter("DISTRIBUTED")}
-            className={`px-3 py-1.5 rounded-lg transition-colors font-semibold cursor-pointer ${
-              domainFilter === "DISTRIBUTED"
-                ? "bg-white text-slate-950 shadow-2xs font-bold"
-                : "text-slate-700 hover:text-slate-950"
-            }`}
-          >
-            Distributed
-          </button>
+          {Object.entries(DOMAINS).map(([domKey, domInfo]) => (
+            <button
+              key={domKey}
+              onClick={() => setDomainFilter(domKey)}
+              className={`px-3 py-1.5 rounded-lg transition-colors font-semibold cursor-pointer ${
+                domainFilter === domKey
+                  ? "bg-white text-slate-950 shadow-2xs font-bold"
+                  : "text-slate-700 hover:text-slate-950"
+              }`}
+            >
+              {domInfo.label} ({domInfo.count})
+            </button>
+          ))}
         </div>
       </div>
 
@@ -122,84 +99,121 @@ export function ChallengesTable({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filtered.map((c) => {
-                const isSolved = solvedSet.has(c.slug);
-                const difficultyBadge =
-                  c.difficulty === "Easy" ? (
-                    <span className="inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold font-mono bg-[#09C899]/15 border border-[#09C899]/30 text-[#0AA793]">
-                      Easy
-                    </span>
-                  ) : c.difficulty === "Medium" ? (
-                    <span className="inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold font-mono bg-[#FBAE0C]/15 border border-[#FBAE0C]/30 text-[#F78424]">
-                      Medium
-                    </span>
-                  ) : (
-                    <span className="inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold font-mono bg-[#8647E2]/15 border border-[#8647E2]/30 text-[#8647E2]">
-                      Hard
-                    </span>
-                  );
-
-                const benchmarkText = c.benchmarkMetrics[0] || "Target: Bare Metal";
-
-                return (
-                  <tr
-                    key={c.slug}
-                    className="hover:bg-slate-50/90 transition-colors group"
-                  >
-                    {/* Number / Solved Status */}
-                    <td className="py-4 px-4 text-center font-mono font-bold text-slate-600 text-xs">
-                      {isSolved ? (
-                        <CheckCircle2 className="w-4 h-4 text-[#0AA793] mx-auto" />
-                      ) : (
-                        c.number
-                      )}
-                    </td>
-
-                    {/* Title & Subtitle */}
-                    <td className="py-4 px-4">
-                      <div className="flex flex-col gap-0.5">
-                        <Link
-                          href={`/challenges/${c.slug}`}
-                          className="font-bold text-slate-950 text-sm hover:text-[#099BE9] transition-colors flex items-center gap-1.5"
-                        >
-                          <span>{c.title}</span>
-                        </Link>
-                        <span className="text-[11px] text-slate-600 font-medium line-clamp-1">
-                          {c.whatStudentsBuild}
-                        </span>
-                      </div>
-                    </td>
-
-                    {/* Inspired By */}
-                    <td className="py-4 px-4 hidden sm:table-cell">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 text-[11px] font-mono font-semibold">
-                        {c.inspiredBy}
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-slate-600 font-mono text-xs">
+                    <p className="font-bold text-slate-900 text-sm mb-1">No challenges found</p>
+                    <p className="text-slate-500 mb-3">No challenges match &quot;{searchQuery}&quot;</p>
+                    <button
+                      onClick={() => {
+                        setSearchQuery("");
+                        setDomainFilter("ALL");
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold cursor-pointer transition-colors"
+                    >
+                      Clear search &amp; filters
+                    </button>
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((c) => {
+                  const isSolved = solvedSet.has(c.slug);
+                  const difficultyBadge =
+                    c.difficulty === "Easy" ? (
+                      <span className="inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold font-mono bg-[#09C899]/15 border border-[#09C899]/30 text-[#0AA793]">
+                        Easy
                       </span>
-                    </td>
+                    ) : c.difficulty === "Medium" ? (
+                      <span className="inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold font-mono bg-[#FBAE0C]/15 border border-[#FBAE0C]/30 text-[#F78424]">
+                        Medium
+                      </span>
+                    ) : (
+                      <span className="inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold font-mono bg-[#8647E2]/15 border border-[#8647E2]/30 text-[#8647E2]">
+                        Hard
+                      </span>
+                    );
 
-                    {/* Difficulty */}
-                    <td className="py-4 px-4 text-center">
-                      {difficultyBadge}
-                    </td>
+                  const benchmarkText = c.benchmarkMetrics[0] || "Target: Bare Metal";
+                  const record = topThroughputMap[c.slug];
 
-                    {/* Benchmark KPI */}
-                    <td className="py-4 px-4 text-right font-mono text-xs hidden md:table-cell">
-                      <span className="font-bold text-slate-900">{benchmarkText}</span>
-                    </td>
+                  return (
+                    <tr
+                      key={c.slug}
+                      className="hover:bg-slate-50/90 transition-colors group"
+                    >
+                      {/* Number / Solved Status */}
+                      <td className="py-4 px-4 text-center font-mono font-bold text-slate-600 text-xs">
+                        {isSolved ? (
+                          <CheckCircle2 className="w-4 h-4 text-[#0AA793] mx-auto" />
+                        ) : (
+                          c.number
+                        )}
+                      </td>
 
-                    {/* Solve Action */}
-                    <td className="py-4 px-4 text-center">
-                      <Link
-                        href={`/challenges/${c.slug}/workspace`}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-[#099BE9] bg-[#099BE9]/10 hover:bg-[#099BE9] hover:text-white transition-all group/btn"
-                      >
-                        <span>Solve</span>
-                        <ChevronRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
+                      {/* Title & Subtitle */}
+                      <td className="py-4 px-4">
+                        <div className="flex flex-col gap-0.5">
+                          <div className="flex items-center gap-2">
+                            <Link
+                              href={`/challenges/${c.slug}`}
+                              className="font-bold text-slate-950 text-sm hover:text-[#099BE9] transition-colors"
+                            >
+                              {c.title}
+                            </Link>
+                            {c.status === "COMING_SOON" && (
+                              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
+                                PREVIEW
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[11px] text-slate-600 font-medium line-clamp-1">
+                            {c.whatStudentsBuild}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Inspired By */}
+                      <td className="py-4 px-4 hidden sm:table-cell">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 text-[11px] font-mono font-semibold">
+                          {c.inspiredBy}
+                        </span>
+                      </td>
+
+                      {/* Difficulty */}
+                      <td className="py-4 px-4 text-center">
+                        {difficultyBadge}
+                      </td>
+
+                      {/* Benchmark KPI */}
+                      <td className="py-4 px-4 text-right font-mono text-xs hidden md:table-cell">
+                        <div className="flex flex-col items-end">
+                          <span className="font-bold text-slate-900">{benchmarkText}</span>
+                          {record && (
+                            <span className="text-[10px] text-[#09C899] font-semibold">
+                              Top: {record}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Solve Action */}
+                      <td className="py-4 px-4 text-center">
+                        <Link
+                          href={`/challenges/${c.slug}/workspace`}
+                          className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all group/btn ${
+                            c.status === "COMING_SOON"
+                              ? "text-slate-700 bg-slate-100 hover:bg-slate-200"
+                              : "text-[#099BE9] bg-[#099BE9]/10 hover:bg-[#099BE9] hover:text-white"
+                          }`}
+                        >
+                          <span>{c.status === "COMING_SOON" ? "Preview" : "Solve"}</span>
+                          <ChevronRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

@@ -28,16 +28,19 @@ export async function POST(
 
     const { id } = await params;
     let challengeSlug = id;
-    try {
-      const found = await db
-        .select({ slug: challenges.slug })
-        .from(challenges)
-        .where(eq(challenges.id, id))
-        .limit(1);
-      if (found[0]?.slug) {
-        challengeSlug = found[0].slug;
-      }
-    } catch {}
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    if (isUuid) {
+      try {
+        const found = await db
+          .select({ slug: challenges.slug })
+          .from(challenges)
+          .where(eq(challenges.id, id))
+          .limit(1);
+        if (found[0]?.slug) {
+          challengeSlug = found[0].slug;
+        }
+      } catch {}
+    }
 
     const body = await req.json();
     const parsed = testSchema.safeParse(body);

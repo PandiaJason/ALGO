@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { CORE_CHALLENGES, CoreChallenge } from "@/lib/constants/core-challenges";
+import { CORE_CHALLENGES, DOMAINS, CoreChallenge } from "@/lib/constants/core-challenges";
 import { Terminal, ArrowRight, CheckCircle2, ChevronRight, Zap, Code2, Layers } from "lucide-react";
 
 export function HomeProblemset() {
@@ -10,10 +10,7 @@ export function HomeProblemset() {
 
   const filtered = CORE_CHALLENGES.filter((c) => {
     if (domainFilter === "ALL") return true;
-    if (domainFilter === "STORAGE") return c.domain === "SYSTEMS" || c.domain === "SEARCH_DATA";
-    if (domainFilter === "NETWORK") return c.domain === "PERFORMANCE";
-    if (domainFilter === "DISTRIBUTED") return c.domain === "DISTRIBUTED_SYSTEMS";
-    return true;
+    return c.domain === domainFilter;
   });
 
   return (
@@ -39,44 +36,27 @@ export function HomeProblemset() {
         <div className="inline-flex rounded-xl border border-slate-200 p-1 bg-slate-50 text-xs font-mono overflow-x-auto shrink-0">
           <button
             onClick={() => setDomainFilter("ALL")}
-            className={`px-3 py-1.5 rounded-lg transition-colors font-semibold ${
+            className={`px-3 py-1.5 rounded-lg transition-colors font-semibold cursor-pointer ${
               domainFilter === "ALL"
                 ? "bg-white text-slate-950 shadow-2xs font-bold"
                 : "text-slate-700 hover:text-slate-950"
             }`}
           >
-            All (10)
+            All ({CORE_CHALLENGES.length})
           </button>
-          <button
-            onClick={() => setDomainFilter("STORAGE")}
-            className={`px-3 py-1.5 rounded-lg transition-colors font-semibold ${
-              domainFilter === "STORAGE"
-                ? "bg-white text-slate-950 shadow-2xs font-bold"
-                : "text-slate-700 hover:text-slate-950"
-            }`}
-          >
-            Storage &amp; Memory
-          </button>
-          <button
-            onClick={() => setDomainFilter("NETWORK")}
-            className={`px-3 py-1.5 rounded-lg transition-colors font-semibold ${
-              domainFilter === "NETWORK"
-                ? "bg-white text-slate-950 shadow-2xs font-bold"
-                : "text-slate-700 hover:text-slate-950"
-            }`}
-          >
-            Networking
-          </button>
-          <button
-            onClick={() => setDomainFilter("DISTRIBUTED")}
-            className={`px-3 py-1.5 rounded-lg transition-colors font-semibold ${
-              domainFilter === "DISTRIBUTED"
-                ? "bg-white text-slate-950 shadow-2xs font-bold"
-                : "text-slate-700 hover:text-slate-950"
-            }`}
-          >
-            Distributed
-          </button>
+          {Object.entries(DOMAINS).map(([domKey, domInfo]) => (
+            <button
+              key={domKey}
+              onClick={() => setDomainFilter(domKey)}
+              className={`px-3 py-1.5 rounded-lg transition-colors font-semibold cursor-pointer ${
+                domainFilter === domKey
+                  ? "bg-white text-slate-950 shadow-2xs font-bold"
+                  : "text-slate-700 hover:text-slate-950"
+              }`}
+            >
+              {domInfo.label} ({domInfo.count})
+            </button>
+          ))}
         </div>
       </div>
 
@@ -125,12 +105,19 @@ export function HomeProblemset() {
                   {/* Title & Subtitle */}
                   <td className="py-4 px-4">
                     <div className="flex flex-col gap-0.5">
-                      <Link
-                        href={`/challenges/${c.slug}`}
-                        className="font-bold text-slate-950 text-sm hover:text-[#099BE9] transition-colors flex items-center gap-1.5"
-                      >
-                        <span>{c.title}</span>
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/challenges/${c.slug}`}
+                          className="font-bold text-slate-950 text-sm hover:text-[#099BE9] transition-colors"
+                        >
+                          {c.title}
+                        </Link>
+                        {c.status === "COMING_SOON" && (
+                          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
+                            PREVIEW
+                          </span>
+                        )}
+                      </div>
                       <span className="text-[11px] text-slate-600 font-medium line-clamp-1">
                         {c.whatStudentsBuild}
                       </span>
@@ -158,9 +145,13 @@ export function HomeProblemset() {
                   <td className="py-4 px-4 text-center">
                     <Link
                       href={`/challenges/${c.slug}/workspace`}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-[#099BE9] bg-[#099BE9]/10 hover:bg-[#099BE9] hover:text-white transition-all group/btn"
+                      className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all group/btn ${
+                        c.status === "COMING_SOON"
+                          ? "text-slate-700 bg-slate-100 hover:bg-slate-200"
+                          : "text-[#099BE9] bg-[#099BE9]/10 hover:bg-[#099BE9] hover:text-white"
+                      }`}
                     >
-                      <span>Solve</span>
+                      <span>{c.status === "COMING_SOON" ? "Preview" : "Solve"}</span>
                       <ChevronRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
                     </Link>
                   </td>

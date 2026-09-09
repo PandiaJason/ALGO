@@ -304,11 +304,11 @@ export function WorkspaceClient({
             {
               filename:
                 language === "python"
-                  ? "store.py"
+                  ? "solution.py"
                   : language === "cpp"
-                  ? "store.cpp"
+                  ? "solution.cpp"
                   : language === "rust"
-                  ? "store.rs"
+                  ? "solution.rs"
                   : language === "go"
                   ? "main.go"
                   : "Solution.java",
