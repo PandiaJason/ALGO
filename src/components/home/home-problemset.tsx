@@ -21,8 +21,8 @@ export function HomeProblemset() {
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950">
             Challenges
           </h2>
-          <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1">
-            10 real engineering problems that force you to understand how modern infrastructure works.
+          <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1 max-w-2xl">
+            10 challenges designed to help you understand systems engineering — by building the internals instead of just calling APIs.
           </p>
         </div>
 
