@@ -8,6 +8,7 @@ import { AlgoLogoIcon } from "@/components/layout/algo-logo-icon";
 import { DEFAULT_STARTER_TEMPLATES } from "@/lib/constants/templates";
 import { PROJECT_SCOPE, LEVEL_DEFINITIONS } from "@/lib/constants/challenge-data";
 import { getChallenge } from "@/lib/challenges";
+import { getChallengeStarterCode } from "@/lib/challenges/multi-lang-templates";
 import { SupportedLanguage, UNIVERSAL_STAGES } from "@/lib/challenges/types";
 import {
   Play,
@@ -149,25 +150,10 @@ export function WorkspaceClient({
     if ((challengeData?.starterTemplates as any)?.[lang]) {
       return (challengeData?.starterTemplates as any)[lang];
     }
-    
     if (challenge.slug === "kv-store" && (DEFAULT_STARTER_TEMPLATES as any)[lang]) {
       return (DEFAULT_STARTER_TEMPLATES as any)[lang];
     }
-
-    switch (lang) {
-      case "python":
-        return '# This challenge currently supports Python and C++ only.\n# Please select Python or C++ from the language dropdown above.\n\n# Rust, Go, and Java templates are coming soon.\nprint("Language not yet supported for this challenge")\n';
-      case "cpp":
-        return '// This challenge currently supports Python and C++ only.\n// Please select Python or C++ from the language dropdown above.\n\n// Rust, Go, and Java templates are coming soon.\n#include <iostream>\n\nint main() {\n    std::cout << "Language not yet supported for this challenge\\n";\n    return 0;\n}\n';
-      case "rust":
-        return '// This challenge currently supports Python and C++ only.\n// Please select Python or C++ from the language dropdown above.\n\n// Rust, Go, and Java templates are coming soon.\nfn main() {\n    println!("Language not yet supported for this challenge");\n}\n';
-      case "go":
-        return '// This challenge currently supports Python and C++ only.\n// Please select Python or C++ from the language dropdown above.\n\n// Rust, Go, and Java templates are coming soon.\npackage main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Language not yet supported for this challenge")\n}\n';
-      case "java":
-        return '// This challenge currently supports Python and C++ only.\n// Please select Python or C++ from the language dropdown above.\n\n// Rust, Go, and Java templates are coming soon.\npublic class Solution {\n    public static void main(String[] args) {\n        System.out.println("Language not yet supported for this challenge");\n    }\n}\n';
-      default:
-        return "";
-    }
+    return getChallengeStarterCode(challenge.slug, lang, challenge.title);
   };
 
   let spec = (version.spec as any) || {};
@@ -249,20 +235,10 @@ export function WorkspaceClient({
     setTimeout(() => setCopied(false), 1500);
   };
 
-  const isLanguageSupported =
-    challenge.slug === "kv-store" ||
-    language === "python" ||
-    language === "cpp" ||
-    Boolean((challengeData?.starterTemplates as any)?.[language]);
-
   // Run quick correctness tests inside Docker sandbox
   const handleRunCode = async () => {
     if (!user) {
       router.push(`/sign-in?callbackUrl=/challenges/${challenge.slug}/workspace`);
-      return;
-    }
-    if (!isLanguageSupported) {
-      alert(`${language.toUpperCase()} support for this challenge is currently in preview / coming soon. Please select Python 3.12 or C++ 20.`);
       return;
     }
     setIsRunningTests(true);
@@ -316,10 +292,6 @@ export function WorkspaceClient({
   const handleSubmit = async () => {
     if (!user) {
       router.push(`/sign-in?callbackUrl=/challenges/${challenge.slug}/workspace`);
-      return;
-    }
-    if (!isLanguageSupported) {
-      alert(`${language.toUpperCase()} support for this challenge is currently in preview / coming soon. Please select Python 3.12 or C++ 20.`);
       return;
     }
 
@@ -1005,9 +977,9 @@ export function WorkspaceClient({
               >
                 <option value="python">Python 3.12</option>
                 <option value="cpp">C++ 20 (g++)</option>
-                <option value="rust">Rust 1.75+{challenge.slug !== "kv-store" && !(challengeData?.starterTemplates as any)?.rust ? " (Coming Soon)" : ""}</option>
-                <option value="go">Go 1.22+{challenge.slug !== "kv-store" && !(challengeData?.starterTemplates as any)?.go ? " (Coming Soon)" : ""}</option>
-                <option value="java">Java 21{challenge.slug !== "kv-store" && !(challengeData?.starterTemplates as any)?.java ? " (Coming Soon)" : ""}</option>
+                <option value="rust">Rust 1.75+</option>
+                <option value="go">Go 1.22+</option>
+                <option value="java">Java 21</option>
               </select>
 
               <select

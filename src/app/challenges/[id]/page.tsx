@@ -520,9 +520,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
                   Inspired by <strong className="text-white font-bold">{coreDef?.inspiredBy ?? "Redis"}</strong>
                 </span>
                 <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-white/10 text-neutral-200 border border-white/10 font-medium">
-                  {challenge.slug === "kv-store"
-                    ? "Python, C++, Rust, Go, Java"
-                    : "Python 3.12, C++20 (Rust/Go in Preview)"}
+                  Python, C++, Rust, Go, Java
                 </span>
                 <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-[#09C899]/15 text-[#09C899] border border-[#09C899]/40 font-bold">
                   Target: {coreDef?.benchmarkMetrics[0] ?? "> 100,000 ops/s"}
