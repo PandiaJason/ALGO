@@ -535,7 +535,7 @@ export function WorkspaceClient({
                           ✕ Close
                         </button>
                       </div>
-                      <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200/80 font-mono text-[11px] text-slate-800 overflow-x-auto">
+                      <div className="p-3.5 rounded-xl bg-[#141416] border border-slate-800 font-mono text-[11px] text-[#09C899] overflow-x-auto shadow-sm">
                         <pre className="whitespace-pre leading-relaxed font-medium">{architectureDiagram}</pre>
                       </div>
                     </div>

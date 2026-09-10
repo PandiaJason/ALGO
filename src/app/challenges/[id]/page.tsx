@@ -796,8 +796,8 @@ export default async function ChallengeDetailPage({ params }: Props) {
                   </span>
                 </div>
 
-                <div className="p-5 rounded-xl bg-slate-50 border border-slate-200/80 font-mono text-xs text-slate-900 overflow-x-auto">
-                  <pre className="whitespace-pre leading-relaxed text-slate-800 font-medium">{architectureDiagram}</pre>
+                <div className="rounded-xl border border-slate-800 bg-[#141416] p-4 sm:p-5 font-mono text-[11px] sm:text-xs text-[#09C899] overflow-x-auto shadow-sm">
+                  <pre className="whitespace-pre leading-relaxed font-medium">{architectureDiagram}</pre>
                 </div>
               </div>
             )}
