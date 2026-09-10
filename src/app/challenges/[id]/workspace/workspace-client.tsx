@@ -8,7 +8,7 @@ import { AlgoLogoIcon } from "@/components/layout/algo-logo-icon";
 import { DEFAULT_STARTER_TEMPLATES } from "@/lib/constants/templates";
 import { PROJECT_SCOPE, LEVEL_DEFINITIONS } from "@/lib/constants/challenge-data";
 import { getChallenge } from "@/lib/challenges";
-import { SupportedLanguage } from "@/lib/challenges/types";
+import { SupportedLanguage, UNIVERSAL_STAGES } from "@/lib/challenges/types";
 import {
   Play,
   Send,
@@ -516,17 +516,18 @@ export function WorkspaceClient({
                     {Object.entries(levelData).map(([lvlNumStr, lvlInfo]) => {
                       const num = Number(lvlNumStr);
                       const isActive = selectedLevel === num;
+                      const stageLabel = (lvlInfo as any).stage || UNIVERSAL_STAGES[num]?.label || `L${num}`;
                       return (
                         <button
                           key={num}
                           onClick={() => handleSelectLevel(num)}
-                          className={`flex-1 min-w-[68px] py-1.5 px-1.5 rounded-md font-bold transition-all text-center cursor-pointer ${
+                          className={`flex-1 min-w-[76px] py-1.5 px-1.5 rounded-md font-bold transition-all text-center cursor-pointer ${
                             isActive
                               ? "bg-white text-[#099BE9] shadow-2xs border border-slate-200 ring-1 ring-[#099BE9]/30"
                               : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
                           }`}
                         >
-                          L{num}: {lvlInfo.shortTitle?.split(" ")[0] || `L${num}`}
+                          L{num}: {stageLabel}
                         </button>
                       );
                     })}
@@ -537,7 +538,7 @@ export function WorkspaceClient({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="px-2.5 py-0.5 rounded-md bg-[#099BE9]/10 text-[#099BE9] font-mono font-bold text-xs">
-                          Level {selectedLevel} of 6
+                          Level {selectedLevel} of 6 · {UNIVERSAL_STAGES[selectedLevel]?.stage || "BUILD"}
                         </span>
                         <span className="text-xs font-mono font-semibold text-slate-500">
                           {challenge.title}
@@ -558,6 +559,11 @@ export function WorkspaceClient({
                       {currentLevelInfo.title}
                     </h2>
                     <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                      {UNIVERSAL_STAGES[selectedLevel] && (
+                        <span className="font-semibold text-slate-900">
+                          {UNIVERSAL_STAGES[selectedLevel].question} —{" "}
+                        </span>
+                      )}
                       {currentLevelInfo.tagline}
                     </p>
                   </div>
@@ -780,7 +786,7 @@ export function WorkspaceClient({
 
                   {/* Table of Contents List */}
                   <div className="divide-y divide-slate-100">
-                    {Object.entries(levelData).map(([lvlNumStr, lvlInfo]) => {
+                    {Object.entries(levelData).map(([lvlNumStr, lvlInfo]: [string, any]) => {
                       const num = Number(lvlNumStr);
                       const isActive = selectedLevel === num;
                       let spec = (version.spec as any) || {};
@@ -977,7 +983,7 @@ export function WorkspaceClient({
                 onChange={(e) => handleSelectLevel(Number(e.target.value))}
                 className="bg-white text-slate-800 text-xs font-mono font-medium rounded-md px-2.5 py-1 border border-slate-300 shadow-2xs focus:outline-none cursor-pointer"
               >
-                {Object.entries(levelData).map(([lvlNumStr, lvlInfo]) => {
+                {Object.entries(levelData).map(([lvlNumStr, lvlInfo]: [string, any]) => {
                   const num = Number(lvlNumStr);
                   return (
                     <option key={num} value={num}>

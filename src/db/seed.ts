@@ -58,7 +58,7 @@ async function seed() {
 
   console.log(`✓ Admin user: ${adminUser.email} (role: ${adminUser.role})`);
 
-  // 2. Seed All 10 Core Challenges
+  // 2. Seed All 20 Core Challenges
   for (const chData of CHALLENGES_LIST) {
     const coreDef = CORE_CHALLENGES.find((c) => c.slug === chData.slug);
     const difficulty = mapDifficulty(coreDef?.difficulty || "Medium");
@@ -206,7 +206,7 @@ async function seed() {
     }
   }
 
-  console.log("🌱 Database seeding complete! All 10 challenges active.");
+  console.log("🌱 Database seeding complete! All 20 challenges active.");
   process.exit(0);
 }
 

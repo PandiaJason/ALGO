@@ -3,7 +3,7 @@ import { ChallengeData } from "./types";
 
 export const loadBalancerChallenge: ChallengeData = {
   slug: "load-balancer",
-  number: "09",
+  number: "12",
   title: "Dynamic Layer-7 Load Balancer",
   subtitle: "From weighted round-robin and active connection tracking to circuit breaker failover and consistent ring hashing.",
   badge: "DISTRIBUTED NETWORKING CAPSTONE",

@@ -22,7 +22,7 @@ export function HomeProblemset() {
             Challenges
           </h2>
           <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1 max-w-2xl">
-            10 challenges designed to help you understand systems engineering and boost your agentic workflow.
+            20 challenges designed to help you understand systems engineering and boost your agentic workflow.
           </p>
         </div>
 

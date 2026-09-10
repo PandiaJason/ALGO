@@ -68,10 +68,9 @@ export function ChallengesCatalog({
   const groupedByDomain = useMemo(() => {
     const map = new Map<EngineeringDomain, CoreChallenge[]>();
     const order: EngineeringDomain[] = [
-      "SYSTEMS",
-      "PERFORMANCE",
+      "CORE_SYSTEMS",
       "DISTRIBUTED_SYSTEMS",
-      "SEARCH_DATA",
+      "AI_SYSTEMS",
     ];
 
     order.forEach((d) => map.set(d, []));
@@ -92,10 +91,9 @@ export function ChallengesCatalog({
   }, [filteredChallenges]);
 
   const domainIcons: Record<EngineeringDomain, React.ReactNode> = {
-    SYSTEMS: <Cpu className="w-4 h-4 text-[#099BE9]" />,
-    PERFORMANCE: <Zap className="w-4 h-4 text-[#FBAE0C]" />,
+    CORE_SYSTEMS: <Cpu className="w-4 h-4 text-[#099BE9]" />,
     DISTRIBUTED_SYSTEMS: <Layers className="w-4 h-4 text-[#8647E2]" />,
-    SEARCH_DATA: <Database className="w-4 h-4 text-[#09C899]" />,
+    AI_SYSTEMS: <Database className="w-4 h-4 text-[#09C899]" />,
   };
 
   return (
@@ -106,7 +104,7 @@ export function ChallengesCatalog({
       <div className="space-y-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium bg-slate-900 text-white shadow-xs">
           <Sparkles className="w-3.5 h-3.5 text-[#09C899]" />
-          <span>10 CORE ENGINEERING CHALLENGES</span>
+          <span>20 CORE ENGINEERING CHALLENGES</span>
         </div>
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -187,7 +185,7 @@ export function ChallengesCatalog({
             <span className="text-xs font-mono text-slate-400 mr-1">
               Challenge Archetypes:
             </span>
-            {CHALLENGE_TYPES.map((t) => (
+            {(CHALLENGE_TYPES as any[]).map((t) => (
               <span
                 key={t.type}
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono font-medium bg-slate-800 border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 transition-all cursor-default"

@@ -7,7 +7,7 @@ export const httpServerChallenge: ChallengeData = {
   title: "High-Concurrency HTTP Server",
   subtitle: "From raw byte stream parsing to an RFC-compliant, keep-alive, high-concurrency web server.",
   badge: "SYSTEMS ENGINEERING CAPSTONE",
-  domain: "SYSTEMS",
+  domain: "CORE_SYSTEMS",
   inspiredBy: "Nginx, Envoy",
   whatStudentsBuild: "Non-blocking HTTP/1.1 web server",
   mainSkill: "Networking, I/O, concurrency",

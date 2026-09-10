@@ -3,11 +3,11 @@ import { ChallengeData } from "./types";
 
 export const databaseIndexChallenge: ChallengeData = {
   slug: "database-index",
-  number: "04",
+  number: "07",
   title: "B+ Tree Database Index Engine",
   subtitle: "From 10M-row linear table scans to a slotted-page B+ Tree with buffer pool caching.",
   badge: "SYSTEMS ENGINEERING CAPSTONE",
-  domain: "SYSTEMS",
+  domain: "CORE_SYSTEMS",
   inspiredBy: "PostgreSQL, SQLite, InnoDB",
   whatStudentsBuild: "Slotted-page B+ Tree indexing engine",
   mainSkill: "Storage, indexing, disk I/O",

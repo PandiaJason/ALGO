@@ -3,11 +3,11 @@ import { ChallengeData } from "./types";
 
 export const messageQueueChallenge: ChallengeData = {
   slug: "message-queue",
-  number: "03",
+  number: "09",
   title: "Commit Log & Message Queue",
   subtitle: "From in-memory FIFO queues and sequential commit logs to partition routing, consumer groups, and crash-durable segment files.",
   badge: "SYSTEMS ENGINEERING CAPSTONE",
-  domain: "SYSTEMS",
+  domain: "DISTRIBUTED_SYSTEMS",
   inspiredBy: "Kafka, Redpanda",
   whatStudentsBuild: "Commit log & message broker",
   mainSkill: "Queues, batching, throughput",

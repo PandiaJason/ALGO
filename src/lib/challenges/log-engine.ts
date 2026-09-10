@@ -3,11 +3,11 @@ import { ChallengeData } from "./types";
 
 export const logEngineChallenge: ChallengeData = {
   slug: "log-engine",
-  number: "06",
+  number: "10",
   title: "Streaming Log Analytics Engine",
   subtitle: "From line-delimited byte tokenization to streaming aggregators, rolling window error rates, Count-Min Sketches, and quantiles.",
   badge: "PERFORMANCE ENGINEERING CAPSTONE",
-  domain: "PERFORMANCE",
+  domain: "DISTRIBUTED_SYSTEMS",
   inspiredBy: "ClickHouse, Loki, Vector",
   whatStudentsBuild: "Streaming log processor & analytics engine",
   mainSkill: "Streaming, parsing, aggregation",

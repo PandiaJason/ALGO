@@ -286,7 +286,7 @@ export default async function AdminDashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-base font-bold text-slate-950">
-              Curriculum Registry (10 Challenges)
+              Curriculum Registry ({CHALLENGES_LIST.length} Challenges)
             </h2>
             <p className="text-xs text-slate-500 font-medium">
               Verified first-principles systems engineering curricula.

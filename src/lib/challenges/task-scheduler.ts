@@ -3,7 +3,7 @@ import { ChallengeData } from "./types";
 
 export const taskSchedulerChallenge: ChallengeData = {
   slug: "task-scheduler",
-  number: "07",
+  number: "13",
   title: "Multi-Resource Task Scheduler",
   subtitle: "From priority queues and multi-resource bin-packing to worker failure preemption and dominant resource fairness (DRF).",
   badge: "DISTRIBUTED SYSTEMS CAPSTONE",

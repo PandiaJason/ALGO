@@ -3,11 +3,11 @@ import { ChallengeData } from "./types";
 
 export const searchEngineChallenge: ChallengeData = {
   slug: "search-engine",
-  number: "10",
+  number: "17",
   title: "Inverted-Index Search Engine",
   subtitle: "From inverted index postings lists to BM25 probabilistic relevance ranking and positional phrase matching.",
   badge: "DATA INFRASTRUCTURE CAPSTONE",
-  domain: "SEARCH_DATA",
+  domain: "AI_SYSTEMS",
   inspiredBy: "Lucene, Elasticsearch, Meilisearch",
   whatStudentsBuild: "Inverted-index full-text search engine",
   mainSkill: "Indexing, ranking, text processing",

@@ -3,7 +3,7 @@ import { ChallengeData } from "./types";
 
 export const rateLimiterChallenge: ChallengeData = {
   slug: "rate-limiter",
-  number: "08",
+  number: "11",
   title: "Concurrent Rate Limiter & Traffic Shaper",
   subtitle: "From fixed windows and sliding token buckets to atomic CAS rate enforcement and distributed sync extensions.",
   badge: "SYSTEM DESIGN CAPSTONE",

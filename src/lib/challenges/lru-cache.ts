@@ -3,11 +3,11 @@ import { ChallengeData } from "./types";
 
 export const lruCacheChallenge: ChallengeData = {
   slug: "lru-cache",
-  number: "05",
+  number: "06",
   title: "Concurrent Cache & Eviction Engine",
   subtitle: "From doubly-linked LRU lists and LFU frequency tiers to memory-budgeted evictions and Adaptive Replacement Caching (ARC).",
   badge: "PERFORMANCE ENGINEERING CAPSTONE",
-  domain: "PERFORMANCE",
+  domain: "CORE_SYSTEMS",
   inspiredBy: "Redis, Memcached, Guava",
   whatStudentsBuild: "Workload-adaptive concurrent cache",
   mainSkill: "Caching, eviction, memory",

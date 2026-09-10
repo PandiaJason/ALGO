@@ -5,11 +5,11 @@ import { DEFAULT_STARTER_TEMPLATES } from "../constants/templates";
 
 export const kvStoreChallenge: ChallengeData = {
   slug: "kv-store",
-  number: "01",
+  number: "04",
   title: "Key-Value Storage Engine",
   subtitle: PROJECT_SCOPE.subtitle,
   badge: PROJECT_SCOPE.badge,
-  domain: "SYSTEMS",
+  domain: "CORE_SYSTEMS",
   inspiredBy: "Redis (references: RocksDB, Bitcask)",
   whatStudentsBuild: "In-memory storage engine with WAL persistence",
   mainSkill: "Data structures, hashing, persistence",

@@ -34,6 +34,7 @@ export const dynamic = "force-dynamic";
 import { PROJECT_SCOPE, LEVEL_DEFINITIONS } from "@/lib/constants/challenge-data";
 import { CORE_CHALLENGES } from "@/lib/constants/core-challenges";
 import { getChallenge } from "@/lib/challenges";
+import { UNIVERSAL_STAGES } from "@/lib/challenges/types";
 
 const CHALLENGE_TARGET_SPECS: Record<
   string,
@@ -485,10 +486,13 @@ export default async function ChallengeDetailPage({ params }: Props) {
                             </div>
 
                             <div className="min-w-0 flex-1 space-y-0.5">
-                              {/* Title & Difficulty on 1 clean un-wrapped row */}
+                              {/* Title, Stage & Difficulty on 1 clean un-wrapped row */}
                               <div className="flex items-center gap-2 min-w-0">
                                 <span className="font-bold text-slate-950 text-sm truncate group-hover:text-[#099BE9] transition-colors">
                                   {lvl.title}
+                                </span>
+                                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold shrink-0 bg-[#099BE9]/10 text-[#099BE9] border border-[#099BE9]/30">
+                                  {lvl.stage || UNIVERSAL_STAGES[lvl.level]?.stage || "STAGE"}
                                 </span>
                                 <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold shrink-0 border ${
                                   lvl.difficulty === "Easy"
@@ -501,8 +505,13 @@ export default async function ChallengeDetailPage({ params }: Props) {
                                 </span>
                               </div>
 
-                              {/* 1-line crisp objective */}
+                              {/* 1-line crisp objective with universal core question */}
                               <p className="text-xs text-slate-500 font-normal truncate">
+                                {UNIVERSAL_STAGES[lvl.level] && (
+                                  <span className="font-semibold text-slate-700">
+                                    {UNIVERSAL_STAGES[lvl.level].question} —{" "}
+                                  </span>
+                                )}
                                 {lvl.tagline || lvl.description}
                               </p>
                             </div>
