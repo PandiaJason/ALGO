@@ -2,6 +2,7 @@ import { spawn } from "child_process";
 import { getChallenge } from "../challenges";
 import { SupportedLanguage } from "../challenges/types";
 import { runInLimaNsjail, isLimaAvailable, SandboxExecutionResult } from "./lima-nsjail";
+import { runInNativeNsjail, isNativeNsjailAvailable } from "./nsjail-native";
 import { generateBenchmarkWorkload } from "./challenge-workloads";
 
 export interface TestCaseResult {
@@ -171,8 +172,10 @@ export async function runInDocker(
 }
 
 /**
- * Universal sandbox runner that dispatches to Lima nsjail (Debian ARM64) when active,
- * or falls back to Docker.
+ * Universal sandbox runner that dispatches to:
+ * 1. Native nsjail (Linux host / cloud EC2 worker) when available or SANDBOX_BACKEND=nsjail
+ * 2. Lima nsjail (Debian ARM64 VM on macOS) when active or SANDBOX_BACKEND=lima
+ * 3. Hardened Docker container fallback
  */
 export async function runInSandbox(
   code: string,
@@ -182,17 +185,32 @@ export async function runInSandbox(
 ): Promise<SandboxExecutionResult> {
   const preferredBackend = process.env.SANDBOX_BACKEND?.toLowerCase();
 
-  // If explicitly configured for docker
+  // 1. Explicit native nsjail or running on Linux host where nsjail is installed
+  if (
+    preferredBackend === "nsjail" ||
+    (process.platform === "linux" && isNativeNsjailAvailable())
+  ) {
+    return runInNativeNsjail(code, language, inputData, timeoutMs);
+  }
+
+  // 2. Explicit docker
   if (preferredBackend === "docker") {
     return runInDocker(code, language, inputData, timeoutMs);
   }
 
-  // If configured for lima or if Lima Debian VM is running
+  // 3. macOS Lima Debian VM with nsjail
   if (preferredBackend === "lima" || isLimaAvailable()) {
     return runInLimaNsjail(code, language, inputData, timeoutMs);
   }
 
-  // Default fallback
+  // 4. Default fallback: native nsjail if Linux, Lima if macOS, else Docker
+  if (isNativeNsjailAvailable()) {
+    return runInNativeNsjail(code, language, inputData, timeoutMs);
+  }
+  if (isLimaAvailable()) {
+    return runInLimaNsjail(code, language, inputData, timeoutMs);
+  }
+
   return runInDocker(code, language, inputData, timeoutMs);
 }
 

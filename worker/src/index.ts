@@ -15,6 +15,8 @@ import {
 } from "../../src/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { runQuickTest, runBenchmark } from "../../src/lib/sandbox/runner";
+import { isLimaAvailable } from "../../src/lib/sandbox/lima-nsjail";
+import { isNativeNsjailAvailable } from "../../src/lib/sandbox/nsjail-native";
 
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 const WORKER_CONCURRENCY = parseInt(process.env.WORKER_CONCURRENCY || "2", 10);
@@ -280,13 +282,28 @@ export const healthServer = http.createServer(async (req, res) => {
         dockerOk = false;
       }
 
+      const backend = (process.env.SANDBOX_BACKEND || (process.platform === "linux" ? "nsjail" : "lima")).toLowerCase();
+      let sandboxOk = false;
+      let sandboxDetails = "unavailable";
+
+      if (backend === "nsjail" || (process.platform === "linux" && isNativeNsjailAvailable())) {
+        sandboxOk = isNativeNsjailAvailable();
+        sandboxDetails = sandboxOk ? "available (native Linux nsjail)" : "unavailable (/usr/local/bin/nsjail not found)";
+      } else if (backend === "lima") {
+        sandboxOk = isLimaAvailable();
+        sandboxDetails = sandboxOk ? "available (Lima Debian VM / nsjail)" : "unavailable (Lima VM stopped)";
+      } else {
+        sandboxOk = dockerOk;
+        sandboxDetails = dockerOk ? `available (${dockerVersion})` : "unavailable";
+      }
+
       let queueCounts: Record<string, number> = { waiting: 0, active: 0, completed: 0, failed: 0, delayed: 0 };
       try {
         queueCounts = await queue.getJobCounts("waiting", "active", "completed", "failed", "delayed");
       } catch {}
 
       const mem = process.memoryUsage();
-      const isHealthy = redisOk && postgresOk && dockerOk;
+      const isHealthy = redisOk && postgresOk && sandboxOk;
 
       res.writeHead(isHealthy ? 200 : 503, { "Content-Type": "application/json" });
       res.end(
@@ -300,6 +317,7 @@ export const healthServer = http.createServer(async (req, res) => {
             subsystems: {
               redis: redisOk ? "connected" : "disconnected",
               postgres: postgresOk ? "connected" : "disconnected",
+              sandbox: sandboxDetails,
               docker: dockerOk ? `available (${dockerVersion})` : "unavailable",
             },
             queue: queueCounts,
