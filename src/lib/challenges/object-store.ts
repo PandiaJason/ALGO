@@ -100,6 +100,21 @@ export const objectStoreChallenge: ChallengeData = {
       title: "Content-Addressed Blob Storage",
       difficulty: "Easy",
       tagline: "Can you make it work? Implement PUT, GET, and DELETE operations with SHA-256 content addressing.",
+      diagram: `INPUT: "PUT doc.txt Hello S3"
+      │
+      ▼
+┌────────────────────────────────────────────────────────────┐
+│ SHA-256 Digest: 2cf24dba5fb0a30e26e83b2ac5b9e29e1b...      │
+├────────────────────────────────────────────────────────────┤
+│ Sharded Disk Path:                                         │
+│   .storage/2c/f2/2cf24dba5fb0a30e...                       │
+├────────────────────────────────────────────────────────────┤
+│ Metadata Index:                                            │
+│   "doc.txt" ──► hash: 2cf24dba..., size: 8 bytes           │
+└────────────────────────────────────────────────────────────┘
+      │
+      ▼
+OUTPUT: PUT_OK 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824`,
       learningLoop: {
         bottleneck: "How does an object store manage millions of files without overloading a single flat directory?",
         whatYouUnderstand: [
@@ -118,17 +133,17 @@ export const objectStoreChallenge: ChallengeData = {
       examples: [
         {
           title: "Put and Get",
-          input: "PUT doc.txt Hello S3\nGET doc.txt\nexit",
-          output: "PUT_OK 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824\nHello S3",
+          input: "PUT doc.txt Hello S3\\nGET doc.txt\\nexit",
+          output: "PUT_OK 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824\\nHello S3",
         },
       ],
       constraints: ["Return accurate SHA-256 hashes", "404 NOT_FOUND on nonexistent keys"],
       cases: [
-        { name: "Case 1: Store and fetch blob", input: "PUT k1 hello\nGET k1\nexit", expected: "PUT_OK\nhello" },
-        { name: "Case 2: Overwrite existing key", input: "PUT k1 v1\nPUT k1 v2\nGET k1\nexit", expected: "PUT_OK\nPUT_OK\nv2" },
-        { name: "Case 3: Delete key", input: "PUT k2 data\nDELETE k2\nGET k2\nexit", expected: "PUT_OK\nDELETE_OK\nNOT_FOUND" },
-        { name: "Case 4: Unknown key query", input: "GET unknown\nexit", expected: "NOT_FOUND" },
-        { name: "Case 5: Large string payload", input: "PUT large payload123456789\nGET large\nexit", expected: "PUT_OK\npayload123456789" },
+        { name: "Case 1: Store and fetch blob", input: "PUT k1 hello\\nGET k1\\nexit", expected: "PUT_OK\\nhello" },
+        { name: "Case 2: Overwrite existing key", input: "PUT k1 v1\\nPUT k1 v2\\nGET k1\\nexit", expected: "PUT_OK\\nPUT_OK\\nv2" },
+        { name: "Case 3: Delete key", input: "PUT k2 data\\nDELETE k2\\nGET k2\\nexit", expected: "PUT_OK\\nDELETE_OK\\nNOT_FOUND" },
+        { name: "Case 4: Unknown key query", input: "GET unknown\\nexit", expected: "NOT_FOUND" },
+        { name: "Case 5: Large string payload", input: "PUT large payload123456789\\nGET large\\nexit", expected: "PUT_OK\\npayload123456789" },
       ],
     },
     2: {
@@ -138,6 +153,22 @@ export const objectStoreChallenge: ChallengeData = {
       title: "Rabin Fingerprinting & Deduplication",
       difficulty: "Medium",
       tagline: "Do you understand the core mechanism? Split streams into content-defined chunks and reuse identical blocks.",
+      diagram: `CONTENT-DEFINED CHUNKING (CDC) & DEDUPLICATION:
+
+Stream: [AAAAA_BBBBB_CCCCC_DDDDD]
+           │ (Rabin rolling hash boundary detection)
+           ├── Chunk 1: [AAAAA] (Hash: H1) ──► Stored on disk
+           ├── Chunk 2: [BBBBB] (Hash: H2) ──► Stored on disk
+           ├── Chunk 3: [CCCCC] (Hash: H3) ──► Stored on disk
+           └── Chunk 4: [DDDDD] (Hash: H4) ──► Stored on disk
+
+User 2 Uploads: [AAAAA_BBBBB_EEEEE_DDDDD]
+           ├── Chunk 1: [AAAAA] (H1) ──► EXISTS! Refcount + 1 (0 bytes written)
+           ├── Chunk 2: [BBBBB] (H2) ──► EXISTS! Refcount + 1 (0 bytes written)
+           ├── Chunk 3: [EEEEE] (H5) ──► NEW chunk written to disk
+           └── Chunk 4: [DDDDD] (H4) ──► EXISTS! Refcount + 1 (0 bytes written)
+
+Object Manifest for User 2: [H1, H2, H5, H4] ──► 75% Storage Saved!`,
       learningLoop: {
         bottleneck: "If two users upload 1GB files that differ by only 1 byte at the beginning, why does fixed chunking fail to deduplicate?",
         whatYouUnderstand: [
@@ -155,17 +186,17 @@ export const objectStoreChallenge: ChallengeData = {
       examples: [
         {
           title: "Dedup Uploads",
-          input: "PUT-DEDUP f1 AAAAA_BBBBB\nPUT-DEDUP f2 AAAAA_CCCCC\nSTATS-DEDUP\nexit",
-          output: "PUT_OK\nPUT_OK\nSAVED_RATIO: > 30%",
+          input: "PUT-DEDUP f1 AAAAA_BBBBB\\nPUT-DEDUP f2 AAAAA_CCCCC\\nSTATS-DEDUP\\nexit",
+          output: "PUT_OK\\nPUT_OK\\nSAVED_RATIO: > 30%",
         },
       ],
       constraints: ["Chunks must be content-defined", "Identical blocks must only be written to disk once"],
       cases: [
-        { name: "Case 1: Identical file upload", input: "PUT-DEDUP a test\nPUT-DEDUP b test\nSTATS-DEDUP\nexit", expected: "PUT_OK\nPUT_OK\nPHYSICAL_CHUNKS: 1" },
-        { name: "Case 2: Reconstruct deduplicated object", input: "PUT-DEDUP doc hello_world\nGET doc\nexit", expected: "PUT_OK\nhello_world" },
-        { name: "Case 3: Partial chunk sharing", input: "PUT-DEDUP x chunkA_chunkB\nPUT-DEDUP y chunkA_chunkC\nSTATS-DEDUP\nexit", expected: "PUT_OK\nPUT_OK\nSHARED_CHUNKS: 1" },
-        { name: "Case 4: Reference counting on delete", input: "PUT-DEDUP d1 share\nPUT-DEDUP d2 share\nDELETE d1\nGET d2\nexit", expected: "PUT_OK\nPUT_OK\nDELETE_OK\nshare" },
-        { name: "Case 5: Dedup ratio audit", input: "check-dedup-ratio\nexit", expected: "DEDUP_SAVINGS: DETECTED" },
+        { name: "Case 1: Identical file upload", input: "PUT-DEDUP a test\\nPUT-DEDUP b test\\nSTATS-DEDUP\\nexit", expected: "PUT_OK\\nPUT_OK\\nPHYSICAL_CHUNKS: 1" },
+        { name: "Case 2: Reconstruct deduplicated object", input: "PUT-DEDUP doc hello_world\\nGET doc\\nexit", expected: "PUT_OK\\nhello_world" },
+        { name: "Case 3: Partial chunk sharing", input: "PUT-DEDUP x chunkA_chunkB\\nPUT-DEDUP y chunkA_chunkC\\nSTATS-DEDUP\\nexit", expected: "PUT_OK\\nPUT_OK\\nSHARED_CHUNKS: 1" },
+        { name: "Case 4: Reference counting on delete", input: "PUT-DEDUP d1 share\\nPUT-DEDUP d2 share\\nDELETE d1\\nGET d2\\nexit", expected: "PUT_OK\\nPUT_OK\\nDELETE_OK\\nshare" },
+        { name: "Case 5: Dedup ratio audit", input: "check-dedup-ratio\\nexit", expected: "DEDUP_SAVINGS: DETECTED" },
       ],
     },
     3: {
@@ -175,6 +206,24 @@ export const objectStoreChallenge: ChallengeData = {
       title: "Bit Rot Detection & Background Scrubbing",
       difficulty: "Hard",
       tagline: "Does it remain correct under edge cases and failures? Detect silent data corruption via periodic block scrubbing.",
+      diagram: `BACKGROUND SCRUBBER PIPELINE:
+
+  Block Storage Drive
+  ┌──────────────┬──────────────┬──────────────┬──────────────┐
+  │ Chunk #1     │ Chunk #2     │ Chunk #3     │ Chunk #4     │
+  │ CRC32: 0x8A  │ CRC32: 0x9B  │ CRC32: 0x1F  │ CRC32: 0x5C  │
+  └──────┬───────┴──────┬───────┴──────┬───────┴──────────────┘
+         │              │              │
+         ▼              ▼              ▼
+  Scrubber Read   Scrubber Read  Scrubber Read (Flipped bit!)
+  Recompute CRC   Recompute CRC  Recompute CRC: 0x2E != 0x1F
+         │              │              │
+         ▼              ▼              ▼
+     [HEALTHY]      [HEALTHY]     [CORRUPTION DETECTED]
+                                       │
+                                       ▼
+                                 QUARANTINE BLOCK
+                                 (Prevent client reads)`,
       learningLoop: {
         bottleneck: "What happens when physical disk magnets flip a bit silently without the OS throwing an I/O error?",
         whatYouUnderstand: [
@@ -192,17 +241,17 @@ export const objectStoreChallenge: ChallengeData = {
       examples: [
         {
           title: "Scrub corrupted block",
-          input: "scrub\nexit",
+          input: "scrub\\nexit",
           output: "SCRUB_COMPLETE: 42 BLOCKS CHECKED, 1 CORRUPT QUARANTINED",
         },
       ],
       constraints: ["Zero tolerance for checksum mismatches", "Quarantine damaged blocks immediately"],
       cases: [
-        { name: "Case 1: Clean scrub", input: "scrub\nexit", expected: "SCRUB_OK CORRUPT: 0" },
-        { name: "Case 2: Detect bit rot", input: "corrupt-block CHUNK_1\nscrub\nexit", expected: "CORRUPT DETECTED: CHUNK_1" },
-        { name: "Case 3: Block quarantine isolation", input: "corrupt-block CHUNK_1\nGET-CHUNK CHUNK_1\nexit", expected: "ERROR: BLOCK_CORRUPTED" },
-        { name: "Case 4: Redundant recovery", input: "recover-chunk CHUNK_1\nGET-CHUNK CHUNK_1\nexit", expected: "RECOVERED_OK" },
-        { name: "Case 5: Health status check", input: "storage-health\nexit", expected: "HEALTH: 100%" },
+        { name: "Case 1: Clean scrub", input: "scrub\\nexit", expected: "SCRUB_OK CORRUPT: 0" },
+        { name: "Case 2: Detect bit rot", input: "corrupt-block CHUNK_1\\nscrub\\nexit", expected: "CORRUPT DETECTED: CHUNK_1" },
+        { name: "Case 3: Block quarantine isolation", input: "corrupt-block CHUNK_1\\nGET-CHUNK CHUNK_1\\nexit", expected: "ERROR: BLOCK_CORRUPTED" },
+        { name: "Case 4: Redundant recovery", input: "recover-chunk CHUNK_1\\nGET-CHUNK CHUNK_1\\nexit", expected: "RECOVERED_OK" },
+        { name: "Case 5: Health status check", input: "storage-health\\nexit", expected: "HEALTH: 100%" },
       ],
     },
     4: {
@@ -212,6 +261,20 @@ export const objectStoreChallenge: ChallengeData = {
       title: "Concurrent Multipart Uploads",
       difficulty: "Hard",
       tagline: "Does it handle concurrency, workload and growth? Support multi-gigabyte uploads via parallel part streaming.",
+      diagram: `MULTIPART UPLOAD STATE MACHINE:
+
+  1. init-multipart "large.iso" ──► Session ID: UP_123
+
+  2. Concurrent Parallel Part Streams:
+     Part 1: upload-part UP_123 1 [Chunk A] ──► /staging/UP_123/part_1.tmp
+     Part 3: upload-part UP_123 3 [Chunk C] ──► /staging/UP_123/part_3.tmp
+     Part 2: upload-part UP_123 2 [Chunk B] ──► /staging/UP_123/part_2.tmp
+     (Arrived out-of-order without blocking!)
+
+  3. complete-multipart UP_123:
+     Verify Parts [1, 2, 3] present and validated
+     Concatenate parts ──► Move to final /storage/large.iso
+     Prune temporary staging directory`,
       learningLoop: {
         bottleneck: "How do you reliably upload a 50GB file over flaky networks without restarting from byte 0 on failure?",
         whatYouUnderstand: [
@@ -230,17 +293,17 @@ export const objectStoreChallenge: ChallengeData = {
       examples: [
         {
           title: "Multipart Session",
-          input: "init-multipart bigfile.iso\nupload-part UP_1 1 PART1\nupload-part UP_1 2 PART2\ncomplete-multipart UP_1\nexit",
-          output: "UPLOAD_ID: UP_1\nPART_OK\nPART_OK\nMULTIPART_COMMITTED",
+          input: "init-multipart bigfile.iso\\nupload-part UP_1 1 PART1\\nupload-part UP_1 2 PART2\\ncomplete-multipart UP_1\\nexit",
+          output: "UPLOAD_ID: UP_1\\nPART_OK\\nPART_OK\\nMULTIPART_COMMITTED",
         },
       ],
       constraints: ["Allow parts to arrive out of order", "Assemble strictly by part number sequence"],
       cases: [
-        { name: "Case 1: Sequential multipart", input: "init-multipart file1\nupload-part UP1 1 A\nupload-part UP1 2 B\ncomplete-multipart UP1\nGET file1\nexit", expected: "UPLOAD_INIT\nPART_OK\nPART_OK\nCOMPLETE_OK\nAB" },
-        { name: "Case 2: Out of order parts", input: "init-multipart file2\nupload-part UP2 2 World\nupload-part UP2 1 Hello_\ncomplete-multipart UP2\nGET file2\nexit", expected: "UPLOAD_INIT\nPART_OK\nPART_OK\nCOMPLETE_OK\nHello_World" },
-        { name: "Case 3: Abort upload session", input: "init-multipart file3\nabort-multipart UP3\ncomplete-multipart UP3\nexit", expected: "UPLOAD_INIT\nABORT_OK\nERROR_INVALID_SESSION" },
-        { name: "Case 4: Overwriting part", input: "init-multipart file4\nupload-part UP4 1 OLD\nupload-part UP4 1 NEW\ncomplete-multipart UP4\nGET file4\nexit", expected: "UPLOAD_INIT\nPART_OK\nPART_OK\nCOMPLETE_OK\nNEW" },
-        { name: "Case 5: Concurrent active sessions", input: "list-multipart-sessions\nexit", expected: "ACTIVE_SESSIONS: OK" },
+        { name: "Case 1: Sequential multipart", input: "init-multipart file1\\nupload-part UP1 1 A\\nupload-part UP1 2 B\\ncomplete-multipart UP1\\nGET file1\\nexit", expected: "UPLOAD_INIT\\nPART_OK\\nPART_OK\\nCOMPLETE_OK\\nAB" },
+        { name: "Case 2: Out of order parts", input: "init-multipart file2\\nupload-part UP2 2 World\\nupload-part UP2 1 Hello_\\ncomplete-multipart UP2\\nGET file2\\nexit", expected: "UPLOAD_INIT\\nPART_OK\\nPART_OK\\nCOMPLETE_OK\\nHello_World" },
+        { name: "Case 3: Abort upload session", input: "init-multipart file3\\nabort-multipart UP3\\ncomplete-multipart UP3\\nexit", expected: "UPLOAD_INIT\\nABORT_OK\\nERROR_INVALID_SESSION" },
+        { name: "Case 4: Overwriting part", input: "init-multipart file4\\nupload-part UP4 1 OLD\\nupload-part UP4 1 NEW\\ncomplete-multipart UP4\\nGET file4\\nexit", expected: "UPLOAD_INIT\\nPART_OK\\nPART_OK\\nCOMPLETE_OK\\nNEW" },
+        { name: "Case 5: Concurrent active sessions", input: "list-multipart-sessions\\nexit", expected: "ACTIVE_SESSIONS: OK" },
       ],
     },
     5: {
@@ -250,6 +313,22 @@ export const objectStoreChallenge: ChallengeData = {
       title: "IOPS Saturation & Write Amplification",
       difficulty: "Hard",
       tagline: "Can you identify bottlenecks and prove performance? Measure chunking CPU costs vs disk write amplification.",
+      diagram: `WRITE AMPLIFICATION FACTOR (WAF) & CHUNKER PROFILING:
+
+  Logical Payload: 1,048,576 bytes (1.0 MB)
+         │
+         ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │ CDC Rabin Rolling Hash Chunker                          │
+  │ CPU Cost: 3.2 ms / MB (Throughput: ~312 MB/s)           │
+  ├─────────────────────────────────────────────────────────┤
+  │ Deduplication Engine:                                   │
+  │   - 524,288 bytes matched existing chunks               │
+  │   - 524,288 bytes unique new chunks                     │
+  ├─────────────────────────────────────────────────────────┤
+  │ Physical Disk Written: 524,288 bytes                    │
+  │ Write Amplification Factor (WAF) = 0.50 (50% reduction) │
+  └─────────────────────────────────────────────────────────┘`,
       learningLoop: {
         bottleneck: "At what point does CDC chunking calculation consume more CPU time than the disk write savings are worth?",
         whatYouUnderstand: [
@@ -267,17 +346,17 @@ export const objectStoreChallenge: ChallengeData = {
       examples: [
         {
           title: "Bench WAF",
-          input: "bench-waf 1048576\nexit",
+          input: "bench-waf 1048576\\nexit",
           output: "LOGICAL: 1048576 PHYSICAL: 524288 WAF: 0.50",
         },
       ],
       constraints: ["Report exact WAF ratio to 2 decimal places", "Report IOPS under concurrency"],
       cases: [
-        { name: "Case 1: WAF measurement", input: "bench-waf 1048576\nexit", expected: "WAF: < 1.0" },
-        { name: "Case 2: Read IOPS benchmark", input: "bench-iops 8\nexit", expected: "IOPS: > 5000" },
-        { name: "Case 3: Chunking CPU profiling", input: "profile-chunker\nexit", expected: "THROUGHPUT: > 300 MB/s" },
-        { name: "Case 4: Manifest lookup latency", input: "manifest-latency\nexit", expected: "LATENCY_US: < 100" },
-        { name: "Case 5: Health audit", input: "audit-storage\nexit", expected: "STATUS: OPTIMAL" },
+        { name: "Case 1: WAF measurement", input: "bench-waf 1048576\\nexit", expected: "WAF: < 1.0" },
+        { name: "Case 2: Read IOPS benchmark", input: "bench-iops 8\\nexit", expected: "IOPS: > 5000" },
+        { name: "Case 3: Chunking CPU profiling", input: "profile-chunker\\nexit", expected: "THROUGHPUT: > 300 MB/s" },
+        { name: "Case 4: Manifest lookup latency", input: "manifest-latency\\nexit", expected: "LATENCY_US: < 100" },
+        { name: "Case 5: Health audit", input: "audit-storage\\nexit", expected: "STATUS: OPTIMAL" },
       ],
     },
     6: {
@@ -287,6 +366,21 @@ export const objectStoreChallenge: ChallengeData = {
       title: "Zero-Copy Direct I/O & Block Coalescing",
       difficulty: "Hard",
       tagline: "Can you make it measurably better? Eliminate kernel page cache pollution using O_DIRECT aligned writes.",
+      diagram: `DIRECT I/O vs BUFFERED KERNEL PAGE CACHE:
+
+  Standard I/O (Thrashing):
+  User Buffer ──► Kernel Page Cache (Pollution) ──► Disk Controller
+
+  ALGO Level 6 (O_DIRECT + Sector Aligned):
+  ┌─────────────────────────────────────────────────────────┐
+  │ Aligned Memory Arena: posix_memalign(&buf, 4096, size)  │
+  ├─────────────────────────────────────────────────────────┤
+  │ Coalescing Window:                                      │
+  │   Merge 16x 4KB writes ──► Single contiguous 64KB I/O   │
+  ├─────────────────────────────────────────────────────────┤
+  │ open("chunk.dat", O_DIRECT | O_WRONLY)                  │
+  │ DMA transfer straight to NVMe Controller (Zero Kernel Copies)│
+  └─────────────────────────────────────────────────────────┘`,
       learningLoop: {
         bottleneck: "How do you stream multi-gigabyte files to disk without evicting active database pages from the Linux page cache?",
         whatYouUnderstand: [
@@ -304,17 +398,17 @@ export const objectStoreChallenge: ChallengeData = {
       examples: [
         {
           title: "Direct Write",
-          input: "direct-write blob1 4096\nverify-pagecache\nexit",
-          output: "DIRECT_IO_OK\nPAGECACHE_DIRTY: 0 BYTES",
+          input: "direct-write blob1 4096\\nverify-pagecache\\nexit",
+          output: "DIRECT_IO_OK\\nPAGECACHE_DIRTY: 0 BYTES",
         },
       ],
       constraints: ["512-byte / 4096-byte hardware buffer alignment", "Kernel page cache bypass"],
       cases: [
-        { name: "Case 1: Aligned direct write", input: "direct-write b1 4096\nexit", expected: "DIRECT_IO_OK" },
-        { name: "Case 2: Page cache cleanliness", input: "verify-pagecache\nexit", expected: "PAGECACHE_POLLUTION: ZERO" },
-        { name: "Case 3: Block coalescing check", input: "bench-coalesce\nexit", expected: "COALESCED_WRITES: OK" },
-        { name: "Case 4: Streaming read throughput", input: "bench-stream\nexit", expected: "THROUGHPUT: > 800 MB/s" },
-        { name: "Case 5: Verification audit", input: "audit-engine\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
+        { name: "Case 1: Aligned direct write", input: "direct-write b1 4096\\nexit", expected: "DIRECT_IO_OK" },
+        { name: "Case 2: Page cache cleanliness", input: "verify-pagecache\\nexit", expected: "PAGECACHE_POLLUTION: ZERO" },
+        { name: "Case 3: Block coalescing check", input: "bench-coalesce\\nexit", expected: "COALESCED_WRITES: OK" },
+        { name: "Case 4: Streaming read throughput", input: "bench-stream\\nexit", expected: "THROUGHPUT: > 800 MB/s" },
+        { name: "Case 5: Verification audit", input: "audit-engine\\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
       ],
     },
   },

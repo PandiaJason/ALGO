@@ -100,6 +100,25 @@ export const llmInferenceChallenge: ChallengeData = {
       title: "Autoregressive Decoder Forward Pass",
       difficulty: "Easy",
       tagline: "Can you make it work? Implement token generation loop with greedy sampling and stop token detection.",
+      diagram: `AUTOREGRESSIVE TOKEN GENERATION LOOP:
+
+Prompt: "The capital of France is"
+           │
+           ▼
+[Token IDs]: [464, 3139, 286, 4881, 318]
+           │
+           ▼
+[Transformer Forward Pass] ──► Output Logits Vector (Vocab: 32,000)
+                                 ├── Token 1024 ("Paris"):  14.2
+                                 ├── Token 2901 ("Lyon"):    8.1
+                                 └── Token 5012 ("dog"):    -3.2
+                                       │
+                                       ▼ Softmax(logits / temperature)
+                               Probability: "Paris" (92.4%)
+                                       │
+                                       ▼
+                             Emit Token: "Paris"
+                             Append to Sequence ──► Next Iteration Step!`,
       learningLoop: {
         bottleneck: "Why do LLMs generate text one token at a time rather than producing the entire paragraph in one pass?",
         whatYouUnderstand: [
@@ -117,17 +136,17 @@ export const llmInferenceChallenge: ChallengeData = {
       examples: [
         {
           title: "Generate Tokens",
-          input: "decode-step 'The capital of France is' 5\nexit",
+          input: "decode-step 'The capital of France is' 5\\nexit",
           output: "GENERATED: Paris . <EOS> (Total tokens: 3)",
         },
       ],
       constraints: ["Stop instantly on <EOS> token", "Strict adherence to temperature=0.0 greedy selection"],
       cases: [
-        { name: "Case 1: Generate short sequence", input: "decode-step 'hello' 3\nexit", expected: "TOKENS: world !" },
-        { name: "Case 2: Immediate EOS detection", input: "decode-step 'bye' 5\nexit", expected: "TOKENS: bye <EOS>" },
-        { name: "Case 3: Temperature 0.0 greedy check", input: "sample-token 1.2,5.4,0.1 0.0\nexit", expected: "TOKEN_ID: 1" },
-        { name: "Case 4: Max token boundary", input: "decode-step 'repeat' 2\nexit", expected: "TOKENS_EMITTED: 2 (HIT_MAX)" },
-        { name: "Case 5: Logits validation", input: "validate-logits 0.5,0.5\nexit", expected: "PROBS_SUM_TO_ONE: TRUE" },
+        { name: "Case 1: Generate short sequence", input: "decode-step 'hello' 3\\nexit", expected: "TOKENS: world !" },
+        { name: "Case 2: Immediate EOS detection", input: "decode-step 'bye' 5\\nexit", expected: "TOKENS: bye <EOS>" },
+        { name: "Case 3: Temperature 0.0 greedy check", input: "sample-token 1.2,5.4,0.1 0.0\\nexit", expected: "TOKEN_ID: 1" },
+        { name: "Case 4: Max token boundary", input: "decode-step 'repeat' 2\\nexit", expected: "TOKENS_EMITTED: 2 (HIT_MAX)" },
+        { name: "Case 5: Logits validation", input: "validate-logits 0.5,0.5\\nexit", expected: "PROBS_SUM_TO_ONE: TRUE" },
       ],
     },
     2: {
@@ -137,6 +156,19 @@ export const llmInferenceChallenge: ChallengeData = {
       title: "Key-Value (KV) Cache Manager",
       difficulty: "Medium",
       tagline: "Do you understand the core mechanism? Cache Key and Value tensors to eliminate redundant O(N^2) attention math.",
+      diagram: `NAIVE ATTENTION vs KV CACHE ATTENTION:
+
+Without KV Cache (O(N^2) Flops Explosion):
+Step 1: Compute Q, K, V for Token 1
+Step 2: Recompute Q, K, V for Token 1 + Token 2
+Step 3: Recompute Q, K, V for Token 1 + Token 2 + Token 3 (Redundant!)
+
+With KV Cache (O(1) Step Math):
+Token 1 ──► Compute Q1, K1, V1 ──► Store [K1], [V1] in KV Cache
+Token 2 ──► Compute Q2, K2, V2 ──► Store [K2], [V2] in KV Cache
+Token 3 ──► ONLY Compute Q3!
+              └── Attention: Q3 × [K1, K2, K3]^T × [V1, V2, V3]
+              Zero redundant K/V recomputation!`,
       learningLoop: {
         bottleneck: "Why does generating token 100 take 100 times longer without a KV cache?",
         whatYouUnderstand: [
@@ -154,17 +186,17 @@ export const llmInferenceChallenge: ChallengeData = {
       examples: [
         {
           title: "KV Cache Memoization",
-          input: "enable-kv-cache\ndecode-step 'Systems programming' 10\ninspect-kv-size\nexit",
-          output: "KV_CACHE_ENABLED\nGENERATED: is powerful\nCACHED_TOKENS: 4 MEMORY: 64KB",
+          input: "enable-kv-cache\\ndecode-step 'Systems programming' 10\\ninspect-kv-size\\nexit",
+          output: "KV_CACHE_ENABLED\\nGENERATED: is powerful\\nCACHED_TOKENS: 4 MEMORY: 64KB",
         },
       ],
       constraints: ["Only compute Q projection for current token", "Cache footprint must scale linearly"],
       cases: [
-        { name: "Case 1: Enable KV cache", input: "enable-kv-cache\nexit", expected: "KV_CACHE_ENABLED: OK" },
-        { name: "Case 2: Verify zero redundant recomputation", input: "decode-with-cache 'test' 3\nexit", expected: "FLOP_SAVINGS: > 70%" },
-        { name: "Case 3: Memory footprint tracking", input: "inspect-kv-size\nexit", expected: "CACHED_TENSORS: OK" },
-        { name: "Case 4: Sequence reset clears cache", input: "reset-cache\ninspect-kv-size\nexit", expected: "CACHED_TOKENS: 0" },
-        { name: "Case 5: Cache consistency check", input: "verify-cache-math\nexit", expected: "OUTPUT_MATCHES_NAIVE: TRUE" },
+        { name: "Case 1: Enable KV cache", input: "enable-kv-cache\\nexit", expected: "KV_CACHE_ENABLED: OK" },
+        { name: "Case 2: Verify zero redundant recomputation", input: "decode-with-cache 'test' 3\\nexit", expected: "FLOP_SAVINGS: > 70%" },
+        { name: "Case 3: Memory footprint tracking", input: "inspect-kv-size\\nexit", expected: "CACHED_TENSORS: OK" },
+        { name: "Case 4: Sequence reset clears cache", input: "reset-cache\\ninspect-kv-size\\nexit", expected: "CACHED_TOKENS: 0" },
+        { name: "Case 5: Cache consistency check", input: "verify-cache-math\\nexit", expected: "OUTPUT_MATCHES_NAIVE: TRUE" },
       ],
     },
     3: {
@@ -174,6 +206,18 @@ export const llmInferenceChallenge: ChallengeData = {
       title: "Context Window Overflow & OOM Eviction",
       difficulty: "Hard",
       tagline: "Does it remain correct under edge cases and failures? Prevent GPU OOM crashes via sliding-window cache eviction.",
+      diagram: `SLIDING-WINDOW CONTEXT EVICTION:
+
+  Memory Capacity: 2,048 Tokens
+  Incoming Tokens: 3,000 Tokens (Overflow!)
+
+  Eviction Policy:
+  ┌───────────────────────┬─────────────────────────┬───────────────────────┐
+  │ Pinned System Prompt  │ Discarded Middle Range  │ Recent Sliding Window │
+  │ Tokens: [0 .. 64]     │ Tokens: [65 .. 1015]    │ Tokens: [1016 .. 2048]│
+  │ (Preserved Intact!)   │ (Evicted from Cache ✗)  │ (Active Attention ✓)  │
+  └───────────────────────┴─────────────────────────┴───────────────────────┘
+  Result: GPU OOM crashes prevented, conversational context preserved!`,
       learningLoop: {
         bottleneck: "What happens when a user submits a 32,000 token prompt that exceeds physical memory boundaries?",
         whatYouUnderstand: [
@@ -191,17 +235,17 @@ export const llmInferenceChallenge: ChallengeData = {
       examples: [
         {
           title: "Evict Context",
-          input: "set-max-context 2048\nfeed-tokens 3000\nexit",
-          output: "CONTEXT_OVERFLOW: 3000 > 2048\nSLIDING_WINDOW_ACTIVE: Kept [0..64] + [1016..2048] (Evicted 952 tokens)",
+          input: "set-max-context 2048\\nfeed-tokens 3000\\nexit",
+          output: "CONTEXT_OVERFLOW: 3000 > 2048\\nSLIDING_WINDOW_ACTIVE: Kept [0..64] + [1016..2048] (Evicted 952 tokens)",
         },
       ],
       constraints: ["Strict 0 byte overshoot above allocated memory limit", "Preserve initial system prompt tokens"],
       cases: [
-        { name: "Case 1: Context within limit", input: "set-max-context 2048\nfeed-tokens 1000\nexit", expected: "CONTEXT_OK: 1000/2048" },
-        { name: "Case 2: Context overflow eviction", input: "set-max-context 100\nfeed-tokens 150\nexit", expected: "EVICTION_TRIGGERED: RETAINED_100" },
-        { name: "Case 3: System prompt preservation", input: "check-system-prompt-pinned\nexit", expected: "SYSTEM_PROMPT_INTACT: TRUE" },
-        { name: "Case 4: Graceful OOM rejection", input: "set-max-context 50\nfeed-tokens 500\nexit", expected: "OOM_PREVENTED: SAFE_TRUNCATION" },
-        { name: "Case 5: Cache state integrity check", input: "check-eviction-integrity\nexit", expected: "STATUS: HEALTHY" },
+        { name: "Case 1: Context within limit", input: "set-max-context 2048\\nfeed-tokens 1000\\nexit", expected: "CONTEXT_OK: 1000/2048" },
+        { name: "Case 2: Context overflow eviction", input: "set-max-context 100\\nfeed-tokens 150\\nexit", expected: "EVICTION_TRIGGERED: RETAINED_100" },
+        { name: "Case 3: System prompt preservation", input: "check-system-prompt-pinned\\nexit", expected: "SYSTEM_PROMPT_INTACT: TRUE" },
+        { name: "Case 4: Graceful OOM rejection", input: "set-max-context 50\\nfeed-tokens 500\\nexit", expected: "OOM_PREVENTED: SAFE_TRUNCATION" },
+        { name: "Case 5: Cache state integrity check", input: "check-eviction-integrity\\nexit", expected: "STATUS: HEALTHY" },
       ],
     },
     4: {
@@ -211,6 +255,20 @@ export const llmInferenceChallenge: ChallengeData = {
       title: "PagedAttention & Continuous Batching",
       difficulty: "Expert",
       tagline: "Does it handle concurrency, workload and growth? Implement non-contiguous block tables and iteration-level batching.",
+      diagram: `PAGEDATTENTION NON-CONTIGUOUS MEMORY PAGING:
+
+  Logical KV Cache (Request 1):
+  [Block 0: Tokens 0-15] ──► [Block 1: Tokens 16-31] ──► [Block 2: Tokens 32-47]
+           │                          │                          │
+  Physical Block Table:              │                          │
+  ┌─────────────┬────────────────┐   │                          │
+  │ Logical Blk │ Physical Frame │   │                          │
+  ├─────────────┼────────────────┤   │                          │
+  │ Block 0     │ Frame #7 ──────┼───┘ (Zero Contiguous Requirement!)
+  │ Block 1     │ Frame #2       │
+  │ Block 2     │ Frame #9       │
+  └─────────────┴────────────────┘
+  Continuous Batching: New requests dynamically enter on any decode step!`,
       learningLoop: {
         bottleneck: "Why does static batching force fast 5-token requests to wait for slow 500-token requests, and why does contiguous memory fragment?",
         whatYouUnderstand: [
@@ -228,17 +286,17 @@ export const llmInferenceChallenge: ChallengeData = {
       examples: [
         {
           title: "Continuous Batching Step",
-          input: "init-paged-attention --block-size 16\nschedule-continuous-batch\nexit",
-          output: "PAGED_ATTENTION_READY\nITERATION_STEP: 3 ACTIVE REQUESTS, 0 FRAGMENTATION",
+          input: "init-paged-attention --block-size 16\\nschedule-continuous-batch\\nexit",
+          output: "PAGED_ATTENTION_READY\\nITERATION_STEP: 3 ACTIVE REQUESTS, 0 FRAGMENTATION",
         },
       ],
       constraints: ["Zero internal memory fragmentation", "Dynamic request entry and exit at any iteration step"],
       cases: [
-        { name: "Case 1: Allocate physical page block", input: "init-paged-attention --block-size 16\nexit", expected: "PAGED_ATTENTION_READY" },
-        { name: "Case 2: Continuous batch dynamic entry", input: "schedule-continuous-batch\nexit", expected: "BATCH_ACTIVE: 3 REQUESTS" },
-        { name: "Case 3: Block table mapping check", input: "inspect-block-table req_1\nexit", expected: "PAGES: [0, 2]" },
-        { name: "Case 4: Immediate block reclamation on finish", input: "retire-request req_1\ncheck-free-pages\nexit", expected: "PAGES_RECLAIMED: 2" },
-        { name: "Case 5: Zero fragmentation audit", input: "audit-fragmentation\nexit", expected: "FRAGMENTATION: < 4%" },
+        { name: "Case 1: Allocate physical page block", input: "init-paged-attention --block-size 16\\nexit", expected: "PAGED_ATTENTION_READY" },
+        { name: "Case 2: Continuous batch dynamic entry", input: "schedule-continuous-batch\\nexit", expected: "BATCH_ACTIVE: 3 REQUESTS" },
+        { name: "Case 3: Block table mapping check", input: "inspect-block-table req_1\\nexit", expected: "PAGES: [0, 2]" },
+        { name: "Case 4: Immediate block reclamation on finish", input: "retire-request req_1\\ncheck-free-pages\\nexit", expected: "PAGES_RECLAIMED: 2" },
+        { name: "Case 5: Zero fragmentation audit", input: "audit-fragmentation\\nexit", expected: "FRAGMENTATION: < 4%" },
       ],
     },
     5: {
@@ -248,6 +306,22 @@ export const llmInferenceChallenge: ChallengeData = {
       title: "TTFT & Inter-Token Latency (ITL)",
       difficulty: "Hard",
       tagline: "Can you identify bottlenecks and prove performance? Measure prefill Time-to-First-Token vs decode Inter-Token Latency.",
+      diagram: `SERVING LATENCY BREAKDOWN:
+
+Request Arrives (t = 0ms)
+    │
+    ▼ (PROMPT PREFILL: Compute-Bound)
+    All prompt tokens processed in parallel
+    Matrix multiplication saturates Tensor Cores
+    │
+    ▼ First Token Emitted!
+    Time-To-First-Token (TTFT) = 18.2 ms
+    │
+    ▼ (TOKEN DECODING: Memory-Bandwidth-Bound)
+    Token 2: +4.1 ms
+    Token 3: +4.0 ms
+    Token 4: +4.2 ms
+    Inter-Token Latency (ITL) = 4.1 ms / token (245 tokens/sec)`,
       learningLoop: {
         bottleneck: "Why is prompt processing compute-bound while token generation is memory-bandwidth bound?",
         whatYouUnderstand: [
@@ -265,17 +339,17 @@ export const llmInferenceChallenge: ChallengeData = {
       examples: [
         {
           title: "Bench Serving Metrics",
-          input: "bench-serving --prompts 10 --tokens 50\nexit",
-          output: "TTFT: 18.2ms p95: 22.1ms\nITL: 4.1ms p95: 4.8ms\nTHROUGHPUT: 245 tokens/s",
+          input: "bench-serving --prompts 10 --tokens 50\\nexit",
+          output: "TTFT: 18.2ms p95: 22.1ms\\nITL: 4.1ms p95: 4.8ms\\nTHROUGHPUT: 245 tokens/s",
         },
       ],
       constraints: ["TTFT under 25ms", "ITL under 5ms"],
       cases: [
-        { name: "Case 1: Measure TTFT", input: "measure-ttft\nexit", expected: "TTFT: < 25ms" },
-        { name: "Case 2: Measure ITL", input: "measure-itl\nexit", expected: "ITL: < 5ms" },
-        { name: "Case 3: Memory bus saturation", input: "profile-bandwidth\nexit", expected: "BANDWIDTH_SATURATION: > 80%" },
-        { name: "Case 4: Concurrency scaling curve", input: "bench-concurrency-curve\nexit", expected: "THROUGHPUT_SCALING: LINEAR" },
-        { name: "Case 5: Metrics audit", input: "audit-serving-metrics\nexit", expected: "SERVING_SLA: MET" },
+        { name: "Case 1: Measure TTFT", input: "measure-ttft\\nexit", expected: "TTFT: < 25ms" },
+        { name: "Case 2: Measure ITL", input: "measure-itl\\nexit", expected: "ITL: < 5ms" },
+        { name: "Case 3: Memory bus saturation", input: "profile-bandwidth\\nexit", expected: "BANDWIDTH_SATURATION: > 80%" },
+        { name: "Case 4: Concurrency scaling curve", input: "bench-concurrency-curve\\nexit", expected: "THROUGHPUT_SCALING: LINEAR" },
+        { name: "Case 5: Metrics audit", input: "audit-serving-metrics\\nexit", expected: "SERVING_SLA: MET" },
       ],
     },
     6: {
@@ -285,6 +359,21 @@ export const llmInferenceChallenge: ChallengeData = {
       title: "FlashAttention Kernel & Weight Quantization",
       difficulty: "Expert",
       tagline: "Can you make it measurably better? Fuse attention online without materializing N×N matrices and unpack 4-bit weights.",
+      diagram: `FLASHATTENTION SRAM TILING vs STANDARD DRAM:
+
+  Standard Attention (Memory Bottleneck):
+  HBM/DRAM ──Load K,V──► SRAM ──Write N×N Matrix──► HBM (Massive I/O traffic)
+
+  FlashAttention (Tiled Online Softmax):
+  ┌────────────────────────────────────────────────────────┐
+  │ On-Chip SRAM Cache (Fast 19 TB/s Bandwidth)            │
+  │ Load Q_tile (64x64) and K_tile (64x64)                 │
+  │ Compute Softmax online with running max/sum scalers     │
+  │ Accumulate Output tile directly into registers         │
+  ├────────────────────────────────────────────────────────┤
+  │ Zero N×N matrix written to DRAM! Space complexity: O(N) │
+  │ Speedup: 3.4x faster, 85% memory bandwidth saved       │
+  └────────────────────────────────────────────────────────┘`,
       learningLoop: {
         bottleneck: "Why does standard attention run out of memory on long documents, and how does FlashAttention compute it in O(N) space?",
         whatYouUnderstand: [
@@ -302,17 +391,17 @@ export const llmInferenceChallenge: ChallengeData = {
       examples: [
         {
           title: "Enable FlashAttention",
-          input: "enable-flash-attention\nbench-attention-speed\nexit",
-          output: "FLASH_ATTENTION_ACTIVE\nSPEEDUP: 3.4x MEMORY_SAVINGS: 85% (Zero N×N DRAM allocation)",
+          input: "enable-flash-attention\\nbench-attention-speed\\nexit",
+          output: "FLASH_ATTENTION_ACTIVE\\nSPEEDUP: 3.4x MEMORY_SAVINGS: 85% (Zero N×N DRAM allocation)",
         },
       ],
       constraints: ["Zero N×N attention matrix materialization in DRAM", "Bit-exact numerical match"],
       cases: [
-        { name: "Case 1: FlashAttention activation", input: "enable-flash-attention\nexit", expected: "FLASH_ATTENTION: ACTIVE" },
-        { name: "Case 2: Long sequence memory reduction", input: "bench-long-ctx 8192\nexit", expected: "MEMORY_BOUND: O(N)" },
-        { name: "Case 3: 4-bit weight unpacker test", input: "load-quant-weights --int4\nexit", expected: "INT4_WEIGHTS_LOADED: 50% BANDWIDTH SAVED" },
-        { name: "Case 4: End-to-end speedup benchmark", input: "bench-optimized-throughput\nexit", expected: "SPEEDUP: > 3.0x" },
-        { name: "Case 5: Verification audit", input: "audit-engine\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
+        { name: "Case 1: FlashAttention activation", input: "enable-flash-attention\\nexit", expected: "FLASH_ATTENTION: ACTIVE" },
+        { name: "Case 2: Long sequence memory reduction", input: "bench-long-ctx 8192\\nexit", expected: "MEMORY_BOUND: O(N)" },
+        { name: "Case 3: 4-bit weight unpacker test", input: "load-quant-weights --int4\\nexit", expected: "INT4_WEIGHTS_LOADED: 50% BANDWIDTH SAVED" },
+        { name: "Case 4: End-to-end speedup benchmark", input: "bench-optimized-throughput\\nexit", expected: "SPEEDUP: > 3.0x" },
+        { name: "Case 5: Verification audit", input: "audit-engine\\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
       ],
     },
   },

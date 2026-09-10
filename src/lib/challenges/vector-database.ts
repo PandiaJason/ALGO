@@ -96,6 +96,21 @@ export const vectorDatabaseChallenge: ChallengeData = {
       title: "Exact Nearest Neighbors (Brute Force)",
       difficulty: "Easy",
       tagline: "Can you make it work? Insert multi-dimensional vectors and find exact nearest neighbors using cosine similarity.",
+      diagram: `EXACT K-NEAREST NEIGHBORS (FLAT SCAN):
+
+  Query Vector Q: [1.0, 0.0, 0.0]  (k=2)
+         │
+         ├── Scan v1: [1.0, 0.0, 0.0] ──► Cosine: 1.000 ──► Push to Min-Heap
+         ├── Scan v2: [0.9, 0.1, 0.0] ──► Cosine: 0.994 ──► Push to Min-Heap
+         ├── Scan v3: [0.0, 1.0, 0.0] ──► Cosine: 0.000 ──► (Displaced!)
+         └── Scan v4: [0.5, 0.5, 0.0] ──► Cosine: 0.707 ──► (Lower than min)
+         │
+         ▼
+  Bounded Min-Heap (Capacity k=2):
+  ┌──────────────┬──────────────┐
+  │ Top 1: doc1  │ Top 2: doc2  │
+  │ Score: 1.000 │ Score: 0.994 │
+  └──────────────┴──────────────┘`,
       learningLoop: {
         bottleneck: "How do you calculate similarity between two 128-dimensional float arrays without floating-point drift?",
         whatYouUnderstand: [
@@ -113,17 +128,17 @@ export const vectorDatabaseChallenge: ChallengeData = {
       examples: [
         {
           title: "Query Exact Top-K",
-          input: "insert-vector doc1 1.0,0.0,0.0\ninsert-vector doc2 0.9,0.1,0.0\nquery-knn 1.0,0.0,0.0 1\nexit",
-          output: "INSERT_OK\nINSERT_OK\nTOP_K: doc1 (score: 1.000)",
+          input: "insert-vector doc1 1.0,0.0,0.0\\ninsert-vector doc2 0.9,0.1,0.0\\nquery-knn 1.0,0.0,0.0 1\\nexit",
+          output: "INSERT_OK\\nINSERT_OK\\nTOP_K: doc1 (score: 1.000)",
         },
       ],
       constraints: ["Support up to 128 dimensions", "Scores normalized between -1.0 and 1.0"],
       cases: [
-        { name: "Case 1: Insert and query identical vector", input: "insert-vector v1 1.0,0.0\nquery-knn 1.0,0.0 1\nexit", expected: "INSERT_OK\nTOP_1: v1" },
-        { name: "Case 2: Top-2 ranking check", input: "insert-vector a 1.0,0.0\ninsert-vector b 0.5,0.5\ninsert-vector c 0.0,1.0\nquery-knn 1.0,0.0 2\nexit", expected: "INSERT_OK\nINSERT_OK\nINSERT_OK\nTOP_2: a, b" },
-        { name: "Case 3: Euclidean L2 metric test", input: "query-l2 1.0,0.0 1\nexit", expected: "TOP_L2: v1" },
-        { name: "Case 4: Empty index query", input: "clear-index\nquery-knn 1.0,0.0 1\nexit", expected: "TOP_K: NONE" },
-        { name: "Case 5: High-dimensional 128-d vector", input: "insert-highdim h1\nquery-knn h1 1\nexit", expected: "TOP_1: h1" },
+        { name: "Case 1: Insert and query identical vector", input: "insert-vector v1 1.0,0.0\\nquery-knn 1.0,0.0 1\\nexit", expected: "INSERT_OK\\nTOP_1: v1" },
+        { name: "Case 2: Top-2 ranking check", input: "insert-vector a 1.0,0.0\\ninsert-vector b 0.5,0.5\\ninsert-vector c 0.0,1.0\\nquery-knn 1.0,0.0 2\\nexit", expected: "INSERT_OK\\nINSERT_OK\\nINSERT_OK\\nTOP_2: a, b" },
+        { name: "Case 3: Euclidean L2 metric test", input: "query-l2 1.0,0.0 1\\nexit", expected: "TOP_L2: v1" },
+        { name: "Case 4: Empty index query", input: "clear-index\\nquery-knn 1.0,0.0 1\\nexit", expected: "TOP_K: NONE" },
+        { name: "Case 5: High-dimensional 128-d vector", input: "insert-highdim h1\\nquery-knn h1 1\\nexit", expected: "TOP_1: h1" },
       ],
     },
     2: {
@@ -133,6 +148,20 @@ export const vectorDatabaseChallenge: ChallengeData = {
       title: "Hierarchical Navigable Small World (HNSW)",
       difficulty: "Hard",
       tagline: "Do you understand the core mechanism? Build a multi-layer skip-graph and search in O(log N) time.",
+      diagram: `HNSW MULTI-LAYER SKIP GRAPH NAVIGATION:
+
+  Layer 2 (Expressway):
+  [Entry Point] ──────────────────────────► [Node X]
+        │ (Greedy route to closest neighbor)
+        ▼ Drop down to Layer 1
+  Layer 1 (Regional Roads):
+  [Node X] ──────────► [Node Y] ──────────► [Node Z]
+                             │
+                             ▼ Drop down to Layer 0
+  Layer 0 (Local Streets - Dense Graph):
+  [Node Z] ──► [Neighbor A] ──► [Neighbor B] ──► [TARGET: Top-K]
+  Beam search window: efSearch = 32
+  Hops: 8 distance evaluations vs 1,000,000 linear scans!`,
       learningLoop: {
         bottleneck: "When the database grows to 1,000,000 vectors, brute force takes 500ms. How does HNSW find neighbors in 0.2ms?",
         whatYouUnderstand: [
@@ -151,17 +180,17 @@ export const vectorDatabaseChallenge: ChallengeData = {
       examples: [
         {
           title: "HNSW Query",
-          input: "hnsw-search 1.0,0.5,0.2 5 32\nexit",
+          input: "hnsw-search 1.0,0.5,0.2 5 32\\nexit",
           output: "HNSW_SEARCH_OK: 5 NEIGHBORS FOUND (Hops: 8, Distance evals: 42)",
         },
       ],
       constraints: ["Max connections M=16", "Logarithmic search hop complexity"],
       cases: [
-        { name: "Case 1: Insert into HNSW graph", input: "hnsw-insert node1 1.0,0.0\nexit", expected: "HNSW_INSERT_OK" },
-        { name: "Case 2: HNSW query resolution", input: "hnsw-search 1.0,0.0 1 16\nexit", expected: "TOP_1: node1" },
-        { name: "Case 3: Layer traversal check", input: "inspect-hnsw-layers\nexit", expected: "LAYERS_POPULATED: > 1" },
-        { name: "Case 4: Distance evaluations count", input: "bench-eval-count 1000\nexit", expected: "EVALS: < 100" },
-        { name: "Case 5: Multi-node neighbor connectivity", input: "verify-connectivity\nexit", expected: "GRAPH_CONNECTED: TRUE" },
+        { name: "Case 1: Insert into HNSW graph", input: "hnsw-insert node1 1.0,0.0\\nexit", expected: "HNSW_INSERT_OK" },
+        { name: "Case 2: HNSW query resolution", input: "hnsw-search 1.0,0.0 1 16\\nexit", expected: "TOP_1: node1" },
+        { name: "Case 3: Layer traversal check", input: "inspect-hnsw-layers\\nexit", expected: "LAYERS_POPULATED: > 1" },
+        { name: "Case 4: Distance evaluations count", input: "bench-eval-count 1000\\nexit", expected: "EVALS: < 100" },
+        { name: "Case 5: Multi-node neighbor connectivity", input: "verify-connectivity\\nexit", expected: "GRAPH_CONNECTED: TRUE" },
       ],
     },
     3: {
@@ -171,6 +200,18 @@ export const vectorDatabaseChallenge: ChallengeData = {
       title: "Dynamic Deletions & Disconnected Components",
       difficulty: "Hard",
       tagline: "Does it remain correct under edge cases and failures? Delete nodes without leaving disconnected graph islands.",
+      diagram: `TOMBSTONING & GRAPH EDGE HEALING:
+
+  Original Graph:
+  [Node A] ───────► [Node X (Target)] ───────► [Node B]
+      │                     ▲                     │
+      └─────────────────────┼─────────────────────┘
+                            │
+  On Delete(Node X):        │
+  1. Set Tombstone flag on Node X (Excluded from search)
+  2. Edge Healing: Connect Node A directly to Node B
+  3. If Node X was Entry Point: Migrate Entry Point to closest neighbor
+  Result: 0 disconnected islands, search paths remain continuous!`,
       learningLoop: {
         bottleneck: "What happens when an entry-point node is deleted? Does the rest of the graph become completely unreachable?",
         whatYouUnderstand: [
@@ -188,17 +229,17 @@ export const vectorDatabaseChallenge: ChallengeData = {
       examples: [
         {
           title: "Delete Node",
-          input: "hnsw-delete node1\ncompact-graph\nexit",
-          output: "NODE_DELETED\nGRAPH_COMPACTED (Re-wired 12 edges, 0 orphaned islands)",
+          input: "hnsw-delete node1\\ncompact-graph\\nexit",
+          output: "NODE_DELETED\\nGRAPH_COMPACTED (Re-wired 12 edges, 0 orphaned islands)",
         },
       ],
       constraints: ["Zero disconnected components after deletion", "Automatic entry-point migration"],
       cases: [
-        { name: "Case 1: Delete node and verify exclusion", input: "hnsw-delete node1\nhnsw-search 1.0,0.0 1 16\nexit", expected: "EXCLUDED: node1" },
-        { name: "Case 2: Entry-point migration", input: "delete-entry-point\ncheck-entry-point\nexit", expected: "ENTRY_POINT_MIGRATED: OK" },
-        { name: "Case 3: Disconnected island detection", input: "check-island-isolation\nexit", expected: "ISLANDS: 0" },
-        { name: "Case 4: Tombstone compaction sweep", input: "compact-graph\nexit", expected: "COMPACTED: 0 LEFTOVER TOMBSTONES" },
-        { name: "Case 5: Graph health audit", input: "audit-hnsw-health\nexit", expected: "HEALTH: 100%" },
+        { name: "Case 1: Delete node and verify exclusion", input: "hnsw-delete node1\\nhnsw-search 1.0,0.0 1 16\\nexit", expected: "EXCLUDED: node1" },
+        { name: "Case 2: Entry-point migration", input: "delete-entry-point\\ncheck-entry-point\\nexit", expected: "ENTRY_POINT_MIGRATED: OK" },
+        { name: "Case 3: Disconnected island detection", input: "check-island-isolation\\nexit", expected: "ISLANDS: 0" },
+        { name: "Case 4: Tombstone compaction sweep", input: "compact-graph\\nexit", expected: "COMPACTED: 0 LEFTOVER TOMBSTONES" },
+        { name: "Case 5: Graph health audit", input: "audit-hnsw-health\\nexit", expected: "HEALTH: 100%" },
       ],
     },
     4: {
@@ -208,6 +249,23 @@ export const vectorDatabaseChallenge: ChallengeData = {
       title: "Concurrent Graph Updates & Multi-Index Sharding",
       difficulty: "Hard",
       tagline: "Does it handle concurrency, workload and growth? Shard vectors across 4 independent partitions and search in parallel.",
+      diagram: `SCATTER-GATHER SHARDED VECTOR SEARCH:
+
+  Query: Q [dim=128, k=5]
+         │
+  ┌──────┴───────────────┬──────────────────────┬──────────────────────┐
+  ▼                      ▼                      ▼                      ▼
+┌──────────────┐       ┌──────────────┐       ┌──────────────┐       ┌──────────────┐
+│   Shard 0    │       │   Shard 1    │       │   Shard 2    │       │   Shard 3    │
+│ 250k vectors │       │ 250k vectors │       │ 250k vectors │       │ 250k vectors │
+│ Local Top-5  │       │ Local Top-5  │       │ Local Top-5  │       │ Local Top-5  │
+└──────┬───────┘       └──────┬───────┘       └──────┬───────┘       └──────┬───────┘
+       │                      │                      │                      │
+       └──────────────────────┼──────────────────────┴──────────────────────┘
+                              │
+                              ▼
+                 K-Way Priority Queue Merger
+                 Sorted Global Top-5 Consolidated (< 1.5ms)`,
       learningLoop: {
         bottleneck: "When an index exceeds 10GB of RAM, how do you distribute it across partitions while maintaining single-query top-K?",
         whatYouUnderstand: [
@@ -225,17 +283,17 @@ export const vectorDatabaseChallenge: ChallengeData = {
       examples: [
         {
           title: "Sharded Query",
-          input: "create-shards 4\nsharded-query 0.5,0.5 5\nexit",
-          output: "SCATTERED_TO_4_SHARDS\nMERGED_TOP_K: 5 RESULTS",
+          input: "create-shards 4\\nsharded-query 0.5,0.5 5\\nexit",
+          output: "SCATTERED_TO_4_SHARDS\\nMERGED_TOP_K: 5 RESULTS",
         },
       ],
       constraints: ["Parallel scatter-gather dispatch", "Merge top-K strictly by similarity score"],
       cases: [
-        { name: "Case 1: Initialize 4 shards", input: "create-shards 4\nexit", expected: "SHARDS_INITIALIZED: 4" },
-        { name: "Case 2: Parallel query execution", input: "sharded-query 1.0,0.0 2\nexit", expected: "SHARDED_TOP_2: OK" },
-        { name: "Case 3: Cross-shard heap merge", input: "verify-top-k-sort\nexit", expected: "STRICTLY_SORTED: DESCENDING" },
-        { name: "Case 4: Concurrent insert during query", input: "bench-concurrent-rw\nexit", expected: "CONCURRENT_RW: OK" },
-        { name: "Case 5: Shard balance check", input: "check-shard-distribution\nexit", expected: "DISTRIBUTION: BALANCED" },
+        { name: "Case 1: Initialize 4 shards", input: "create-shards 4\\nexit", expected: "SHARDS_INITIALIZED: 4" },
+        { name: "Case 2: Parallel query execution", input: "sharded-query 1.0,0.0 2\\nexit", expected: "SHARDED_TOP_2: OK" },
+        { name: "Case 3: Cross-shard heap merge", input: "verify-top-k-sort\\nexit", expected: "STRICTLY_SORTED: DESCENDING" },
+        { name: "Case 4: Concurrent insert during query", input: "bench-concurrent-rw\\nexit", expected: "CONCURRENT_RW: OK" },
+        { name: "Case 5: Shard balance check", input: "check-shard-distribution\\nexit", expected: "DISTRIBUTION: BALANCED" },
       ],
     },
     5: {
@@ -245,6 +303,16 @@ export const vectorDatabaseChallenge: ChallengeData = {
       title: "Recall vs. QPS Tradeoff Profiling",
       difficulty: "Hard",
       tagline: "Can you identify bottlenecks and prove performance? Plot the Pareto frontier of Recall@10 against QPS.",
+      diagram: `PARETO FRONTIER: RECALL@10 vs QUERY LATENCY:
+
+  Recall@10
+  100% ┼                                 ● (efSearch=128: 99.1% Recall, 1.8k QPS)
+       │                         ● (efSearch=64:  97.8% Recall, 3.4k QPS)
+   95% ┼                 ● (efSearch=32:  96.4% Recall, 4.8k QPS) [SWEET SPOT]
+       │         ● (efSearch=16:  91.2% Recall, 7.2k QPS)
+   90% ┼ ● (efSearch=8: 82.5% Recall, 11.5k QPS)
+       └─┼───────┼───────┼───────┼───────┼─────► QPS (Throughput)
+        2k      4k      6k      8k     10k`,
       learningLoop: {
         bottleneck: "How do you systematically tune efSearch to achieve 98% recall without dropping QPS below 3,000?",
         whatYouUnderstand: [
@@ -262,17 +330,17 @@ export const vectorDatabaseChallenge: ChallengeData = {
       examples: [
         {
           title: "Measure Recall",
-          input: "measure-recall 10 32\nexit",
+          input: "measure-recall 10 32\\nexit",
           output: "EF_SEARCH: 32 RECALL@10: 96.4% QPS: 4,850",
         },
       ],
       constraints: ["Recall@10 must exceed 95%", "Microsecond latency measurement"],
       cases: [
-        { name: "Case 1: High recall configuration", input: "measure-recall 10 64\nexit", expected: "RECALL@10: > 95%" },
-        { name: "Case 2: QPS benchmark", input: "bench-qps 8\nexit", expected: "QPS: > 4000" },
-        { name: "Case 3: Latency percentiles p99", input: "measure-p99-latency\nexit", expected: "P99_LATENCY: < 0.5ms" },
-        { name: "Case 4: Distance calculation count", input: "measure-dist-calcs\nexit", expected: "DIST_CALCS_PER_QUERY: < 150" },
-        { name: "Case 5: Quality audit", input: "audit-recall-curve\nexit", expected: "PARETO_CURVE: OPTIMAL" },
+        { name: "Case 1: High recall configuration", input: "measure-recall 10 64\\nexit", expected: "RECALL@10: > 95%" },
+        { name: "Case 2: QPS benchmark", input: "bench-qps 8\\nexit", expected: "QPS: > 4000" },
+        { name: "Case 3: Latency percentiles p99", input: "measure-p99-latency\\nexit", expected: "P99_LATENCY: < 0.5ms" },
+        { name: "Case 4: Distance calculation count", input: "measure-dist-calcs\\nexit", expected: "DIST_CALCS_PER_QUERY: < 150" },
+        { name: "Case 5: Quality audit", input: "audit-recall-curve\\nexit", expected: "PARETO_CURVE: OPTIMAL" },
       ],
     },
     6: {
@@ -282,6 +350,18 @@ export const vectorDatabaseChallenge: ChallengeData = {
       title: "Scalar Quantization & SIMD Dot-Product",
       difficulty: "Expert",
       tagline: "Can you make it measurably better? Compress vectors 4x via int8 quantization and evaluate with AVX2 dot-products.",
+      diagram: `SCALAR QUANTIZATION (SQ8) & AVX2 INTRINSICS:
+
+  Raw Float32 Vector (128 dims):
+  [ 0.824, -0.312, 0.054, ... ] ──► 512 bytes per vector
+
+  Quantized Int8 Vector (SQ8):
+  [ 105,   -40,    7,     ... ] ──► 128 bytes (75% Memory Saved!)
+         │
+         ▼
+  AVX2 SIMD Kernel (vpdpbusd / _mm256_maddubs_epi16):
+  Multiplies 32 int8 components per instruction cycle
+  Throughput: 18,200 QPS (3.8x speedup over scalar float32)`,
       learningLoop: {
         bottleneck: "Why do floating-point vector comparisons saturate memory bus bandwidth, and how does int8 quantization unlock 10x throughput?",
         whatYouUnderstand: [
@@ -299,17 +379,17 @@ export const vectorDatabaseChallenge: ChallengeData = {
       examples: [
         {
           title: "Bench SIMD Quantization",
-          input: "enable-quantization\nbench-simd-search\nexit",
-          output: "QUANTIZATION: INT8 MEMORY_SAVINGS: 75%\nTHROUGHPUT: 18,200 QPS (3.8x speedup)",
+          input: "enable-quantization\\nbench-simd-search\\nexit",
+          output: "QUANTIZATION: INT8 MEMORY_SAVINGS: 75%\\nTHROUGHPUT: 18,200 QPS (3.8x speedup)",
         },
       ],
       constraints: ["75% memory footprint reduction", "Accuracy loss under 2% recall"],
       cases: [
-        { name: "Case 1: Enable scalar quantization", input: "enable-quantization\nexit", expected: "SQ8_ENABLED: 75% MEMORY SAVED" },
-        { name: "Case 2: Quantized query throughput", input: "bench-simd-search\nexit", expected: "THROUGHPUT: > 10000 QPS" },
-        { name: "Case 3: Accuracy retention check", input: "check-quant-recall\nexit", expected: "RECALL_DROP: < 2%" },
-        { name: "Case 4: SIMD dot-product kernel check", input: "verify-simd-kernel\nexit", expected: "SIMD_KERNEL: ACTIVE" },
-        { name: "Case 5: Verification audit", input: "audit-engine\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
+        { name: "Case 1: Enable scalar quantization", input: "enable-quantization\\nexit", expected: "SQ8_ENABLED: 75% MEMORY SAVED" },
+        { name: "Case 2: Quantized query throughput", input: "bench-simd-search\\nexit", expected: "THROUGHPUT: > 10000 QPS" },
+        { name: "Case 3: Accuracy retention check", input: "check-quant-recall\\nexit", expected: "RECALL_DROP: < 2%" },
+        { name: "Case 4: SIMD dot-product kernel check", input: "verify-simd-kernel\\nexit", expected: "SIMD_KERNEL: ACTIVE" },
+        { name: "Case 5: Verification audit", input: "audit-engine\\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
       ],
     },
   },

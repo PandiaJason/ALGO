@@ -99,6 +99,17 @@ export const containerRuntimeChallenge: ChallengeData = {
       title: "Process Isolation with Linux Namespaces",
       difficulty: "Medium",
       tagline: "Can you make it work? Spawn a child process with isolated PID and hostname namespaces.",
+      diagram: `LINUX NAMESPACE DUAL-PERSPECTIVE MAPPING:
+
+HOST OS VIEW (Global Kernel Table):
+  Host PID: 1042 ──► cmd: "container-init"
+    ├── PID Namespace: [Child View translates 1042 ──► 1]
+    ├── UTS Namespace: Hostname = "container-alpha" (Host = "prod-node-01")
+    └── IPC Namespace: Isolated System V message queues & semaphores
+
+CONTAINER INTERNAL VIEW:
+  Container PID: 1 ──► [Init Process / Reaper]
+    └── getpid() returns 1 (Sees no other host processes)`,
       learningLoop: {
         bottleneck: "How does a process think its PID is 1 when the host OS sees it as PID 48219?",
         whatYouUnderstand: [
@@ -116,17 +127,17 @@ export const containerRuntimeChallenge: ChallengeData = {
       examples: [
         {
           title: "Spawn in Namespace",
-          input: "spawn-ns container-alpha echo hello\nget-container-pid\nexit",
-          output: "SPAWNED container-alpha\nINTERNAL_PID: 1 HOST_PID: 1042\nhello",
+          input: "spawn-ns container-alpha echo hello\\nget-container-pid\\nexit",
+          output: "SPAWNED container-alpha\\nINTERNAL_PID: 1 HOST_PID: 1042\\nhello",
         },
       ],
       constraints: ["Internal PID must report 1", "Container hostname change must not leak to host"],
       cases: [
-        { name: "Case 1: Spawn basic container", input: "spawn-ns c1 echo test\nexit", expected: "SPAWNED c1\ntest" },
-        { name: "Case 2: Internal PID check", input: "spawn-ns c2 check-pid\nget-container-pid\nexit", expected: "SPAWNED c2\nINTERNAL_PID: 1" },
-        { name: "Case 3: Hostname isolation check", input: "spawn-ns sandbox-test get-hostname\nexit", expected: "HOSTNAME: sandbox-test" },
-        { name: "Case 4: Child termination status", input: "spawn-ns c3 exit-code 0\nexit", expected: "CONTAINER_EXIT: 0" },
-        { name: "Case 5: Multiple sequential containers", input: "spawn-ns a echo 1\nspawn-ns b echo 2\nexit", expected: "SPAWNED a\n1\nSPAWNED b\n2" },
+        { name: "Case 1: Spawn basic container", input: "spawn-ns c1 echo test\\nexit", expected: "SPAWNED c1\\ntest" },
+        { name: "Case 2: Internal PID check", input: "spawn-ns c2 check-pid\\nget-container-pid\\nexit", expected: "SPAWNED c2\\nINTERNAL_PID: 1" },
+        { name: "Case 3: Hostname isolation check", input: "spawn-ns sandbox-test get-hostname\\nexit", expected: "HOSTNAME: sandbox-test" },
+        { name: "Case 4: Child termination status", input: "spawn-ns c3 exit-code 0\\nexit", expected: "CONTAINER_EXIT: 0" },
+        { name: "Case 5: Multiple sequential containers", input: "spawn-ns a echo 1\\nspawn-ns b echo 2\\nexit", expected: "SPAWNED a\\n1\\nSPAWNED b\\n2" },
       ],
     },
     2: {
@@ -136,6 +147,19 @@ export const containerRuntimeChallenge: ChallengeData = {
       title: "Filesystem Isolation & Pivot Root",
       difficulty: "Hard",
       tagline: "Do you understand the core mechanism? Securely jail container processes using pivot_root into a fresh rootfs.",
+      diagram: `PIVOT_ROOT JAIL MECHANICS:
+
+  Host Mount Hierarchy:
+  / (Host Root: /dev/sda1)
+    └── /var/lib/containers/rootfs/ (New Target Root)
+          └── /oldroot/ (Temporary mountpoint for host root)
+
+  Execution Sequence:
+  1. unshare(CLONE_NEWNS) ──► Private mount table
+  2. mount(NULL, "/", NULL, MS_REC | MS_PRIVATE, NULL)
+  3. pivot_root("/var/lib/containers/rootfs", "/var/lib/containers/rootfs/oldroot")
+  4. umount2("/oldroot", MNT_DETACH) ──► Host root completely gone!
+  5. Container jail complete: "/" is now isolated rootfs. Breakout impossible.`,
       learningLoop: {
         bottleneck: "Why is chroot insecure (vulnerable to breakout via '..'), and how does pivot_root solve this?",
         whatYouUnderstand: [
@@ -153,17 +177,17 @@ export const containerRuntimeChallenge: ChallengeData = {
       examples: [
         {
           title: "Pivot Rootfs",
-          input: "mount-rootfs /alpine-root\nls-container-root\nexit",
-          output: "PIVOT_ROOT_OK\nbin dev etc home proc root sys tmp usr var",
+          input: "mount-rootfs /alpine-root\\nls-container-root\\nexit",
+          output: "PIVOT_ROOT_OK\\nbin dev etc home proc root sys tmp usr var",
         },
       ],
       constraints: ["Host filesystem must be completely unreachable", "Must unmount host root completely"],
       cases: [
-        { name: "Case 1: Mount pristine rootfs", input: "mount-rootfs /rootfs\nexit", expected: "PIVOT_ROOT_OK" },
-        { name: "Case 2: List isolated root", input: "mount-rootfs /rootfs\nls-container-root\nexit", expected: "PIVOT_ROOT_OK\nbin etc usr var" },
-        { name: "Case 3: Verify breakout protection", input: "test-chroot-escape\nexit", expected: "ESCAPE_ATTEMPT_FAILED: PERMISSION_DENIED" },
-        { name: "Case 4: Read-only rootfs enforcement", input: "mount-ro\ntouch /test.txt\nexit", expected: "ERROR: READ_ONLY_FILESYSTEM" },
-        { name: "Case 5: Proc pseudo-fs mount", input: "mount-proc\nls /proc\nexit", expected: "PROC_MOUNTED_OK" },
+        { name: "Case 1: Mount pristine rootfs", input: "mount-rootfs /rootfs\\nexit", expected: "PIVOT_ROOT_OK" },
+        { name: "Case 2: List isolated root", input: "mount-rootfs /rootfs\\nls-container-root\\nexit", expected: "PIVOT_ROOT_OK\\nbin etc usr var" },
+        { name: "Case 3: Verify breakout protection", input: "test-chroot-escape\\nexit", expected: "ESCAPE_ATTEMPT_FAILED: PERMISSION_DENIED" },
+        { name: "Case 4: Read-only rootfs enforcement", input: "mount-ro\\ntouch /test.txt\\nexit", expected: "ERROR: READ_ONLY_FILESYSTEM" },
+        { name: "Case 5: Proc pseudo-fs mount", input: "mount-proc\\nls /proc\\nexit", expected: "PROC_MOUNTED_OK" },
       ],
     },
     3: {
@@ -173,6 +197,20 @@ export const containerRuntimeChallenge: ChallengeData = {
       title: "Cgroups V2 Resource Constraints",
       difficulty: "Hard",
       tagline: "Does it remain correct under edge cases and failures? Enforce memory limits, CPU quotas, and fork-bomb protection.",
+      diagram: `CGROUPS V2 UNIFIED CONTROLLERS:
+
+  /sys/fs/cgroup/algo_sandbox_42/
+  ├── cgroup.procs ──► [Host PID: 1042]
+  │
+  ├── memory.max: 16,777,216 (16 MB limit)
+  │     ├── Process malloc(32MB)
+  │     └── Kernel OOM Killer: SIGKILL (Exit code 137)
+  │
+  ├── pids.max: 10
+  │     ├── Fork bomb :(){ :|:& };: attempts 11th fork
+  │     └── Kernel returns: EAGAIN (Resource temporarily unavailable)
+  │
+  └── cpu.max: "50000 100000" (Throttled to 50% CPU bandwidth)`,
       learningLoop: {
         bottleneck: "What stops a buggy or malicious student script from allocating 64GB RAM or running ':(){ :|:& };:' (fork bomb)?",
         whatYouUnderstand: [
@@ -191,17 +229,17 @@ export const containerRuntimeChallenge: ChallengeData = {
       examples: [
         {
           title: "Memory Limit OOM",
-          input: "set-limits --mem 16M --pids 10\nrun-with-limits alloc-32M\nexit",
-          output: "CGROUP_CONFIGURED\nPROCESS_TERMINATED: OOM_KILLED (exit 137)",
+          input: "set-limits --mem 16M --pids 10\\nrun-with-limits alloc-32M\\nexit",
+          output: "CGROUP_CONFIGURED\\nPROCESS_TERMINATED: OOM_KILLED (exit 137)",
         },
       ],
       constraints: ["Strict 0 byte overshoot above memory.max", "Instantly reject forks exceeding pids.max"],
       cases: [
-        { name: "Case 1: Normal workload within memory limit", input: "set-limits --mem 64M --pids 10\nrun-with-limits alloc-16M\nexit", expected: "CGROUP_CONFIGURED\nALLOC_OK" },
-        { name: "Case 2: Memory OOM kill", input: "set-limits --mem 16M --pids 10\nrun-with-limits alloc-32M\nexit", expected: "CGROUP_CONFIGURED\nOOM_KILLED" },
-        { name: "Case 3: Fork bomb suppression", input: "set-limits --mem 64M --pids 5\nrun-with-limits fork-bomb\nexit", expected: "CGROUP_CONFIGURED\nFORK_REJECTED: EAGAIN (pids.max reached)" },
-        { name: "Case 4: CPU quota throttling", input: "set-limits --cpu 50000 100000\nrun-with-limits burn-cpu\nexit", expected: "CGROUP_CONFIGURED\nTHROTTLED: 50%" },
-        { name: "Case 5: Cgroup directory cleanup", input: "cleanup-cgroups\nexit", expected: "CGROUP_CLEANED_OK" },
+        { name: "Case 1: Normal workload within memory limit", input: "set-limits --mem 64M --pids 10\\nrun-with-limits alloc-16M\\nexit", expected: "CGROUP_CONFIGURED\\nALLOC_OK" },
+        { name: "Case 2: Memory OOM kill", input: "set-limits --mem 16M --pids 10\\nrun-with-limits alloc-32M\\nexit", expected: "CGROUP_CONFIGURED\\nOOM_KILLED" },
+        { name: "Case 3: Fork bomb suppression", input: "set-limits --mem 64M --pids 5\\nrun-with-limits fork-bomb\\nexit", expected: "CGROUP_CONFIGURED\\nFORK_REJECTED: EAGAIN (pids.max reached)" },
+        { name: "Case 4: CPU quota throttling", input: "set-limits --cpu 50000 100000\\nrun-with-limits burn-cpu\\nexit", expected: "CGROUP_CONFIGURED\\nTHROTTLED: 50%" },
+        { name: "Case 5: Cgroup directory cleanup", input: "cleanup-cgroups\\nexit", expected: "CGROUP_CLEANED_OK" },
       ],
     },
     4: {
@@ -211,6 +249,23 @@ export const containerRuntimeChallenge: ChallengeData = {
       title: "Multi-Tenant Parallel Sandbox Spawning",
       difficulty: "Hard",
       tagline: "Does it handle concurrency, workload and growth? Concurrently spawn 50 isolated sandboxes with veth bridge networking.",
+      diagram: `MULTI-TENANT ISOLATED EXECUTION POOL:
+
+       Host Supervisor / Dispatcher
+             │
+   ┌─────────┼─────────┬─────────┐
+   ▼         ▼         ▼         ▼
+┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐
+│Sandbox│ │Sandbox│ │Sandbox│ │Sandbox│
+│  #1   │ │  #2   │ │  #3   │ │  #4   │
+├───────┤ ├───────┤ ├───────┤ ├───────┤
+│ PID: 1│ │ PID: 1│ │ PID: 1│ │ PID: 1│
+│ veth1 │ │ veth2 │ │ veth3 │ │ veth4 │
+│ rootfs│ │ rootfs│ │ rootfs│ │ rootfs│
+│ 64MB  │ │ 64MB  │ │ 64MB  │ │ 64MB  │
+└───────┘ └───────┘ └───────┘ └───────┘
+   │
+   └── Isolated Linux Bridge (br0) with iptables cross-talk drop rules`,
       learningLoop: {
         bottleneck: "How do platforms like LeetCode or ALGO run thousands of untrusted student submissions simultaneously?",
         whatYouUnderstand: [
@@ -228,17 +283,17 @@ export const containerRuntimeChallenge: ChallengeData = {
       examples: [
         {
           title: "Spawn Sandbox Pool",
-          input: "spawn-pool 5\nexec-sandbox sb_0 echo ready\nexit",
-          output: "POOL_READY: 5 SANDBOXES\nready",
+          input: "spawn-pool 5\\nexec-sandbox sb_0 echo ready\\nexit",
+          output: "POOL_READY: 5 SANDBOXES\\nready",
         },
       ],
       constraints: ["Sandboxes must be 100% mutually isolated", "Zero network traffic between sandboxes"],
       cases: [
-        { name: "Case 1: Spawn 5 sandboxes", input: "spawn-pool 5\nexit", expected: "POOL_READY: 5" },
-        { name: "Case 2: Execute command in sandbox", input: "spawn-pool 2\nexec-sandbox sb_1 echo hello\nexit", expected: "POOL_READY: 2\nhello" },
-        { name: "Case 3: Parallel execution test", input: "exec-parallel echo fast\nexit", expected: "EXECUTED: 10 CONCURRENT_OK" },
-        { name: "Case 4: Inter-sandbox isolation audit", input: "test-cross-sandbox-access\nexit", expected: "CROSS_ACCESS: BLOCKED" },
-        { name: "Case 5: Pool teardown", input: "destroy-pool\nexit", expected: "POOL_DESTROYED: 0 LEAKS" },
+        { name: "Case 1: Spawn 5 sandboxes", input: "spawn-pool 5\\nexit", expected: "POOL_READY: 5" },
+        { name: "Case 2: Execute command in sandbox", input: "spawn-pool 2\\nexec-sandbox sb_1 echo hello\\nexit", expected: "POOL_READY: 2\\nhello" },
+        { name: "Case 3: Parallel execution test", input: "exec-parallel echo fast\\nexit", expected: "EXECUTED: 10 CONCURRENT_OK" },
+        { name: "Case 4: Inter-sandbox isolation audit", input: "test-cross-sandbox-access\\nexit", expected: "CROSS_ACCESS: BLOCKED" },
+        { name: "Case 5: Pool teardown", input: "destroy-pool\\nexit", expected: "POOL_DESTROYED: 0 LEAKS" },
       ],
     },
     5: {
@@ -248,6 +303,15 @@ export const containerRuntimeChallenge: ChallengeData = {
       title: "Startup Latency & Cold-Start Microbenchmarks",
       difficulty: "Hard",
       tagline: "Can you identify bottlenecks and prove performance? Profile container cold-start down to the microsecond.",
+      diagram: `CONTAINER COLD-BOOT TIMELINE (Microsecond Precision):
+
+Time: 0 μs             +1,200 μs            +3,300 μs        +4,100 μs
+ ├─────────────────────────┼───────────────────┼────────────────┤
+ │ clone(CLONE_NEWPID...)  │ pivot_root()      │ cgroup v2 setup│ Process execvp
+ │ Clone page tables       │ Bind & mount      │ write limits   │ User payload
+ │ Host PID allocation     │ umount host root  │ to memory.max  │ executes
+ └─────────────────────────┴───────────────────┴────────────────┘
+ Total Latency: 4.1 ms (Well within < 15ms target)`,
       learningLoop: {
         bottleneck: "Where does container startup time actually go: clone(), pivot_root(), cgroup setup, or rootfs mount?",
         whatYouUnderstand: [
@@ -265,17 +329,17 @@ export const containerRuntimeChallenge: ChallengeData = {
       examples: [
         {
           title: "Profile Boot",
-          input: "profile-boot\nexit",
+          input: "profile-boot\\nexit",
           output: "CLONE: 1.2ms PIVOT_ROOT: 2.1ms CGROUP: 0.8ms TOTAL_BOOT: 4.1ms",
         },
       ],
       constraints: ["Total cold boot under 15ms", "Microsecond timeline precision"],
       cases: [
-        { name: "Case 1: Profile single boot", input: "profile-boot\nexit", expected: "TOTAL_BOOT: < 15ms" },
-        { name: "Case 2: Measure spawn rate", input: "bench-spawn-rate 50\nexit", expected: "SPAWN_RATE: > 50 /sec" },
-        { name: "Case 3: Memory footprint overhead", input: "measure-footprint\nexit", expected: "OVERHEAD: < 2MB" },
-        { name: "Case 4: Context switch cost", input: "bench-ctx-switch\nexit", expected: "CTX_SWITCH_US: < 5" },
-        { name: "Case 5: Latency audit", input: "audit-latency\nexit", expected: "LATENCY_AUDIT: PASSED" },
+        { name: "Case 1: Profile single boot", input: "profile-boot\\nexit", expected: "TOTAL_BOOT: < 15ms" },
+        { name: "Case 2: Measure spawn rate", input: "bench-spawn-rate 50\\nexit", expected: "SPAWN_RATE: > 50 /sec" },
+        { name: "Case 3: Memory footprint overhead", input: "measure-footprint\\nexit", expected: "OVERHEAD: < 2MB" },
+        { name: "Case 4: Context switch cost", input: "bench-ctx-switch\\nexit", expected: "CTX_SWITCH_US: < 5" },
+        { name: "Case 5: Latency audit", input: "audit-latency\\nexit", expected: "LATENCY_AUDIT: PASSED" },
       ],
     },
     6: {
@@ -285,6 +349,18 @@ export const containerRuntimeChallenge: ChallengeData = {
       title: "Pre-Forked Worker Pools & Fast Clone",
       difficulty: "Expert",
       tagline: "Can you make it measurably better? Achieve sub-3ms cold starts via pre-initialized standby worker pools.",
+      diagram: `PRE-FORKED HOT STANDBY DISPATCH:
+
+  Idle Pre-Forked Pool (Paused at Unix Domain Socket recv):
+  ┌─────────────────────────────────────────────────────────┐
+  │ Worker 1: [Namespaces ✓, Mounts ✓, Cgroups ✓] (Sleeping)│
+  │ Worker 2: [Namespaces ✓, Mounts ✓, Cgroups ✓] (Sleeping)│
+  │ Worker 3: [Namespaces ✓, Mounts ✓, Cgroups ✓] (Sleeping)│
+  └───────────────────────────┬─────────────────────────────┘
+                              │ Wake signal via IPC socket (< 1.8ms)
+                              ▼
+  Active Worker executes user command immediately!
+  On completion: Worker exits ──► Pool replenishes in background (CoW reset)`,
       learningLoop: {
         bottleneck: "How does Cloudflare Workers or AWS Lambda achieve near-instant execution without waiting for cold boots?",
         whatYouUnderstand: [
@@ -302,17 +378,17 @@ export const containerRuntimeChallenge: ChallengeData = {
       examples: [
         {
           title: "Fast Exec",
-          input: "init-hot-pool 5\nfast-exec echo instantaneous\nexit",
-          output: "HOT_POOL_READY\ninstantaneous\nDISPATCH_TIME: 1.8ms",
+          input: "init-hot-pool 5\\nfast-exec echo instantaneous\\nexit",
+          output: "HOT_POOL_READY\\ninstantaneous\\nDISPATCH_TIME: 1.8ms",
         },
       ],
       constraints: ["Sub-3ms execution dispatch", "Re-seed security state between runs"],
       cases: [
-        { name: "Case 1: Initialize hot standby pool", input: "init-hot-pool 5\nexit", expected: "HOT_POOL_READY" },
-        { name: "Case 2: Fast execution latency", input: "fast-exec echo fast\nexit", expected: "fast\nDISPATCH_TIME: < 3ms" },
-        { name: "Case 3: State isolation between fast runs", input: "fast-exec touch /tmp/taint\nfast-exec check-clean\nexit", expected: "SANDBOX_CLEAN: TRUE" },
-        { name: "Case 4: Rapid consecutive execution", input: "fast-exec echo 1\nfast-exec echo 2\nexit", expected: "1\n2" },
-        { name: "Case 5: Verification audit", input: "audit-engine\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
+        { name: "Case 1: Initialize hot standby pool", input: "init-hot-pool 5\\nexit", expected: "HOT_POOL_READY" },
+        { name: "Case 2: Fast execution latency", input: "fast-exec echo fast\\nexit", expected: "fast\\nDISPATCH_TIME: < 3ms" },
+        { name: "Case 3: State isolation between fast runs", input: "fast-exec touch /tmp/taint\\nfast-exec check-clean\\nexit", expected: "SANDBOX_CLEAN: TRUE" },
+        { name: "Case 4: Rapid consecutive execution", input: "fast-exec echo 1\\nfast-exec echo 2\\nexit", expected: "1\\n2" },
+        { name: "Case 5: Verification audit", input: "audit-engine\\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
       ],
     },
   },

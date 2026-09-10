@@ -97,6 +97,20 @@ export const gitChallenge: ChallengeData = {
       title: "Blob Storage & SHA-1 Hashing",
       difficulty: "Easy",
       tagline: "Can you make it work? Compute SHA-1 object headers ('blob <size>\\0<data>') and store objects.",
+      diagram: `INPUT: "hash-object hello world"
+      │
+      ▼
+┌────────────────────────────────────────────────────────┐
+│ Header Framing: "blob 11\\0hello world"                  │
+├────────────────────────────────────────────────────────┤
+│ SHA-1 Digest: 95d09f2b10159347eece71399a7e2e907ea3df4f │
+├────────────────────────────────────────────────────────┤
+│ Storage Path: .git/objects/95/d09f2b...                │
+│ Content: zlib_deflate("blob 11\\0hello world")          │
+└────────────────────────────────────────────────────────┘
+      │
+      ▼
+OUTPUT: 95d09f2b10159347eece71399a7e2e907ea3df4f`,
       learningLoop: {
         bottleneck: "How does Git ensure two identical files with different names only occupy disk space once?",
         whatYouUnderstand: [
@@ -115,17 +129,17 @@ export const gitChallenge: ChallengeData = {
       examples: [
         {
           title: "Hash and Cat File",
-          input: "hash-object hello world\ncat-file -p <hash>\nexit",
-          output: "95d09f2b10159347eece71399a7e2e907ea3df4f\nhello world",
+          input: "hash-object hello world\\ncat-file -p <hash>\\nexit",
+          output: "95d09f2b10159347eece71399a7e2e907ea3df4f\\nhello world",
         },
       ],
       constraints: ["Follow exact Git header framing", "Return 40-character hex hash"],
       cases: [
-        { name: "Case 1: Hash short string", input: "hash-object test\nexit", expected: "30d74d258442c7c65512eafab474568dd706c430" },
-        { name: "Case 2: Cat-file content", input: "hash-object hello\ncat-file -p b6fc4c620b67d95f953a5c1c1230aaab5db5a1b0\nexit", expected: "b6fc4c620b67d95f953a5c1c1230aaab5db5a1b0\nhello" },
-        { name: "Case 3: Deduplication check", input: "hash-object same\nhash-object same\nexit", expected: "same_hash\nsame_hash" },
-        { name: "Case 4: Object size", input: "hash-object 12345\ncat-file -s 58a698944517ecb110a29f8f413344d1daabdc97\nexit", expected: "58a698944517ecb110a29f8f413344d1daabdc97\n5" },
-        { name: "Case 5: Nonexistent object", input: "cat-file -p 0000000000000000000000000000000000000000\nexit", expected: "fatal: Not a valid object name" },
+        { name: "Case 1: Hash short string", input: "hash-object test\\nexit", expected: "30d74d258442c7c65512eafab474568dd706c430" },
+        { name: "Case 2: Cat-file content", input: "hash-object hello\\ncat-file -p b6fc4c620b67d95f953a5c1c1230aaab5db5a1b0\\nexit", expected: "b6fc4c620b67d95f953a5c1c1230aaab5db5a1b0\\nhello" },
+        { name: "Case 3: Deduplication check", input: "hash-object same\\nhash-object same\\nexit", expected: "same_hash\\nsame_hash" },
+        { name: "Case 4: Object size", input: "hash-object 12345\\ncat-file -s 58a698944517ecb110a29f8f413344d1daabdc97\\nexit", expected: "58a698944517ecb110a29f8f413344d1daabdc97\\n5" },
+        { name: "Case 5: Nonexistent object", input: "cat-file -p 0000000000000000000000000000000000000000\\nexit", expected: "fatal: Not a valid object name" },
       ],
     },
     2: {
@@ -135,6 +149,25 @@ export const gitChallenge: ChallengeData = {
       title: "Tree Hierarchy & Commit DAG",
       difficulty: "Medium",
       tagline: "Do you understand the core mechanism? Assemble directory trees and link commits into an immutable DAG.",
+      diagram: `DIRECTORY TREE & COMMIT MERKLE GRAPH:
+
+  Commit Object (Hash: c7a1f...)
+  ┌───────────────────────────────────────────────────────────┐
+  │ tree   4b825dc642cb6eb9a060e54bf8d69288fbee4904           │
+  │ parent a1b2c3d4... (points to ancestor commit)            │
+  │ author Jason <jason@algo> 1700000000 +0000                │
+  │ committer Jason <jason@algo> 1700000000 +0000             │
+  │                                                           │
+  │ Initial commit                                            │
+  └─────────────────────────────┬─────────────────────────────┘
+                                │ points to
+                                ▼
+  Tree Object (Hash: 4b825...)
+  ┌───────────────────────────────────────────────────────────┐
+  │ 100644 blob 95d09f2b... main.c                            │
+  │ 100644 blob a3b811ef... README.md                         │
+  │ 040000 tree 88eef120... src/  ──► (Nested Subtree Object) │
+  └───────────────────────────────────────────────────────────┘`,
       learningLoop: {
         bottleneck: "How does Git represent directories containing files and subdirectories while maintaining immutability?",
         whatYouUnderstand: [
@@ -153,17 +186,17 @@ export const gitChallenge: ChallengeData = {
       examples: [
         {
           title: "Write Tree and Commit",
-          input: "write-tree 100644 main.c <hash>\ncommit-tree <thash> -m 'Initial commit'\nexit",
-          output: "TREE_HASH\nCOMMIT_HASH",
+          input: "write-tree 100644 main.c <hash>\\ncommit-tree <thash> -m 'Initial commit'\\nexit",
+          output: "TREE_HASH\\nCOMMIT_HASH",
         },
       ],
       constraints: ["Tree entries must be sorted lexicographically", "Commits must record exact parent pointer"],
       cases: [
-        { name: "Case 1: Write single-entry tree", input: "write-tree 100644 file.txt aabbccddee00112233445566778899aabbccddee\nexit", expected: "TREE_OK" },
-        { name: "Case 2: Commit root node", input: "commit-tree TREE_ROOT -m 'Initial'\nexit", expected: "COMMIT_OK" },
-        { name: "Case 3: Commit with parent", input: "commit-tree TREE_CHILD -p COMMIT_ROOT -m 'Second'\nexit", expected: "COMMIT_CHILD_OK" },
-        { name: "Case 4: Commit log traversal", input: "log COMMIT_CHILD\nexit", expected: "Second -> Initial" },
-        { name: "Case 5: Multi-file tree sorting", input: "write-tree 100644 b.txt 1111 100644 a.txt 2222\nexit", expected: "SORTED_OK" },
+        { name: "Case 1: Write single-entry tree", input: "write-tree 100644 file.txt aabbccddee00112233445566778899aabbccddee\\nexit", expected: "TREE_OK" },
+        { name: "Case 2: Commit root node", input: "commit-tree TREE_ROOT -m 'Initial'\\nexit", expected: "COMMIT_OK" },
+        { name: "Case 3: Commit with parent", input: "commit-tree TREE_CHILD -p COMMIT_ROOT -m 'Second'\\nexit", expected: "COMMIT_CHILD_OK" },
+        { name: "Case 4: Commit log traversal", input: "log COMMIT_CHILD\\nexit", expected: "Second -> Initial" },
+        { name: "Case 5: Multi-file tree sorting", input: "write-tree 100644 b.txt 1111 100644 a.txt 2222\\nexit", expected: "SORTED_OK" },
       ],
     },
     3: {
@@ -173,6 +206,21 @@ export const gitChallenge: ChallengeData = {
       title: "Object Integrity & Corruption Recovery",
       difficulty: "Medium",
       tagline: "Does it remain correct under edge cases and failures? Detect bit rot, dangling objects, and cyclic history.",
+      diagram: `FSCK INTEGRITY VERIFICATION PIPELINE:
+
+  Objects in Store ──► For each object on disk:
+                             │
+       ┌─────────────────────┴─────────────────────┐
+       ▼                                           ▼
+  Recompute SHA-1                             Graph Reachability
+  hash(decompressed_bytes)                   Walk from refs/heads/*
+       │                                           │
+  ┌────┴────────────────┐                    ┌─────┴───────────────┐
+  ▼                     ▼                    ▼                     ▼
+Match stored id?     Mismatch!          Reachable?             Orphaned?
+  │                     │                    │                     │
+  ▼                     ▼                    ▼                     ▼
+[OK: Consistent]   [CORRUPT: Bit rot]   [VALID OBJECT]       [DANGLING: Prune]`,
       learningLoop: {
         bottleneck: "What happens if a disk sector corrupts an object, or an adversary tampers with a parent commit hash?",
         whatYouUnderstand: [
@@ -190,17 +238,17 @@ export const gitChallenge: ChallengeData = {
       examples: [
         {
           title: "Fsck Verification",
-          input: "fsck\nexit",
+          input: "fsck\\nexit",
           output: "VERIFIED: 12 objects, 0 corrupted, 0 dangling",
         },
       ],
       constraints: ["Report exact hash of corrupted objects", "Zero tolerance for hash mismatches"],
       cases: [
-        { name: "Case 1: Clean repository fsck", input: "fsck\nexit", expected: "VERIFIED: 0 CORRUPTED: 0" },
-        { name: "Case 2: Bit rot detection", input: "corrupt OBJ_1 10\nfsck\nexit", expected: "CORRUPTION DETECTED in OBJ_1" },
-        { name: "Case 3: Dangling blob detection", input: "add-dangling-blob\nfsck\nexit", expected: "DANGLING: 1" },
-        { name: "Case 4: Cycle rejection", input: "check-cycle\nexit", expected: "CYCLE: NONE" },
-        { name: "Case 5: Missing parent reference", input: "check-broken-parent\nexit", expected: "BROKEN_LINK_DETECTED" },
+        { name: "Case 1: Clean repository fsck", input: "fsck\\nexit", expected: "VERIFIED: 0 CORRUPTED: 0" },
+        { name: "Case 2: Bit rot detection", input: "corrupt OBJ_1 10\\nfsck\\nexit", expected: "CORRUPTION DETECTED in OBJ_1" },
+        { name: "Case 3: Dangling blob detection", input: "add-dangling-blob\\nfsck\\nexit", expected: "DANGLING: 1" },
+        { name: "Case 4: Cycle rejection", input: "check-cycle\\nexit", expected: "CYCLE: NONE" },
+        { name: "Case 5: Missing parent reference", input: "check-broken-parent\\nexit", expected: "BROKEN_LINK_DETECTED" },
       ],
     },
     4: {
@@ -210,6 +258,18 @@ export const gitChallenge: ChallengeData = {
       title: "Fast Tree Diffing & Branching",
       difficulty: "Hard",
       tagline: "Does it handle concurrency, workload and growth? Compare large directory trees in O(differences) time.",
+      diagram: `MERKLE TREE DIFFING ALGORITHM:
+
+  Tree A (Hash: X9)                  Tree B (Hash: Y2)
+  ├── 100644 blob H1 "main.c"       ├── 100644 blob H1 "main.c" (H1==H1: SKIP)
+  ├── 100644 blob H2 "util.c"       ├── 100644 blob H3 "util.c" (H2!=H3: MODIFIED)
+  ├── 040000 tree T1 "lib/"         ├── 040000 tree T1 "lib/"   (T1==T1: SKIP ENTIRE SUBTREE!)
+  └── 100644 blob H4 "old.txt"      └── (missing in B)          (DELETED)
+
+  OUTPUT DELTA:
+  M util.c
+  D old.txt
+  (lib/* skipped in O(1) time without recursing!)`,
       learningLoop: {
         bottleneck: "When a repo contains 500,000 files and 1 file changes, how does Git diff them without scanning 499,999 untouched files?",
         whatYouUnderstand: [
@@ -227,17 +287,17 @@ export const gitChallenge: ChallengeData = {
       examples: [
         {
           title: "Diff Trees",
-          input: "diff-tree TREE_A TREE_B\nexit",
-          output: "M src/main.c\nA docs/guide.md\nD old.txt",
+          input: "diff-tree TREE_A TREE_B\\nexit",
+          output: "M src/main.c\\nA docs/guide.md\\nD old.txt",
         },
       ],
       constraints: ["O(differences) traversal complexity", "Do not descend into identical subtrees"],
       cases: [
-        { name: "Case 1: Identical trees (fast skip)", input: "diff-tree T1 T1\nexit", expected: "NO_CHANGES" },
-        { name: "Case 2: Modified single file", input: "diff-tree T1 T2\nexit", expected: "M app.c" },
-        { name: "Case 3: Added file", input: "diff-tree T1 T3\nexit", expected: "A new.txt" },
-        { name: "Case 4: Deleted file", input: "diff-tree T1 T4\nexit", expected: "D old.txt" },
-        { name: "Case 5: Branch ref update", input: "branch feature COMMIT_1\nget-ref feature\nexit", expected: "COMMIT_1" },
+        { name: "Case 1: Identical trees (fast skip)", input: "diff-tree T1 T1\\nexit", expected: "NO_CHANGES" },
+        { name: "Case 2: Modified single file", input: "diff-tree T1 T2\\nexit", expected: "M app.c" },
+        { name: "Case 3: Added file", input: "diff-tree T1 T3\\nexit", expected: "A new.txt" },
+        { name: "Case 4: Deleted file", input: "diff-tree T1 T4\\nexit", expected: "D old.txt" },
+        { name: "Case 5: Branch ref update", input: "branch feature COMMIT_1\\nget-ref feature\\nexit", expected: "COMMIT_1" },
       ],
     },
     5: {
@@ -247,6 +307,17 @@ export const gitChallenge: ChallengeData = {
       title: "Repository Footprint & Graph Traversal",
       difficulty: "Hard",
       tagline: "Can you identify bottlenecks and prove performance? Measure loose object fragmentation and commit traversal speed.",
+      diagram: `LOOSE REPOSITORY METRICS & GRAPH WALKING:
+
+  Filesystem Inode Overhead:
+  .git/objects/
+  ├── [1,540 loose files] ──► 1,540 inodes, 4KB min block alloc = 6.1MB disk
+  └── working tree size   ──► 1.2MB real data (5.1x Disk Amplification)
+
+  Commit Graph Traversal Benchmark:
+  HEAD ──► C(n) ──► C(n-1) ──► ... ──► C(0) [1,000 generations]
+  Linear disk seek latency: ~45ms without commit-graph index
+  Generation index lookup:  < 1.2ms (37x speedup)`,
       learningLoop: {
         bottleneck: "Why does having 100,000 loose files in .git/objects crush filesystem performance?",
         whatYouUnderstand: [
@@ -264,17 +335,17 @@ export const gitChallenge: ChallengeData = {
       examples: [
         {
           title: "Count Objects",
-          input: "count-objects\nexit",
+          input: "count-objects\\nexit",
           output: "OBJECTS: 1540 SIZE_KB: 4200",
         },
       ],
       constraints: ["Accurate loose object count", "Microsecond commit walking benchmark"],
       cases: [
-        { name: "Case 1: Count initial objects", input: "count-objects\nexit", expected: "OBJECTS: > 0" },
-        { name: "Case 2: Bench commit walk depth 1000", input: "bench-traversal 1000\nexit", expected: "WALK_OK TIME_US: < 10000" },
-        { name: "Case 3: Reachability query latency", input: "reachability-check C_HEAD C_ROOT\nexit", expected: "REACHABLE: TRUE" },
-        { name: "Case 4: Loose object fragmentation ratio", input: "frag-ratio\nexit", expected: "RATIO: HIGH_NEED_PACK" },
-        { name: "Case 5: Repository health audit", input: "audit-repo\nexit", expected: "STATUS: HEALTHY" },
+        { name: "Case 1: Count initial objects", input: "count-objects\\nexit", expected: "OBJECTS: > 0" },
+        { name: "Case 2: Bench commit walk depth 1000", input: "bench-traversal 1000\\nexit", expected: "WALK_OK TIME_US: < 10000" },
+        { name: "Case 3: Reachability query latency", input: "reachability-check C_HEAD C_ROOT\\nexit", expected: "REACHABLE: TRUE" },
+        { name: "Case 4: Loose object fragmentation ratio", input: "frag-ratio\\nexit", expected: "RATIO: HIGH_NEED_PACK" },
+        { name: "Case 5: Repository health audit", input: "audit-repo\\nexit", expected: "STATUS: HEALTHY" },
       ],
     },
     6: {
@@ -284,6 +355,25 @@ export const gitChallenge: ChallengeData = {
       title: "Delta Compression & Packfile Format",
       difficulty: "Hard",
       tagline: "Can you make it measurably better? Compress loose objects into a binary packfile with sliding-window deltas.",
+      diagram: `PACKFILE (.pack) & INDEX (.idx) BINARY STRUCTURE:
+
+  .idx File (Fanout Table):
+  ┌──────────────┬────────────────────────┬─────────────┐
+  │ 256-entry    │ 160-bit SHA-1 table    │ 32-bit      │
+  │ Fanout (0-ff)│ Sorted for O(log N)    │ Pack Offset │
+  └──────────────┴────────────────────────┴──────┬──────┘
+                                                 │ seeks
+                                                 ▼
+  .pack File:
+  ┌────────┬─────────┬──────────────┬──────────────────────────────────┐
+  │ "PACK" │ Version │ Object Count │ Object Entries (zlib compressed) │
+  └────────┴─────────┴──────────────┴──────┬───────────────────────────┘
+                                           │
+  Base Object (v1): [Full zlib content]    │
+  Delta Object (v2): OFS_DELTA             ▼
+    Copy  offset: 0, len: 1400 ───────► Reuses unchanged bytes from v1
+    Insert len: 24, data: "new feature branch logic"
+    Result: 94% storage reduction!`,
       learningLoop: {
         bottleneck: "How does Git reduce a 1GB repository with 10,000 edits of the same files down to 50MB?",
         whatYouUnderstand: [
@@ -301,17 +391,17 @@ export const gitChallenge: ChallengeData = {
       examples: [
         {
           title: "Repack Archive",
-          input: "repack\nexit",
+          input: "repack\\nexit",
           output: "PACKED: 1540 objects RATIO: 64.2% saved",
         },
       ],
       constraints: ["Delta chain depth bounded to 10", "Packfile must be self-contained and indexable"],
       cases: [
-        { name: "Case 1: Packfile compression ratio", input: "repack\nexit", expected: "COMPRESSION_SAVED: > 50%" },
-        { name: "Case 2: Read object from packfile", input: "read-packed HASH_BLOB\nexit", expected: "BLOB_CONTENT_OK" },
-        { name: "Case 3: Verify packfile checksum", input: "verify-pack pack.idx\nexit", expected: "PACK_VERIFIED: OK" },
-        { name: "Case 4: Zero loose objects after repack", input: "count-loose\nexit", expected: "LOOSE: 0" },
-        { name: "Case 5: Verification audit", input: "audit-engine\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
+        { name: "Case 1: Packfile compression ratio", input: "repack\\nexit", expected: "COMPRESSION_SAVED: > 50%" },
+        { name: "Case 2: Read object from packfile", input: "read-packed HASH_BLOB\\nexit", expected: "BLOB_CONTENT_OK" },
+        { name: "Case 3: Verify packfile checksum", input: "verify-pack pack.idx\\nexit", expected: "PACK_VERIFIED: OK" },
+        { name: "Case 4: Zero loose objects after repack", input: "count-loose\\nexit", expected: "LOOSE: 0" },
+        { name: "Case 5: Verification audit", input: "audit-engine\\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
       ],
     },
   },

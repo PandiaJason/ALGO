@@ -100,6 +100,22 @@ export const distributedConsensusChallenge: ChallengeData = {
       title: "Leader Election & Heartbeat Protocol",
       difficulty: "Medium",
       tagline: "Can you make it work? Elect a stable cluster leader using randomized timeouts and RequestVote RPCs.",
+      diagram: `RAFT LEADER ELECTION STATE MACHINE:
+
+  [Follower] ──(Election Timeout Expires)──► [Candidate]
+      ▲                                           │
+      │                                    Increment currentTerm
+      │                                    Vote for self
+      │                                    Send RequestVote RPCs
+      │                                           │
+      │       ┌───────────────────────────────────┴─────────────────┐
+      │       ▼                                                     ▼
+      │  Votes >= Majority (> N/2)                          Discovers higher term
+      │       │                                             or new valid leader
+      │       ▼                                                     │
+      └── [Leader] ◄────────────────────────────────────────────────┘
+              │
+              └── Sends periodic empty AppendEntries (Heartbeats)`,
       learningLoop: {
         bottleneck: "What prevents two nodes from voting for themselves simultaneously and causing an endless split vote tie?",
         whatYouUnderstand: [
@@ -118,17 +134,17 @@ export const distributedConsensusChallenge: ChallengeData = {
       examples: [
         {
           title: "Trigger Election",
-          input: "tick node_1\nstatus\nexit",
-          output: "NODE node_1 BECAME CANDIDATE TERM 1\nnode_1: LEADER (term 1), node_2: FOLLOWER (term 1), node_3: FOLLOWER (term 1)",
+          input: "tick node_1\\nstatus\\nexit",
+          output: "NODE node_1 BECAME CANDIDATE TERM 1\\nnode_1: LEADER (term 1), node_2: FOLLOWER (term 1), node_3: FOLLOWER (term 1)",
         },
       ],
       constraints: ["Exactly 1 vote per node per term", "Leaders must maintain regular heartbeats"],
       cases: [
-        { name: "Case 1: Single node election", input: "tick n1\nstatus\nexit", expected: "n1: LEADER term 1" },
-        { name: "Case 2: Heartbeat suppresses follower election", input: "tick n1\nheartbeat n1\ntick n2\nstatus\nexit", expected: "n1: LEADER term 1\nn2: FOLLOWER term 1" },
-        { name: "Case 3: Stale term rejection", input: "request-vote n2 term 0\nexit", expected: "VOTE_REJECTED: STALE_TERM" },
-        { name: "Case 4: Leader step down on higher term", input: "tick n1\nmessage-from-higher-term n1 term 5\nstatus\nexit", expected: "n1: FOLLOWER term 5" },
-        { name: "Case 5: Quorum check 3-node cluster", input: "check-quorum\nexit", expected: "QUORUM: 2_OF_3_ACTIVE" },
+        { name: "Case 1: Single node election", input: "tick n1\\nstatus\\nexit", expected: "n1: LEADER term 1" },
+        { name: "Case 2: Heartbeat suppresses follower election", input: "tick n1\\nheartbeat n1\\ntick n2\\nstatus\\nexit", expected: "n1: LEADER term 1\\nn2: FOLLOWER term 1" },
+        { name: "Case 3: Stale term rejection", input: "request-vote n2 term 0\\nexit", expected: "VOTE_REJECTED: STALE_TERM" },
+        { name: "Case 4: Leader step down on higher term", input: "tick n1\\nmessage-from-higher-term n1 term 5\\nstatus\\nexit", expected: "n1: FOLLOWER term 5" },
+        { name: "Case 5: Quorum check 3-node cluster", input: "check-quorum\\nexit", expected: "QUORUM: 2_OF_3_ACTIVE" },
       ],
     },
     2: {
@@ -138,6 +154,17 @@ export const distributedConsensusChallenge: ChallengeData = {
       title: "Log Replication & State Machine Commit",
       difficulty: "Hard",
       tagline: "Do you understand the core mechanism? Replicate log entries across a majority quorum and advance commitIndex.",
+      diagram: `QUORUM LOG REPLICATION PIPELINE:
+
+  Client ──► Leader (Node 1)
+               ├── 1. Append entry [term=1, index=3, cmd="SET x=10"]
+               ├── 2. Dispatch AppendEntries RPCs
+               │        ├── Follower 2: ACK (MatchIndex=3)
+               │        └── Follower 3: Network partition (Timeout)
+               ├── 3. Quorum Count: 2 of 3 nodes ACK (Strict Majority!)
+               ├── 4. Advance commitIndex: 2 ──► 3
+               └── 5. Apply to State Machine: memory["x"] = 10
+                       └── Return OK to Client`,
       learningLoop: {
         bottleneck: "How does a leader know an entry is safely committed and cannot be lost even if the leader crashes immediately?",
         whatYouUnderstand: [
@@ -156,17 +183,17 @@ export const distributedConsensusChallenge: ChallengeData = {
       examples: [
         {
           title: "Replicate Entry",
-          input: "client-write 'SET a=1'\nreplicate\nget-state\nexit",
-          output: "ENTRY_APPENDED index=1\nREPLICATED_MAJORITY commitIndex=1\nSTATE: a=1",
+          input: "client-write 'SET a=1'\\nreplicate\\nget-state\\nexit",
+          output: "ENTRY_APPENDED index=1\\nREPLICATED_MAJORITY commitIndex=1\\nSTATE: a=1",
         },
       ],
       constraints: ["Strict majority required for commit", "Followers must match leader log prefix exactly"],
       cases: [
-        { name: "Case 1: Single write commit", input: "client-write 'SET x=10'\nreplicate\nget-state\nexit", expected: "COMMITTED index 1\nSTATE: x=10" },
-        { name: "Case 2: Multiple sequential writes", input: "client-write 'SET a=1'\nreplicate\nclient-write 'SET b=2'\nreplicate\nget-state\nexit", expected: "COMMITTED index 2\nSTATE: a=1, b=2" },
-        { name: "Case 3: Non-leader write redirect", input: "write-to-follower n2 'SET y=5'\nexit", expected: "REDIRECT_TO_LEADER: n1" },
-        { name: "Case 4: Follower catchup after disconnect", input: "disconnect n3\nclient-write 'SET c=3'\nreplicate\nreconnect n3\nsync n3\nget-node-log n3\nexit", expected: "LOG_SYNCED: index 1..3" },
-        { name: "Case 5: Match index verification", input: "verify-match-indexes\nexit", expected: "MATCH_INDEXES_VALID" },
+        { name: "Case 1: Single write commit", input: "client-write 'SET x=10'\\nreplicate\\nget-state\\nexit", expected: "COMMITTED index 1\\nSTATE: x=10" },
+        { name: "Case 2: Multiple sequential writes", input: "client-write 'SET a=1'\\nreplicate\\nclient-write 'SET b=2'\\nreplicate\\nget-state\\nexit", expected: "COMMITTED index 2\\nSTATE: a=1, b=2" },
+        { name: "Case 3: Non-leader write redirect", input: "write-to-follower n2 'SET y=5'\\nexit", expected: "REDIRECT_TO_LEADER: n1" },
+        { name: "Case 4: Follower catchup after disconnect", input: "disconnect n3\\nclient-write 'SET c=3'\\nreplicate\\nreconnect n3\\nsync n3\\nget-node-log n3\\nexit", expected: "LOG_SYNCED: index 1..3" },
+        { name: "Case 5: Match index verification", input: "verify-match-indexes\\nexit", expected: "MATCH_INDEXES_VALID" },
       ],
     },
     3: {
@@ -176,6 +203,23 @@ export const distributedConsensusChallenge: ChallengeData = {
       title: "Network Partitions & Split-Brain Mitigation",
       difficulty: "Hard",
       tagline: "Does it remain correct under edge cases and failures? Prevent split-brain writes during asymmetric network splits.",
+      diagram: `5-NODE CLUSTER ASYMMETRIC PARTITION:
+
+  Minority Partition (2 nodes):
+  ┌──────────────┐     ┌──────────────┐
+  │   Node 1     │◄───►│   Node 2     │ ──► Max Quorum: 2/5 (NO QUORUM)
+  │ (Old Leader) │     │  (Follower)  │     Writes REJECTED / UNCOMMITTED!
+  └──────────────┘     └──────────────┘
+  ═══════════════ NETWORK SPLIT ═══════════════
+  Majority Partition (3 nodes):
+  ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+  │   Node 3     │◄───►│   Node 4     │◄───►│   Node 5     │
+  │ (New Leader) │     │  (Follower)  │     │  (Follower)  │
+  └──────────────┘     └──────────────┘     └──────────────┘
+         ▲
+         └── Quorum: 3/5 votes (COMMITS AUTHORITATIVE WRITES)
+
+  On Partition Heal: Node 1 sees Term 2 > Term 1 ──► Steps down to Follower`,
       learningLoop: {
         bottleneck: "What happens when a 5-node cluster splits into 2 nodes (minority) and 3 nodes (majority)? Can the minority commit writes?",
         whatYouUnderstand: [
@@ -193,17 +237,17 @@ export const distributedConsensusChallenge: ChallengeData = {
       examples: [
         {
           title: "Simulate Partition",
-          input: "partition n1,n2 | n3,n4,n5\nclient-write-to n1 'SET bad=1'\nreplicate n1\nexit",
-          output: "PARTITION_ACTIVE\nWRITE_PENDING (No Quorum: 2/5)\nUNCOMMITTED",
+          input: "partition n1,n2 | n3,n4,n5\\nclient-write-to n1 'SET bad=1'\\nreplicate n1\\nexit",
+          output: "PARTITION_ACTIVE\\nWRITE_PENDING (No Quorum: 2/5)\\nUNCOMMITTED",
         },
       ],
       constraints: ["Zero split-brain committed values", "Overwritten uncommitted entries must be cleanly discarded"],
       cases: [
-        { name: "Case 1: Minority partition write blocked", input: "partition n1,n2 | n3,n4,n5\nwrite-minority n1 'SET x=bad'\ncheck-commit n1\nexit", expected: "UNCOMMITTED_NO_QUORUM" },
-        { name: "Case 2: Majority partition write succeeds", input: "partition n1,n2 | n3,n4,n5\nwrite-majority n3 'SET x=good'\ncheck-commit n3\nexit", expected: "COMMITTED_MAJORITY: x=good" },
-        { name: "Case 3: Partition heal and log overwrite", input: "heal-partition\nsync-cluster\nget-state-all\nexit", expected: "CLUSTER_CONSISTENT: x=good" },
-        { name: "Case 4: Leader step down on rejoin", input: "check-stale-leader n1\nexit", expected: "STEPPED_DOWN: FOLLOWER" },
-        { name: "Case 5: Invariant verification audit", input: "verify-consensus-safety\nexit", expected: "SAFETY_INVARIANTS_PASSED" },
+        { name: "Case 1: Minority partition write blocked", input: "partition n1,n2 | n3,n4,n5\\nwrite-minority n1 'SET x=bad'\\ncheck-commit n1\\nexit", expected: "UNCOMMITTED_NO_QUORUM" },
+        { name: "Case 2: Majority partition write succeeds", input: "partition n1,n2 | n3,n4,n5\\nwrite-majority n3 'SET x=good'\\ncheck-commit n3\\nexit", expected: "COMMITTED_MAJORITY: x=good" },
+        { name: "Case 3: Partition heal and log overwrite", input: "heal-partition\\nsync-cluster\\nget-state-all\\nexit", expected: "CLUSTER_CONSISTENT: x=good" },
+        { name: "Case 4: Leader step down on rejoin", input: "check-stale-leader n1\\nexit", expected: "STEPPED_DOWN: FOLLOWER" },
+        { name: "Case 5: Invariant verification audit", input: "verify-consensus-safety\\nexit", expected: "SAFETY_INVARIANTS_PASSED" },
       ],
     },
     4: {
@@ -213,6 +257,19 @@ export const distributedConsensusChallenge: ChallengeData = {
       title: "Cluster Membership Changes & Log Compaction",
       difficulty: "Expert",
       tagline: "Does it handle concurrency, workload and growth? Add/remove nodes dynamically and compact infinite logs with snapshots.",
+      diagram: `LOG COMPACTION & POINT-IN-TIME SNAPSHOTTING:
+
+  Historical Log:
+  Index: 1      2      3   ...   1000     1001     1002
+  Entry: [x=1]  [y=2]  [x=5]     [z=9]    [x=10]   [w=4]
+  └──────────────────┬───────────────┘    └──────┬──────┘
+                     │                           │
+                     ▼                           ▼
+          State Machine Snapshot:         Remaining Log:
+          lastIncludedIndex: 1000         Index 1001, 1002
+          lastIncludedTerm:  2
+          State: { x: 5, y: 2, z: 9 }
+          (998 historic log entries discarded from disk!)`,
       learningLoop: {
         bottleneck: "If a cluster runs for 3 years, the log would grow to billions of entries. How does a new node join without replaying 3 years of logs?",
         whatYouUnderstand: [
@@ -230,17 +287,17 @@ export const distributedConsensusChallenge: ChallengeData = {
       examples: [
         {
           title: "Snapshot Log",
-          input: "take-snapshot\nget-log-size\nexit",
-          output: "SNAPSHOT_CREATED index=1000\nLOG_TRUNCATED entries_remaining=1",
+          input: "take-snapshot\\nget-log-size\\nexit",
+          output: "SNAPSHOT_CREATED index=1000\\nLOG_TRUNCATED entries_remaining=1",
         },
       ],
       constraints: ["Snapshots must include lastIncludedIndex and lastIncludedTerm", "Joint consensus during config change"],
       cases: [
-        { name: "Case 1: Snapshot and log truncation", input: "take-snapshot\nexit", expected: "SNAPSHOT_CREATED index 100" },
-        { name: "Case 2: Catch up slow node via snapshot", input: "install-snapshot n4\nexit", expected: "SNAPSHOT_INSTALLED index 100" },
-        { name: "Case 3: Dynamic node addition (3 to 5)", input: "add-node n4\nadd-node n5\ncheck-cluster-size\nexit", expected: "CLUSTER_SIZE: 5" },
-        { name: "Case 4: Dynamic node removal", input: "remove-node n5\ncheck-cluster-size\nexit", expected: "CLUSTER_SIZE: 4" },
-        { name: "Case 5: Log bound verification", input: "verify-log-bounds\nexit", expected: "BOUNDED_MEMORY: OK" },
+        { name: "Case 1: Snapshot and log truncation", input: "take-snapshot\\nexit", expected: "SNAPSHOT_CREATED index 100" },
+        { name: "Case 2: Catch up slow node via snapshot", input: "install-snapshot n4\\nexit", expected: "SNAPSHOT_INSTALLED index 100" },
+        { name: "Case 3: Dynamic node addition (3 to 5)", input: "add-node n4\\nadd-node n5\\ncheck-cluster-size\\nexit", expected: "CLUSTER_SIZE: 5" },
+        { name: "Case 4: Dynamic node removal", input: "remove-node n5\\ncheck-cluster-size\\nexit", expected: "CLUSTER_SIZE: 4" },
+        { name: "Case 5: Log bound verification", input: "verify-log-bounds\\nexit", expected: "BOUNDED_MEMORY: OK" },
       ],
     },
     5: {
@@ -250,6 +307,20 @@ export const distributedConsensusChallenge: ChallengeData = {
       title: "Election Convergence & Replication Lag",
       difficulty: "Hard",
       tagline: "Can you identify bottlenecks and prove performance? Measure failover election latency and replication lag.",
+      diagram: `FAILOVER LATENCY TIMELINE & REPLICATION LAG:
+
+  Leader Crashes (t = 0 ms)
+      │
+      ├─► Follower 2 Election Timer: 120 ms
+      ├─► Follower 3 Election Timer: 210 ms (Randomized delay prevents split)
+      │
+  t = 120 ms: Follower 2 transitions to Candidate
+      │
+      ├── Sends RequestVote to Follower 3
+      └── Receives Vote ACK in 12 ms
+      │
+  t = 132 ms: Follower 2 becomes NEW LEADER!
+  Total Failover Downtime: 132 ms (Within < 150ms SLA)`,
       learningLoop: {
         bottleneck: "What is the true upper bound on downtime when the leader crashes, and how does network jitter affect it?",
         whatYouUnderstand: [
@@ -267,17 +338,17 @@ export const distributedConsensusChallenge: ChallengeData = {
       examples: [
         {
           title: "Benchmark Failover",
-          input: "kill-leader\nexit",
-          output: "LEADER_CRASHED\nNEW_LEADER_ELECTED: n2 DURATION: 132ms",
+          input: "kill-leader\\nexit",
+          output: "LEADER_CRASHED\\nNEW_LEADER_ELECTED: n2 DURATION: 132ms",
         },
       ],
       constraints: ["Election duration under 150ms", "Zero divergent commits during failover"],
       cases: [
-        { name: "Case 1: Measure leader failover", input: "kill-leader\nexit", expected: "FAILOVER_TIME: < 150ms" },
-        { name: "Case 2: Measure follower lag", input: "measure-lag\nexit", expected: "MAX_LAG_ENTRIES: 0" },
-        { name: "Case 3: Commit throughput benchmark", input: "bench-commits 1000\nexit", expected: "THROUGHPUT: > 5000 commits/s" },
-        { name: "Case 4: Jitter resilience test", input: "inject-jitter 50ms\ncheck-stability\nexit", expected: "CLUSTER_STABLE: TRUE" },
-        { name: "Case 5: Latency audit", input: "audit-consensus-metrics\nexit", expected: "AUDIT: PASSED" },
+        { name: "Case 1: Measure leader failover", input: "kill-leader\\nexit", expected: "FAILOVER_TIME: < 150ms" },
+        { name: "Case 2: Measure follower lag", input: "measure-lag\\nexit", expected: "MAX_LAG_ENTRIES: 0" },
+        { name: "Case 3: Commit throughput benchmark", input: "bench-commits 1000\\nexit", expected: "THROUGHPUT: > 5000 commits/s" },
+        { name: "Case 4: Jitter resilience test", input: "inject-jitter 50ms\\ncheck-stability\\nexit", expected: "CLUSTER_STABLE: TRUE" },
+        { name: "Case 5: Latency audit", input: "audit-consensus-metrics\\nexit", expected: "AUDIT: PASSED" },
       ],
     },
     6: {
@@ -287,6 +358,18 @@ export const distributedConsensusChallenge: ChallengeData = {
       title: "Pipelined Log Replication & Batching",
       difficulty: "Expert",
       tagline: "Can you make it measurably better? Eliminate synchronous round-trips via pipelined AppendEntries and read-index.",
+      diagram: `SYNCHRONOUS vs PIPELINED REPLICATION:
+
+  Synchronous (Sequential Round-trips):
+  Leader: [Write 1] ──RPC──► Follower ──ACK──► [Write 2] ──RPC──► Follower
+  Throughput: ~2,500 writes/sec (Limited by network RTT)
+
+  Pipelined + ReadIndex (ALGO Level 6):
+  Leader: ───[Batch 1]───►───[Batch 2]───►───[Batch 3]───► Follower
+               ▲                ▲                ▲
+               └── Concurrent in-flight window (Flow control: max 16)
+  ReadIndex: Heartbeat confirms active leader ──► Serve read directly (0 disk I/O)
+  Throughput: > 25,000 ops/sec (10x Acceleration!)`,
       learningLoop: {
         bottleneck: "How does etcd achieve 50,000+ writes/sec without blocking the leader waiting for network ACKs on every single entry?",
         whatYouUnderstand: [
@@ -304,17 +387,17 @@ export const distributedConsensusChallenge: ChallengeData = {
       examples: [
         {
           title: "Read Index Query",
-          input: "read-index x\nexit",
+          input: "read-index x\\nexit",
           output: "READ_INDEX_OK term=2 value=10 LATENCY: 0.2ms",
         },
       ],
       constraints: ["Strict linearizability guarantee", "Zero lost pipeline entries"],
       cases: [
-        { name: "Case 1: Pipelined commit throughput", input: "enable-pipelining\nbench-pipeline 5000\nexit", expected: "PIPELINE_THROUGHPUT: > 20000 ops/s" },
-        { name: "Case 2: Linearizable read-index query", input: "read-index x\nexit", expected: "READ_INDEX_OK" },
-        { name: "Case 3: Batching concurrent writes", input: "bench-batch-writes\nexit", expected: "BATCHING_EFFICIENCY: > 80%" },
-        { name: "Case 4: In-flight flow control limit", input: "check-flow-control\nexit", expected: "MAX_IN_FLIGHT_RESPECTED" },
-        { name: "Case 5: Verification audit", input: "audit-engine\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
+        { name: "Case 1: Pipelined commit throughput", input: "enable-pipelining\\nbench-pipeline 5000\\nexit", expected: "PIPELINE_THROUGHPUT: > 20000 ops/s" },
+        { name: "Case 2: Linearizable read-index query", input: "read-index x\\nexit", expected: "READ_INDEX_OK" },
+        { name: "Case 3: Batching concurrent writes", input: "bench-batch-writes\\nexit", expected: "BATCHING_EFFICIENCY: > 80%" },
+        { name: "Case 4: In-flight flow control limit", input: "check-flow-control\\nexit", expected: "MAX_IN_FLIGHT_RESPECTED" },
+        { name: "Case 5: Verification audit", input: "audit-engine\\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
       ],
     },
   },

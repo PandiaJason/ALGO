@@ -101,6 +101,16 @@ export const shellChallenge: ChallengeData = {
       title: "Interactive REPL & Builtins",
       difficulty: "Easy",
       tagline: "Can you make it work? Parse command lines and execute echo, pwd, cd, and exit builtins.",
+      diagram: `USER INPUT: "echo hello world"
+      │
+      ▼
+[Line Tokenizer] ──► argv = ["echo", "hello", "world"]
+      │
+      ▼
+[Builtin Table]  ──► Matches "echo" (No fork needed)
+      │
+      ▼
+[Builtin Dispatch] ──► Write to stdout: "hello world\\n"`,
       learningLoop: {
         bottleneck: "How does a shell process commands without leaking memory or crashing on empty lines?",
         whatYouUnderstand: [
@@ -140,6 +150,21 @@ export const shellChallenge: ChallengeData = {
       title: "Process Fork & Exec",
       difficulty: "Medium",
       tagline: "Do you understand the core mechanism? Spawn child processes using fork() and execvp(), and capture return status.",
+      diagram: `INPUT COMMAND: "run ls -l /tmp"
+      │
+      ▼
+Parent Process (PID 1000)
+  ├── 1. PATH lookup ──► found "/bin/ls"
+  ├── 2. pid = fork()
+  │        ├── CHILD (PID 1001)
+  │        │     └── execvp("/bin/ls", ["ls", "-l", "/tmp"])
+  │        │           └── Replaces address space, runs binary
+  │        └── PARENT waits
+  └── 3. waitpid(1001, &status, 0)
+           └── status: exited normally, code: 0
+      │
+      ▼
+OUTPUT: [binary stdout...] \\n [Process exited with code 0]`,
       learningLoop: {
         bottleneck: "How do you run arbitrary binary programs located in system PATH while keeping the shell alive?",
         whatYouUnderstand: [
@@ -157,17 +182,17 @@ export const shellChallenge: ChallengeData = {
       examples: [
         {
           title: "Run External Binary",
-          input: "run echo foo\nexit",
-          output: "foo\n[Process exited with code 0]",
+          input: "run echo foo\\nexit",
+          output: "foo\\n[Process exited with code 0]",
         },
       ],
       constraints: ["Report exact process exit code", "Do not crash if binary does not exist"],
       cases: [
-        { name: "Case 1: Run echo binary", input: "run echo test\nexit", expected: "test\n[Process exited with code 0]" },
-        { name: "Case 2: Nonexistent binary", input: "run /bin/notexist\nexit", expected: "No such file or directory\n[Process exited with code 127]" },
-        { name: "Case 3: Exit status check", input: "run false\nexit", expected: "[Process exited with code 1]" },
-        { name: "Case 4: Which command lookup", input: "which ls\nexit", expected: "/bin/ls" },
-        { name: "Case 5: Sequential child spawns", input: "run echo one\nrun echo two\nexit", expected: "one\n[Process exited with code 0]\ntwo\n[Process exited with code 0]" },
+        { name: "Case 1: Run echo binary", input: "run echo test\\nexit", expected: "test\\n[Process exited with code 0]" },
+        { name: "Case 2: Nonexistent binary", input: "run /bin/notexist\\nexit", expected: "No such file or directory\\n[Process exited with code 127]" },
+        { name: "Case 3: Exit status check", input: "run false\\nexit", expected: "[Process exited with code 1]" },
+        { name: "Case 4: Which command lookup", input: "which ls\\nexit", expected: "/bin/ls" },
+        { name: "Case 5: Sequential child spawns", input: "run echo one\\nrun echo two\\nexit", expected: "one\\n[Process exited with code 0]\\ntwo\\n[Process exited with code 0]" },
       ],
     },
     3: {
@@ -177,6 +202,19 @@ export const shellChallenge: ChallengeData = {
       title: "Signal Handling & Zombie Reaping",
       difficulty: "Medium",
       tagline: "Does it remain correct under edge cases and failures? Trap SIGINT (Ctrl+C) and reap background zombies.",
+      diagram: `SIGNAL TRAP & ZOMBIE REAPING:
+  Parent Shell ──► sigaction(SIGINT, handler, NULL)
+      │
+  User presses Ctrl+C (SIGINT)
+      │
+      ├── Default OS Action: Terminate process (Shell dies ✗)
+      └── With Handler: Mask signal, print "^C", restore prompt (Alive ✓)
+
+BACKGROUND & REAPING:
+  spawn-bg sleep 10 ──► fork() ──► Child PID 2042 running in BG
+  Child exits       ──► Becomes [sleep <defunct>] (Zombie in OS table)
+  reap              ──► waitpid(-1, &status, WNOHANG)
+                          └── Reaps PID 2042 ──► Returns: REAPED: 1`,
       learningLoop: {
         bottleneck: "What prevents a Ctrl+C from killing the interactive shell, and why do un-reaped processes become zombies?",
         whatYouUnderstand: [
@@ -195,17 +233,17 @@ export const shellChallenge: ChallengeData = {
       examples: [
         {
           title: "SIGINT Survival",
-          input: "sigint\necho alive\nexit",
-          output: "^C\nalive",
+          input: "sigint\\necho alive\\nexit",
+          output: "^C\\nalive",
         },
       ],
       constraints: ["Zero zombie processes remaining in table", "Shell prompt must reappear after SIGINT"],
       cases: [
-        { name: "Case 1: Trap SIGINT", input: "sigint\necho ok\nexit", expected: "^C\nok" },
-        { name: "Case 2: Spawn and reap background", input: "spawn-bg true\nreap\nexit", expected: "REAPED: 1" },
-        { name: "Case 3: Multiple zombies reaped", input: "spawn-bg true\nspawn-bg true\nreap\nexit", expected: "REAPED: 2" },
-        { name: "Case 4: SIGINT during command", input: "sigint\nsigint\necho done\nexit", expected: "^C\n^C\ndone" },
-        { name: "Case 5: Clean exit with active children", input: "spawn-bg true\nexit", expected: "CLEAN_EXIT" },
+        { name: "Case 1: Trap SIGINT", input: "sigint\\necho ok\\nexit", expected: "^C\\nok" },
+        { name: "Case 2: Spawn and reap background", input: "spawn-bg true\\nreap\\nexit", expected: "REAPED: 1" },
+        { name: "Case 3: Multiple zombies reaped", input: "spawn-bg true\\nspawn-bg true\\nreap\\nexit", expected: "REAPED: 2" },
+        { name: "Case 4: SIGINT during command", input: "sigint\\nsigint\\necho done\\nexit", expected: "^C\\n^C\\ndone" },
+        { name: "Case 5: Clean exit with active children", input: "spawn-bg true\\nexit", expected: "CLEAN_EXIT" },
       ],
     },
     4: {
@@ -215,6 +253,16 @@ export const shellChallenge: ChallengeData = {
       title: "Multi-stage Pipelines & Redirection",
       difficulty: "Hard",
       tagline: "Does it handle concurrency, workload and growth? Chain processes with pipe() and redirect I/O streams.",
+      diagram: `INPUT: "cat names.txt | sort | head -n 1 > top.txt"
+
+┌───────────────┐      pipefd1      ┌───────────────┐      pipefd2      ┌───────────────┐
+│     cat       │ ──► [w]   [r] ──► │     sort      │ ──► [w]   [r] ──► │     head      │
+│ dup2(p1[1],1) │                   │ dup2(p1[0],0) │                   │ dup2(p2[0],0) │
+└───────────────┘                   │ dup2(p2[1],1) │                   │ dup2(fd_out,1)│
+                                    └───────────────┘                   └───────┬───────┘
+                                                                                │
+                                                                        file: top.txt
+                                                                        (O_WRONLY|O_CREAT|O_TRUNC)`,
       learningLoop: {
         bottleneck: "How does data flow through multiple concurrent processes without blocking or deadlocking on full pipe buffers?",
         whatYouUnderstand: [
@@ -233,17 +281,17 @@ export const shellChallenge: ChallengeData = {
       examples: [
         {
           title: "Simple Pipeline",
-          input: "echo hello world | tr a-z A-Z\nexit",
+          input: "echo hello world | tr a-z A-Z\\nexit",
           output: "HELLO WORLD",
         },
       ],
       constraints: ["Support up to 5 pipeline stages", "Close all unneeded file descriptors"],
       cases: [
-        { name: "Case 1: 2-stage pipeline", input: "echo hello | tr a-z A-Z\nexit", expected: "HELLO" },
-        { name: "Case 2: 3-stage pipeline", input: "echo -e 'banana\\napple\\ncherry' | sort | head -n 1\nexit", expected: "apple" },
-        { name: "Case 3: File redirection write", input: "echo test > /tmp/algo_test.txt\ncat /tmp/algo_test.txt\nexit", expected: "test" },
-        { name: "Case 4: File redirection append", input: "echo one > /tmp/algo_app.txt\necho two >> /tmp/algo_app.txt\ncat /tmp/algo_app.txt\nexit", expected: "one\ntwo" },
-        { name: "Case 5: Pipe word count", input: "echo 'one two three' | wc -w\nexit", expected: "3" },
+        { name: "Case 1: 2-stage pipeline", input: "echo hello | tr a-z A-Z\\nexit", expected: "HELLO" },
+        { name: "Case 2: 3-stage pipeline", input: "echo -e 'banana\\napple\\ncherry' | sort | head -n 1\\nexit", expected: "apple" },
+        { name: "Case 3: File redirection write", input: "echo test > /tmp/algo_test.txt\\ncat /tmp/algo_test.txt\\nexit", expected: "test" },
+        { name: "Case 4: File redirection append", input: "echo one > /tmp/algo_app.txt\\necho two >> /tmp/algo_app.txt\\ncat /tmp/algo_app.txt\\nexit", expected: "one\\ntwo" },
+        { name: "Case 5: Pipe word count", input: "echo 'one two three' | wc -w\\nexit", expected: "3" },
       ],
     },
     5: {
@@ -253,6 +301,20 @@ export const shellChallenge: ChallengeData = {
       title: "Process Latency & Syscall Profiling",
       difficulty: "Hard",
       tagline: "Can you identify bottlenecks and prove performance? Profile fork/exec latency and IPC throughput.",
+      diagram: `INPUT: "profile echo fast"
+      │
+      ▼
+┌─────────────────────────────────────────────────────────────┐
+│ High-Resolution Clock Start (clock_gettime / CLOCK_MONOTONIC)│
+├─────────────────────────────────────────────────────────────┤
+│ Syscall Trace Hook / Counters:                             │
+│   SYS_fork: 1   SYS_execve: 1   SYS_wait4: 1                │
+├─────────────────────────────────────────────────────────────┤
+│ High-Resolution Clock Stop ──► Elapsed: 1,420 μs            │
+└─────────────────────────────────────────────────────────────┘
+      │
+      ▼
+OUTPUT: fast \\n [ELAPSED_US: 1420 SYSCALLS: FORK,EXEC,WAIT]`,
       learningLoop: {
         bottleneck: "Why is fork() slow on large processes, and how much overhead does pipe context-switching incur?",
         whatYouUnderstand: [
@@ -270,17 +332,17 @@ export const shellChallenge: ChallengeData = {
       examples: [
         {
           title: "Profile Command",
-          input: "profile echo fast\nexit",
-          output: "fast\n[ELAPSED_US: < 2000 SYSCALLS: FORK,EXEC,WAIT]",
+          input: "profile echo fast\\nexit",
+          output: "fast\\n[ELAPSED_US: < 2000 SYSCALLS: FORK,EXEC,WAIT]",
         },
       ],
       constraints: ["Microsecond accuracy", "Report pipe throughput in MB/s"],
       cases: [
-        { name: "Case 1: Profile Builtin", input: "profile echo ping\nexit", expected: "ping\nTYPE: BUILTIN ELAPSED_US: < 100" },
-        { name: "Case 2: Profile External Fork", input: "profile true\nexit", expected: "TYPE: EXTERNAL FORK_US: OK" },
-        { name: "Case 3: Pipe Throughput Test", input: "bench-pipe 1048576\nexit", expected: "THROUGHPUT: > 500 MB/s" },
-        { name: "Case 4: Memory Leak Sweep", input: "memcheck 1000\nexit", expected: "LEAKS: 0 BYTES" },
-        { name: "Case 5: Zombie Table Leak Check", input: "zombie-check\nexit", expected: "ZOMBIES: 0" },
+        { name: "Case 1: Profile Builtin", input: "profile echo ping\\nexit", expected: "ping\\nTYPE: BUILTIN ELAPSED_US: < 100" },
+        { name: "Case 2: Profile External Fork", input: "profile true\\nexit", expected: "TYPE: EXTERNAL FORK_US: OK" },
+        { name: "Case 3: Pipe Throughput Test", input: "bench-pipe 1048576\\nexit", expected: "THROUGHPUT: > 500 MB/s" },
+        { name: "Case 4: Memory Leak Sweep", input: "memcheck 1000\\nexit", expected: "LEAKS: 0 BYTES" },
+        { name: "Case 5: Zombie Table Leak Check", input: "zombie-check\\nexit", expected: "ZOMBIES: 0" },
       ],
     },
     6: {
@@ -290,6 +352,20 @@ export const shellChallenge: ChallengeData = {
       title: "Zero-Allocation Fast Path & Buffer Recycling",
       difficulty: "Hard",
       tagline: "Can you make it measurably better? Eliminate heap allocations during command parsing and dispatch.",
+      diagram: `ZERO-ALLOCATION HOT PATH:
+Raw Buffer: "echo   hello   world\\0"
+              ▲       ▲       ▲
+              │       │       │
+In-Place:    "echo\\0" "hello\\0" "world\\0" (Zero string duplication)
+              │
+              ▼
+Static Argv: argv[0] = &buf[0], argv[1] = &buf[8], argv[2] = &buf[16], argv[3] = NULL
+              │
+              ▼
+Builtin Hash Table: MurmurHash("echo") % 16 ──► Slot 4 (Builtin_Echo)
+              │
+              ▼
+Heap Allocations: 0 bytes malloced | Hot Path Execution: < 120 ns`,
       learningLoop: {
         bottleneck: "How do production shells parse 100,000 commands/sec in tight scripts without GC pauses or malloc fragmentation?",
         whatYouUnderstand: [
@@ -307,17 +383,17 @@ export const shellChallenge: ChallengeData = {
       examples: [
         {
           title: "Bench Heap Allocations",
-          input: "bench-allocs 10000\nexit",
+          input: "bench-allocs 10000\\nexit",
           output: "ITERATIONS: 10000 HEAP_ALLOCS: 0",
         },
       ],
       constraints: ["Strict 0 heap allocations on builtin hot path", "Maintain POSIX correctness"],
       cases: [
-        { name: "Case 1: Zero-alloc builtin", input: "bench-allocs 10000\nexit", expected: "ITERATIONS: 10000 HEAP_ALLOCS: 0" },
-        { name: "Case 2: In-place tokenizer", input: "fast-eval echo zero copy\nexit", expected: "zero copy" },
-        { name: "Case 3: Perfect hash builtin match", input: "fast-eval pwd\nexit", expected: "OK" },
-        { name: "Case 4: High frequency loop", input: "repeat 1000 echo hi\nexit", expected: "COMPLETED: 1000 OPS/SEC: > 50000" },
-        { name: "Case 5: Verification audit", input: "audit-engine\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
+        { name: "Case 1: Zero-alloc builtin", input: "bench-allocs 10000\\nexit", expected: "ITERATIONS: 10000 HEAP_ALLOCS: 0" },
+        { name: "Case 2: In-place tokenizer", input: "fast-eval echo zero copy\\nexit", expected: "zero copy" },
+        { name: "Case 3: Perfect hash builtin match", input: "fast-eval pwd\\nexit", expected: "OK" },
+        { name: "Case 4: High frequency loop", input: "repeat 1000 echo hi\\nexit", expected: "COMPLETED: 1000 OPS/SEC: > 50000" },
+        { name: "Case 5: Verification audit", input: "audit-engine\\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
       ],
     },
   },

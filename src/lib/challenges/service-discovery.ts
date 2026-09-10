@@ -98,6 +98,18 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       title: "Service Registry & TTL Heartbeat Monitor",
       difficulty: "Easy",
       tagline: "Can you make it work? Register services with IP:port, refresh heartbeats, and evict expired nodes.",
+      diagram: `TTL HEARTBEAT LEASE ENGINE:
+
+  Client Microservice              Registry Catalog Table
+         │                         ┌─────────┬─────────┬──────────────┬────────────┐
+         ├── 1. Register ─────────►│ Service │ Inst ID │ IP:Port      │ Lease Exp  │
+         │                         ├─────────┼─────────┼──────────────┼────────────┤
+         ├── 2. Heartbeat (t=1.5s)►│ auth    │ auth-1  │ 10.0.0.1:80  │ t + 5.0s   │
+         │                         │ auth    │ auth-2  │ 10.0.0.2:80  │ t + 0.2s ──┼──► (Expires!)
+         │                         └─────────┴─────────┴──────────────┴────────────┘
+         │                                                    │
+  Tick Reaper Loop (Every 500ms) ─────────────────────────────┘
+    └── auth-2 missed TTL heartbeat ──► EVICTED FROM CATALOG!`,
       learningLoop: {
         bottleneck: "How does a registry know when a microservice crashes silently without leaving a deregistration message?",
         whatYouUnderstand: [
@@ -117,17 +129,17 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       examples: [
         {
           title: "Register and Lookup",
-          input: "register auth-srv i1 10.0.0.1 8080 5000\nlookup auth-srv\nexit",
-          output: "REGISTER_OK\nENDPOINTS: 10.0.0.1:8080",
+          input: "register auth-srv i1 10.0.0.1 8080 5000\\nlookup auth-srv\\nexit",
+          output: "REGISTER_OK\\nENDPOINTS: 10.0.0.1:8080",
         },
       ],
       constraints: ["Instantly evict nodes exceeding TTL", "Support multiple instances per service"],
       cases: [
-        { name: "Case 1: Register single instance", input: "register api i1 10.0.0.1 80 5000\nlookup api\nexit", expected: "REGISTER_OK\nENDPOINTS: 10.0.0.1:80" },
-        { name: "Case 2: Multiple instances round-robin", input: "register api i1 10.0.0.1 80 5000\nregister api i2 10.0.0.2 80 5000\nlookup api\nexit", expected: "REGISTER_OK\nREGISTER_OK\nENDPOINTS: 10.0.0.1:80, 10.0.0.2:80" },
-        { name: "Case 3: Heartbeat lease refresh", input: "register db i1 10.0.0.5 5432 2000\ntick 1500\nheartbeat i1\ntick 1000\nlookup db\nexit", expected: "REGISTER_OK\nHEARTBEAT_OK\nENDPOINTS: 10.0.0.5:5432" },
-        { name: "Case 4: Expired instance reaping", input: "register temp i1 10.0.0.9 9000 1000\ntick 1500\nlookup temp\nexit", expected: "REGISTER_OK\nENDPOINTS: NONE" },
-        { name: "Case 5: Deregister explicitly", input: "register s i1 10.0.0.1 80 5000\nderegister i1\nlookup s\nexit", expected: "REGISTER_OK\nDEREGISTER_OK\nENDPOINTS: NONE" },
+        { name: "Case 1: Register single instance", input: "register api i1 10.0.0.1 80 5000\\nlookup api\\nexit", expected: "REGISTER_OK\\nENDPOINTS: 10.0.0.1:80" },
+        { name: "Case 2: Multiple instances round-robin", input: "register api i1 10.0.0.1 80 5000\\nregister api i2 10.0.0.2 80 5000\\nlookup api\\nexit", expected: "REGISTER_OK\\nREGISTER_OK\\nENDPOINTS: 10.0.0.1:80, 10.0.0.2:80" },
+        { name: "Case 3: Heartbeat lease refresh", input: "register db i1 10.0.0.5 5432 2000\\ntick 1500\\nheartbeat i1\\ntick 1000\\nlookup db\\nexit", expected: "REGISTER_OK\\nHEARTBEAT_OK\\nENDPOINTS: 10.0.0.5:5432" },
+        { name: "Case 4: Expired instance reaping", input: "register temp i1 10.0.0.9 9000 1000\\ntick 1500\\nlookup temp\\nexit", expected: "REGISTER_OK\\nENDPOINTS: NONE" },
+        { name: "Case 5: Deregister explicitly", input: "register s i1 10.0.0.1 80 5000\\nderegister i1\\nlookup s\\nexit", expected: "REGISTER_OK\\nDEREGISTER_OK\\nENDPOINTS: NONE" },
       ],
     },
     2: {
@@ -137,6 +149,21 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       title: "RFC 1035 UDP DNS Server",
       difficulty: "Medium",
       tagline: "Do you understand the core mechanism? Parse raw UDP DNS wire packets and return binary A & SRV records.",
+      diagram: `RFC 1035 UDP DNS PACKET FLOW:
+
+  DNS Client                     ALGO DNS Server (UDP Port 53)
+      │                                       │
+      ├── 1. Query UDP: "auth.service.algo" ─►│
+      │      Header: [ID: 0x1A2B, Flags: 0x0100 (Standard Query), QDCOUNT: 1]
+      │      Question: [QNAME: "\\x04auth\\x07service\\x04algo\\x00", QTYPE: 1 (A)]
+      │                                       │
+      │                                       ▼
+      │                             Catalog Routing Table:
+      │                             "auth.service.algo" ──► 10.0.0.1
+      │                                       │
+      │◄── 2. Response UDP Packet ────────────┘
+             Header: [ID: 0x1A2B, Flags: 0x8180 (QR, AA, NoError), ANCOUNT: 1]
+             Answer: [NAME: Pointer(0x0C), TYPE: 1, CLASS: 1, TTL: 5s, RDLENGTH: 4, RDATA: 10.0.0.1]`,
       learningLoop: {
         bottleneck: "Why do systems use DNS on UDP port 53 for service discovery rather than HTTP REST APIs?",
         whatYouUnderstand: [
@@ -154,17 +181,17 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       examples: [
         {
           title: "Query A Record",
-          input: "dns-query auth.service.consul A\nexit",
+          input: "dns-query auth.service.consul A\\nexit",
           output: "DNS_RESPONSE: 1 ANSWER, TYPE A, IP: 10.0.0.1, TTL: 5",
         },
       ],
       constraints: ["Strict RFC 1035 header flags (QR, AA, RCODE)", "Binary-safe wire encoding"],
       cases: [
-        { name: "Case 1: Standard A record query", input: "dns-query web.service.algo A\nexit", expected: "A_RECORD: 10.0.0.1 TTL: 5" },
-        { name: "Case 2: SRV record query (port + target)", input: "dns-query web.service.algo SRV\nexit", expected: "SRV_RECORD: port=8080 target=web.node1" },
-        { name: "Case 3: Nonexistent domain NXDOMAIN", input: "dns-query nonexistent.algo A\nexit", expected: "RCODE: NXDOMAIN" },
-        { name: "Case 4: Round-robin A record ordering", input: "dns-query multi.service.algo A\nexit", expected: "A_RECORDS: 2 ANSWERS ROUND_ROBIN" },
-        { name: "Case 5: DNS compression pointer check", input: "test-dns-compression\nexit", expected: "COMPRESSION_PTR_VALID" },
+        { name: "Case 1: Standard A record query", input: "dns-query web.service.algo A\\nexit", expected: "A_RECORD: 10.0.0.1 TTL: 5" },
+        { name: "Case 2: SRV record query (port + target)", input: "dns-query web.service.algo SRV\\nexit", expected: "SRV_RECORD: port=8080 target=web.node1" },
+        { name: "Case 3: Nonexistent domain NXDOMAIN", input: "dns-query nonexistent.algo A\\nexit", expected: "RCODE: NXDOMAIN" },
+        { name: "Case 4: Round-robin A record ordering", input: "dns-query multi.service.algo A\\nexit", expected: "A_RECORDS: 2 ANSWERS ROUND_ROBIN" },
+        { name: "Case 5: DNS compression pointer check", input: "test-dns-compression\\nexit", expected: "COMPRESSION_PTR_VALID" },
       ],
     },
     3: {
@@ -174,6 +201,19 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       title: "Flapping Node Damping & Split-Horizon DNS",
       difficulty: "Hard",
       tagline: "Does it remain correct under edge cases and failures? Suppress flapping nodes oscillating between up and down.",
+      diagram: `FLAP DAMPING HYSTERESIS STATE MACHINE:
+
+  Node State Transitions:
+  t=0s: UP   ──► DOWN (Penalty + 200) ──► Total: 200
+  t=2s: DOWN ──► UP   (Penalty + 200) ──► Total: 400
+  t=4s: UP   ──► DOWN (Penalty + 200) ──► Total: 600
+         │
+         ▼ (Crosses SUPPRESS THRESHOLD: 500)
+  STATE: SUPPRESSED (Node quarantined from DNS answers!)
+         │
+         ▼ (Quiet Period: Exponential Decay e^(-λt))
+  t=14s: Penalty decays below RE-ENABLE THRESHOLD (150)
+  STATE: RESTORED (Re-admitted to DNS pool)`,
       learningLoop: {
         bottleneck: "What happens when a sick service instance crashes and restarts every 2 seconds, causing millions of DNS cache flushes?",
         whatYouUnderstand: [
@@ -191,17 +231,17 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       examples: [
         {
           title: "Detect Flapping",
-          input: "flap-instance i1 5\ncheck-suppression i1\nexit",
-          output: "FLAP_DETECTED penalty=500\nSUPPRESSED: TRUE (Excluded from DNS)",
+          input: "flap-instance i1 5\\ncheck-suppression i1\\nexit",
+          output: "FLAP_DETECTED penalty=500\\nSUPPRESSED: TRUE (Excluded from DNS)",
         },
       ],
       constraints: ["Automatically suppress node after 3 rapid state changes", "Exponential decay of penalty"],
       cases: [
-        { name: "Case 1: Normal node healthy", input: "check-suppression i_normal\nexit", expected: "SUPPRESSED: FALSE" },
-        { name: "Case 2: Flapping node suppressed", input: "flap-instance i1 4\ncheck-suppression i1\nexit", expected: "SUPPRESSED: TRUE" },
-        { name: "Case 3: DNS excludes suppressed node", input: "flap-instance i1 4\ndns-query srv.algo A\nexit", expected: "EXCLUDED_FLAPPING_NODE" },
-        { name: "Case 4: Recovery after quiet window", input: "tick-quiet-period 10000\ncheck-suppression i1\nexit", expected: "SUPPRESSED: FALSE" },
-        { name: "Case 5: Stability health audit", input: "audit-damping\nexit", expected: "DAMPING_HEALTHY: OK" },
+        { name: "Case 1: Normal node healthy", input: "check-suppression i_normal\\nexit", expected: "SUPPRESSED: FALSE" },
+        { name: "Case 2: Flapping node suppressed", input: "flap-instance i1 4\\ncheck-suppression i1\\nexit", expected: "SUPPRESSED: TRUE" },
+        { name: "Case 3: DNS excludes suppressed node", input: "flap-instance i1 4\\ndns-query srv.algo A\\nexit", expected: "EXCLUDED_FLAPPING_NODE" },
+        { name: "Case 4: Recovery after quiet window", input: "tick-quiet-period 10000\\ncheck-suppression i1\\nexit", expected: "SUPPRESSED: FALSE" },
+        { name: "Case 5: Stability health audit", input: "audit-damping\\nexit", expected: "DAMPING_HEALTHY: OK" },
       ],
     },
     4: {
@@ -211,6 +251,21 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       title: "SWIM Gossip Protocol Node Membership",
       difficulty: "Hard",
       tagline: "Does it handle concurrency, workload and growth? Implement decentralized failure detection across a 50-node cluster.",
+      diagram: `SWIM GOSSIP FAILURE DETECTION PROTOCOL:
+
+  Round t: Node A probes Node B:
+  ┌────────┐          ping          ┌────────┐
+  │ Node A │ ─────────────────────► │ Node B │ (Timed out / no ACK)
+  └────────┘                        └────────┘
+      │
+      ├── Direct ping failed! Select k=3 random peers (C, D, E)
+      │
+      ├── ping-req(B) ──► Node C ──ping──► Node B (Still no ACK)
+      │
+      ▼
+  Node A marks Node B: [SUSPECT] (Grace period: 3 rounds)
+  Piggybacks "SUSPECT Node B" on outgoing gossip packets
+  If no refute received: Node B marked [DEAD] and removed from cluster.`,
       learningLoop: {
         bottleneck: "Why does centralized heartbeat monitoring fail at 10,000 nodes, and how does SWIM gossip scale linearly?",
         whatYouUnderstand: [
@@ -229,17 +284,17 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       examples: [
         {
           title: "Gossip Failure Detection",
-          input: "kill-node node_7\ngossip-tick\ngossip-tick\nexit",
-          output: "NODE node_7 MARKED SUSPECT\nNODE node_7 DECLARED DEAD (Cluster Notified)",
+          input: "kill-node node_7\\ngossip-tick\\ngossip-tick\\nexit",
+          output: "NODE node_7 MARKED SUSPECT\\nNODE node_7 DECLARED DEAD (Cluster Notified)",
         },
       ],
       constraints: ["O(1) message overhead per node per period", "Zero false positives on transient network delay"],
       cases: [
-        { name: "Case 1: Join 5-node gossip mesh", input: "init-gossip-mesh 5\ncheck-mesh-size\nexit", expected: "MESH_SIZE: 5" },
-        { name: "Case 2: Detect dead node via gossip", input: "kill-node n3\ngossip-tick\ngossip-tick\ncheck-node-state n3\nexit", expected: "STATE: DEAD" },
-        { name: "Case 3: Indirect ping recovery", input: "inject-flaky-path n1 n2\ngossip-tick\ncheck-node-state n2\nexit", expected: "STATE: ALIVE_VIA_INDIRECT" },
-        { name: "Case 4: Piggybacked gossip dissemination", input: "check-piggyback-events\nexit", expected: "EVENTS_DISSEMINATED: OK" },
-        { name: "Case 5: Gossip membership audit", input: "audit-gossip-mesh\nexit", expected: "STATUS: CONVERGED" },
+        { name: "Case 1: Join 5-node gossip mesh", input: "init-gossip-mesh 5\\ncheck-mesh-size\\nexit", expected: "MESH_SIZE: 5" },
+        { name: "Case 2: Detect dead node via gossip", input: "kill-node n3\\ngossip-tick\\ngossip-tick\\ncheck-node-state n3\\nexit", expected: "STATE: DEAD" },
+        { name: "Case 3: Indirect ping recovery", input: "inject-flaky-path n1 n2\\ngossip-tick\\ncheck-node-state n2\\nexit", expected: "STATE: ALIVE_VIA_INDIRECT" },
+        { name: "Case 4: Piggybacked gossip dissemination", input: "check-piggyback-events\\nexit", expected: "EVENTS_DISSEMINATED: OK" },
+        { name: "Case 5: Gossip membership audit", input: "audit-gossip-mesh\\nexit", expected: "STATUS: CONVERGED" },
       ],
     },
     5: {
@@ -249,6 +304,16 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       title: "Convergence Time & DNS Latency Profiling",
       difficulty: "Hard",
       tagline: "Can you identify bottlenecks and prove performance? Measure cluster gossip convergence time and DNS QPS.",
+      diagram: `EPIDEMIC GOSSIP DISSEMINATION vs DNS QPS:
+
+  Epidemic Spread Timeline (50 nodes):
+  Rounds:   0      1      2      3      4      5      6
+  Informed: 1  ──► 3  ──► 8  ──► 21 ──► 39 ──► 48 ──► 50 (Full convergence!)
+  Convergence rounds: 6 rounds (Bounded strictly by O(log N))
+
+  DNS Latency Percentiles (UDP Query Load):
+  p50: 0.12 ms  |  p90: 0.28 ms  |  p99: 0.45 ms (< 0.5ms SLA)
+  Throughput: 48,200 QPS with 0.0% packet drop rate`,
       learningLoop: {
         bottleneck: "How many seconds does it take for 50 nodes to learn that a node died, and what is DNS query latency under load?",
         whatYouUnderstand: [
@@ -266,17 +331,17 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       examples: [
         {
           title: "Bench DNS QPS",
-          input: "bench-dns-qps 8\nexit",
+          input: "bench-dns-qps 8\\nexit",
           output: "QPS: 48200 p50: 0.12ms p99: 0.45ms",
         },
       ],
       constraints: ["DNS latency p99 under 0.5ms", "Gossip convergence within O(log N) rounds"],
       cases: [
-        { name: "Case 1: DNS QPS benchmark", input: "bench-dns-qps 8\nexit", expected: "QPS: > 40000" },
-        { name: "Case 2: Tail latency p99", input: "measure-dns-tail-latency\nexit", expected: "P99_LATENCY: < 0.5ms" },
-        { name: "Case 3: Convergence rounds 50 nodes", input: "measure-convergence 50\nexit", expected: "ROUNDS: < 10" },
-        { name: "Case 4: Packet drop rate under load", input: "measure-drop-rate\nexit", expected: "DROP_RATE: 0.0%" },
-        { name: "Case 5: Metrics audit", input: "audit-metrics\nexit", expected: "METRICS_AUDIT: PASSED" },
+        { name: "Case 1: DNS QPS benchmark", input: "bench-dns-qps 8\\nexit", expected: "QPS: > 40000" },
+        { name: "Case 2: Tail latency p99", input: "measure-dns-tail-latency\\nexit", expected: "P99_LATENCY: < 0.5ms" },
+        { name: "Case 3: Convergence rounds 50 nodes", input: "measure-convergence 50\\nexit", expected: "ROUNDS: < 10" },
+        { name: "Case 4: Packet drop rate under load", input: "measure-drop-rate\\nexit", expected: "DROP_RATE: 0.0%" },
+        { name: "Case 5: Metrics audit", input: "audit-metrics\\nexit", expected: "METRICS_AUDIT: PASSED" },
       ],
     },
     6: {
@@ -286,6 +351,18 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       title: "Lock-Free Routing Tables & UDP Zero-Copy",
       difficulty: "Hard",
       tagline: "Can you make it measurably better? Eliminate mutex contention using RCU atomic pointer swaps for route tables.",
+      diagram: `READ-COPY-UPDATE (RCU) LOCK-FREE CATALOG:
+
+  Active Routing Pointer:
+  [Global Atomic Pointer] ──────► [Catalog Snapshot A]
+                                        ▲
+                                        │ Read-Only QPS: 125,000 ops/s
+                                        │ (Zero mutex contention!)
+  Writer (Background Gossip):           │
+  1. Deep copy Snapshot A ──► Snapshot B│
+  2. Apply node add/remove to Snapshot B│
+  3. atomic_store(&GlobalPtr, Snapshot B)
+  4. synchronize_rcu() / retire Snapshot A`,
       learningLoop: {
         bottleneck: "Why do read-write locks (std::shared_mutex) cause severe cache line bouncing under 100,000 DNS queries/sec?",
         whatYouUnderstand: [
@@ -303,16 +380,16 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       examples: [
         {
           title: "Bench Lock-Free DNS",
-          input: "enable-rcu-tables\nbench-concurrent-dns 16\nexit",
-          output: "RCU_ENABLED\nTHROUGHPUT: 125,000 QPS (Zero lock contention)",
+          input: "enable-rcu-tables\\nbench-concurrent-dns 16\\nexit",
+          output: "RCU_ENABLED\\nTHROUGHPUT: 125,000 QPS (Zero lock contention)",
         },
       ],
       constraints: ["Zero lock contention on read queries", "Atomic route table swap"],
       cases: [
-        { name: "Case 1: RCU table enablement", input: "enable-rcu-tables\nexit", expected: "RCU_ENABLED: OK" },
-        { name: "Case 2: Lock-free read throughput", input: "bench-concurrent-dns 16\nexit", expected: "THROUGHPUT: > 100000 QPS" },
-        { name: "Case 3: Atomic table swap safety", input: "test-atomic-swap\nexit", expected: "ZERO_CORRUPTION_DETECTED" },
-        { name: "Case 4: Batch UDP sendmmsg test", input: "bench-sendmmsg\nexit", expected: "BATCH_SEND: OK" },
+        { name: "Case 1: RCU table enablement", input: "enable-rcu-tables\\nexit", expected: "RCU_ENABLED: OK" },
+        { name: "Case 2: Lock-free read throughput", input: "bench-concurrent-dns 16\\nexit", expected: "THROUGHPUT: > 100000 QPS" },
+        { name: "Case 3: Atomic table swap safety", input: "test-atomic-swap\\nexit", expected: "ZERO_CORRUPTION_DETECTED" },
+        { name: "Case 4: Batch UDP sendmmsg test", input: "bench-sendmmsg\\nexit", expected: "BATCH_SEND: OK" },
         { name: "Case 5: Verification audit", input: "audit-engine\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
       ],
     },

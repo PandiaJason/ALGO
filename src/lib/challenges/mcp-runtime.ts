@@ -98,6 +98,26 @@ export const mcpRuntimeChallenge: ChallengeData = {
       title: "JSON-RPC 2.0 Stdio Transport & Tool Discovery",
       difficulty: "Easy",
       tagline: "Can you make it work? Handle JSON-RPC 2.0 initialize, tools/list, and tools/call over stdin/stdout.",
+      diagram: `STDIO JSON-RPC 2.0 FRAMING & TOOL DISCOVERY:
+
+Client (AI Agent)                       MCP Host Runtime
+       │                                       │
+       │─── 1. Write Stdin Line (\\n) ─────────►│
+       │    {"jsonrpc":"2.0","id":1,           │──► Parse JSON Buffer
+       │     "method":"initialize",...}        │──► Negotiate Capabilities
+       │◄── 2. Emit Stdout Line (\\n) ──────────│
+       │    {"jsonrpc":"2.0","id":1,           │
+       │     "result":{"protocolVersion":...}} │
+       │                                       │
+       │─── 3. Query Tools ("tools/list") ────►│
+       │                                       │──► Scan Registered Registry
+       │◄── 4. Return Tool Definitions ────────│
+       │    {"result":{"tools":[{"name":"echo",│
+       │     "description":"..."}]}}           │
+       │                                       │
+       │─── 5. Dispatch Tool ("tools/call") ──►│
+       │    {"params":{"name":"echo",...}}     │──► Dispatch Handler
+       │◄── 6. Tool Result SCO ────────────────│`,
       learningLoop: {
         bottleneck: "How do processes communicate over stdio pipes without interleaving or corrupting JSON message boundaries?",
         whatYouUnderstand: [
@@ -135,6 +155,31 @@ export const mcpRuntimeChallenge: ChallengeData = {
       title: "Resource Templates & Dynamic Context Providers",
       difficulty: "Medium",
       tagline: "Do you understand the core mechanism? Resolve URI resource templates and stream contextual data to agents.",
+      diagram: `URI RESOURCE TEMPLATE MATCHING & CONTEXT RESOLUTION:
+
+Client (Context Resolver)                    Resource Router Engine
+       │                                                │
+       │─── 1. "resources/read" ───────────────────────►│
+       │    uri: "file:///app/config.json"              │
+       │                                                ▼
+       │                                     [Route Pattern Matcher]
+       │                                     Template: "file:///{path}"
+       │                                     Matched Param: path="app/config.json"
+       │                                                │
+       │                                                ▼
+       │                                     [Content Provider Engine]
+       │                                     Resolves live file buffer from disk
+       │                                                │
+       │◄── 2. MIME-Typed Context Payload ──────────────┘
+       │    {"contents": [{"uri": "file:///app/config.json",
+       │      "mimeType": "application/json",
+       │      "text": "CONFIG_DATA"}]}
+       │
+       │─── 3. "subscribe-resource" ───────────────────► [Subscription Map]
+       │    uri: "file:///logs"                          {"file:///logs": [client_1]}
+       │                                                │
+       │◄── 4. Push Notification Event ─────────────────┘ On FS Change Notification
+       │    "NOTIFICATION: RESOURCE_UPDATED"`,
       learningLoop: {
         bottleneck: "How does an agent read file or database schemas without executing heavy shell commands?",
         whatYouUnderstand: [
@@ -172,6 +217,29 @@ export const mcpRuntimeChallenge: ChallengeData = {
       title: "Schema Validation & Zombie Subprocess Reaping",
       difficulty: "Hard",
       tagline: "Does it remain correct under edge cases and failures? Enforce strict JSON Schema and terminate runaway tools.",
+      diagram: `SCHEMA VALIDATION & SUBPROCESS TIMEOUT ISOLATION:
+
+Incoming "tools/call"
+       │
+       ▼
+[JSON Schema Validator (Ajv Engine)]
+  ├── Validate: type == string, required: ["msg"]
+  ├── If Invalid ──► Emit SCHEMA_ERROR: INVALID_TYPE / MISSING_REQUIRED_FIELD
+  └── If Valid   ──► Proceed to Sandboxed Execution
+       │
+       ▼
+[Process Supervisor] ──► Configure Watchdog (e.g. 50ms Deadline)
+       │
+       ├── Fork Subprocess (PID 1042)
+       │    ├── Isolate Stdin / Stdout / Stderr Pipes
+       │    └── Enforce Execution Budget
+       │
+   [Execution Race]
+   ├── Normal Case: Exits in 12ms ────► Read Stdout ──► Emit SCHEMA_VALID: EXECUTED_OK
+   └── Runaway Tool: Exceeds 50ms ───► Watchdog Alarm Triggers!
+                                         ├── Send SIGKILL to PID 1042
+                                         ├── waitpid(1042, &st, 0) (Reap Zombie FD)
+                                         └── Emit PROCESS_TERMINATED: TIMEOUT_KILLED`,
       learningLoop: {
         bottleneck: "What stops a tool from getting stuck in an infinite while loop and freezing the entire AI agent forever?",
         whatYouUnderstand: [
@@ -209,6 +277,25 @@ export const mcpRuntimeChallenge: ChallengeData = {
       title: "Multi-Agent Parallel Tool Orchestration",
       difficulty: "Hard",
       tagline: "Does it handle concurrency, workload and growth? Concurrently dispatch 50 tool executions across multiple agents.",
+      diagram: `CONCURRENT ASYNC TOOL DISPATCH & CANCELLATION:
+
+Agent 1 (id: 101) ──┐
+Agent 2 (id: 102) ──┼──► [Async Multiplexer / Event Loop]
+Agent 3 (id: 103) ──┘        │
+                             ├── Task Queue (FIFO Priority Scheduling)
+                             ▼
+                 [Worker Pool (N = 8 Workers)]
+                 ├── Worker 1: Executing "git-diff"    (id: 101)
+                 ├── Worker 2: Executing "grep-search" (id: 102)
+                 └── Worker 3: Executing "build"       (id: 103)
+                             │
+                             ├─ Cancel Trigger: "notifications/cancelled" (id: 103)
+                             │   └── Worker 3 immediately aborts & frees thread
+                             │
+                             ▼
+                 [Result Correlator & Out-of-Order Router]
+                 ├── Matches completion by request \`id\`
+                 └── Streams JSON-RPC response back to respective agent`,
       learningLoop: {
         bottleneck: "When 5 subagents call search, git, and compiler tools simultaneously, how do you prevent thread contention?",
         whatYouUnderstand: [
@@ -246,6 +333,24 @@ export const mcpRuntimeChallenge: ChallengeData = {
       title: "Protocol Overhead & Dispatch Profiling",
       difficulty: "Hard",
       tagline: "Can you identify bottlenecks and prove performance? Measure microsecond JSON-RPC framing tax vs tool execution.",
+      diagram: `DISPATCH LATENCY BREAKDOWN & METRICS PROFILING:
+
+Round-Trip Tool Call Timeline (Total Overhead: 0.75ms):
+┌─────────────────┬───────────────┬─────────────────┬──────────────────┐
+│ JSON Deserial   │ Schema Verify │ IPC Stdio Pipe  │ Subprocess Exec  │
+│ 0.18ms (24%)    │ 0.22ms (29%)  │ 0.15ms (20%)    │ 0.20ms (27%)     │
+└─────────────────┴───────────────┴─────────────────┴──────────────────┘
+       │                 │                │                 │
+       ▼                 ▼                ▼                 ▼
+[Telemetry Hook] ──► Record Stage Latency & Allocations
+                         │
+                         ▼
+             [Latency Percentile Histogram]
+             ├── p50:  0.42ms
+             ├── p95:  0.68ms
+             ├── p99:  1.20ms (Target: < 1.5ms)
+             ├── QPS:  > 5,000 dispatches/sec
+             └── Allocations: 8 allocs/call (Target: < 10)`,
       learningLoop: {
         bottleneck: "How much latency does JSON string serialization add compared to raw binary IPC?",
         whatYouUnderstand: [
@@ -283,6 +388,25 @@ export const mcpRuntimeChallenge: ChallengeData = {
       title: "Zero-Copy JSON Stream Parsing & Fast Dispatch",
       difficulty: "Hard",
       tagline: "Can you make it measurably better? Achieve sub-0.1ms tool dispatch using SIMD JSON parsing and buffer recycling.",
+      diagram: `SIMD-ACCELERATED ZERO-COPY DISPATCH PIPELINE:
+
+Raw Stdin Byte Stream (e.g. 4KB chunk):
+["jsonrpc":"2.0","method":"tools/call","params":{"name":"echo","args":{...}}]
+       │
+       ▼ [AVX-512 / NEON SIMD Vector Scan]
+[Bitmask Indexer] ──► Identifies structural delimiters: { } [ ] " : ,
+       │
+       ▼ [Zero-Copy String Views (Pointer + Length)]
+Method Slice  ──► points to input buffer offset 26..36 ("tools/call")
+Params Slice  ──► points to input buffer offset 48..75 (raw arguments)
+       │          (Zero malloc / free heap string allocation!)
+       │
+       ▼
+[Reused Worker Dispatch Ring Buffer]
+Direct Kernel Splice (vmsplice/pipe) ──► Fast Sandboxed Worker Execution
+       │
+       ▼
+Round-Trip Overhead: 0.08ms (10x faster) | Zero Heap Allocations | > 10,000 QPS`,
       learningLoop: {
         bottleneck: "How does simdjson parse gigabytes of JSON per second, and how can an MCP runtime use it to eliminate serialization bottlenecks?",
         whatYouUnderstand: [
