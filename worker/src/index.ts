@@ -83,7 +83,7 @@ export const worker = new Worker(
           .where(eq(submissions.id, submissionId));
 
         console.log(`[Worker] Running benchmark stream for ${submissionId}...`);
-        benchMetrics = await runBenchmark(language, code, 30000);
+        benchMetrics = await runBenchmark(language, code, 30000, challengeSlug);
         console.log(
           `[Worker] Benchmark throughput: ${benchMetrics.throughputOpsSec} ops/s (${benchMetrics.score}x baseline)`
         );

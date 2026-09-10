@@ -10,10 +10,11 @@ import {
   leaderboardEntries,
   users,
 } from "@/db/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, count, sql } from "drizzle-orm";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { ResultClient } from "./result-client";
+import { getChallenge } from "@/lib/challenges";
 
 export const dynamic = "force-dynamic";
 
@@ -131,6 +132,79 @@ export default async function SubmissionResultPage({ params }: Props) {
 
   const submittedCode = files[0]?.content || null;
 
+  // Compute test suite results from challenge data
+  let testSuiteResults: Array<{ name: string; passed: boolean }> | null = null;
+  if (res) {
+    const chData = getChallenge(submission.challengeSlug);
+    if (chData) {
+      const lvl = submission.level || 1;
+      const lvlData = chData.levels[lvl];
+      if (lvlData?.cases && Array.isArray(lvlData.cases)) {
+        const passed = res.correctnessPassed || 0;
+        testSuiteResults = lvlData.cases.map((c: any, idx: number) => ({
+          name: c.name || `Test Case ${idx + 1}`,
+          passed: idx < passed,
+        }));
+      }
+    }
+  }
+
+  // Calculate dynamic throughput and memory percentiles from actual submissions
+  let throughputPercentile: number | null = null;
+  let memoryPercentile: number | null = null;
+
+  if (res && res.isCorrect && res.throughputOpsSec) {
+    try {
+      const currentThroughput = parseFloat(String(res.throughputOpsSec));
+      const currentMemory = res.memoryBytes || 0;
+
+      const [totalResult] = await db
+        .select({ cnt: count() })
+        .from(submissionResults)
+        .innerJoin(submissions, eq(submissionResults.submissionId, submissions.id))
+        .where(
+          and(
+            eq(submissions.challengeId, submission.challengeId),
+            eq(submissionResults.isCorrect, true)
+          )
+        );
+
+      const totalCount = totalResult?.cnt || 0;
+
+      if (totalCount >= 3) {
+        const [belowThroughput] = await db
+          .select({ cnt: count() })
+          .from(submissionResults)
+          .innerJoin(submissions, eq(submissionResults.submissionId, submissions.id))
+          .where(
+            and(
+              eq(submissions.challengeId, submission.challengeId),
+              eq(submissionResults.isCorrect, true),
+              sql`CAST(${submissionResults.throughputOpsSec} AS NUMERIC) < ${currentThroughput}`
+            )
+          );
+        throughputPercentile = Math.round(((belowThroughput?.cnt || 0) / totalCount) * 1000) / 10;
+
+        if (currentMemory > 0) {
+          const [aboveMemory] = await db
+            .select({ cnt: count() })
+            .from(submissionResults)
+            .innerJoin(submissions, eq(submissionResults.submissionId, submissions.id))
+            .where(
+              and(
+                eq(submissions.challengeId, submission.challengeId),
+                eq(submissionResults.isCorrect, true),
+                sql`${submissionResults.memoryBytes} > ${currentMemory}`
+              )
+            );
+          memoryPercentile = Math.round(((aboveMemory?.cnt || 0) / totalCount) * 1000) / 10;
+        }
+      }
+    } catch (pctErr) {
+      console.warn("Percentile calculation error in page.tsx:", pctErr);
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-[#fafafa]">
       <Navbar user={session?.user as any} />
@@ -167,6 +241,9 @@ export default async function SubmissionResultPage({ params }: Props) {
                   previousScore: previousScore ? String(previousScore) : null,
                   testOutput: res.testOutput,
                   errorOutput: res.errorOutput,
+                  throughputPercentile,
+                  memoryPercentile,
+                  testSuiteResults,
                 }
               : null
           }

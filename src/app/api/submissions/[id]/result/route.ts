@@ -6,8 +6,9 @@ import {
   submissionResults,
   leaderboardEntries,
   users,
+  challenges,
 } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, lt, count, sql } from "drizzle-orm";
 
 export async function GET(
   req: NextRequest,
@@ -22,8 +23,17 @@ export async function GET(
     const { id } = await params;
 
     const foundSubmissions = await db
-      .select()
+      .select({
+        id: submissions.id,
+        userId: submissions.userId,
+        challengeId: submissions.challengeId,
+        language: submissions.language,
+        level: submissions.level,
+        status: submissions.status,
+        challengeSlug: challenges.slug,
+      })
       .from(submissions)
+      .innerJoin(challenges, eq(submissions.challengeId, challenges.id))
       .where(eq(submissions.id, id))
       .limit(1);
 
@@ -88,6 +98,86 @@ export async function GET(
       }
     }
 
+    // F3: Calculate dynamic throughput and memory percentiles from actual submissions
+    let throughputPercentile: number | null = null;
+    let memoryPercentile: number | null = null;
+
+    if (res.isCorrect && res.throughputOpsSec) {
+      try {
+        const currentThroughput = parseFloat(String(res.throughputOpsSec));
+        const currentMemory = res.memoryBytes || 0;
+
+        // Count total correct submissions and those below current throughput for this challenge
+        const [totalResult] = await db
+          .select({ cnt: count() })
+          .from(submissionResults)
+          .innerJoin(submissions, eq(submissionResults.submissionId, submissions.id))
+          .where(
+            and(
+              eq(submissions.challengeId, submission.challengeId),
+              eq(submissionResults.isCorrect, true)
+            )
+          );
+
+        const totalCount = totalResult?.cnt || 0;
+
+        if (totalCount >= 3) {
+          // Throughput percentile: how many have LOWER throughput
+          const [belowThroughput] = await db
+            .select({ cnt: count() })
+            .from(submissionResults)
+            .innerJoin(submissions, eq(submissionResults.submissionId, submissions.id))
+            .where(
+              and(
+                eq(submissions.challengeId, submission.challengeId),
+                eq(submissionResults.isCorrect, true),
+                sql`CAST(${submissionResults.throughputOpsSec} AS NUMERIC) < ${currentThroughput}`
+              )
+            );
+          throughputPercentile = Math.round(((belowThroughput?.cnt || 0) / totalCount) * 1000) / 10;
+
+          // Memory percentile: how many use MORE memory (lower is better)
+          if (currentMemory > 0) {
+            const [aboveMemory] = await db
+              .select({ cnt: count() })
+              .from(submissionResults)
+              .innerJoin(submissions, eq(submissionResults.submissionId, submissions.id))
+              .where(
+                and(
+                  eq(submissions.challengeId, submission.challengeId),
+                  eq(submissionResults.isCorrect, true),
+                  sql`${submissionResults.memoryBytes} > ${currentMemory}`
+                )
+              );
+            memoryPercentile = Math.round(((aboveMemory?.cnt || 0) / totalCount) * 1000) / 10;
+          }
+        }
+        // If fewer than 3 submissions, leave percentiles as null → UI shows "Establishing Baseline"
+      } catch (pctErr) {
+        console.warn("Percentile calculation failed:", pctErr);
+      }
+    }
+
+    // F4: Build test suite results from challenge data
+    let testSuiteResults: Array<{ name: string; passed: boolean }> | null = null;
+    try {
+      const { getChallenge } = await import("@/lib/challenges");
+      const challengeData = getChallenge(submission.challengeSlug);
+      if (challengeData) {
+        const level = (submission as any).level || 1;
+        const levelData = challengeData.levels[level];
+        if (levelData?.cases && Array.isArray(levelData.cases)) {
+          const passed = res.correctnessPassed || 0;
+          testSuiteResults = levelData.cases.map((c: any, idx: number) => ({
+            name: c.name || `Test Case ${idx + 1}`,
+            passed: idx < passed,
+          }));
+        }
+      }
+    } catch (tsErr) {
+      console.warn("Test suite resolution failed:", tsErr);
+    }
+
     return NextResponse.json({
       submissionId: submission.id,
       status: submission.status,
@@ -106,6 +196,9 @@ export async function GET(
       rank,
       aheadRank,
       aheadUsername,
+      throughputPercentile,
+      memoryPercentile,
+      testSuiteResults,
       rawMetrics: res.rawMetrics,
       testOutput: res.testOutput,
       errorOutput: res.errorOutput,
@@ -114,3 +207,4 @@ export async function GET(
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+

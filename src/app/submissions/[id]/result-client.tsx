@@ -54,6 +54,9 @@ interface Props {
     previousScore?: string | null;
     testOutput?: string | null;
     errorOutput?: string | null;
+    throughputPercentile?: number | null;
+    memoryPercentile?: number | null;
+    testSuiteResults?: Array<{ name: string; passed: boolean }> | null;
   } | null;
 }
 
@@ -202,12 +205,12 @@ export function ResultClient({
               {/* LeetCode Beats Green Text & Visual Bar */}
               <div className="space-y-1.5 pt-1">
                 <div className="text-xs font-bold text-[#0AA793] font-mono">
-                  Beats 98.4% of submissions
+                  {result.throughputPercentile != null ? `Beats ${result.throughputPercentile.toFixed(1)}% of submissions` : "Early Submission — Establishing Baseline"}
                 </div>
                 <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
                   <div
                     className="h-full bg-[#09C899] rounded-full"
-                    style={{ width: "98.4%" }}
+                    style={{ width: result.throughputPercentile != null ? `${result.throughputPercentile}%` : "50%" }}
                   />
                 </div>
                 <div className="text-[11px] text-slate-500 font-mono pt-0.5">
@@ -231,12 +234,12 @@ export function ResultClient({
               {/* Memory Beats Blue Text & Visual Bar */}
               <div className="space-y-1.5 pt-1">
                 <div className="text-xs font-bold text-[#099BE9] font-mono">
-                  Beats 94.2% of submissions
+                  {result.memoryPercentile != null ? `Beats ${result.memoryPercentile.toFixed(1)}% of submissions` : "Early Submission — Establishing Baseline"}
                 </div>
                 <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
                   <div
                     className="h-full bg-[#099BE9] rounded-full"
-                    style={{ width: "94.2%" }}
+                    style={{ width: result.memoryPercentile != null ? `${result.memoryPercentile}%` : "50%" }}
                   />
                 </div>
                 <div className="text-[11px] text-slate-500 font-mono pt-0.5">
@@ -344,34 +347,36 @@ export function ResultClient({
             {/* Test Suite Breakdown Content */}
             {activeTab === "testcases" && (
               <div className="p-4 bg-white space-y-2.5 font-mono text-xs">
-                <div className="p-2.5 rounded-lg bg-[#09C899]/10 border border-[#09C899]/20 flex items-center justify-between text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#09C899] shrink-0" />
-                    <span className="font-semibold">Test Suite 1: O(1) Hash Map Primitives</span>
+                {result?.testSuiteResults && result.testSuiteResults.length > 0 ? (
+                  result.testSuiteResults.map((suite, idx) => (
+                    <div
+                      key={idx}
+                      className={`p-2.5 rounded-lg border flex items-center justify-between text-slate-700 ${
+                        suite.passed
+                          ? "bg-[#09C899]/10 border-[#09C899]/20"
+                          : "bg-rose-50 border-rose-200"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        {suite.passed ? (
+                          <CheckCircle2 className="w-4 h-4 text-[#09C899] shrink-0" />
+                        ) : (
+                          <XCircle className="w-4 h-4 text-rose-500 shrink-0" />
+                        )}
+                        <span className="font-semibold">
+                          Test Suite {idx + 1}: {suite.name}
+                        </span>
+                      </div>
+                      <span className={`font-bold ${suite.passed ? "text-[#0AA793]" : "text-rose-600"}`}>
+                        {suite.passed ? "PASS" : "FAIL"}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-slate-400 text-center py-4">
+                    Test suite details not available for this submission.
                   </div>
-                  <span className="text-[#0AA793] font-bold">PASS</span>
-                </div>
-                <div className="p-2.5 rounded-lg bg-[#09C899]/10 border border-[#09C899]/20 flex items-center justify-between text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#09C899] shrink-0" />
-                    <span className="font-semibold">Test Suite 2: Passive & Active TTL Key Expiration</span>
-                  </div>
-                  <span className="text-[#0AA793] font-bold">PASS</span>
-                </div>
-                <div className="p-2.5 rounded-lg bg-[#09C899]/10 border border-[#09C899]/20 flex items-center justify-between text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#09C899] shrink-0" />
-                    <span className="font-semibold">Test Suite 3: Write-Ahead Log (WAL) Crash Recovery</span>
-                  </div>
-                  <span className="text-[#0AA793] font-bold">PASS</span>
-                </div>
-                <div className="p-2.5 rounded-lg bg-[#09C899]/10 border border-[#09C899]/20 flex items-center justify-between text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#09C899] shrink-0" />
-                    <span className="font-semibold">Test Suite 4: Adversarial 16-Worker Concurrency Stress</span>
-                  </div>
-                  <span className="text-[#0AA793] font-bold">PASS</span>
-                </div>
+                )}
               </div>
             )}
           </div>

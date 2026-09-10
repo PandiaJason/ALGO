@@ -9,8 +9,10 @@ import {
   submissionResults,
   challenges,
   userChallengeProgress,
+  leaderboardEntries,
 } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
+import { CORE_CHALLENGES } from "@/lib/constants/core-challenges";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { SignOutButton } from "@/components/auth/sign-out-button";
@@ -59,6 +61,7 @@ export default async function UserProfilePage({ params }: Props) {
   let profileUser: any = null;
   let progressList: any[] = [];
   let userSubmissions: any[] = [];
+  let bestRank: number | null = null;
 
   try {
     const foundUsers = await db
@@ -108,6 +111,17 @@ export default async function UserProfilePage({ params }: Props) {
         .where(eq(submissions.userId, profileUser.id))
         .orderBy(desc(submissions.submittedAt))
         .limit(30);
+
+      const ranks = await db
+        .select({ rank: leaderboardEntries.rank })
+        .from(leaderboardEntries)
+        .where(eq(leaderboardEntries.userId, profileUser.id))
+        .orderBy(leaderboardEntries.rank)
+        .limit(1);
+
+      if (ranks.length > 0 && ranks[0].rank > 0) {
+        bestRank = ranks[0].rank;
+      }
     }
   } catch (err) {
     console.warn("Profile query skipped or unavailable:", err);
@@ -130,6 +144,14 @@ export default async function UserProfilePage({ params }: Props) {
   // Best result
   const bestSubmission = userSubmissions.find((s) => s.isCorrect);
   const solvedCount = progressList.filter((p) => p.isCompleted).length || (bestSubmission ? 1 : 0);
+
+  const easyTotal = CORE_CHALLENGES.filter((c) => c.difficulty === "Easy").length;
+  const mediumTotal = CORE_CHALLENGES.filter((c) => c.difficulty === "Medium").length;
+  const hardTotal = CORE_CHALLENGES.filter((c) => ["Hard", "Expert"].includes(c.difficulty)).length;
+
+  const easySolved = progressList.filter((p) => p.isCompleted && CORE_CHALLENGES.find((c) => c.slug === p.challengeSlug)?.difficulty === "Easy").length;
+  const mediumSolved = progressList.filter((p) => p.isCompleted && CORE_CHALLENGES.find((c) => c.slug === p.challengeSlug)?.difficulty === "Medium").length;
+  const hardSolved = progressList.filter((p) => p.isCompleted && ["Hard", "Expert"].includes(CORE_CHALLENGES.find((c) => c.slug === p.challengeSlug)?.difficulty || "")).length;
 
   return (
     <div className="flex min-h-screen flex-col bg-[#fafafa] font-sans">
@@ -200,7 +222,7 @@ export default async function UserProfilePage({ params }: Props) {
             <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-4">
               <div className="text-xs font-mono font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
                 <span>Solved Systems</span>
-                <span className="text-slate-400 font-normal">{solvedCount} / 4</span>
+                <span className="text-slate-400 font-normal">{solvedCount} / {CORE_CHALLENGES.length}</span>
               </div>
 
               {/* Solved Big Number Display */}
@@ -223,30 +245,30 @@ export default async function UserProfilePage({ params }: Props) {
                 <div>
                   <div className="flex items-center justify-between text-[11px] mb-1">
                     <span className="text-[#0AA793] font-semibold">Easy</span>
-                    <span className="text-slate-500">0 / 0</span>
+                    <span className="text-slate-500">{easySolved} / {easyTotal}</span>
                   </div>
                   <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                    <div className="h-full bg-[#09C899] rounded-full" style={{ width: "0%" }} />
+                    <div className="h-full bg-[#09C899] rounded-full" style={{ width: `${easyTotal > 0 ? (easySolved / easyTotal) * 100 : 0}%` }} />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between text-[11px] mb-1">
                     <span className="text-[#F78424] font-semibold">Medium</span>
-                    <span className="text-slate-500">{solvedCount} / 2</span>
+                    <span className="text-slate-500">{mediumSolved} / {mediumTotal}</span>
                   </div>
                   <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                    <div className="h-full bg-[#FBAE0C] rounded-full" style={{ width: `${(solvedCount / 2) * 100}%` }} />
+                    <div className="h-full bg-[#FBAE0C] rounded-full" style={{ width: `${mediumTotal > 0 ? (mediumSolved / mediumTotal) * 100 : 0}%` }} />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between text-[11px] mb-1">
                     <span className="text-[#8647E2] font-semibold">Hard</span>
-                    <span className="text-slate-500">0 / 2</span>
+                    <span className="text-slate-500">{hardSolved} / {hardTotal}</span>
                   </div>
                   <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                    <div className="h-full bg-[#8647E2] rounded-full" style={{ width: "0%" }} />
+                    <div className="h-full bg-[#8647E2] rounded-full" style={{ width: `${hardTotal > 0 ? (hardSolved / hardTotal) * 100 : 0}%` }} />
                   </div>
                 </div>
               </div>
@@ -276,10 +298,10 @@ export default async function UserProfilePage({ params }: Props) {
                   <Trophy className="w-3.5 h-3.5 text-[#FBAE0C]" />
                 </div>
                 <div className="text-2xl font-bold font-mono text-slate-900 mt-1">
-                  Rank #1
+                  {bestRank ? `Rank #${bestRank}` : "Unranked"}
                 </div>
                 <div className="text-[10px] text-[#F78424] font-mono font-semibold mt-0.5">
-                  Gold Verification Badge
+                  {bestRank === 1 ? "Gold Verification Badge" : "Verified Leaderboard"}
                 </div>
               </div>
             </div>
