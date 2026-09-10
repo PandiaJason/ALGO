@@ -43,15 +43,17 @@ const CHALLENGE_TARGET_SPECS: Record<
     metrics: Array<{ label: string; value: string; desc: string; color: string }>;
   }
 > = {
-  "kv-store": {
+  // 01. Unix Shell
+  shell: {
     targetOutcome:
-      "Engineered a production-grade, crash-resilient in-memory key-value storage engine with synchronous WAL durability, millisecond TTL eviction, and 32-shard mutex concurrency.",
+      "Engineered an interactive Unix command interpreter with process address space isolation, fork/exec lifecycle management, signal traps, and multi-stage file descriptor pipelines.",
     metrics: [
-      { label: "THROUGHPUT", value: "> 100,000 ops/s", desc: "Pipeline stream dispatch", color: "text-[#0AA793]" },
-      { label: "LATENCY", value: "< 0.20ms p99", desc: "Sub-millisecond access", color: "text-[#099BE9]" },
-      { label: "RESOURCE", value: "256 MB RAM", desc: "Hard cgroup memory cap", color: "text-[#F78424]" },
+      { label: "PROCESS SPAWN", value: "< 1.5ms", desc: "Fork & exec overhead", color: "text-[#0AA793]" },
+      { label: "PIPELINE I/O", value: "> 500 MB/s", desc: "Piped stdout/stdin stream", color: "text-[#099BE9]" },
+      { label: "ORPHAN REAP", value: "0 Zombies", desc: "Clean non-blocking waitpid", color: "text-[#F78424]" },
     ],
   },
+  // 02. High-Concurrency HTTP Server
   "http-server": {
     targetOutcome:
       "Engineered an RFC 7230 compliant HTTP/1.1 server from raw TCP sockets with non-blocking epoll/kqueue event loops, trie dynamic routing, and keep-alive connection pooling.",
@@ -61,24 +63,37 @@ const CHALLENGE_TARGET_SPECS: Record<
       { label: "CONCURRENCY", value: "10,000+ Conn.", desc: "C10K persistent pool", color: "text-[#F78424]" },
     ],
   },
-  "message-queue": {
+  // 03. Git Version Control Engine
+  git: {
     targetOutcome:
-      "Engineered an append-only distributed commit log and message broker supporting multi-partition topics, consumer group rebalancing, and zero-copy sendfile delivery.",
+      "Engineered a content-addressed version control database and Directed Acyclic Graph (DAG) with SHA-1 blob/tree serialization, commit lineage traversal, and packfile delta compression.",
     metrics: [
-      { label: "THROUGHPUT", value: "> 100,000 msg/s", desc: "Segmented batch commit", color: "text-[#0AA793]" },
-      { label: "LATENCY", value: "< 2.0ms p99", desc: "Producer commit latency", color: "text-[#099BE9]" },
-      { label: "DURABILITY", value: "Zero Loss", desc: "Crash recovery fsync", color: "text-[#F78424]" },
+      { label: "COMMIT SPEED", value: "< 2.0ms", desc: "SHA-1 DAG object write", color: "text-[#0AA793]" },
+      { label: "TREE DIFF", value: "< 25ms", desc: "50,000 file tree diffing", color: "text-[#099BE9]" },
+      { label: "COMPRESSION", value: "> 60% Ratio", desc: "Packfile delta compression", color: "text-[#F78424]" },
     ],
   },
-  "database-index": {
+  // 04. Key-Value Storage Engine
+  "kv-store": {
     targetOutcome:
-      "Engineered a disk-backed B+Tree storage engine with 4KB slotted page serialization, binary search node branching, range scans via leaf sibling pointers, and LRU buffer pool management.",
+      "Engineered a production-grade, crash-resilient in-memory key-value storage engine with synchronous WAL durability, millisecond TTL eviction, and 32-shard mutex concurrency.",
     metrics: [
-      { label: "THROUGHPUT", value: "> 80,000 ops/s", desc: "Point queries & range scans", color: "text-[#0AA793]" },
-      { label: "LATENCY", value: "< 0.15ms p99", desc: "Slotted page tree traversal", color: "text-[#099BE9]" },
-      { label: "PAGE FORMAT", value: "4 KB Pages", desc: "Slotted disk serialization", color: "text-[#F78424]" },
+      { label: "THROUGHPUT", value: "> 100,000 ops/s", desc: "Pipeline stream dispatch", color: "text-[#0AA793]" },
+      { label: "LATENCY", value: "< 0.20ms p99", desc: "Sub-millisecond access", color: "text-[#099BE9]" },
+      { label: "RESOURCE", value: "256 MB RAM", desc: "Hard cgroup memory cap", color: "text-[#F78424]" },
     ],
   },
+  // 05. Object Storage Engine
+  "object-store": {
+    targetOutcome:
+      "Engineered an industrial content-addressed blob storage engine with Rabin content-defined chunking (CDC), block deduplication, multipart parallel uploads, and background bit-rot scrubbing.",
+    metrics: [
+      { label: "READ SPEED", value: "> 800 MB/s", desc: "Content-addressed blob streaming", color: "text-[#0AA793]" },
+      { label: "DEDUPLICATION", value: "> 45% Ratio", desc: "Content-defined chunking (CDC)", color: "text-[#099BE9]" },
+      { label: "INTEGRITY", value: "Zero Bit-Rot", desc: "CRC64/BLAKE3 background scrub", color: "text-[#F78424]" },
+    ],
+  },
+  // 06. High-Throughput In-Memory Cache
   "lru-cache": {
     targetOutcome:
       "Engineered high-performance LRU, LFU, and W-TinyLFU cache engines with O(1) pointer relinking, frequency bucket lists, stripe-locked concurrency, and strict byte memory budgets.",
@@ -88,33 +103,57 @@ const CHALLENGE_TARGET_SPECS: Record<
       { label: "HIT RATIO", value: "> 85% Target", desc: "Under 1M access stream", color: "text-[#F78424]" },
     ],
   },
+  // 07. B+ Tree Database Index Engine
+  "database-index": {
+    targetOutcome:
+      "Engineered a disk-backed B+Tree storage engine with 4KB slotted page serialization, binary search node branching, range scans via leaf sibling pointers, and LRU buffer pool management.",
+    metrics: [
+      { label: "THROUGHPUT", value: "> 80,000 ops/s", desc: "Point queries & range scans", color: "text-[#0AA793]" },
+      { label: "LATENCY", value: "< 0.15ms p99", desc: "Slotted page tree traversal", color: "text-[#099BE9]" },
+      { label: "PAGE FORMAT", value: "4 KB Pages", desc: "Slotted disk serialization", color: "text-[#F78424]" },
+    ],
+  },
+  // 08. Container Runtime / Sandbox
+  "container-runtime": {
+    targetOutcome:
+      "Engineered an isolated Linux container execution engine using namespaces (CLONE_NEWPID/NEWNS), secure rootfs pivot_root, cgroups v2 resource boundaries, and sub-15ms cold boot.",
+    metrics: [
+      { label: "COLD BOOT", value: "< 15ms", desc: "Namespace & pivot_root init", color: "text-[#0AA793]" },
+      { label: "MEMORY LIMIT", value: "256 MB Hard", desc: "Strict cgroups v2 quota", color: "text-[#099BE9]" },
+      { label: "ISOLATION", value: "100% Containment", desc: "Zero host rootfs jailbreak", color: "text-[#F78424]" },
+    ],
+  },
+  // 09. Distributed Commit Log & Message Queue
+  "message-queue": {
+    targetOutcome:
+      "Engineered an append-only distributed commit log and message broker supporting multi-partition topics, consumer group rebalancing, and zero-copy sendfile delivery.",
+    metrics: [
+      { label: "THROUGHPUT", value: "> 100,000 msg/s", desc: "Segmented batch commit", color: "text-[#0AA793]" },
+      { label: "LATENCY", value: "< 2.0ms p99", desc: "Producer commit latency", color: "text-[#099BE9]" },
+      { label: "DURABILITY", value: "Zero Loss", desc: "Crash recovery fsync", color: "text-[#F78424]" },
+    ],
+  },
+  // 10. Columnar Log Analytics Engine
   "log-engine": {
     targetOutcome:
-      "Engineered a blazingly fast streaming telemetry and observability engine with zero-copy SIMD line parsing, rolling error rate ring buffers, Count-Min Sketches, and streaming p99 estimation.",
+      "Engineered a blazingly fast streaming telemetry and observability engine with zero-copy SIMD line parsing, columnar chunk storage, dictionary encoding, and vectorized filter evaluation.",
     metrics: [
-      { label: "THROUGHPUT", value: "> 500 MB/sec", desc: "SIMD wire-speed ingest", color: "text-[#0AA793]" },
-      { label: "LATENCY", value: "< 50ms query", desc: "Windowed rollups & Top-K", color: "text-[#099BE9]" },
-      { label: "MEMORY", value: "Zero Leak", desc: "Bounded RAM on 10GB stream", color: "text-[#F78424]" },
+      { label: "SCAN SPEED", value: "> 10M rows/s", desc: "SIMD wire-speed ingest", color: "text-[#0AA793]" },
+      { label: "QUERY LATENCY", value: "< 15ms query", desc: "Windowed rollups & Top-K", color: "text-[#099BE9]" },
+      { label: "COMPRESSION", value: "> 70% Ratio", desc: "Dictionary & run-length encoding", color: "text-[#F78424]" },
     ],
   },
-  "task-scheduler": {
-    targetOutcome:
-      "Engineered an autonomous cluster task scheduler modeling Kubernetes kube-scheduler with multi-dimensional vector bin-packing, preemption, and Dominant Resource Fairness (DRF).",
-    metrics: [
-      { label: "THROUGHPUT", value: "> 20,000 jobs/s", desc: "Vector bin-packing", color: "text-[#0AA793]" },
-      { label: "DECISION", value: "< 1.0ms p99", desc: "Optimistic conflict check", color: "text-[#099BE9]" },
-      { label: "FAIRNESS", value: "0% Miss Rate", desc: "Dominant Resource Fairness", color: "text-[#F78424]" },
-    ],
-  },
+  // 11. Distributed Rate Limiter
   "rate-limiter": {
     targetOutcome:
       "Engineered a high-throughput API rate limiter and traffic shaper implementing Sliding Window Logs, Token Bucket, and Leaky Bucket with atomic CAS lock-free concurrency.",
     metrics: [
       { label: "THROUGHPUT", value: "> 150,000 req/s", desc: "Atomic CAS state updates", color: "text-[#0AA793]" },
-      { label: "DECISION", value: "< 0.05ms", desc: "Token refill evaluation", color: "text-[#099BE9]" },
-      { label: "CAPACITY", value: "1,000,000 Users", desc: "Bounded window footprint", color: "text-[#F78424]" },
+      { label: "DECISION", value: "< 0.02ms", desc: "Sub-20µs token evaluation", color: "text-[#099BE9]" },
+      { label: "SYNC DRIFT", value: "< 2%", desc: "Distributed cluster sync", color: "text-[#F78424]" },
     ],
   },
+  // 12. Reverse Proxy & Load Balancer
   "load-balancer": {
     targetOutcome:
       "Engineered a Layer 7 reverse proxy and load balancer with smooth weighted round-robin, least-connections dynamic routing, passive circuit breaking, and Ketama consistent hashing.",
@@ -124,16 +163,121 @@ const CHALLENGE_TARGET_SPECS: Record<
       { label: "FAILOVER", value: "< 100ms Trip", desc: "Zero-downtime circuit breaker", color: "text-[#F78424]" },
     ],
   },
+  // 13. Distributed Task Scheduler
+  "task-scheduler": {
+    targetOutcome:
+      "Engineered an autonomous cluster task scheduler modeling Kubernetes kube-scheduler with multi-dimensional vector bin-packing, work-stealing thread pools, and Dominant Resource Fairness (DRF).",
+    metrics: [
+      { label: "THROUGHPUT", value: "> 20,000 jobs/s", desc: "Vector bin-packing", color: "text-[#0AA793]" },
+      { label: "DECISION", value: "< 1.0ms p99", desc: "Work-stealing task dispatch", color: "text-[#099BE9]" },
+      { label: "RELIABILITY", value: "Zero Duplicates", desc: "Lease heartbeat recovery", color: "text-[#F78424]" },
+    ],
+  },
+  // 14. Distributed Consensus Engine (Raft)
+  "distributed-consensus": {
+    targetOutcome:
+      "Engineered a fault-tolerant replicated state machine implementing the Raft distributed consensus protocol with randomized leader elections, log replication quorums, and partition healing.",
+    metrics: [
+      { label: "LEADER FAILOVER", value: "< 150ms", desc: "Raft election convergence", color: "text-[#0AA793]" },
+      { label: "COMMIT LATENCY", value: "< 5.0ms p99", desc: "Quorum majority log commit", color: "text-[#099BE9]" },
+      { label: "CONSISTENCY", value: "Zero Divergence", desc: "Linearizable state machine", color: "text-[#F78424]" },
+    ],
+  },
+  // 15. Service Discovery & DNS Registry
+  "service-discovery": {
+    targetOutcome:
+      "Engineered a dynamic service discovery engine with RFC 1035 UDP DNS resolution, SWIM gossip protocol failure detection, and sub-millisecond route lookup.",
+    metrics: [
+      { label: "DNS RESOLUTION", value: "< 0.5ms p99", desc: "RFC 1035 UDP query parsing", color: "text-[#0AA793]" },
+      { label: "FAILURE DETECT", value: "< 2.0s", desc: "SWIM gossip node ping", color: "text-[#099BE9]" },
+      { label: "STALENESS", value: "0 Stale IPs", desc: "Rolling deploy instant prune", color: "text-[#F78424]" },
+    ],
+  },
+  // 16. Distributed Object Storage with Erasure Coding
+  "distributed-object-storage": {
+    targetOutcome:
+      "Engineered a multi-node distributed object storage cluster with Reed-Solomon (4+2) erasure coding over Galois Field GF(2^8), automated self-healing, and parallel shard streaming.",
+    metrics: [
+      { label: "CLUSTER WRITE", value: "> 600 MB/s", desc: "Parallel multi-node streaming", color: "text-[#0AA793]" },
+      { label: "FAULT TOLERANCE", value: "4-Node Loss", desc: "Reed-Solomon (4+2) zero loss", color: "text-[#099BE9]" },
+      { label: "REBUILD SPEED", value: "> 200 MB/s", desc: "Cauchy matrix self-healing", color: "text-[#F78424]" },
+    ],
+  },
+  // 17. Full-Text Search Engine
   "search-engine": {
     targetOutcome:
-      "Engineered a production-grade search engine from first principles supporting inverted index construction, fast boolean query intersections, BM25 probabilistic relevance ranking, positional phrase matching, and immutable segment compaction.",
+      "Engineered a production-grade full-text search engine supporting inverted index construction, BM25 statistical relevance ranking, positional phrase matching, and delta bit-packing postings.",
     metrics: [
-      { label: "THROUGHPUT", value: "> 50,000 docs/s", desc: "Inverted index builder", color: "text-[#0AA793]" },
-      { label: "QUERY LATENCY", value: "< 5.0ms p99", desc: "BM25 scoring over 1M docs", color: "text-[#099BE9]" },
-      { label: "COMPRESSION", value: "80% Compact", desc: "Elias-Fano / Varint postings", color: "text-[#F78424]" },
+      { label: "INDEX SPEED", value: "> 50,000 docs/s", desc: "Inverted index builder", color: "text-[#0AA793]" },
+      { label: "QUERY LATENCY", value: "< 3.0ms p99", desc: "BM25 scoring over 100K docs", color: "text-[#099BE9]" },
+      { label: "COMPRESSION", value: "> 60% Compact", desc: "Delta bit-packing postings", color: "text-[#F78424]" },
+    ],
+  },
+  // 18. Vector Database (HNSW Index)
+  "vector-database": {
+    targetOutcome:
+      "Engineered a high-dimensional vector database using Hierarchical Navigable Small World (HNSW) graphs, SIMD cosine/Euclidean distance calculations, and scalar quantization.",
+    metrics: [
+      { label: "THROUGHPUT", value: "> 5,000 QPS", desc: "Approximate Nearest Neighbors", color: "text-[#0AA793]" },
+      { label: "QUERY LATENCY", value: "< 0.20ms p99", desc: "SIMD Cosine distance calculation", color: "text-[#099BE9]" },
+      { label: "ACCURACY", value: "> 95% Recall@10", desc: "HNSW multi-layer graph search", color: "text-[#F78424]" },
+    ],
+  },
+  // 19. LLM Inference Engine & KV Cache
+  "llm-inference": {
+    targetOutcome:
+      "Engineered an autoregressive LLM inference engine with PagedAttention virtual memory block allocation, continuous batching, and FlashAttention tiled kernel execution.",
+    metrics: [
+      { label: "FIRST TOKEN (TTFT)", value: "< 20ms", desc: "Prompt prefill forward pass", color: "text-[#0AA793]" },
+      { label: "TOKEN SPEED (ITL)", value: "< 5ms", desc: "Autoregressive decoder pass", color: "text-[#099BE9]" },
+      { label: "MEMORY SAVING", value: "> 80% Saved", desc: "PagedAttention zero fragmentation", color: "text-[#F78424]" },
+    ],
+  },
+  // 20. Model Context Protocol (MCP) Runtime
+  "mcp-runtime": {
+    targetOutcome:
+      "Engineered a production-grade Model Context Protocol (MCP) runtime with newline-delimited JSON-RPC 2.0 stdio framing, dynamic tool registration, schema validation, and sandboxed subprocess execution.",
+    metrics: [
+      { label: "DISPATCH OVERHEAD", value: "< 0.8ms", desc: "JSON-RPC 2.0 stdio pipeline", color: "text-[#0AA793]" },
+      { label: "TIMEOUT GUARD", value: "50ms Deadline", desc: "Subprocess watchdog isolation", color: "text-[#099BE9]" },
+      { label: "SAFETY", value: "100% Schema", desc: "Ajv parameter contract validation", color: "text-[#F78424]" },
     ],
   },
 };
+
+function getDynamicTargetSpec(slug: string, coreDef?: any) {
+  if (CHALLENGE_TARGET_SPECS[slug]) {
+    return CHALLENGE_TARGET_SPECS[slug];
+  }
+  const benchmarkMetrics = coreDef?.benchmarkMetrics || [];
+  const metrics = benchmarkMetrics.map((bm: string, idx: number) => {
+    const parts = bm.split(":");
+    if (parts.length >= 2) {
+      const label = parts[0].trim().toUpperCase();
+      const valAndDesc = parts.slice(1).join(":").trim();
+      return {
+        label,
+        value: valAndDesc,
+        desc: idx === 0 ? "Throughput verified target" : idx === 1 ? "Latency target threshold" : "Constraint threshold",
+        color: idx === 1 ? "text-[#0AA793]" : "text-[#099BE9]",
+      };
+    }
+    return {
+      label: `TARGET ${idx + 1}`,
+      value: bm,
+      desc: "Empirical verification baseline",
+      color: "text-[#0AA793]",
+    };
+  });
+
+  return {
+    targetOutcome: coreDef?.whatStudentsBuild || "Production systems engineering challenge",
+    metrics: metrics.length >= 2 ? metrics : [
+      { label: "TARGET", value: "Verified Standard", desc: "Empirical baseline execution", color: "text-[#0AA793]" },
+      { label: "STABILITY", value: "Zero Crashes", desc: "Isolated container sandbox", color: "text-[#099BE9]" },
+    ],
+  };
+}
 
 function getShortParity(rawParity: string): string {
   if (!rawParity) return "Production Standard";
@@ -311,7 +455,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
         description: lvl.focus,
         realWorldTech: coreDef?.inspiredBy || "Production Standard",
       })));
-  const targetSpec = CHALLENGE_TARGET_SPECS[challenge.slug] || CHALLENGE_TARGET_SPECS["kv-store"];
+  const targetSpec = CHALLENGE_TARGET_SPECS[challenge.slug] || getDynamicTargetSpec(challenge.slug, coreDef);
   const philosophy = challengeData?.philosophy;
   const architectureDiagram = challengeData?.architectureDiagram;
   const levelRoadmap = challengeData?.levelRoadmap || levelsArray.map((l: any) => ({
@@ -745,24 +889,52 @@ export default async function ChallengeDetailPage({ params }: Props) {
                   Verified Benchmarks
                 </div>
                 <div className="space-y-2 text-xs font-mono">
-                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200/70">
-                    <div className="text-[11px] text-slate-500 font-semibold">{targetSpec.metrics[0].label}</div>
-                    <div className="text-base font-bold text-slate-900 mt-0.5">
-                      {targetSpec.metrics[0].value}
+                  {targetSpec.metrics.slice(0, 3).map((metric, idx) => (
+                    <div
+                      key={metric.label}
+                      className={`p-2.5 rounded-lg border ${
+                        idx === 1
+                          ? "bg-[#09C899]/10 border-[#09C899]/30"
+                          : idx === 2
+                          ? "bg-[#099BE9]/10 border-[#099BE9]/30"
+                          : "bg-slate-50 border-slate-200/70"
+                      }`}
+                    >
+                      <div
+                        className={`text-[11px] font-semibold ${
+                          idx === 1
+                            ? "text-[#0AA793]"
+                            : idx === 2
+                            ? "text-[#099BE9]"
+                            : "text-slate-500"
+                        }`}
+                      >
+                        {metric.label}
+                      </div>
+                      <div
+                        className={`text-base font-bold mt-0.5 ${
+                          idx === 1
+                            ? "text-[#0AA793]"
+                            : idx === 2
+                            ? "text-[#099BE9]"
+                            : "text-slate-900"
+                        }`}
+                      >
+                        {metric.value}
+                      </div>
+                      <div
+                        className={`text-[10px] mt-0.5 font-medium ${
+                          idx === 1
+                            ? "text-[#09C899]"
+                            : idx === 2
+                            ? "text-slate-600"
+                            : "text-slate-500"
+                        }`}
+                      >
+                        {metric.desc}
+                      </div>
                     </div>
-                    <div className="text-[10px] text-slate-500 mt-0.5 font-medium">
-                      {targetSpec.metrics[0].desc}
-                    </div>
-                  </div>
-                  <div className="p-2.5 rounded-lg bg-[#09C899]/10 border border-[#09C899]/30">
-                    <div className="text-[11px] text-[#0AA793] font-semibold">{targetSpec.metrics[1].label}</div>
-                    <div className="text-base font-bold text-[#0AA793] mt-0.5">
-                      {targetSpec.metrics[1].value}
-                    </div>
-                    <div className="text-[10px] text-[#09C899] mt-0.5 font-medium">
-                      {targetSpec.metrics[1].desc}
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
 
