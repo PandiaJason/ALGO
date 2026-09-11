@@ -4,18 +4,18 @@ import { ChallengeData } from "./types";
 export const lruCacheChallenge: ChallengeData = {
   slug: "lru-cache",
   number: "06",
-  title: "Concurrent Cache & Eviction Engine",
-  subtitle: "From doubly-linked LRU lists and LFU frequency tiers to memory-budgeted evictions and Adaptive Replacement Caching (ARC).",
+  title: "Cache & Eviction Engine",
+  subtitle: "From doubly-linked LRU lists and LFU frequency tiers to memory-budgeted evictions.",
   badge: "PERFORMANCE ENGINEERING CAPSTONE",
   domain: "CORE_SYSTEMS",
   inspiredBy: "Redis, Memcached, Guava",
-  whatStudentsBuild: "Workload-adaptive concurrent cache",
+  whatStudentsBuild: "Workload-adaptive cache",
   mainSkill: "Caching, eviction, memory",
   signatureQuestion: "Can you increase hit rate without increasing memory?",
   overview:
-    "In this engineering challenge, you construct an ultra-low latency concurrent cache engine from first principles — inspired by the caching architectures of Redis, Memcached, and Guava. You build raw doubly-linked list node pointer splicing (LRU), frequency count tiering (LFU), millisecond TTL expiration, byte-accurate memory budgeting, and Adaptive Replacement Caching (ARC) to adaptively balance recency and frequency signals.",
+    "In this engineering challenge, you construct an ultra-low latency cache engine from first principles — inspired by the caching architectures of Redis, Memcached, and Guava. You build raw doubly-linked list node pointer splicing (LRU), frequency count tiering (LFU), millisecond TTL expiration, and byte-accurate memory budgeting.",
   whyItMatters:
-    "Caches sit directly in front of primary databases. If a cache algorithm evicts the wrong hot keys or suffers O(N) eviction sweeps, downstream databases collapse under thundering herds. Understanding LRU, LFU, and ARC eviction dynamics is essential for distributed systems.",
+    "Caches sit directly in front of primary databases. If a cache algorithm evicts the wrong hot keys or suffers O(N) eviction sweeps, downstream databases collapse under thundering herds. Understanding LRU and LFU eviction dynamics is essential for distributed systems.",
   finalOutcome:
     "Upon completing all 6 levels, you have engineered a production-grade cache engine supporting both LRU and LFU eviction modes, millisecond TTL expiration, strict byte memory caps, and sub-0.01ms O(1) operations.",
   philosophy: "Encounter real caching engineering problems: recency vs frequency trade-offs, O(1) pointer splicing, timer min-heap sweeps, and workload-adaptive replacement.",

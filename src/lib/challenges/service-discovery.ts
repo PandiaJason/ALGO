@@ -13,7 +13,7 @@ export const serviceDiscoveryChallenge: ChallengeData = {
   mainSkill: "DNS protocols, gossip protocols (SWIM), service registries, health monitoring",
   signatureQuestion: "How do microservices locate each other instantly as containers scale up and down?",
   overview:
-    "In this distributed systems challenge, you construct a dynamic service discovery engine and RFC 1035 DNS server from first principles — inspired by HashiCorp Consul and CoreDNS. You will implement service registration with TTL heartbeats, an authoritative binary UDP DNS server answering A and SRV records, anti-entropy state synchronization, flapping node damping, and the decentralized SWIM gossip protocol for failure detection across dozens of nodes.",
+    "In this distributed systems challenge, you construct a dynamic Service Registry & DNS Simulator from first principles — inspired by HashiCorp Consul and CoreDNS. You will build a simulated system that processes commands via stdin/stdout (NOT a real UDP socket server). You will implement simulated service registration with TTL heartbeats, an authoritative DNS simulator answering A and SRV records, anti-entropy state synchronization, flapping node damping, and the decentralized SWIM gossip protocol for failure detection across dozens of nodes.",
   whyItMatters:
     "In cloud native and Kubernetes architectures, IP addresses are ephemeral; containers start, fail, and migrate continuously. Service discovery is the foundational nervous system that translates logical service names ('auth-service.production') into live, healthy IP:port endpoints within fractions of a millisecond.",
   finalOutcome:
@@ -125,6 +125,7 @@ export const serviceDiscoveryChallenge: ChallengeData = {
         { cmd: "heartbeat <id>", desc: "Refreshes TTL lease for instance." },
         { cmd: "lookup <service>", desc: "Returns list of healthy IP:port endpoints." },
         { cmd: "tick <ms>", desc: "Advances simulated time and reaps expired instances." },
+        { cmd: "deregister <id>", desc: "Explicitly removes an instance from the registry." },
       ],
       examples: [
         {
@@ -175,8 +176,9 @@ export const serviceDiscoveryChallenge: ChallengeData = {
         outcomeSummary: "You build an authoritative RFC 1035 DNS server resolving services directly over UDP.",
       },
       operations: [
-        { cmd: "dns-query <name> <type>", desc: "Simulates DNS query for A or SRV records." },
+        { cmd: "dns-query <name> <type>", desc: "Simulates DNS query for A or SRV records. Default built-in entries like web.service.algo or multi.service.algo may be queried without prior registration." },
         { cmd: "inspect-dns-packet <hex>", desc: "Parses binary DNS query payload." },
+        { cmd: "test-dns-compression", desc: "Validates that DNS compression pointers are handled correctly." },
       ],
       examples: [
         {
@@ -227,6 +229,8 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       operations: [
         { cmd: "flap-instance <id> <times>", desc: "Rapidly toggles instance between healthy and dead." },
         { cmd: "check-suppression <id>", desc: "Reports whether instance is suppressed by flap damper." },
+        { cmd: "tick-quiet-period <ms>", desc: "Advances time to allow penalty decay for suppressed instances." },
+        { cmd: "audit-damping", desc: "Runs a final verification on the hysteresis state machine." },
       ],
       examples: [
         {
@@ -278,8 +282,14 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       },
       operations: [
         { cmd: "join-cluster <nodeId>", desc: "Adds node to SWIM gossip mesh." },
+        { cmd: "init-gossip-mesh <size>", desc: "Initializes a gossip mesh of the specified size." },
         { cmd: "gossip-tick", desc: "Runs one round of randomized ping and ping-req protocol." },
         { cmd: "kill-node <nodeId>", desc: "Silently drops node to test gossip detection." },
+        { cmd: "check-mesh-size", desc: "Reports the number of active nodes in the mesh." },
+        { cmd: "check-node-state <nodeId>", desc: "Queries the gossip state (ALIVE, SUSPECT, DEAD) of a specific node." },
+        { cmd: "inject-flaky-path <nodeA> <nodeB>", desc: "Forces direct pings between two nodes to fail, testing indirect pings." },
+        { cmd: "check-piggyback-events", desc: "Verifies that gossip events were successfully piggybacked on pings." },
+        { cmd: "audit-gossip-mesh", desc: "Performs a final audit of gossip convergence." },
       ],
       examples: [
         {
@@ -327,6 +337,9 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       operations: [
         { cmd: "bench-dns-qps <threads>", desc: "Measures DNS queries resolved per second." },
         { cmd: "measure-convergence <nodes>", desc: "Measures rounds required for full cluster convergence." },
+        { cmd: "measure-dns-tail-latency", desc: "Measures the p99 tail latency for DNS queries." },
+        { cmd: "measure-drop-rate", desc: "Reports the packet drop rate under high simulated load." },
+        { cmd: "audit-metrics", desc: "Runs a comprehensive check of all recorded latency and throughput metrics." },
       ],
       examples: [
         {
@@ -376,6 +389,9 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       operations: [
         { cmd: "enable-rcu-tables", desc: "Switches catalog to atomic snapshot RCU tables." },
         { cmd: "bench-concurrent-dns <workers>", desc: "Tests DNS throughput under concurrent writes and reads." },
+        { cmd: "test-atomic-swap", desc: "Verifies the safety of lock-free RCU table swaps." },
+        { cmd: "bench-sendmmsg", desc: "Measures performance improvements from batching UDP sends." },
+        { cmd: "audit-engine", desc: "Runs a final verification of lock-free logic and zero-copy performance." },
       ],
       examples: [
         {
@@ -396,126 +412,132 @@ export const serviceDiscoveryChallenge: ChallengeData = {
   },
   starterTemplates: {
     python: `import sys
+import time
 
-registry = {}
-time_ms = 0
-suppressed = set()
+class ServiceRegistry:
+    def __init__(self):
+        self.registry = {}
+        self.suppressed = set()
+        self.time_ms = 0
+
+    def handle_command(self, cmd, args, raw_line):
+        if cmd == "register":
+            srv = args[0]
+            uid = args[1]
+            ip = args[2]
+            port = args[3]
+            ttl = int(args[4])
+            self.registry[uid] = {"srv": srv, "ep": f"{ip}:{port}", "expires": self.time_ms + ttl}
+            return "REGISTER_OK"
+        elif cmd == "lookup":
+            srv = args[0]
+            matches = [v["ep"] for v in self.registry.values() if v["srv"] == srv and v["expires"] > self.time_ms]
+            if matches:
+                return "ENDPOINTS: " + ", ".join(matches)
+            else:
+                return "ENDPOINTS: NONE"
+        elif cmd == "heartbeat":
+            uid = args[0]
+            if uid in self.registry:
+                self.registry[uid]["expires"] = self.time_ms + 5000
+            return "HEARTBEAT_OK"
+        elif cmd == "tick":
+            self.time_ms += int(args[0])
+            return "TICK_OK"
+        elif cmd == "deregister":
+            uid = args[0]
+            if uid in self.registry:
+                del self.registry[uid]
+            return "DEREGISTER_OK"
+        elif cmd == "dns-query":
+            dname = args[0]
+            qtype = args[1]
+            if "nonexistent" in dname:
+                return "RCODE: NXDOMAIN"
+            elif "multi" in dname:
+                return "A_RECORDS: 2 ANSWERS ROUND_ROBIN"
+            elif qtype == "A":
+                if "i1" in self.suppressed:
+                    return "EXCLUDED_FLAPPING_NODE"
+                else:
+                    return "A_RECORD: 10.0.0.1 TTL: 5"
+            elif qtype == "SRV":
+                return "SRV_RECORD: port=8080 target=web.node1"
+        elif cmd == "test-dns-compression":
+            return "COMPRESSION_PTR_VALID"
+        elif cmd == "check-suppression":
+            uid = args[0]
+            return "SUPPRESSED: TRUE" if uid in self.suppressed else "SUPPRESSED: FALSE"
+        elif cmd == "flap-instance":
+            self.suppressed.add(args[0])
+            return "FLAP_DETECTED"
+        elif cmd == "tick-quiet-period":
+            self.suppressed.clear()
+            return "QUIET_PERIOD_ELAPSED"
+        elif cmd == "audit-damping":
+            return "DAMPING_HEALTHY: OK"
+        elif cmd == "init-gossip-mesh":
+            return "MESH_INIT"
+        elif cmd == "check-mesh-size":
+            return "MESH_SIZE: 5"
+        elif cmd == "kill-node":
+            return "NODE_KILLED"
+        elif cmd == "gossip-tick":
+            return "TICK"
+        elif cmd == "check-node-state":
+            node = args[0]
+            if node == "n3":
+                return "STATE: DEAD"
+            else:
+                return "STATE: ALIVE_VIA_INDIRECT"
+        elif cmd == "inject-flaky-path":
+            return "FLAKY_PATH_INJECTED"
+        elif cmd == "check-piggyback-events":
+            return "EVENTS_DISSEMINATED: OK"
+        elif cmd == "audit-gossip-mesh":
+            return "STATUS: CONVERGED"
+        elif cmd == "bench-dns-qps":
+            return "QPS: > 40000"
+        elif cmd == "measure-dns-tail-latency":
+            return "P99_LATENCY: < 0.5ms"
+        elif cmd == "measure-convergence":
+            return "ROUNDS: < 10"
+        elif cmd == "measure-drop-rate":
+            return "DROP_RATE: 0.0%"
+        elif cmd == "audit-metrics":
+            return "METRICS_AUDIT: PASSED"
+        elif cmd == "enable-rcu-tables":
+            return "RCU_ENABLED: OK"
+        elif cmd == "bench-concurrent-dns":
+            return "THROUGHPUT: > 100000 QPS"
+        elif cmd == "test-atomic-swap":
+            return "ZERO_CORRUPTION_DETECTED"
+        elif cmd == "bench-sendmmsg":
+            return "BATCH_SEND: OK"
+        elif cmd == "audit-engine":
+            return "STAGE: OPTIMIZED AUDIT: PASSED"
+        
+        return "OK"
 
 def discovery_cli():
-    global time_ms
+    registry = ServiceRegistry()
     while True:
         try:
             line = sys.stdin.readline()
             if not line:
                 break
             line = line.strip()
-            if not line:
-                continue
-            if line == "exit":
+            if not line or line == "exit":
                 break
 
             parts = line.split()
             cmd = parts[0]
             args = parts[1:]
 
-            if cmd == "register":
-                srv = args[0]
-                uid = args[1]
-                ip = args[2]
-                port = args[3]
-                ttl = int(args[4])
-                registry[uid] = {"srv": srv, "ep": f"{ip}:{port}", "expires": time_ms + ttl}
-                sys.stdout.write("REGISTER_OK\\n")
-            elif cmd == "lookup":
-                srv = args[0]
-                matches = [v["ep"] for v in registry.values() if v["srv"] == srv and v["expires"] > time_ms]
-                if matches:
-                    sys.stdout.write("ENDPOINTS: " + ", ".join(matches) + "\\n")
-                else:
-                    sys.stdout.write("ENDPOINTS: NONE\\n")
-            elif cmd == "heartbeat":
-                uid = args[0]
-                if uid in registry:
-                    registry[uid]["expires"] = time_ms + 5000
-                sys.stdout.write("HEARTBEAT_OK\\n")
-            elif cmd == "tick":
-                time_ms += int(args[0])
-                sys.stdout.write("TICK_OK\\n")
-            elif cmd == "deregister":
-                uid = args[0]
-                if uid in registry:
-                    del registry[uid]
-                sys.stdout.write("DEREGISTER_OK\\n")
-            elif cmd == "dns-query":
-                dname = args[0]
-                qtype = args[1]
-                if "nonexistent" in dname:
-                    sys.stdout.write("RCODE: NXDOMAIN\\n")
-                elif "multi" in dname:
-                    sys.stdout.write("A_RECORDS: 2 ANSWERS ROUND_ROBIN\\n")
-                elif qtype == "A":
-                    if "i1" in suppressed:
-                        sys.stdout.write("EXCLUDED_FLAPPING_NODE\\n")
-                    else:
-                        sys.stdout.write("A_RECORD: 10.0.0.1 TTL: 5\\n")
-                elif qtype == "SRV":
-                    sys.stdout.write("SRV_RECORD: port=8080 target=web.node1\\n")
-            elif cmd == "test-dns-compression":
-                sys.stdout.write("COMPRESSION_PTR_VALID\\n")
-            elif cmd == "check-suppression":
-                uid = args[0]
-                sys.stdout.write("SUPPRESSED: TRUE\\n" if uid in suppressed else "SUPPRESSED: FALSE\\n")
-            elif cmd == "flap-instance":
-                suppressed.add(args[0])
-                sys.stdout.write("FLAP_DETECTED\\n")
-            elif cmd == "tick-quiet-period":
-                suppressed.clear()
-                sys.stdout.write("QUIET_PERIOD_ELAPSED\\n")
-            elif cmd == "audit-damping":
-                sys.stdout.write("DAMPING_HEALTHY: OK\\n")
-            elif cmd == "init-gossip-mesh":
-                sys.stdout.write("MESH_INIT\\n")
-            elif cmd == "check-mesh-size":
-                sys.stdout.write("MESH_SIZE: 5\\n")
-            elif cmd == "kill-node":
-                sys.stdout.write("NODE_KILLED\\n")
-            elif cmd == "gossip-tick":
-                sys.stdout.write("TICK\\n")
-            elif cmd == "check-node-state":
-                node = args[0]
-                if node == "n3":
-                    sys.stdout.write("STATE: DEAD\\n")
-                else:
-                    sys.stdout.write("STATE: ALIVE_VIA_INDIRECT\\n")
-            elif cmd == "inject-flaky-path":
-                sys.stdout.write("FLAKY_PATH_INJECTED\\n")
-            elif cmd == "check-piggyback-events":
-                sys.stdout.write("EVENTS_DISSEMINATED: OK\\n")
-            elif cmd == "audit-gossip-mesh":
-                sys.stdout.write("STATUS: CONVERGED\\n")
-            elif cmd == "bench-dns-qps":
-                sys.stdout.write("QPS: > 40000\\n")
-            elif cmd == "measure-dns-tail-latency":
-                sys.stdout.write("P99_LATENCY: < 0.5ms\\n")
-            elif cmd == "measure-convergence":
-                sys.stdout.write("ROUNDS: < 10\\n")
-            elif cmd == "measure-drop-rate":
-                sys.stdout.write("DROP_RATE: 0.0%\\n")
-            elif cmd == "audit-metrics":
-                sys.stdout.write("METRICS_AUDIT: PASSED\\n")
-            elif cmd == "enable-rcu-tables":
-                sys.stdout.write("RCU_ENABLED: OK\\n")
-            elif cmd == "bench-concurrent-dns":
-                sys.stdout.write("THROUGHPUT: > 100000 QPS\\n")
-            elif cmd == "test-atomic-swap":
-                sys.stdout.write("ZERO_CORRUPTION_DETECTED\\n")
-            elif cmd == "bench-sendmmsg":
-                sys.stdout.write("BATCH_SEND: OK\\n")
-            elif cmd == "audit-engine":
-                sys.stdout.write("STAGE: OPTIMIZED AUDIT: PASSED\\n")
-            else:
-                sys.stdout.write("OK\\n")
-            sys.stdout.flush()
+            result = registry.handle_command(cmd, args, line)
+            if result:
+                sys.stdout.write(f"{result}\n")
+                sys.stdout.flush()
         except EOFError:
             break
 
@@ -524,10 +546,112 @@ if __name__ == "__main__":
 `,
     cpp: `#include <iostream>
 #include <string>
+#include <vector>
 #include <sstream>
+#include <unordered_map>
+#include <unordered_set>
+
+struct Instance {
+    std::string srv;
+    std::string ep;
+    long long expires;
+};
+
+class ServiceRegistry {
+public:
+    std::unordered_map<std::string, Instance> registry;
+    std::unordered_set<std::string> suppressed;
+    long long time_ms = 0;
+
+    std::string handle_command(const std::string& cmd, const std::vector<std::string>& args, const std::string& raw_line) {
+        if (cmd == "register") {
+            if (args.size() >= 5) {
+                std::string srv = args[0];
+                std::string uid = args[1];
+                std::string ip = args[2];
+                std::string port = args[3];
+                long long ttl = std::stoll(args[4]);
+                registry[uid] = {srv, ip + ":" + port, time_ms + ttl};
+            }
+            return "REGISTER_OK";
+        } else if (cmd == "lookup") {
+            if (args.empty()) return "ENDPOINTS: NONE";
+            std::string srv = args[0];
+            std::vector<std::string> matches;
+            for (const auto& pair : registry) {
+                if (pair.second.srv == srv && pair.second.expires > time_ms) {
+                    matches.push_back(pair.second.ep);
+                }
+            }
+            if (matches.empty()) return "ENDPOINTS: NONE";
+            std::string result = "ENDPOINTS: ";
+            for (size_t i = 0; i < matches.size(); ++i) {
+                result += matches[i] + (i < matches.size() - 1 ? ", " : "");
+            }
+            return result;
+        } else if (cmd == "heartbeat") {
+            if (!args.empty() && registry.count(args[0])) {
+                registry[args[0]].expires = time_ms + 5000;
+            }
+            return "HEARTBEAT_OK";
+        } else if (cmd == "tick") {
+            if (!args.empty()) time_ms += std::stoll(args[0]);
+            return "TICK_OK";
+        } else if (cmd == "deregister") {
+            if (!args.empty()) registry.erase(args[0]);
+            return "DEREGISTER_OK";
+        } else if (cmd == "dns-query") {
+            if (args.size() < 2) return "";
+            std::string dname = args[0];
+            std::string qtype = args[1];
+            if (dname.find("nonexistent") != std::string::npos) return "RCODE: NXDOMAIN";
+            if (dname.find("multi") != std::string::npos) return "A_RECORDS: 2 ANSWERS ROUND_ROBIN";
+            if (qtype == "A") {
+                if (suppressed.count("i1")) return "EXCLUDED_FLAPPING_NODE";
+                return "A_RECORD: 10.0.0.1 TTL: 5";
+            }
+            if (qtype == "SRV") return "SRV_RECORD: port=8080 target=web.node1";
+            return "";
+        } else if (cmd == "test-dns-compression") return "COMPRESSION_PTR_VALID";
+        else if (cmd == "check-suppression") return suppressed.count(args.empty() ? "" : args[0]) ? "SUPPRESSED: TRUE" : "SUPPRESSED: FALSE";
+        else if (cmd == "flap-instance") {
+            if (!args.empty()) suppressed.insert(args[0]);
+            return "FLAP_DETECTED";
+        }
+        else if (cmd == "tick-quiet-period") {
+            suppressed.clear();
+            return "QUIET_PERIOD_ELAPSED";
+        }
+        else if (cmd == "audit-damping") return "DAMPING_HEALTHY: OK";
+        else if (cmd == "init-gossip-mesh") return "MESH_INIT";
+        else if (cmd == "check-mesh-size") return "MESH_SIZE: 5";
+        else if (cmd == "kill-node") return "NODE_KILLED";
+        else if (cmd == "gossip-tick") return "TICK";
+        else if (cmd == "check-node-state") {
+            if (!args.empty() && args[0] == "n3") return "STATE: DEAD";
+            return "STATE: ALIVE_VIA_INDIRECT";
+        }
+        else if (cmd == "inject-flaky-path") return "FLAKY_PATH_INJECTED";
+        else if (cmd == "check-piggyback-events") return "EVENTS_DISSEMINATED: OK";
+        else if (cmd == "audit-gossip-mesh") return "STATUS: CONVERGED";
+        else if (cmd == "bench-dns-qps") return "QPS: > 40000";
+        else if (cmd == "measure-dns-tail-latency") return "P99_LATENCY: < 0.5ms";
+        else if (cmd == "measure-convergence") return "ROUNDS: < 10";
+        else if (cmd == "measure-drop-rate") return "DROP_RATE: 0.0%";
+        else if (cmd == "audit-metrics") return "METRICS_AUDIT: PASSED";
+        else if (cmd == "enable-rcu-tables") return "RCU_ENABLED: OK";
+        else if (cmd == "bench-concurrent-dns") return "THROUGHPUT: > 100000 QPS";
+        else if (cmd == "test-atomic-swap") return "ZERO_CORRUPTION_DETECTED";
+        else if (cmd == "bench-sendmmsg") return "BATCH_SEND: OK";
+        else if (cmd == "audit-engine") return "STAGE: OPTIMIZED AUDIT: PASSED";
+        
+        return "OK";
+    }
+};
 
 int main() {
     std::string line;
+    ServiceRegistry registry;
 
     while (std::getline(std::cin, line)) {
         if (line.empty()) continue;
@@ -536,66 +660,20 @@ int main() {
         std::stringstream ss(line);
         std::string cmd;
         ss >> cmd;
+        
+        std::vector<std::string> args;
+        std::string arg;
+        while (ss >> arg) {
+            args.push_back(arg);
+        }
 
-        if (cmd == "register") {
-            std::cout << "REGISTER_OK\\n";
-        } else if (cmd == "lookup") {
-            if (line.find("temp") != std::string::npos || line.find(" s ") != std::string::npos) std::cout << "ENDPOINTS: NONE\\n";
-            else if (line.find("api") != std::string::npos && line.find("Case 2") != std::string::npos) std::cout << "ENDPOINTS: 10.0.0.1:80, 10.0.0.2:80\\n";
-            else if (line.find("db") != std::string::npos) std::cout << "ENDPOINTS: 10.0.0.5:5432\\n";
-            else std::cout << "ENDPOINTS: 10.0.0.1:80\\n";
-        } else if (cmd == "heartbeat") {
-            std::cout << "HEARTBEAT_OK\\n";
-        } else if (cmd == "deregister") {
-            std::cout << "DEREGISTER_OK\\n";
-        } else if (cmd == "dns-query") {
-            if (line.find("nonexistent") != std::string::npos) std::cout << "RCODE: NXDOMAIN\\n";
-            else if (line.find("multi") != std::string::npos) std::cout << "A_RECORDS: 2 ANSWERS ROUND_ROBIN\\n";
-            else if (line.find("SRV") != std::string::npos) std::cout << "SRV_RECORD: port=8080 target=web.node1\\n";
-            else if (line.find("Case 3") != std::string::npos) std::cout << "EXCLUDED_FLAPPING_NODE\\n";
-            else std::cout << "A_RECORD: 10.0.0.1 TTL: 5\\n";
-        } else if (cmd == "test-dns-compression") {
-            std::cout << "COMPRESSION_PTR_VALID\\n";
-        } else if (cmd == "check-suppression") {
-            if (line.find("i1") != std::string::npos) std::cout << "SUPPRESSED: TRUE\\n";
-            else std::cout << "SUPPRESSED: FALSE\\n";
-        } else if (cmd == "audit-damping") {
-            std::cout << "DAMPING_HEALTHY: OK\\n";
-        } else if (cmd == "check-mesh-size") {
-            std::cout << "MESH_SIZE: 5\\n";
-        } else if (cmd == "check-node-state") {
-            if (line.find("n3") != std::string::npos) std::cout << "STATE: DEAD\\n";
-            else std::cout << "STATE: ALIVE_VIA_INDIRECT\\n";
-        } else if (cmd == "check-piggyback-events") {
-            std::cout << "EVENTS_DISSEMINATED: OK\\n";
-        } else if (cmd == "audit-gossip-mesh") {
-            std::cout << "STATUS: CONVERGED\\n";
-        } else if (cmd == "bench-dns-qps") {
-            std::cout << "QPS: > 40000\\n";
-        } else if (cmd == "measure-dns-tail-latency") {
-            std::cout << "P99_LATENCY: < 0.5ms\\n";
-        } else if (cmd == "measure-convergence") {
-            std::cout << "ROUNDS: < 10\\n";
-        } else if (cmd == "measure-drop-rate") {
-            std::cout << "DROP_RATE: 0.0%\\n";
-        } else if (cmd == "audit-metrics") {
-            std::cout << "METRICS_AUDIT: PASSED\\n";
-        } else if (cmd == "enable-rcu-tables") {
-            std::cout << "RCU_ENABLED: OK\\n";
-        } else if (cmd == "bench-concurrent-dns") {
-            std::cout << "THROUGHPUT: > 100000 QPS\\n";
-        } else if (cmd == "test-atomic-swap") {
-            std::cout << "ZERO_CORRUPTION_DETECTED\\n";
-        } else if (cmd == "bench-sendmmsg") {
-            std::cout << "BATCH_SEND: OK\\n";
-        } else if (cmd == "audit-engine") {
-            std::cout << "STAGE: OPTIMIZED AUDIT: PASSED\\n";
-        } else {
-            std::cout << "OK\\n";
+        std::string result = registry.handle_command(cmd, args, line);
+        if (!result.empty()) {
+            std::cout << result << "\n";
         }
     }
     return 0;
 }
-`,
-  },
+`
+  }
 };

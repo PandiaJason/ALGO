@@ -270,7 +270,7 @@ Recompute idx = hash % 16 for all nodes ──► Zero Collisions, O(1) Preserve
       { cmd: "GET key", desc: "Probes collision chain / bucket to retrieve value. Returns value or NULL." },
       { cmd: "DELETE key", desc: "Removes entry and marks tombstone or unlinks node. Returns OK or NOT_FOUND." },
       { cmd: "EXISTS key", desc: "Probes bucket to verify existence. Returns TRUE or FALSE." },
-      { cmd: "STATS", desc: "Returns internal hash table metrics: BUCKETS: <n> ELEMENTS: <m> LOAD: <load_factor>." },
+      { cmd: "STATS", desc: "Returns internal hash table metrics: BUCKETS: <n> ELEMENTS: <m> LOAD: <load_factor>. Note: You must start with exactly 8 buckets." },
     ],
     durabilityRules: [
       "Deterministic Hashing: Implement uniform 64-bit hashing (MurmurHash3 / FNV-1a) across all bucket slots.",
@@ -292,7 +292,7 @@ Recompute idx = hash % 16 for all nodes ──► Zero Collisions, O(1) Preserve
     ],
     constraints: [
       "Maximum Load Factor: 0.75 threshold before dynamic rehashing.",
-      "Initial Buckets: Start with at least 8 or 16 buckets.",
+      "Initial Buckets: Start with exactly 8 buckets.",
       "Amortized Complexity: O(1) insert, lookup, and delete.",
       "Memory Allocation: Zero memory leaks during rehashing or node deletion.",
     ],
@@ -437,6 +437,8 @@ DUAL-MODE EVICTION ARCHITECTURE:
         "You master dual-mode TTL lifecycle management, steady monotonic timing, and memory-safe cache eviction.",
     },
     operations: [
+      { cmd: "SET key value", desc: "Stores key-value pair and clears any existing TTL." },
+      { cmd: "DELETE key", desc: "Deletes key and its expiration timer." },
       { cmd: "EXPIRE key ttl_ms", desc: "Sets time-to-live in milliseconds on key. Returns OK, or NOT_FOUND if key does not exist." },
       { cmd: "TTL key", desc: "Returns remaining lifetime in milliseconds, -1 if key has no TTL, or -2 if key does not exist." },
       { cmd: "PERSIST key", desc: "Removes expiration timer from key, making it permanent. Returns OK or NOT_FOUND." },
@@ -520,6 +522,8 @@ Client Thread 1 (SET "user:1")    Client Thread 2 (GET "order:99")
       { cmd: "PING [msg]", desc: "Server health check. Returns PONG or echoed string." },
       { cmd: "MGET key1 key2 ...", desc: "Atomically retrieves multiple keys in a single consistent snapshot. Returns space-separated values." },
       { cmd: "MSET k1 v1 k2 v2 ...", desc: "Atomically stores multiple key-value pairs without interleaving partial writes. Returns OK." },
+      { cmd: "SET key value", desc: "Standard thread-safe atomic set." },
+      { cmd: "GET key", desc: "Standard thread-safe atomic get." },
     ],
     durabilityRules: [
       "Striped Locking: Partition keyspace into 32 or 64 independent mutex shards to eliminate global lock bottleneck.",
@@ -597,7 +601,8 @@ Raw stdin buffer ──► Custom Arena Pool (Preallocated 64KB Slices)
     operations: [
       { cmd: "All Prior Operations", desc: "Executed with zero-copy I/O parsing, SIMD string comparisons, and cache-line aligned layouts." },
       { cmd: "COMPACT", desc: "Rewrites Write-Ahead Log by discarding superseded mutations and defragmenting memory. Returns OK." },
-      { cmd: "MEMSTATS", desc: "Returns detailed memory metrics: ALLOCATED_BYTES: <n> PEAK_BYTES: <m> FRAGMENTATION_RATIO: <r>." },
+      { cmd: "MEMSTATS", desc: "Returns detailed memory metrics. For exact test cases, expects specific format like 'ALLOCATED_BYTES: 1024 PEAK_BYTES: 1024 FRAGMENTATION_RATIO: 1.00'." },
+      { cmd: "SET / GET / EXISTS / DELETE", desc: "Standard operations supported." },
     ],
     durabilityRules: [
       "Custom Memory Arena: Allocate memory in fixed-size slab pools to eliminate malloc/free heap fragmentation.",

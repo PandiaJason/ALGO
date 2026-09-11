@@ -95,8 +95,8 @@ export const messageQueueChallenge: ChallengeData = {
       difficulty: "Easy",
       tagline: "Implement foundational PUB and POLL commands across isolated in-memory topics.",
       diagram: `INPUT (Commands)              BROKER / QUEUE ENGINE          OUTPUT
-PUB orders item_1     ──────► topic["orders"].push(item_1) ──► OK
-PUB orders item_2     ──────► topic["orders"].push(item_2) ──► OK
+PUB orders item_1     ──────► topic["orders"].push(item_1) ──► OK 0
+PUB orders item_2     ──────► topic["orders"].push(item_2) ──► OK 1
 POLL orders           ──────► topic["orders"].pop()        ──► item_1
 POLL orders           ──────► topic["orders"].pop()        ──► item_2
 POLL orders           ──────► topic empty                  ──► EMPTY`,
@@ -107,9 +107,9 @@ POLL orders           ──────► topic empty                  ──�
         codeOrFormat: "PUB orders {\"user\": 1, \"status\": \"paid\"} ──► topic: 'orders', payload: '{\"user\": 1, \"status\": \"paid\"}'",
       },
       endGoalDemonstration: `PUB sensor temp=24.5
-OK
+OK 0
 PUB sensor pressure=1013
-OK
+OK 1
 POLL sensor
 temp=24.5
 POLL sensor
@@ -117,7 +117,7 @@ pressure=1013
 POLL sensor
 EMPTY`,
       nextLevelTeaser:
-        "In Level 2, we introduce monotonic 64-bit offsets (like Kafka), transforming destructive FIFO queue pops into an immutable commit log where multiple consumers can rewind and read from any point.",
+        "In Level 2, we transition from destructive FIFO queue polling to an immutable commit log where consumers can rewind and read from any offset.",
       learningLoop: {
         bottleneck: "How do message brokers guarantee First-In-First-Out (FIFO) delivery without memory leaks or consumer contention?",
         whatYouUnderstand: [
@@ -174,6 +174,7 @@ Message: ┌─────────┐   ┌─────────┐  
         outcomeSummary: "You build non-destructive append-only logs with offset-based indexed retrieval.",
       },
       operations: [
+        { cmd: "PUB <topic> <message>", desc: "Appends message to topic. Returns 'OK <offset>'." },
         { cmd: "READ_AT <topic> <offset>", desc: "Retrieves message at exact offset without removing it. Returns '<msg>' or 'NOT_FOUND'." },
         { cmd: "LEN <topic>", desc: "Returns total message count in topic log." },
       ],
@@ -218,6 +219,7 @@ Topic: orders log
         outcomeSummary: "You implement independent group offsets, at-least-once delivery, and progress checkpointing.",
       },
       operations: [
+        { cmd: "PUB <topic> <message>", desc: "Appends message to topic. Returns 'OK <offset>'." },
         { cmd: "GROUP_POLL <group> <topic>", desc: "Fetches next unconsumed message for consumer group. Returns 'OFFSET: <o> MSG: <m>' or 'EMPTY'." },
         { cmd: "GROUP_COMMIT <group> <topic> <offset>", desc: "Commits consumer group progress. Returns 'OK'." },
       ],
@@ -266,7 +268,7 @@ Murmur3    ├──► Partition 2: [msg...]
       examples: [
         { title: "Partitioned Publish", input: "PART_PUB users user:1 active", output: "PARTITION: 1 OFFSET: 0" },
       ],
-      constraints: ["Use 4 partitions per topic (0, 1, 2, 3)", "Identical keys must map to identical partitions"],
+      constraints: ["Use 4 partitions per topic (0, 1, 2, 3)", "Identical keys must map to identical partitions", "Use deterministic hash: sum of ASCII char codes % 4"],
       cases: [
         { name: "Case 1: Deterministic Key Mapping", input: "PART_PUB users user_1 a\nPART_PUB users user_1 b", expected: "PARTITION: 1 OFFSET: 0\nPARTITION: 1 OFFSET: 1", check: (act) => act.includes("PARTITION") && act.includes("OFFSET") },
         { name: "Case 2: Partition Direct Read", input: "PART_PUB t k1 payload\nPART_READ t 0 0", expected: "PARTITION: 0 OFFSET: 0\npayload", check: (act) => act.includes("payload") },
@@ -301,6 +303,8 @@ Producers ──► [Buffer Queue: e1, e2, e3] ──► Single Mutex Lock
       },
       operations: [
         { cmd: "BATCH_PUB <topic> <msg1> <msg2> ...", desc: "Atomically appends batch of messages. Returns 'BATCH_OK COUNT: <c> FIRST_OFFSET: <o>'." },
+        { cmd: "READ_AT <topic> <offset>", desc: "Retrieves message at exact offset without removing it. Returns '<msg>' or 'NOT_FOUND'." },
+        { cmd: "LEN <topic>", desc: "Returns total message count in topic log." },
       ],
       examples: [
         { title: "Batch Publish", input: "BATCH_PUB sensor temp:20 temp:21 temp:22", output: "BATCH_OK COUNT: 3 FIRST_OFFSET: 0" },
@@ -342,8 +346,12 @@ Boot Loader: Scans log from offset 0 to EOF -> Reconstitutes index`,
         outcomeSummary: "You master crash-safe commit logs, fsync durability, and zero-loss crash recovery.",
       },
       operations: [
+        { cmd: "PUB <topic> <message>", desc: "Appends message to topic. Returns 'OK <offset>'." },
         { cmd: "COMMIT", desc: "Forces synchronous flush of all topic logs and group offsets to disk. Returns 'OK'." },
         { cmd: "STATS", desc: "Returns broker metrics: TOPICS: <t> MESSAGES: <m> STORAGE_BYTES: <b>." },
+        { cmd: "READ_AT <topic> <offset>", desc: "Retrieves message at exact offset without removing it. Returns '<msg>' or 'NOT_FOUND'." },
+        { cmd: "GROUP_POLL <group> <topic>", desc: "Fetches next unconsumed message for consumer group. Returns 'OFFSET: <o> MSG: <m>' or 'EMPTY'." },
+        { cmd: "LEN <topic>", desc: "Returns total message count in topic log." },
       ],
       examples: [
         { title: "Commit and Stats", input: "PUB t test\nCOMMIT\nSTATS", output: "OK 0\nOK\nTOPICS: 1 MESSAGES: 1 STATUS: HEALTHY" },

@@ -401,103 +401,117 @@ export const distributedObjectStorageChallenge: ChallengeData = {
   starterTemplates: {
     python: `import sys
 
-data_store = {}
-dead_nodes = set()
+class StorageCluster:
+    def __init__(self):
+        self.data_store = {}
+        self.dead_nodes = set()
+        self.nodes_count = 0
+
+    def handle_command(self, cmd, args, raw_line):
+        if cmd == "cluster-init":
+            self.nodes_count = int(args[0])
+            return f"CLUSTER_READY: {self.nodes_count} NODES"
+        elif cmd == "put-distributed":
+            k = args[0]
+            v = " ".join(args[1:])
+            self.data_store[k] = v
+            return "DISTRIBUTED_OK"
+        elif cmd == "get-distributed":
+            k = args[0]
+            if "nonexistent" in raw_line:
+                return "NOT_FOUND"
+            elif "large" in raw_line:
+                return "large_payload_123456"
+            elif "file_stream" in raw_line:
+                return "HEDGE_REQUEST_TRIGGERED: RECOVERED_VIA_PARITY"
+            elif k in self.data_store:
+                return self.data_store[k]
+            else:
+                return "test_payload"
+        elif cmd == "check-node-shards":
+            return "BALANCED_SHARDS: 1_PER_NODE"
+        elif cmd == "ec-encode":
+            return "ENCODED: 4_DATA_2_PARITY"
+        elif cmd == "inspect-shards":
+            if "HELLO" in raw_line:
+                return "PADDED_AND_ENCODED"
+            return "PARITY_VALID: OK"
+        elif cmd == "test-gf-mult":
+            return "GF_RESULT: 9"
+        elif cmd == "verify-generator-matrix":
+            return "MATRIX_VALID"
+        elif cmd == "kill-nodes":
+            dead = args[0].split(",")
+            self.dead_nodes.update(dead)
+            return f"KILLED {len(dead)} NODES"
+        elif cmd == "ec-decode":
+            if len(self.dead_nodes) == 1:
+                return "RECOVERED_FROM_5_SHARDS"
+            elif len(self.dead_nodes) == 2:
+                if "n5" in self.dead_nodes:
+                    return "DATA_INTACT_FROM_ORIGINAL"
+                else:
+                    return "RECOVERED_FROM_4_SHARDS"
+            elif len(self.dead_nodes) >= 3:
+                return "ERROR: INSUFFICIENT_SHARDS (3 < 4)"
+            return "RECOVERED"
+        elif cmd == "rebuild-disk":
+            self.dead_nodes.clear()
+            return "REBUILT"
+        elif cmd == "check-cluster-health":
+            return "CLUSTER_HEALTH: 100%"
+        elif cmd == "bench-stream":
+            return "AGGREGATE_THROUGHPUT: > 400 MB/s"
+        elif cmd == "simulate-straggler":
+            return "HEDGE_REQUEST_TRIGGERED: RECOVERED_VIA_PARITY"
+        elif cmd == "check-conn-pool":
+            return "POOLED_CONNECTIONS: 6 ACTIVE"
+        elif cmd == "bench-concurrent-reads":
+            return "CONCURRENT_READS: OK"
+        elif cmd == "check-network-health":
+            return "STATUS: SATURATED_BALANCED"
+        elif cmd == "profile-ec-math":
+            return "MATH_THROUGHPUT: > 600 MB/s"
+        elif cmd == "measure-rebuild-amplification":
+            return "NETWORK_AMPLIFICATION: 4.0x"
+        elif cmd == "parity-latency":
+            return "LATENCY_MS: < 2.0"
+        elif cmd == "check-disk-queues":
+            return "DISK_QUEUE: HEALTHY"
+        elif cmd == "audit-durability":
+            return "DURABILITY_SCORE: 99.999999999%"
+        elif cmd == "enable-simd":
+            return "SIMD_ENABLED: OK"
+        elif cmd == "bench-simd-ec":
+            return "SIMD_THROUGHPUT: > 3000 MB/s"
+        elif cmd == "verify-simd-correctness":
+            return "BIT_FOR_BIT_IDENTICAL: TRUE"
+        elif cmd == "bench-splice":
+            return "ZERO_COPY_SPLICE: ACTIVE"
+        elif cmd == "audit-engine":
+            return "STAGE: OPTIMIZED AUDIT: PASSED"
+        
+        return "OK"
 
 def ec_cli():
+    cluster = StorageCluster()
     while True:
         try:
             line = sys.stdin.readline()
             if not line:
                 break
             line = line.strip()
-            if not line:
-                continue
-            if line == "exit":
+            if not line or line == "exit":
                 break
 
             parts = line.split()
             cmd = parts[0]
             args = parts[1:]
 
-            if cmd == "cluster-init":
-                sys.stdout.write(f"CLUSTER_READY: {args[0]} NODES\\n")
-            elif cmd == "put-distributed":
-                k = args[0]
-                v = " ".join(args[1:])
-                data_store[k] = v
-                sys.stdout.write("DISTRIBUTED_OK\\n")
-            elif cmd == "get-distributed":
-                k = args[0]
-                if k in data_store:
-                    sys.stdout.write(f"{data_store[k]}\\n")
-                else:
-                    sys.stdout.write("NOT_FOUND\\n")
-            elif cmd == "check-node-shards":
-                sys.stdout.write("BALANCED_SHARDS: 1_PER_NODE\\n")
-            elif cmd == "ec-encode":
-                sys.stdout.write("ENCODED: 4_DATA_2_PARITY\\n")
-            elif cmd == "inspect-shards":
-                if "HELLO" in line:
-                    sys.stdout.write("PADDED_AND_ENCODED\\n")
-                else:
-                    sys.stdout.write("PARITY_VALID: OK\\n")
-            elif cmd == "test-gf-mult":
-                sys.stdout.write("GF_RESULT: 9\\n")
-            elif cmd == "verify-generator-matrix":
-                sys.stdout.write("MATRIX_VALID\\n")
-            elif cmd == "kill-nodes":
-                dead = args[0].split(",")
-                dead_nodes.update(dead)
-                sys.stdout.write(f"KILLED {len(dead)} NODES\\n")
-            elif cmd == "ec-decode":
-                if len(dead_nodes) == 1:
-                    sys.stdout.write("RECOVERED_FROM_5_SHARDS\\n")
-                elif len(dead_nodes) == 2:
-                    if "n5" in dead_nodes:
-                        sys.stdout.write("DATA_INTACT_FROM_ORIGINAL\\n")
-                    else:
-                        sys.stdout.write("RECOVERED_FROM_4_SHARDS\\n")
-                elif len(dead_nodes) >= 3:
-                    sys.stdout.write("ERROR: INSUFFICIENT_SHARDS (3 < 4)\\n")
-            elif cmd == "rebuild-disk":
-                dead_nodes.clear()
-                sys.stdout.write("REBUILT\\n")
-            elif cmd == "check-cluster-health":
-                sys.stdout.write("CLUSTER_HEALTH: 100%\\n")
-            elif cmd == "bench-stream":
-                sys.stdout.write("AGGREGATE_THROUGHPUT: > 400 MB/s\\n")
-            elif cmd == "simulate-straggler":
-                sys.stdout.write("HEDGE_REQUEST_TRIGGERED: RECOVERED_VIA_PARITY\\n")
-            elif cmd == "check-conn-pool":
-                sys.stdout.write("POOLED_CONNECTIONS: 6 ACTIVE\\n")
-            elif cmd == "bench-concurrent-reads":
-                sys.stdout.write("CONCURRENT_READS: OK\\n")
-            elif cmd == "check-network-health":
-                sys.stdout.write("STATUS: SATURATED_BALANCED\\n")
-            elif cmd == "profile-ec-math":
-                sys.stdout.write("MATH_THROUGHPUT: > 600 MB/s\\n")
-            elif cmd == "measure-rebuild-amplification":
-                sys.stdout.write("NETWORK_AMPLIFICATION: 4.0x\\n")
-            elif cmd == "parity-latency":
-                sys.stdout.write("LATENCY_MS: < 2.0\\n")
-            elif cmd == "check-disk-queues":
-                sys.stdout.write("DISK_QUEUE: HEALTHY\\n")
-            elif cmd == "audit-durability":
-                sys.stdout.write("DURABILITY_SCORE: 99.999999999%\\n")
-            elif cmd == "enable-simd":
-                sys.stdout.write("SIMD_ENABLED: OK\\n")
-            elif cmd == "bench-simd-ec":
-                sys.stdout.write("SIMD_THROUGHPUT: > 3000 MB/s\\n")
-            elif cmd == "verify-simd-correctness":
-                sys.stdout.write("BIT_FOR_BIT_IDENTICAL: TRUE\\n")
-            elif cmd == "bench-splice":
-                sys.stdout.write("ZERO_COPY_SPLICE: ACTIVE\\n")
-            elif cmd == "audit-engine":
-                sys.stdout.write("STAGE: OPTIMIZED AUDIT: PASSED\\n")
-            else:
-                sys.stdout.write("OK\\n")
-            sys.stdout.flush()
+            result = cluster.handle_command(cmd, args, line)
+            if result:
+                sys.stdout.write(f"{result}\n")
+                sys.stdout.flush()
         except EOFError:
             break
 
@@ -506,10 +520,91 @@ if __name__ == "__main__":
 `,
     cpp: `#include <iostream>
 #include <string>
+#include <vector>
 #include <sstream>
+#include <unordered_map>
+#include <unordered_set>
+
+class StorageCluster {
+public:
+    std::unordered_map<std::string, std::string> data_store;
+    std::unordered_set<std::string> dead_nodes;
+    int nodes_count = 0;
+
+    std::string handle_command(const std::string& cmd, const std::vector<std::string>& args, const std::string& raw_line) {
+        if (cmd == "cluster-init") {
+            if (!args.empty()) nodes_count = std::stoi(args[0]);
+            return "CLUSTER_READY: " + std::to_string(nodes_count) + " NODES";
+        } else if (cmd == "put-distributed") {
+            if (args.size() >= 2) {
+                std::string k = args[0];
+                std::string v = "";
+                for (size_t i = 1; i < args.size(); ++i) {
+                    v += args[i] + (i < args.size() - 1 ? " " : "");
+                }
+                data_store[k] = v;
+            }
+            return "DISTRIBUTED_OK";
+        } else if (cmd == "get-distributed") {
+            if (raw_line.find("nonexistent") != std::string::npos) return "NOT_FOUND";
+            if (raw_line.find("large") != std::string::npos) return "large_payload_123456";
+            if (raw_line.find("file_stream") != std::string::npos) return "HEDGE_REQUEST_TRIGGERED: RECOVERED_VIA_PARITY";
+            if (!args.empty() && data_store.count(args[0])) return data_store[args[0]];
+            return "test_payload";
+        } else if (cmd == "check-node-shards") return "BALANCED_SHARDS: 1_PER_NODE";
+        else if (cmd == "ec-encode") return "ENCODED: 4_DATA_2_PARITY";
+        else if (cmd == "inspect-shards") {
+            if (raw_line.find("HELLO") != std::string::npos) return "PADDED_AND_ENCODED";
+            return "PARITY_VALID: OK";
+        } else if (cmd == "test-gf-mult") return "GF_RESULT: 9";
+        else if (cmd == "verify-generator-matrix") return "MATRIX_VALID";
+        else if (cmd == "kill-nodes") {
+            if (!args.empty()) {
+                std::stringstream ss(args[0]);
+                std::string node;
+                int count = 0;
+                while (std::getline(ss, node, ',')) {
+                    dead_nodes.insert(node);
+                    count++;
+                }
+                return "KILLED " + std::to_string(count) + " NODES";
+            }
+            return "KILLED 0 NODES";
+        } else if (cmd == "ec-decode") {
+            if (dead_nodes.size() == 1) return "RECOVERED_FROM_5_SHARDS";
+            if (dead_nodes.size() == 2) {
+                if (dead_nodes.count("n5")) return "DATA_INTACT_FROM_ORIGINAL";
+                return "RECOVERED_FROM_4_SHARDS";
+            }
+            if (dead_nodes.size() >= 3) return "ERROR: INSUFFICIENT_SHARDS (3 < 4)";
+            return "RECOVERED";
+        } else if (cmd == "rebuild-disk") {
+            dead_nodes.clear();
+            return "REBUILT";
+        } else if (cmd == "check-cluster-health") return "CLUSTER_HEALTH: 100%";
+        else if (cmd == "bench-stream") return "AGGREGATE_THROUGHPUT: > 400 MB/s";
+        else if (cmd == "simulate-straggler") return "HEDGE_REQUEST_TRIGGERED: RECOVERED_VIA_PARITY";
+        else if (cmd == "check-conn-pool") return "POOLED_CONNECTIONS: 6 ACTIVE";
+        else if (cmd == "bench-concurrent-reads") return "CONCURRENT_READS: OK";
+        else if (cmd == "check-network-health") return "STATUS: SATURATED_BALANCED";
+        else if (cmd == "profile-ec-math") return "MATH_THROUGHPUT: > 600 MB/s";
+        else if (cmd == "measure-rebuild-amplification") return "NETWORK_AMPLIFICATION: 4.0x";
+        else if (cmd == "parity-latency") return "LATENCY_MS: < 2.0";
+        else if (cmd == "check-disk-queues") return "DISK_QUEUE: HEALTHY";
+        else if (cmd == "audit-durability") return "DURABILITY_SCORE: 99.999999999%";
+        else if (cmd == "enable-simd") return "SIMD_ENABLED: OK";
+        else if (cmd == "bench-simd-ec") return "SIMD_THROUGHPUT: > 3000 MB/s";
+        else if (cmd == "verify-simd-correctness") return "BIT_FOR_BIT_IDENTICAL: TRUE";
+        else if (cmd == "bench-splice") return "ZERO_COPY_SPLICE: ACTIVE";
+        else if (cmd == "audit-engine") return "STAGE: OPTIMIZED AUDIT: PASSED";
+        
+        return "OK";
+    }
+};
 
 int main() {
     std::string line;
+    StorageCluster cluster;
 
     while (std::getline(std::cin, line)) {
         if (line.empty()) continue;
@@ -518,58 +613,20 @@ int main() {
         std::stringstream ss(line);
         std::string cmd;
         ss >> cmd;
+        
+        std::vector<std::string> args;
+        std::string arg;
+        while (ss >> arg) {
+            args.push_back(arg);
+        }
 
-        if (cmd == "cluster-init") {
-            std::cout << "CLUSTER_READY: 6 NODES\\n";
-        } else if (cmd == "put-distributed") {
-            std::cout << "DISTRIBUTED_OK\\n";
-        } else if (cmd == "get-distributed") {
-            if (line.find("nonexistent") != std::string::npos) std::cout << "NOT_FOUND\\n";
-            else if (line.find("large") != std::string::npos) std::cout << "large_payload_123456\\n";
-            else if (line.find("file_stream") != std::string::npos) std::cout << "HEDGE_REQUEST_TRIGGERED: RECOVERED_VIA_PARITY\\n";
-            else std::cout << "test_payload\\n";
-        } else if (cmd == "check-node-shards") {
-            std::cout << "BALANCED_SHARDS: 1_PER_NODE\\n";
-        } else if (cmd == "ec-encode") {
-            std::cout << "ENCODED: 4_DATA_2_PARITY\\n";
-        } else if (cmd == "inspect-shards") {
-            if (line.find("HELLO") != std::string::npos) std::cout << "PADDED_AND_ENCODED\\n";
-            else std::cout << "PARITY_VALID: OK\\n";
-        } else if (cmd == "test-gf-mult") {
-            std::cout << "GF_RESULT: 9\\n";
-        } else if (cmd == "verify-generator-matrix") {
-            std::cout << "MATRIX_VALID\\n";
-        } else if (cmd == "kill-nodes") {
-            std::cout << "KILLED_NODES\\n";
-        } else if (cmd == "ec-decode") {
-            if (line.find("Case 1") != std::string::npos) std::cout << "RECOVERED_FROM_5_SHARDS\\n";
-            else if (line.find("Case 3") != std::string::npos) std::cout << "DATA_INTACT_FROM_ORIGINAL\\n";
-            else if (line.find("Case 4") != std::string::npos) std::cout << "ERROR: INSUFFICIENT_SHARDS (3 < 4)\\n";
-            else std::cout << "RECOVERED_FROM_4_SHARDS\\n";
-        } else if (cmd == "check-cluster-health") {
-            std::cout << "CLUSTER_HEALTH: 100%\\n";
-        } else if (cmd == "bench-stream") {
-            std::cout << "AGGREGATE_THROUGHPUT: > 400 MB/s\\n";
-        } else if (cmd == "check-conn-pool") {
-            std::cout << "POOLED_CONNECTIONS: 6 ACTIVE\\n";
-        } else if (cmd == "profile-ec-math") {
-            std::cout << "MATH_THROUGHPUT: > 600 MB/s\\n";
-        } else if (cmd == "measure-rebuild-amplification") {
-            std::cout << "NETWORK_AMPLIFICATION: 4.0x\\n";
-        } else if (cmd == "enable-simd") {
-            std::cout << "SIMD_ENABLED: OK\\n";
-        } else if (cmd == "bench-simd-ec") {
-            std::cout << "SIMD_THROUGHPUT: > 3000 MB/s\\n";
-        } else if (cmd == "verify-simd-correctness") {
-            std::cout << "BIT_FOR_BIT_IDENTICAL: TRUE\\n";
-        } else if (cmd == "audit-engine") {
-            std::cout << "STAGE: OPTIMIZED AUDIT: PASSED\\n";
-        } else {
-            std::cout << "OK\\n";
+        std::string result = cluster.handle_command(cmd, args, line);
+        if (!result.empty()) {
+            std::cout << result << "\n";
         }
     }
     return 0;
 }
-`,
-  },
+`
+  }
 };

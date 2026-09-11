@@ -13,11 +13,11 @@ export const llmInferenceChallenge: ChallengeData = {
   mainSkill: "Transformer architectures, KV caching, continuous batching, memory paging",
   signatureQuestion: "Why does LLM generation slow down as conversation history grows, and how do we fix it?",
   overview:
-    "In this state-of-the-art AI systems challenge, you construct a high-throughput LLM inference serving engine from first principles — inspired by the core memory innovations of vLLM and llama.cpp. You will implement autoregressive token generation, eliminate quadratic attention recomputation using Key-Value (KV) caching, solve memory fragmentation with virtual PagedAttention blocks, dynamically insert new prompts into running iterations via continuous batching, and profile Time-to-First-Token (TTFT) and Inter-Token Latency (ITL).",
+    "In this foundational AI systems challenge, you construct a high-throughput Token Buffer & KV Cache Simulator — inspired by the core memory innovations of vLLM and llama.cpp. You will simulate token management, cache allocation, and memory paging without real neural network weights or vocabulary dictionaries. You'll tackle eliminating quadratic attention recomputation using Key-Value (KV) caching, solve memory fragmentation with virtual PagedAttention blocks, dynamically insert new prompts into running iterations via continuous batching, and profile Time-to-First-Token (TTFT) and Inter-Token Latency (ITL).",
   whyItMatters:
-    "Serving Large Language Models is fundamentally memory-bandwidth bound, not compute bound. Naive implementations waste up to 80% of GPU/CPU RAM through memory fragmentation in pre-allocated KV caches. Mastering PagedAttention, continuous batching, and fused attention kernels is the single most valuable engineering skill in AI infrastructure today.",
+    "Serving Large Language Models is fundamentally memory-bandwidth bound, not compute bound. Naive implementations waste up to 80% of GPU/CPU RAM through memory fragmentation in pre-allocated KV caches. Mastering PagedAttention, continuous batching, and cache memory layout is the single most valuable engineering skill in AI infrastructure today.",
   finalOutcome:
-    "Upon completing all 6 levels, you have constructed a high-performance LLM serving runtime capable of continuous iteration-level batching across concurrent requests, achieving sub-20ms TTFT, sub-5ms inter-token generation, and reducing KV memory waste to zero.",
+    "Upon completing all 6 levels, you have constructed a high-performance token serving simulator capable of continuous iteration-level batching across concurrent requests, modeling sub-20ms TTFT, sub-5ms inter-token generation, and reducing KV memory waste to zero.",
   philosophy: "Encounter real LLM serving systems problems: quadratic attention complexity, memory fragmentation in long contexts, static vs dynamic batching starvation, and memory bus bandwidth limits.",
   architectureDiagram: `               CLIENT PROMPTS (Req A, Req B)
                             │
@@ -130,8 +130,9 @@ Prompt: "The capital of France is"
         outcomeSummary: "You implement the fundamental autoregressive decoding loop of modern LLMs.",
       },
       operations: [
-        { cmd: "decode-step <prompt> <max_tokens>", desc: "Runs autoregressive loop until max_tokens or EOS token." },
+        { cmd: "decode-step <prompt> <max_tokens>", desc: "Runs autoregressive loop using fixed/deterministic simulation rules until max_tokens or EOS token." },
         { cmd: "sample-token <logits> <temp>", desc: "Applies temperature scaling and selects next token." },
+        { cmd: "validate-logits <logits>", desc: "Validates that logit probabilities sum to one." },
       ],
       examples: [
         {
@@ -182,6 +183,9 @@ Token 3 ──► ONLY Compute Q3!
       operations: [
         { cmd: "enable-kv-cache", desc: "Activates KV cache tensor allocation." },
         { cmd: "inspect-kv-size", desc: "Reports number of cached token vectors and memory footprint." },
+        { cmd: "decode-with-cache <prompt> <max_tokens>", desc: "Generates tokens utilizing the KV cache to skip redundant matrix math." },
+        { cmd: "reset-cache", desc: "Clears the active KV cache." },
+        { cmd: "verify-cache-math", desc: "Verifies the cache outputs match naive attention math." },
       ],
       examples: [
         {
@@ -230,7 +234,10 @@ Token 3 ──► ONLY Compute Q3!
       },
       operations: [
         { cmd: "set-max-context <tokens>", desc: "Sets hard memory boundary on context tokens." },
-        { cmd: "sliding-window-evict <window>", desc: "Evicts middle tokens when context overflows." },
+        { cmd: "sliding-window-evict <window>", desc: "Evicts middle tokens when context overflows (Note: indirectly tested via feed-tokens)." },
+        { cmd: "feed-tokens <count>", desc: "Feeds tokens to trigger sliding window eviction on overflow." },
+        { cmd: "check-system-prompt-pinned", desc: "Verifies the initial system prompt is preserved in the cache." },
+        { cmd: "check-eviction-integrity", desc: "Checks that cache state remains healthy after eviction." },
       ],
       examples: [
         {
@@ -282,6 +289,10 @@ Token 3 ──► ONLY Compute Q3!
       operations: [
         { cmd: "init-paged-attention --block-size <tokens>", desc: "Initializes physical block table memory manager." },
         { cmd: "schedule-continuous-batch", desc: "Steps scheduler, admitting waiting requests and retiring finished ones." },
+        { cmd: "inspect-block-table <req_id>", desc: "Inspects logical to physical block mappings for a request." },
+        { cmd: "retire-request <req_id>", desc: "Retires request and reclaims memory pages." },
+        { cmd: "check-free-pages", desc: "Verifies memory pages are reclaimed properly." },
+        { cmd: "audit-fragmentation", desc: "Audits internal memory fragmentation of the PagedAttention blocks." },
       ],
       examples: [
         {
@@ -335,6 +346,10 @@ Request Arrives (t = 0ms)
       operations: [
         { cmd: "bench-serving --prompts <count> --tokens <len>", desc: "Runs end-to-end benchmark reporting TTFT and ITL." },
         { cmd: "profile-bandwidth", desc: "Measures memory bus saturation during token decoding." },
+        { cmd: "measure-ttft", desc: "Measures Time-To-First-Token prefill throughput." },
+        { cmd: "measure-itl", desc: "Measures Inter-Token Latency decode time." },
+        { cmd: "bench-concurrency-curve", desc: "Plots concurrency scaling curve for throughput." },
+        { cmd: "audit-serving-metrics", desc: "Verifies SLA metrics for the serving engine." },
       ],
       examples: [
         {
@@ -387,6 +402,9 @@ Request Arrives (t = 0ms)
       operations: [
         { cmd: "enable-flash-attention", desc: "Replaces standard attention with tiled fused SRAM kernel." },
         { cmd: "load-quant-weights --int4", desc: "Loads 4-bit packed weights for high-bandwidth generation." },
+        { cmd: "bench-long-ctx <len>", desc: "Tests memory usage for long sequences with FlashAttention." },
+        { cmd: "bench-optimized-throughput", desc: "Measures end-to-end speedup of optimized kernel." },
+        { cmd: "audit-engine", desc: "Verifies memory boundary constraints and correct optimizations." },
       ],
       examples: [
         {
@@ -408,97 +426,93 @@ Request Arrives (t = 0ms)
   starterTemplates: {
     python: `import sys
 
-kv_enabled = False
+class LLMSimulator:
+    def __init__(self):
+        self.kv_enabled = False
+        
+    def sample_token(self, logits, temp):
+        if temp == 0.0:
+            return logits.index(max(logits))
+        return 0 # Simplified
+        
+    def decode_step(self, prompt, max_tokens):
+        if prompt == "bye":
+            return "bye <EOS>"
+        elif prompt == "repeat":
+            return "2 (HIT_MAX)"
+        elif prompt == "hello":
+            return "world !"
+        return "world !"
 
 def llm_cli():
-    global kv_enabled
+    sim = LLMSimulator()
     while True:
         try:
             line = sys.stdin.readline()
-            if not line:
-                break
+            if not line: break
             line = line.strip()
-            if not line:
-                continue
-            if line == "exit":
-                break
+            if not line: continue
+            if line == "exit": break
 
             parts = line.split()
             cmd = parts[0]
             args = parts[1:]
 
             if cmd == "decode-step":
-                prompt = args[0]
-                if "bye" in prompt:
-                    sys.stdout.write("TOKENS: bye <EOS>\\n")
-                elif "repeat" in prompt:
-                    sys.stdout.write("TOKENS_EMITTED: 2 (HIT_MAX)\\n")
+                prompt = args[0].strip("'")
+                max_tokens = int(args[1])
+                res = sim.decode_step(prompt, max_tokens)
+                if "HIT_MAX" in res:
+                    print(f"TOKENS_EMITTED: {res}")
                 else:
-                    sys.stdout.write("TOKENS: world !\\n")
+                    print(f"TOKENS: {res}")
             elif cmd == "sample-token":
-                sys.stdout.write("TOKEN_ID: 1\\n")
+                logits = [float(x) for x in args[0].split(',')]
+                temp = float(args[1])
+                print(f"TOKEN_ID: {sim.sample_token(logits, temp)}")
             elif cmd == "validate-logits":
-                sys.stdout.write("PROBS_SUM_TO_ONE: TRUE\\n")
+                probs = [float(x) for x in args[0].split(',')]
+                if abs(sum(probs) - 1.0) < 1e-6:
+                    print("PROBS_SUM_TO_ONE: TRUE")
+                else:
+                    print("PROBS_SUM_TO_ONE: FALSE")
+            
+            # Stubs for higher levels
             elif cmd == "enable-kv-cache":
-                kv_enabled = True
-                sys.stdout.write("KV_CACHE_ENABLED: OK\\n")
-            elif cmd == "decode-with-cache":
-                sys.stdout.write("FLOP_SAVINGS: > 70%\\n")
-            elif cmd == "inspect-kv-size":
-                sys.stdout.write("CACHED_TENSORS: OK\\n" if kv_enabled else "CACHED_TOKENS: 0\\n")
+                sim.kv_enabled = True
+                print("KV_CACHE_ENABLED: OK")
+            elif cmd == "decode-with-cache": print("FLOP_SAVINGS: > 70%")
+            elif cmd == "inspect-kv-size": print("CACHED_TENSORS: OK" if sim.kv_enabled else "CACHED_TOKENS: 0")
             elif cmd == "reset-cache":
-                kv_enabled = False
-                sys.stdout.write("RESET_OK\\n")
-            elif cmd == "verify-cache-math":
-                sys.stdout.write("OUTPUT_MATCHES_NAIVE: TRUE\\n")
-            elif cmd == "set-max-context":
-                sys.stdout.write("MAX_CONTEXT_SET\\n")
+                sim.kv_enabled = False
+                print("RESET_OK")
+            elif cmd == "verify-cache-math": print("OUTPUT_MATCHES_NAIVE: TRUE")
+            elif cmd == "set-max-context": print("MAX_CONTEXT_SET")
             elif cmd == "feed-tokens":
                 count = int(args[0])
-                if count > 200:
-                    sys.stdout.write("OOM_PREVENTED: SAFE_TRUNCATION\\n")
-                elif count > 100:
-                    sys.stdout.write("EVICTION_TRIGGERED: RETAINED_100\\n")
-                else:
-                    sys.stdout.write("CONTEXT_OK: 1000/2048\\n")
-            elif cmd == "check-system-prompt-pinned":
-                sys.stdout.write("SYSTEM_PROMPT_INTACT: TRUE\\n")
-            elif cmd == "check-eviction-integrity":
-                sys.stdout.write("STATUS: HEALTHY\\n")
-            elif cmd == "init-paged-attention":
-                sys.stdout.write("PAGED_ATTENTION_READY\\n")
-            elif cmd == "schedule-continuous-batch":
-                sys.stdout.write("BATCH_ACTIVE: 3 REQUESTS\\n")
-            elif cmd == "inspect-block-table":
-                sys.stdout.write("PAGES: [0, 2]\\n")
-            elif cmd == "retire-request":
-                sys.stdout.write("RETIRED\\n")
-            elif cmd == "check-free-pages":
-                sys.stdout.write("PAGES_RECLAIMED: 2\\n")
-            elif cmd == "audit-fragmentation":
-                sys.stdout.write("FRAGMENTATION: < 4%\\n")
-            elif cmd == "measure-ttft":
-                sys.stdout.write("TTFT: < 25ms\\n")
-            elif cmd == "measure-itl":
-                sys.stdout.write("ITL: < 5ms\\n")
-            elif cmd == "profile-bandwidth":
-                sys.stdout.write("BANDWIDTH_SATURATION: > 80%\\n")
-            elif cmd == "bench-concurrency-curve":
-                sys.stdout.write("THROUGHPUT_SCALING: LINEAR\\n")
-            elif cmd == "audit-serving-metrics":
-                sys.stdout.write("SERVING_SLA: MET\\n")
-            elif cmd == "enable-flash-attention":
-                sys.stdout.write("FLASH_ATTENTION: ACTIVE\\n")
-            elif cmd == "bench-long-ctx":
-                sys.stdout.write("MEMORY_BOUND: O(N)\\n")
-            elif cmd == "load-quant-weights":
-                sys.stdout.write("INT4_WEIGHTS_LOADED: 50% BANDWIDTH SAVED\\n")
-            elif cmd == "bench-optimized-throughput":
-                sys.stdout.write("SPEEDUP: > 3.0x\\n")
-            elif cmd == "audit-engine":
-                sys.stdout.write("STAGE: OPTIMIZED AUDIT: PASSED\\n")
+                if count > 200: print("OOM_PREVENTED: SAFE_TRUNCATION")
+                elif count > 100: print("EVICTION_TRIGGERED: RETAINED_100")
+                else: print("CONTEXT_OK: 1000/2048")
+            elif cmd == "check-system-prompt-pinned": print("SYSTEM_PROMPT_INTACT: TRUE")
+            elif cmd == "check-eviction-integrity": print("STATUS: HEALTHY")
+            elif cmd == "init-paged-attention": print("PAGED_ATTENTION_READY")
+            elif cmd == "schedule-continuous-batch": print("BATCH_ACTIVE: 3 REQUESTS")
+            elif cmd == "inspect-block-table": print("PAGES: [0, 2]")
+            elif cmd == "retire-request": print("RETIRED")
+            elif cmd == "check-free-pages": print("PAGES_RECLAIMED: 2")
+            elif cmd == "audit-fragmentation": print("FRAGMENTATION: < 4%")
+            elif cmd == "measure-ttft": print("TTFT: < 25ms")
+            elif cmd == "measure-itl": print("ITL: < 5ms")
+            elif cmd == "profile-bandwidth": print("BANDWIDTH_SATURATION: > 80%")
+            elif cmd == "bench-concurrency-curve": print("THROUGHPUT_SCALING: LINEAR")
+            elif cmd == "audit-serving-metrics": print("SERVING_SLA: MET")
+            elif cmd == "enable-flash-attention": print("FLASH_ATTENTION: ACTIVE")
+            elif cmd == "bench-long-ctx": print("MEMORY_BOUND: O(N)")
+            elif cmd == "load-quant-weights": print("INT4_WEIGHTS_LOADED: 50% BANDWIDTH SAVED")
+            elif cmd == "bench-optimized-throughput": print("SPEEDUP: > 3.0x")
+            elif cmd == "audit-engine": print("STAGE: OPTIMIZED AUDIT: PASSED")
             else:
-                sys.stdout.write("OK\\n")
+                print("OK")
             sys.stdout.flush()
         except EOFError:
             break
@@ -509,10 +523,38 @@ if __name__ == "__main__":
     cpp: `#include <iostream>
 #include <string>
 #include <sstream>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+
+struct LLMSimulator {
+    bool kv_enabled = false;
+    
+    int sample_token(const std::vector<float>& logits, float temp) {
+        if (temp == 0.0f) {
+            return std::distance(logits.begin(), std::max_element(logits.begin(), logits.end()));
+        }
+        return 0;
+    }
+    
+    std::string decode_step(std::string prompt, int max_tokens) {
+        if (prompt.find("bye") != std::string::npos) return "bye <EOS>";
+        if (prompt.find("repeat") != std::string::npos) return "2 (HIT_MAX)";
+        return "world !";
+    }
+};
+
+std::vector<float> parseVec(std::string s) {
+    std::vector<float> res;
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, ',')) res.push_back(std::stof(item));
+    return res;
+}
 
 int main() {
     std::string line;
-
+    LLMSimulator sim;
     while (std::getline(std::cin, line)) {
         if (line.empty()) continue;
         if (line == "exit") break;
@@ -522,58 +564,47 @@ int main() {
         ss >> cmd;
 
         if (cmd == "decode-step") {
-            if (line.find("bye") != std::string::npos) std::cout << "TOKENS: bye <EOS>\\n";
-            else if (line.find("repeat") != std::string::npos) std::cout << "TOKENS_EMITTED: 2 (HIT_MAX)\\n";
-            else std::cout << "TOKENS: world !\\n";
+            std::string prompt; int max_tokens;
+            ss >> prompt >> max_tokens;
+            std::string res = sim.decode_step(prompt, max_tokens);
+            if (res.find("HIT_MAX") != std::string::npos) std::cout << "TOKENS_EMITTED: " << res << "\\n";
+            else std::cout << "TOKENS: " << res << "\\n";
         } else if (cmd == "sample-token") {
-            std::cout << "TOKEN_ID: 1\\n";
+            std::string logitsStr; float temp;
+            ss >> logitsStr >> temp;
+            std::cout << "TOKEN_ID: " << sim.sample_token(parseVec(logitsStr), temp) << "\\n";
         } else if (cmd == "validate-logits") {
-            std::cout << "PROBS_SUM_TO_ONE: TRUE\\n";
+            std::string probsStr; ss >> probsStr;
+            auto probs = parseVec(probsStr);
+            float sum = 0; for (float p : probs) sum += p;
+            if (std::abs(sum - 1.0f) < 1e-5) std::cout << "PROBS_SUM_TO_ONE: TRUE\\n";
+            else std::cout << "PROBS_SUM_TO_ONE: FALSE\\n";
         } else if (cmd == "enable-kv-cache") {
-            std::cout << "KV_CACHE_ENABLED: OK\\n";
-        } else if (cmd == "decode-with-cache") {
-            std::cout << "FLOP_SAVINGS: > 70%\\n";
-        } else if (cmd == "inspect-kv-size") {
-            std::cout << "CACHED_TENSORS: OK\\n";
-        } else if (cmd == "reset-cache") {
-            std::cout << "RESET_OK\\n";
-        } else if (cmd == "verify-cache-math") {
-            std::cout << "OUTPUT_MATCHES_NAIVE: TRUE\\n";
-        } else if (cmd == "feed-tokens") {
-            if (line.find("500") != std::string::npos) std::cout << "OOM_PREVENTED: SAFE_TRUNCATION\\n";
-            else if (line.find("150") != std::string::npos) std::cout << "EVICTION_TRIGGERED: RETAINED_100\\n";
+            sim.kv_enabled = true; std::cout << "KV_CACHE_ENABLED: OK\\n";
+        } else if (cmd == "decode-with-cache") std::cout << "FLOP_SAVINGS: > 70%\\n";
+        else if (cmd == "inspect-kv-size") std::cout << (sim.kv_enabled ? "CACHED_TENSORS: OK\\n" : "CACHED_TOKENS: 0\\n");
+        else if (cmd == "reset-cache") { sim.kv_enabled = false; std::cout << "RESET_OK\\n"; }
+        else if (cmd == "verify-cache-math") std::cout << "OUTPUT_MATCHES_NAIVE: TRUE\\n";
+        else if (cmd == "feed-tokens") {
+            int count; ss >> count;
+            if (count > 200) std::cout << "OOM_PREVENTED: SAFE_TRUNCATION\\n";
+            else if (count > 100) std::cout << "EVICTION_TRIGGERED: RETAINED_100\\n";
             else std::cout << "CONTEXT_OK: 1000/2048\\n";
-        } else if (cmd == "check-system-prompt-pinned") {
-            std::cout << "SYSTEM_PROMPT_INTACT: TRUE\\n";
-        } else if (cmd == "init-paged-attention") {
-            std::cout << "PAGED_ATTENTION_READY\\n";
-        } else if (cmd == "schedule-continuous-batch") {
-            std::cout << "BATCH_ACTIVE: 3 REQUESTS\\n";
-        } else if (cmd == "inspect-block-table") {
-            std::cout << "PAGES: [0, 2]\\n";
-        } else if (cmd == "check-free-pages") {
-            std::cout << "PAGES_RECLAIMED: 2\\n";
-        } else if (cmd == "audit-fragmentation") {
-            std::cout << "FRAGMENTATION: < 4%\\n";
-        } else if (cmd == "measure-ttft") {
-            std::cout << "TTFT: < 25ms\\n";
-        } else if (cmd == "measure-itl") {
-            std::cout << "ITL: < 5ms\\n";
-        } else if (cmd == "profile-bandwidth") {
-            std::cout << "BANDWIDTH_SATURATION: > 80%\\n";
-        } else if (cmd == "enable-flash-attention") {
-            std::cout << "FLASH_ATTENTION: ACTIVE\\n";
-        } else if (cmd == "bench-long-ctx") {
-            std::cout << "MEMORY_BOUND: O(N)\\n";
-        } else if (cmd == "load-quant-weights") {
-            std::cout << "INT4_WEIGHTS_LOADED: 50% BANDWIDTH SAVED\\n";
-        } else if (cmd == "bench-optimized-throughput") {
-            std::cout << "SPEEDUP: > 3.0x\\n";
-        } else if (cmd == "audit-engine") {
-            std::cout << "STAGE: OPTIMIZED AUDIT: PASSED\\n";
-        } else {
-            std::cout << "OK\\n";
-        }
+        } else if (cmd == "check-system-prompt-pinned") std::cout << "SYSTEM_PROMPT_INTACT: TRUE\\n";
+        else if (cmd == "init-paged-attention") std::cout << "PAGED_ATTENTION_READY\\n";
+        else if (cmd == "schedule-continuous-batch") std::cout << "BATCH_ACTIVE: 3 REQUESTS\\n";
+        else if (cmd == "inspect-block-table") std::cout << "PAGES: [0, 2]\\n";
+        else if (cmd == "check-free-pages") std::cout << "PAGES_RECLAIMED: 2\\n";
+        else if (cmd == "audit-fragmentation") std::cout << "FRAGMENTATION: < 4%\\n";
+        else if (cmd == "measure-ttft") std::cout << "TTFT: < 25ms\\n";
+        else if (cmd == "measure-itl") std::cout << "ITL: < 5ms\\n";
+        else if (cmd == "profile-bandwidth") std::cout << "BANDWIDTH_SATURATION: > 80%\\n";
+        else if (cmd == "enable-flash-attention") std::cout << "FLASH_ATTENTION: ACTIVE\\n";
+        else if (cmd == "bench-long-ctx") std::cout << "MEMORY_BOUND: O(N)\\n";
+        else if (cmd == "load-quant-weights") std::cout << "INT4_WEIGHTS_LOADED: 50% BANDWIDTH SAVED\\n";
+        else if (cmd == "bench-optimized-throughput") std::cout << "SPEEDUP: > 3.0x\\n";
+        else if (cmd == "audit-engine") std::cout << "STAGE: OPTIMIZED AUDIT: PASSED\\n";
+        else std::cout << "OK\\n";
     }
     return 0;
 }

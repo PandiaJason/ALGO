@@ -95,27 +95,27 @@ export const logEngineChallenge: ChallengeData = {
       difficulty: "Easy",
       tagline: "Parse structured log lines (timestamp, status, latency_ms, endpoint) and track total line count.",
       diagram: `RAW LOG INPUT                                  INGESTION ENGINE        OUTPUT
-2026-09-07T12:00:00Z 200 12 /api/v1/checkout  ──► parse line tokens ──► OK
-2026-09-07T12:00:01Z 500 45 /api/v1/payment   ──► parse line tokens ──► OK
-STATS                                         ──► inspect counter   ──► TOTAL: 2`,
+INGEST 200 12 /api/v1/checkout                ──► parse line tokens ──► OK
+INGEST 500 45 /api/v1/payment                 ──► parse line tokens ──► OK
+COUNT                                         ──► inspect counter   ──► 2`,
       importantChallenge: {
         title: "Regex vs Single-Pass Scanning",
         description:
           "Using regular expressions to parse high-velocity log streams causes catastrophic regex backtracking and memory allocation spikes. Systems-grade log processors scan for space delimiters in a single forward pass without allocating string arrays for every line.",
-        codeOrFormat: "<TIMESTAMP> <STATUS> <LATENCY_MS> <ENDPOINT> ──► single forward pass delimiter scan",
+        codeOrFormat: "INGEST <STATUS> <LATENCY_MS> <ENDPOINT> ──► single forward pass delimiter scan",
       },
-      endGoalDemonstration: `LOG 2026-09-07T12:00:00Z 200 15 /api/health
+      endGoalDemonstration: `INGEST 200 15 /api/health
 OK
-LOG 2026-09-07T12:00:01Z 500 89 /api/checkout
+INGEST 500 89 /api/checkout
 OK
-STATS
-TOTAL: 2`,
+COUNT
+2`,
       nextLevelTeaser:
         "In Level 2, we introduce status code distribution profiling, categorizing requests into 2xx, 3xx, 4xx, and 5xx families using fast array index mapping.",
       learningLoop: {
         bottleneck: "Regex matching on millions of log lines consumes massive CPU cycles. Single-pass delimiter scanning is orders of magnitude faster.",
         whatYouUnderstand: [
-          "Delimited log line format: <TIMESTAMP> <STATUS> <LATENCY_MS> <ENDPOINT>.",
+          "Delimited log line format: INGEST <STATUS> <LATENCY_MS> <ENDPOINT>.",
           "Extracting tokens without intermediate allocations.",
           "Tracking total ingested lines in O(1) time.",
         ],
@@ -169,6 +169,7 @@ Status Code Histogram:
         outcomeSummary: "You maintain status code histograms and report exact error counts.",
       },
       operations: [
+        { cmd: "INGEST <status> <latency_ms> <endpoint>", desc: "Ingests single log line. Returns 'OK'." },
         { cmd: "STATUS_COUNT <status_code>", desc: "Returns count of lines matching exact status code." },
         { cmd: "FAMILY_COUNT <family>", desc: "Returns count for family: 2XX, 4XX, 5XX." },
       ],
@@ -211,6 +212,7 @@ Calculation: (1 / 4) * 100 = 25.00%`,
         outcomeSummary: "You calculate real-time error percentages and detect outage thresholds.",
       },
       operations: [
+        { cmd: "INGEST <status> <latency_ms> <endpoint>", desc: "Ingests single log line. Returns 'OK'." },
         { cmd: "ERROR_RATE", desc: "Returns 5XX error percentage formatted to 2 decimals (e.g. '0.00%' or '25.00%')." },
       ],
       examples: [
@@ -251,6 +253,7 @@ Rank 3: /about  [Count: 0]`,
         outcomeSummary: "You identify heavy-hitter endpoints and protect memory bounds.",
       },
       operations: [
+        { cmd: "INGEST <status> <latency_ms> <endpoint>", desc: "Ingests single log line. Returns 'OK'." },
         { cmd: "TOP_ENDPOINTS <k>", desc: "Returns space-separated top K endpoints sorted by frequency descending." },
       ],
       examples: [
@@ -293,6 +296,7 @@ Sorted: [ 10ms , 20ms , 30ms ]
         outcomeSummary: "You compute p50, p95, and p99 latency to capture tail performance.",
       },
       operations: [
+        { cmd: "INGEST <status> <latency_ms> <endpoint>", desc: "Ingests single log line. Returns 'OK'." },
         { cmd: "LATENCY <P50|P95|P99>", desc: "Returns the requested percentile latency in milliseconds." },
       ],
       examples: [
@@ -334,6 +338,8 @@ Raw Log Stream ──► Ingestion Filter ──► In-Memory Ring Buffer
         outcomeSummary: "You master high-speed stream aggregation with zero memory growth.",
       },
       operations: [
+        { cmd: "INGEST <status> <latency_ms> <endpoint>", desc: "Ingests single log line. Returns 'OK'." },
+        { cmd: "COUNT", desc: "Returns total number of ingested log lines." },
         { cmd: "STATS", desc: "Returns 'TOTAL: <n> ERRORS: <e> P99: <p> STATUS: HEALTHY'." },
         { cmd: "RESET", desc: "Wipes all aggregated metrics and resets engine. Returns 'OK'." },
       ],

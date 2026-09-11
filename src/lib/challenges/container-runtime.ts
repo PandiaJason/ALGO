@@ -13,12 +13,12 @@ export const containerRuntimeChallenge: ChallengeData = {
   mainSkill: "OS virtualization, Linux kernel primitives, security isolation",
   signatureQuestion: "What actually happens when you run 'docker run'?",
   overview:
-    "In this systems capstone challenge, you build a lightweight Linux container runtime from scratch — inspired by the core implementation of runc, Docker, and gVisor. You will demystify containerization by directly invoking Linux kernel syscalls: unshare() and clone() with CLONE_NEWPID/CLONE_NEWNS, mounting an isolated root filesystem with pivot_root, enforcing strict memory and CPU throttling with cgroups v2, and executing sandboxed workloads with zero host leaks.",
+    "In this systems capstone challenge, you build a lightweight Linux container runtime **simulator** (a CLI state machine) — inspired by the core implementation of runc, Docker, and gVisor. You will demystify containerization by simulating Linux kernel syscalls concepts: namespace isolation (unshare/clone with CLONE_NEWPID/CLONE_NEWNS), filesystem jailing (pivot_root), resource guardrails (cgroups v2), and multi-tenant sandboxing.",
   whyItMatters:
-    "Containers are not virtual machines; they are regular Linux processes constrained by kernel namespaces and control groups. Mastering namespaces, chroot/pivot_root, and cgroups gives you foundational systems knowledge required to build modern AI sandboxes, serverless runtimes, and secure multi-tenant execution clusters.",
+    "Containers are not virtual machines; they are regular Linux processes constrained by kernel namespaces and control groups. Mastering these concepts by building a state-machine simulator gives you foundational systems knowledge required to understand modern AI sandboxes, serverless runtimes, and secure multi-tenant execution clusters.",
   finalOutcome:
-    "Upon completing all 6 levels, you have constructed a functional container engine capable of launching isolated container environments in under 15ms, trapping memory overflows (OOM) deterministically, jailing processes away from host rootfs, and safely executing untrusted code.",
-  philosophy: "Encounter real Linux virtualization engineering problems: PID 1 signal semantics, pivot_root mount binding, cgroup v2 controller interfaces, and host breakout prevention.",
+    "Upon completing all 6 levels, you have constructed a functional container engine simulator capable of tracking isolated container environments, trapping simulated memory overflows (OOM) deterministically, modeling rootfs jails, and securely scaling parallel workload execution.",
+  philosophy: "Encounter real Linux virtualization engineering concepts: PID 1 signal semantics, pivot_root mount binding, cgroup v2 controller interfaces, and host breakout prevention, all modeled through a rigorous CLI state machine.",
   architectureDiagram: `                   HOST OPERATING SYSTEM
                              │
                ┌─────────────┴─────────────┐
@@ -123,6 +123,7 @@ CONTAINER INTERNAL VIEW:
       operations: [
         { cmd: "spawn-ns <hostname> <command>", desc: "Spawns command in new PID and UTS namespace." },
         { cmd: "get-container-pid", desc: "Returns the internal PID (must be 1) and external host PID." },
+        { cmd: "exit", desc: "Exits the current command sequence." },
       ],
       examples: [
         {
@@ -173,6 +174,12 @@ CONTAINER INTERNAL VIEW:
       operations: [
         { cmd: "mount-rootfs <dir>", desc: "Prepares mount points and executes pivot_root into container rootfs." },
         { cmd: "ls-container-root", desc: "Lists root directory inside the container." },
+        { cmd: "test-chroot-escape", desc: "Attempts to breakout to the host root." },
+        { cmd: "mount-ro", desc: "Mounts the rootfs as read-only." },
+        { cmd: "touch <file>", desc: "Attempts to create a file." },
+        { cmd: "mount-proc", desc: "Mounts the proc pseudo-filesystem." },
+        { cmd: "ls <dir>", desc: "Lists the contents of a directory." },
+        { cmd: "exit", desc: "Exits the current command sequence." },
       ],
       examples: [
         {
@@ -223,8 +230,10 @@ CONTAINER INTERNAL VIEW:
         outcomeSummary: "You protect host servers from resource starvation and fork bombs.",
       },
       operations: [
-        { cmd: "set-limits --mem <bytes> --pids <num>", desc: "Configures cgroups v2 resource limits for container." },
-        { cmd: "run-with-limits <cmd>", desc: "Executes workload under active cgroup restrictions." },
+        { cmd: "set-limits --mem <bytes> --pids <num> [--cpu <quota> <period>]", desc: "Configures cgroups v2 resource limits for container." },
+        { cmd: "run-with-limits <cmd>", desc: "Executes workload. Available commands: alloc-16M, alloc-32M, fork-bomb, burn-cpu." },
+        { cmd: "cleanup-cgroups", desc: "Cleans up cgroup directories." },
+        { cmd: "exit", desc: "Exits the current command sequence." },
       ],
       examples: [
         {
@@ -279,6 +288,10 @@ CONTAINER INTERNAL VIEW:
       operations: [
         { cmd: "spawn-pool <count>", desc: "Spawns N concurrent sandboxes and reports active container IDs." },
         { cmd: "exec-sandbox <id> <command>", desc: "Executes command inside designated sandbox." },
+        { cmd: "exec-parallel <cmd>", desc: "Executes a command across all sandboxes in parallel." },
+        { cmd: "test-cross-sandbox-access", desc: "Verifies isolation between parallel sandboxes." },
+        { cmd: "destroy-pool", desc: "Cleans up all spawned sandboxes and resources." },
+        { cmd: "exit", desc: "Exits the current command sequence." },
       ],
       examples: [
         {
@@ -325,6 +338,10 @@ Time: 0 μs             +1,200 μs            +3,300 μs        +4,100 μs
       operations: [
         { cmd: "profile-boot", desc: "Runs single container boot and reports microsecond timeline." },
         { cmd: "bench-spawn-rate <count>", desc: "Measures container creations per second." },
+        { cmd: "measure-footprint", desc: "Measures container memory overhead." },
+        { cmd: "bench-ctx-switch", desc: "Benchmarks context switch latency." },
+        { cmd: "audit-latency", desc: "Audits overall startup latency." },
+        { cmd: "exit", desc: "Exits the current command sequence." },
       ],
       examples: [
         {
@@ -373,7 +390,9 @@ Time: 0 μs             +1,200 μs            +3,300 μs        +4,100 μs
       },
       operations: [
         { cmd: "init-hot-pool <size>", desc: "Pre-forks and pauses hot standby containers in isolated namespaces." },
-        { cmd: "fast-exec <command>", desc: "Wakes hot container and executes command with sub-3ms latency." },
+        { cmd: "fast-exec <command>", desc: "Wakes hot container and executes command with sub-3ms latency. Accepts 'check-clean'." },
+        { cmd: "audit-engine", desc: "Audits the entire execution engine." },
+        { cmd: "exit", desc: "Exits the current command sequence." },
       ],
       examples: [
         {

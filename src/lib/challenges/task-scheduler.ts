@@ -138,7 +138,7 @@ RUNNING worker-1`,
           output: "OK\nQUEUED\nSCHEDULED task-1 -> worker-1\nRUNNING worker-1",
         },
       ],
-      constraints: ["Node IDs and Task IDs are alphanumeric strings", "CPU is integer cores, RAM is integer MB"],
+      constraints: ["Node IDs and Task IDs are alphanumeric strings", "CPU is integer cores, RAM is integer MB", "Tasks submitted via SUBMIT have a default priority of 1"],
       cases: [
         {
           name: "Case 1: Single Node Single Task",

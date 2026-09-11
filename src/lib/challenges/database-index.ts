@@ -91,25 +91,22 @@ export const databaseIndexChallenge: ChallengeData = {
       tagline: "Implement INSERT and sequential SCAN. Measure O(N) lookup degradation.",
       diagram: `COMMANDS                     STORAGE ENGINE                 OUTPUT
 INSERT 42 "Alice"     ──────► table.push({42, "Alice"})   ──► OK
-GET 42                ──────► scan: compare 0..N rows     ──► Alice
-GET 99                ──────► scan entire table (miss)    ──► NULL
-SCAN 10 50            ──────► filter all rows             ──► 42:Alice`,
+SCAN 42               ──────► scan: compare 0..N rows     ──► Alice
+SCAN 99               ──────► scan entire table (miss)    ──► NOT_FOUND`,
       importantChallenge: {
         title: "Sequential scan scalability bottleneck",
         description:
           "Appending rows is fast (O(1)), but finding a row requires linearly traversing every single entry (O(N)). As tables grow from 100 rows to 1,000,000 rows, queries degrade from microseconds to seconds. An index is the mathematical fix.",
-        codeOrFormat: "GET 42 on 1M rows ──► 1,000,000 comparisons without index vs 3 hops with B+Tree",
+        codeOrFormat: "SCAN 42 on 1M rows ──► 1,000,000 comparisons without index vs 3 hops with B+Tree",
       },
       endGoalDemonstration: `INSERT 10 "Alice"
 OK
 INSERT 20 "Bob"
 OK
-GET 10
+SCAN 10
 Alice
-GET 99
-NULL
-SCAN 5 15
-10:Alice`,
+SCAN 99
+NOT_FOUND`,
       nextLevelTeaser:
         "In Level 2, we introduce sorted array indexing and binary search, cutting lookup comparisons from N down to log2(N).",
       learningLoop: {
@@ -168,6 +165,7 @@ Heap: [A]    [B]    [C]    [D]    [E]`,
         outcomeSummary: "You understand the power of logarithmic search and why flat arrays fail on inserts.",
       },
       operations: [
+        { cmd: "INSERT <id> <value>", desc: "Appends row to table. Returns 'OK'." },
         { cmd: "INDEX_GET <id>", desc: "Performs binary search over sorted index. Returns '<value>' or 'NOT_FOUND'." },
       ],
       examples: [
@@ -262,12 +260,13 @@ B+ Tree Leaf Chain Topology:
         outcomeSummary: "You implement linked leaf nodes and high-throughput range query scans.",
       },
       operations: [
+        { cmd: "BTREE_INSERT <id> <val>", desc: "Inserts into B-Tree with node capacity M=3. Splits on 4th key. Returns 'OK'." },
         { cmd: "RANGE <min_id> <max_id>", desc: "Returns space-separated values for keys in range [min_id, max_id]." },
       ],
       examples: [
         { title: "Range Query", input: "BTREE_INSERT 10 A\nBTREE_INSERT 20 B\nBTREE_INSERT 30 C\nRANGE 10 25", output: "OK\nOK\nOK\nA B" },
       ],
-      constraints: ["Inclusive range [min, max]", "Return empty string if no keys match"],
+      constraints: ["Inclusive range [min, max]", "Return 'EMPTY' if no keys match"],
       cases: [
         { name: "Case 1: Two Key Range", input: "BTREE_INSERT 10 A\nBTREE_INSERT 20 B\nBTREE_INSERT 30 C\nRANGE 10 25", expected: "OK\nOK\nOK\nA B" },
         { name: "Case 2: Full Span Range", input: "BTREE_INSERT 1 A\nBTREE_INSERT 2 B\nBTREE_INSERT 3 C\nRANGE 1 3", expected: "OK\nOK\nOK\nA B C" },
@@ -308,12 +307,13 @@ PAGE_STATS 0           ──► Tuple Data grows UP (End of Page) ──► FRE
         outcomeSummary: "You serialize data into hardware-aligned 4096-byte slotted disk pages.",
       },
       operations: [
+        { cmd: "BTREE_INSERT <id> <val>", desc: "Inserts into B-Tree with node capacity M=3. Splits on 4th key. Returns 'OK'." },
         { cmd: "PAGE_STATS <page_id>", desc: "Returns slotted page metadata: FREE_BYTES: <f> ITEMS: <n>." },
       ],
       examples: [
         { title: "Slotted Page Stats", input: "BTREE_INSERT 1 x\nPAGE_STATS 0", output: "OK\nPAGE: 0 FREE_BYTES: 4056 ITEMS: 1" },
       ],
-      constraints: ["Page size exactly 4096 bytes", "Proper free space calculation"],
+      constraints: ["Page size exactly 4096 bytes", "Proper free space calculation", "Each row occupies exactly 40 bytes in the slotted page"],
       cases: [
         { name: "Case 1: Initial Page Free Space", input: "BTREE_INSERT 100 alpha\nPAGE_STATS 0", expected: "OK\nPAGE: 0 FREE_BYTES: 4056 ITEMS: 1", check: (act) => act.includes("FREE_BYTES") && act.includes("ITEMS") },
         { name: "Case 2: Free space decreases on insert", input: "BTREE_INSERT 1 a\nBTREE_INSERT 2 b\nPAGE_STATS 0", expected: "PAGE: 0", check: (act) => act.includes("ITEMS: 2") || act.includes("ITEMS: 1") },
@@ -349,6 +349,8 @@ RAM Hit Ratio: Keeps hot B-Tree root/internal pages in memory!`,
         outcomeSummary: "You build a production-grade buffer pool manager with Clock eviction.",
       },
       operations: [
+        { cmd: "BTREE_INSERT <id> <val>", desc: "Inserts into B-Tree with node capacity M=3. Splits on 4th key. Returns 'OK'." },
+        { cmd: "BTREE_GET <id>", desc: "Traverses B-Tree nodes to retrieve value. Returns '<val>' or 'NOT_FOUND'." },
         { cmd: "BUFFER_STATS", desc: "Returns buffer pool metrics: CAPACITY: <c> HITS: <h> MISSES: <m> HIT_RATIO: <r>." },
       ],
       examples: [

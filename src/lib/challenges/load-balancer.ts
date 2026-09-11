@@ -203,7 +203,7 @@ Sequence: a -> b -> a -> a -> c -> b -> a (Smooth interleaving without burst clu
           output: "OK\nOK\nOK\nFORWARD -> a\nFORWARD -> b\nFORWARD -> a\nFORWARD -> a\nFORWARD -> c\nFORWARD -> b\nFORWARD -> a",
         },
       ],
-      constraints: ["Weights are positive integers"],
+      constraints: ["Weights are positive integers", "When a backend is added via ADD_WEIGHTED, its current_weight is initialized to 0."],
       cases: [
         {
           name: "Case 1: Ratio 4:2:1 Smooth Distribution",
@@ -334,7 +334,7 @@ SUCCESS s1 (Probe)   ──► s1: UP (0/2)     ──► Restored to Pool      
           output: "OK\nOK\nOK\nSTATUS s1 UP\nSTATUS s1 DOWN\nFORWARD -> s2\nFORWARD -> s2",
         },
       ],
-      constraints: ["If all backends are DOWN, ROUTE returns 'NO_BACKENDS'"],
+      constraints: ["If all backends are DOWN, ROUTE returns 'NO_BACKENDS'", "ALL routing strategies (ROUTE, ROUTE_WEIGHTED, ROUTE_LEAST_CONN) must exclude servers in DOWN or DRAINING state."],
       cases: [
         {
           name: "Case 1: Tripping Node Out of Pool",

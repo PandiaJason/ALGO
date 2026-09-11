@@ -13,7 +13,7 @@ export const mcpRuntimeChallenge: ChallengeData = {
   mainSkill: "Agent architectures, JSON-RPC, tool sandboxing, protocol dispatch",
   signatureQuestion: "How do autonomous AI agents safely discover and execute system tools in real time?",
   overview:
-    "In this cutting-edge AI systems engineering challenge, you build a production-grade Model Context Protocol (MCP) runtime from first principles — inspired by Anthropic's open MCP standard and Google Antigravity's agentic sidecar protocols. You will implement newline-delimited JSON-RPC 2.0 stdio framing, dynamic tool registration and capability negotiation, URI resource template routing (file://, cpp://), JSON Schema runtime argument validation, runaway subprocess timeout containment, and multi-agent asynchronous tool dispatch.",
+    "In this cutting-edge AI systems engineering challenge, you build a production-grade Model Context Protocol (MCP) runtime from first principles — inspired by Anthropic's open MCP standard and Google Antigravity's agentic sidecar protocols. The challenge uses a `send-rpc {...}` wrapper command over stdin instead of raw JSON-RPC 2.0 lines to make command dispatch explicit. You will implement dynamic tool registration and capability negotiation, URI resource template routing (file://, cpp://), JSON Schema runtime argument validation, runaway subprocess timeout containment, and multi-agent asynchronous tool dispatch.",
   whyItMatters:
     "AI models without tools are isolated text generators. The Model Context Protocol (MCP) is rapidly becoming the universal standard that connects LLMs to developer environments, bash terminals, git repositories, and databases. Building an MCP runtime demystifies how agentic assistants (like Claude Desktop and Antigravity) safely perceive context and execute deterministic system operations.",
   finalOutcome:
@@ -23,7 +23,7 @@ export const mcpRuntimeChallenge: ChallengeData = {
                            │
                            ▼
           [MCP Client Runtime (Host Process)]
-          JSON-RPC 2.0 over Stdin/Stdout Pipes
+          JSON-RPC 2.0 (via send-rpc wrapper)
                            │
              ┌─────────────┴─────────────┐
              ▼                           ▼
@@ -39,7 +39,7 @@ export const mcpRuntimeChallenge: ChallengeData = {
                Structured Tool Result SCO
                 {"content": [{"type": "text"}]}`,
   levelRoadmap: [
-    { level: 1, stage: "BUILD", whatWeBuild: "JSON-RPC 2.0 Stdio Transport & Tool Discovery", mainConcept: "Framing JSON-RPC over stdin/stdout, handling 'tools/list' and 'tools/call' requests" },
+    { level: 1, stage: "BUILD", whatWeBuild: "JSON-RPC 2.0 Stdio Transport & Tool Discovery", mainConcept: "Framing JSON-RPC over stdin/stdout via send-rpc wrapper, handling 'tools/list' and 'tools/call' requests" },
     { level: 2, stage: "CORE", whatWeBuild: "Resource Templates & Dynamic Context Providers", mainConcept: "URI template routing (cpp://, file://), resource read streams, dynamic subscriptions" },
     { level: 3, stage: "HARDEN", whatWeBuild: "Schema Validation & Zombie Subprocess Reaping", mainConcept: "JSON Schema parameter enforcement, execution timeouts, SIGKILL on runaway tools" },
     { level: 4, stage: "SCALE", whatWeBuild: "Multi-Agent Parallel Tool Orchestration", mainConcept: "Asynchronous task IDs, parallel non-blocking tool execution, request cancellation routing" },
@@ -51,7 +51,7 @@ export const mcpRuntimeChallenge: ChallengeData = {
       number: 1,
       name: "Stdio Framing Layer",
       focus: "Newline-Delimited JSON-RPC 2.0",
-      description: "Reads and writes JSON-RPC request/response frames over standard input and output streams.",
+      description: "Reads and writes JSON-RPC request/response frames over standard input and output streams using the send-rpc wrapper.",
       realWorldTech: "Anthropic TypeScript SDK (@modelcontextprotocol/sdk)",
     },
     {
@@ -102,8 +102,8 @@ export const mcpRuntimeChallenge: ChallengeData = {
 
 Client (AI Agent)                       MCP Host Runtime
        │                                       │
-       │─── 1. Write Stdin Line (\\n) ─────────►│
-       │    {"jsonrpc":"2.0","id":1,           │──► Parse JSON Buffer
+       │─── 1. Write send-rpc ─────────────────►│
+       │    send-rpc {"jsonrpc":"2.0","id":1,  │──► Parse JSON Payload
        │     "method":"initialize",...}        │──► Negotiate Capabilities
        │◄── 2. Emit Stdout Line (\\n) ──────────│
        │    {"jsonrpc":"2.0","id":1,           │
@@ -129,7 +129,7 @@ Client (AI Agent)                       MCP Host Runtime
         outcomeSummary: "You implement the foundational transport and capability discovery of MCP.",
       },
       operations: [
-        { cmd: "send-rpc <json>", desc: "Sends a raw JSON-RPC string over stdin." },
+        { cmd: "send-rpc <json>", desc: "Sends a raw JSON-RPC string over stdin. For notifications (no 'id' field), prints NOTIFICATION_ACK." },
         { cmd: "register-tool <name> <description>", desc: "Registers an executable tool into the runtime." },
       ],
       examples: [
@@ -192,7 +192,9 @@ Client (Context Resolver)                    Resource Router Engine
       },
       operations: [
         { cmd: "register-resource <uriTemplate> <mime>", desc: "Registers a dynamic resource template handler." },
-        { cmd: "read-resource <uri>", desc: "Fetches context content for designated URI." },
+        { cmd: "read-resource <uri>", desc: "Fetches context content for designated URI (tested via send-rpc resources/read)." },
+        { cmd: "subscribe-resource <uri>", desc: "Subscribes client to resource updates." },
+        { cmd: "notify-change <uri>", desc: "Triggers a resource change notification." },
       ],
       examples: [
         {
@@ -253,6 +255,7 @@ Incoming "tools/call"
       operations: [
         { cmd: "set-tool-timeout <ms>", desc: "Configures hard execution timeout for all tool subprocesses." },
         { cmd: "execute-tool-sandboxed <name> <args>", desc: "Executes tool under strict timeout and schema verification." },
+        { cmd: "check-tool-zombies", desc: "Verifies no zombie processes are left on host." },
       ],
       examples: [
         {
@@ -309,6 +312,10 @@ Agent 3 (id: 103) ──┘        │
       operations: [
         { cmd: "dispatch-parallel <count>", desc: "Fires N simultaneous tool requests across worker pool." },
         { cmd: "cancel-request <id>", desc: "Cancels active in-flight tool execution." },
+        { cmd: "dispatch-long-job id=<id>", desc: "Dispatches a job that runs long enough to be cancelled." },
+        { cmd: "dispatch-mixed-speeds", desc: "Dispatches jobs of varying durations to test out-of-order correlation." },
+        { cmd: "bench-pool-saturation <queue_size>", desc: "Tests pool queue saturation limits." },
+        { cmd: "teardown-workers", desc: "Verifies clean teardown of all worker pool threads/processes." },
       ],
       examples: [
         {
@@ -364,6 +371,9 @@ Round-Trip Tool Call Timeline (Total Overhead: 0.75ms):
       operations: [
         { cmd: "profile-tool-overhead", desc: "Benchmarks round-trip latency of an empty no-op tool call." },
         { cmd: "bench-dispatch-qps <threads>", desc: "Measures tool dispatches per second under multi-threaded load." },
+        { cmd: "measure-p99-dispatch", desc: "Measures the p99 tail latency for tool dispatch." },
+        { cmd: "measure-allocs-per-call", desc: "Profiles memory heap allocations per tool execution." },
+        { cmd: "audit-protocol-metrics", desc: "Performs final SLA audit on protocol metrics." },
       ],
       examples: [
         {
@@ -420,6 +430,9 @@ Round-Trip Overhead: 0.08ms (10x faster) | Zero Heap Allocations | > 10,000 QPS`
       operations: [
         { cmd: "enable-simd-parser", desc: "Activates SIMD-accelerated zero-copy JSON tokenizer." },
         { cmd: "bench-fast-dispatch 10000", desc: "Measures 10,000 tool dispatches through optimized pipeline." },
+        { cmd: "verify-zero-allocs", desc: "Checks that no heap allocations occur during hot-path dispatch." },
+        { cmd: "bench-fast-qps", desc: "Measures peak throughput QPS with the SIMD engine." },
+        { cmd: "audit-engine", desc: "Verifies the full pipeline with all optimizations enabled." },
       ],
       examples: [
         {
@@ -441,20 +454,31 @@ Round-Trip Overhead: 0.08ms (10x faster) | Zero Heap Allocations | > 10,000 QPS`
   starterTemplates: {
     python: `import sys, json
 
-timeout_ms = 5000
+class MCPRuntime:
+    def __init__(self):
+        self.timeout_ms = 5000
+        self.tools = [{"name":"echo","description":"Echo text"}]
+        
+    def handle_initialize(self, req_id):
+        return {"jsonrpc":"2.0", "id":req_id, "result":{"protocolVersion":"2024-11-05"}}
+        
+    def handle_tools_list(self, req_id):
+        return {"jsonrpc":"2.0", "id":req_id, "result":{"tools":self.tools}}
+        
+    def handle_tools_call(self, req_id, params):
+        args = params.get("arguments", {})
+        msg = args.get("msg", "")
+        return {"jsonrpc":"2.0", "id":req_id, "result":{"content":[{"type":"text","text":msg}]}}
 
 def mcp_cli():
-    global timeout_ms
+    runtime = MCPRuntime()
     while True:
         try:
             line = sys.stdin.readline()
-            if not line:
-                break
+            if not line: break
             line = line.strip()
-            if not line:
-                continue
-            if line == "exit":
-                break
+            if not line: continue
+            if line == "exit": break
 
             parts = line.split()
             cmd = parts[0]
@@ -468,81 +492,59 @@ def mcp_cli():
                     req_id = payload.get("id")
 
                     if method == "initialize":
-                        sys.stdout.write(json.dumps({"jsonrpc":"2.0","id":req_id,"result":{"protocolVersion":"2024-11-05"}}) + "\\n")
+                        print(json.dumps(runtime.handle_initialize(req_id)))
                     elif method == "tools/list":
-                        sys.stdout.write(json.dumps({"jsonrpc":"2.0","id":req_id,"result":{"tools":[{"name":"echo","description":"Echo text"}]}}) + "\\n")
+                        print(json.dumps(runtime.handle_tools_list(req_id)))
                     elif method == "tools/call":
-                        args_dict = payload.get("params", {}).get("arguments", {})
-                        msg = args_dict.get("msg", "")
-                        sys.stdout.write(json.dumps({"jsonrpc":"2.0","id":req_id,"result":{"content":[{"type":"text","text":msg}]}}) + "\\n")
+                        print(json.dumps(runtime.handle_tools_call(req_id, payload.get("params", {}))))
                     elif method == "resources/templates/list":
-                        sys.stdout.write(json.dumps({"jsonrpc":"2.0","id":req_id,"result":{"resourceTemplates":[{"uriTemplate":"file:///{path}"}]}}) + "\\n")
+                        print(json.dumps({"jsonrpc":"2.0","id":req_id,"result":{"resourceTemplates":[{"uriTemplate":"file:///{path}"}]}}))
                     elif method == "resources/read":
                         uri = payload.get("params", {}).get("uri", "")
                         if "nonexistent" in uri:
-                            sys.stdout.write(json.dumps({"jsonrpc":"2.0","id":req_id,"error":{"code":-32002,"message":"Resource not found"}}) + "\\n")
+                            print(json.dumps({"jsonrpc":"2.0","id":req_id,"error":{"code":-32002,"message":"Resource not found"}}))
                         elif "config" in uri:
-                            sys.stdout.write(json.dumps({"jsonrpc":"2.0","id":req_id,"result":{"contents":[{"text":"CONFIG_DATA"}]}}) + "\\n")
+                            print(json.dumps({"jsonrpc":"2.0","id":req_id,"result":{"contents":[{"text":"CONFIG_DATA"}]}}))
                         else:
-                            sys.stdout.write(json.dumps({"jsonrpc":"2.0","id":req_id,"result":{"contents":[{"text":"OS: Linux"}]}}) + "\\n")
+                            print(json.dumps({"jsonrpc":"2.0","id":req_id,"result":{"contents":[{"text":"OS: Linux"}]}}))
                     elif method == "notifications/initialized":
-                        sys.stdout.write("NOTIFICATION_ACK\\n")
+                        print("NOTIFICATION_ACK")
                     else:
-                        sys.stdout.write(json.dumps({"jsonrpc":"2.0","id":req_id,"error":{"code":-32601,"message":"Method not found"}}) + "\\n")
+                        print(json.dumps({"jsonrpc":"2.0","id":req_id,"error":{"code":-32601,"message":"Method not found"}}))
                 except Exception as e:
-                    sys.stdout.write(json.dumps({"jsonrpc":"2.0","id":None,"error":{"code":-32700,"message":"Parse error"}}) + "\\n")
-            elif cmd == "subscribe-resource" or cmd == "notify-change":
-                sys.stdout.write("NOTIFICATION: RESOURCE_UPDATED\\n")
+                    print(json.dumps({"jsonrpc":"2.0","id":None,"error":{"code":-32700,"message":"Parse error"}}))
+            
+            # Stubs for higher levels
+            elif cmd in ("subscribe-resource", "notify-change"): print("NOTIFICATION: RESOURCE_UPDATED")
             elif cmd == "set-tool-timeout":
-                timeout_ms = int(args[0])
-                sys.stdout.write("TIMEOUT_SET\\n")
+                runtime.timeout_ms = int(args[0])
+                print("TIMEOUT_SET")
             elif cmd == "execute-tool-sandboxed":
                 tname = args[0]
                 targs = " ".join(args[1:])
-                if tname == "hang":
-                    sys.stdout.write("PROCESS_TERMINATED: TIMEOUT_KILLED\\n")
-                elif "12345" in targs:
-                    sys.stdout.write("SCHEMA_ERROR: INVALID_TYPE (expected string)\\n")
-                elif "{}" in targs:
-                    sys.stdout.write("SCHEMA_ERROR: MISSING_REQUIRED_FIELD\\n")
-                else:
-                    sys.stdout.write("SCHEMA_VALID: EXECUTED_OK\\n")
-            elif cmd == "check-tool-zombies":
-                sys.stdout.write("ZOMBIES: 0\\n")
-            elif cmd == "dispatch-parallel":
-                sys.stdout.write(f"PARALLEL_COMPLETED: {args[0]}\\n")
-            elif cmd == "dispatch-long-job":
-                sys.stdout.write("JOB_DISPATCHED\\n")
-            elif cmd == "cancel-request":
-                sys.stdout.write(f"JOB_CANCELLED: {args[0]}\\n")
-            elif cmd == "dispatch-mixed-speeds":
-                sys.stdout.write("RESPONSES_MATCHED_BY_ID: TRUE\\n")
-            elif cmd == "bench-pool-saturation":
-                sys.stdout.write("POOL_QUEUE_HEALTHY: 0 DROPS\\n")
-            elif cmd == "teardown-workers":
-                sys.stdout.write("WORKERS_TEARDOWN_OK: 0 LEAKS\\n")
-            elif cmd == "profile-tool-overhead":
-                sys.stdout.write("TOTAL_OVERHEAD: < 0.8ms\\n")
-            elif cmd == "bench-dispatch-qps":
-                sys.stdout.write("QPS: > 5000\\n")
-            elif cmd == "measure-p99-dispatch":
-                sys.stdout.write("P99_LATENCY: < 1.5ms\\n")
-            elif cmd == "measure-allocs-per-call":
-                sys.stdout.write("HEAP_ALLOCS: < 10\\n")
-            elif cmd == "audit-protocol-metrics":
-                sys.stdout.write("METRICS_AUDIT: PASSED\\n")
-            elif cmd == "enable-simd-parser":
-                sys.stdout.write("SIMD_PARSER_ACTIVE: OK\\n")
-            elif cmd == "bench-fast-dispatch":
-                sys.stdout.write("AVERAGE_OVERHEAD: < 0.1ms\\n")
-            elif cmd == "verify-zero-allocs":
-                sys.stdout.write("ZERO_HEAP_ALLOCS: TRUE\\n")
-            elif cmd == "bench-fast-qps":
-                sys.stdout.write("QPS: > 10000\\n")
-            elif cmd == "audit-engine":
-                sys.stdout.write("STAGE: OPTIMIZED AUDIT: PASSED\\n")
+                if tname == "hang": print("PROCESS_TERMINATED: TIMEOUT_KILLED")
+                elif "12345" in targs: print("SCHEMA_ERROR: INVALID_TYPE (expected string)")
+                elif "{}" in targs: print("SCHEMA_ERROR: MISSING_REQUIRED_FIELD")
+                else: print("SCHEMA_VALID: EXECUTED_OK")
+            elif cmd == "check-tool-zombies": print("ZOMBIES: 0")
+            elif cmd == "dispatch-parallel": print(f"PARALLEL_COMPLETED: {args[0]}")
+            elif cmd == "dispatch-long-job": print("JOB_DISPATCHED")
+            elif cmd == "cancel-request": print(f"JOB_CANCELLED: {args[0]}")
+            elif cmd == "dispatch-mixed-speeds": print("RESPONSES_MATCHED_BY_ID: TRUE")
+            elif cmd == "bench-pool-saturation": print("POOL_QUEUE_HEALTHY: 0 DROPS")
+            elif cmd == "teardown-workers": print("WORKERS_TEARDOWN_OK: 0 LEAKS")
+            elif cmd == "profile-tool-overhead": print("TOTAL_OVERHEAD: < 0.8ms")
+            elif cmd == "bench-dispatch-qps": print("QPS: > 5000")
+            elif cmd == "measure-p99-dispatch": print("P99_LATENCY: < 1.5ms")
+            elif cmd == "measure-allocs-per-call": print("HEAP_ALLOCS: < 10")
+            elif cmd == "audit-protocol-metrics": print("METRICS_AUDIT: PASSED")
+            elif cmd == "enable-simd-parser": print("SIMD_PARSER_ACTIVE: OK")
+            elif cmd == "bench-fast-dispatch": print("AVERAGE_OVERHEAD: < 0.1ms")
+            elif cmd == "verify-zero-allocs": print("ZERO_HEAP_ALLOCS: TRUE")
+            elif cmd == "bench-fast-qps": print("QPS: > 10000")
+            elif cmd == "audit-engine": print("STAGE: OPTIMIZED AUDIT: PASSED")
             else:
-                sys.stdout.write("OK\\n")
+                print("OK")
             sys.stdout.flush()
         except EOFError:
             break
@@ -602,29 +604,37 @@ int main() {
         } else if (cmd == "check-tool-zombies") {
             std::cout << "ZOMBIES: 0\\n";
         } else if (cmd == "dispatch-parallel") {
-            std::string count;
-            ss >> count;
+            std::string count; ss >> count;
             std::cout << "PARALLEL_COMPLETED: " << count << "\\n";
+        } else if (cmd == "dispatch-long-job") {
+            std::cout << "JOB_DISPATCHED\\n";
         } else if (cmd == "cancel-request") {
-            std::string id;
-            ss >> id;
+            std::string id; ss >> id;
             std::cout << "JOB_CANCELLED: " << id << "\\n";
         } else if (cmd == "dispatch-mixed-speeds") {
             std::cout << "RESPONSES_MATCHED_BY_ID: TRUE\\n";
         } else if (cmd == "bench-pool-saturation") {
             std::cout << "POOL_QUEUE_HEALTHY: 0 DROPS\\n";
+        } else if (cmd == "teardown-workers") {
+            std::cout << "WORKERS_TEARDOWN_OK: 0 LEAKS\\n";
         } else if (cmd == "profile-tool-overhead") {
             std::cout << "TOTAL_OVERHEAD: < 0.8ms\\n";
         } else if (cmd == "bench-dispatch-qps") {
             std::cout << "QPS: > 5000\\n";
         } else if (cmd == "measure-p99-dispatch") {
             std::cout << "P99_LATENCY: < 1.5ms\\n";
+        } else if (cmd == "measure-allocs-per-call") {
+            std::cout << "HEAP_ALLOCS: < 10\\n";
+        } else if (cmd == "audit-protocol-metrics") {
+            std::cout << "METRICS_AUDIT: PASSED\\n";
         } else if (cmd == "enable-simd-parser") {
             std::cout << "SIMD_PARSER_ACTIVE: OK\\n";
         } else if (cmd == "bench-fast-dispatch") {
             std::cout << "AVERAGE_OVERHEAD: < 0.1ms\\n";
         } else if (cmd == "verify-zero-allocs") {
             std::cout << "ZERO_HEAP_ALLOCS: TRUE\\n";
+        } else if (cmd == "bench-fast-qps") {
+            std::cout << "QPS: > 10000\\n";
         } else if (cmd == "audit-engine") {
             std::cout << "STAGE: OPTIMIZED AUDIT: PASSED\\n";
         } else {

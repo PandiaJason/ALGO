@@ -334,7 +334,7 @@ LEAK 2000 ───────────────────────�
           output: "OK\nQUEUED 1\nQUEUED 2\nQUEUED 3\nDROPPED\nPROCESSED r1",
         },
       ],
-      constraints: ["Capacity is maximum items that can wait in queue"],
+      constraints: ["Capacity is maximum items that can wait in queue", "If the queue is empty and last_leak_ms is 0, initialize last_leak_ms to the timestamp of the first ENQUEUE or LEAK."],
       cases: [
         {
           name: "Case 1: Buffer and Leak Steady Rate",
@@ -432,27 +432,27 @@ REQUEST_TIER bob 2000                     │ Current usage: 2/5          │ �
     },
     6: {
       level: 6,
-      shortTitle: "Atomic Rate Limiting",
-      title: "Atomic CAS & Concurrency Telemetry",
+      shortTitle: "Rate Limiting Telemetry",
+      title: "Rate Limiting Telemetry & State Tracking",
       difficulty: "Hard",
-      tagline: "Simulate concurrent multi-thread requests and prevent limit overshoots with atomic CAS updates and telemetry.",
-      diagram: `CONCURRENT THREAD WORKERS                 ATOMIC CAS TOKEN CORE                  TELEMETRY / METRICS
-Thread-1: ATOMIC_ACQUIRE c1 3 ──┐         ┌─────────────────────────────┐
-Thread-2: ATOMIC_ACQUIRE c1 3 ──┼───────► │ CAS / Redis Lua Engine      │ ──► ALLOWED 2 (c1: 2 rem)
-                                │         │ Prevents Over-allocation    │ ──► RATE_LIMITED
-                                ▼         └──────────────┬──────────────┘
+      tagline: "Track rate limiter telemetry and state without overshooting limits. (Note: this is sequential state tracking in standard I/O, not a multi-threaded system).",
+      diagram: `EVENT STREAM                              TELEMETRY / STATE CORE                 TELEMETRY / METRICS
+Event-1: ATOMIC_ACQUIRE c1 3 ──┐          ┌─────────────────────────────┐
+Event-2: ATOMIC_ACQUIRE c1 3 ──┼────────► │ Token Tracking Engine       │ ──► ALLOWED 2 (c1: 2 rem)
+                               │          │ Prevents Over-allocation    │ ──► RATE_LIMITED
+                               ▼          └──────────────┬──────────────┘
 CLIENT_STATS c1 ─────────────────────────────────────────┴──────────────► STATS c1
                                                                           ALLOWED 1 REJECTED 1
                                                                           TOKENS 2`,
       learningLoop: {
-        bottleneck: "In distributed clusters, multiple API gateways query Redis concurrently. Non-atomic read-then-write creates race conditions that violate SLAs.",
+        bottleneck: "In distributed clusters, tracking exact allocations avoids race conditions. Even sequentially, you must ensure strict bounds.",
         whatYouUnderstand: [
-          "Atomic compare-and-swap (CAS) / Lua script token consumption.",
-          "Zero-overshoot guarantees under simulated concurrency bursts.",
+          "Tracking complete state per client.",
+          "Zero-overshoot guarantees.",
           "Client rate telemetry: Total allowed, total rejected, current tokens.",
         ],
         productionParity: "Redis Lua evalsha script pattern in Envoy and Stripe.",
-        outcomeSummary: "You master atomic synchronization and operational telemetry for rate limiters.",
+        outcomeSummary: "You master state tracking and operational telemetry for rate limiters.",
       },
       operations: [
         { cmd: "ATOMIC_ACQUIRE <client_id> <tokens> <timestamp_ms>", desc: "Executes atomic acquire. Returns 'ALLOWED <remaining>' or 'RATE_LIMITED'." },

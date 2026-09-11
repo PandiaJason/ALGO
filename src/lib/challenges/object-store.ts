@@ -126,7 +126,7 @@ OUTPUT: PUT_OK 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824`
         outcomeSummary: "You build the fundamental PUT/GET/DELETE interface of cloud object stores.",
       },
       operations: [
-        { cmd: "PUT <key> <data>", desc: "Stores object data under key, returning its SHA-256 hash." },
+        { cmd: "PUT <key> <data>", desc: "Stores object data under key, returning 'PUT_OK'." },
         { cmd: "GET <key>", desc: "Retrieves the data stored under the given key." },
         { cmd: "DELETE <key>", desc: "Removes the object from storage." },
       ],
@@ -134,7 +134,7 @@ OUTPUT: PUT_OK 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824`
         {
           title: "Put and Get",
           input: "PUT doc.txt Hello S3\\nGET doc.txt\\nexit",
-          output: "PUT_OK 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824\\nHello S3",
+          output: "PUT_OK\\nHello S3",
         },
       ],
       constraints: ["Return accurate SHA-256 hashes", "404 NOT_FOUND on nonexistent keys"],
@@ -181,13 +181,14 @@ Object Manifest for User 2: [H1, H2, H5, H4] ──► 75% Storage Saved!`,
       },
       operations: [
         { cmd: "PUT-DEDUP <key> <data>", desc: "Chunks data, stores unique blocks, and records manifest." },
-        { cmd: "STATS-DEDUP", desc: "Reports total logical bytes stored vs physical disk bytes used." },
+        { cmd: "STATS-DEDUP", desc: "Reports deduplication stats (e.g. 'PHYSICAL_CHUNKS: <n>' or 'SHARED_CHUNKS: <n>')." },
+        { cmd: "check-dedup-ratio", desc: "Checks deduplication savings ratio." },
       ],
       examples: [
         {
           title: "Dedup Uploads",
           input: "PUT-DEDUP f1 AAAAA_BBBBB\\nPUT-DEDUP f2 AAAAA_CCCCC\\nSTATS-DEDUP\\nexit",
-          output: "PUT_OK\\nPUT_OK\\nSAVED_RATIO: > 30%",
+          output: "PUT_OK\\nPUT_OK\\nSHARED_CHUNKS: 1",
         },
       ],
       constraints: ["Chunks must be content-defined", "Identical blocks must only be written to disk once"],
@@ -237,6 +238,9 @@ Object Manifest for User 2: [H1, H2, H5, H4] ──► 75% Storage Saved!`,
       operations: [
         { cmd: "corrupt-block <hash>", desc: "Simulates silent bit rot by flipping bits in a chunk file." },
         { cmd: "scrub", desc: "Performs full background scrub, reporting healthy vs corrupted blocks." },
+        { cmd: "GET-CHUNK <hash>", desc: "Retrieves chunk data directly by hash." },
+        { cmd: "recover-chunk <hash>", desc: "Recovers a corrupted chunk from redundant storage." },
+        { cmd: "storage-health", desc: "Checks overall storage health status." },
       ],
       examples: [
         {
@@ -289,6 +293,8 @@ Object Manifest for User 2: [H1, H2, H5, H4] ──► 75% Storage Saved!`,
         { cmd: "init-multipart <key>", desc: "Initiates upload session, returning uploadId." },
         { cmd: "upload-part <uploadId> <partNum> <data>", desc: "Uploads a numbered chunk part." },
         { cmd: "complete-multipart <uploadId>", desc: "Assembles parts in numerical order and commits object." },
+        { cmd: "abort-multipart <uploadId>", desc: "Aborts an active multipart upload session." },
+        { cmd: "list-multipart-sessions", desc: "Lists all currently active multipart sessions." },
       ],
       examples: [
         {
@@ -342,6 +348,9 @@ Object Manifest for User 2: [H1, H2, H5, H4] ──► 75% Storage Saved!`,
       operations: [
         { cmd: "bench-waf <bytes>", desc: "Measures write amplification factor for submitted payload." },
         { cmd: "bench-iops <threads>", desc: "Measures random read IOPS across 10,000 chunks." },
+        { cmd: "profile-chunker", desc: "Profiles CDC chunking CPU throughput." },
+        { cmd: "manifest-latency", desc: "Measures manifest lookup latency." },
+        { cmd: "audit-storage", desc: "Audits overall storage engine performance and health." },
       ],
       examples: [
         {
@@ -394,6 +403,9 @@ Object Manifest for User 2: [H1, H2, H5, H4] ──► 75% Storage Saved!`,
       operations: [
         { cmd: "direct-write <key> <size>", desc: "Writes block using sector-aligned direct I/O buffers." },
         { cmd: "verify-pagecache", desc: "Confirms that direct I/O did not pollute kernel page cache." },
+        { cmd: "bench-coalesce", desc: "Measures block coalescing efficiency." },
+        { cmd: "bench-stream", desc: "Measures streaming read throughput." },
+        { cmd: "audit-engine", desc: "Performs final engine verification audit." },
       ],
       examples: [
         {

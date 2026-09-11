@@ -13,7 +13,7 @@ export const httpServerChallenge: ChallengeData = {
   mainSkill: "Networking, I/O, concurrency",
   signatureQuestion: "How many requests can your server handle?",
   overview:
-    "In this engineering challenge, you construct a high-throughput HTTP/1.1 server from first principles — inspired by the networking architectures of Nginx and Envoy. Rather than using express or frameworks, you build the raw byte tokenizer, status line parser, radix trie router, header parser, keep-alive session coordinator, and non-blocking I/O event dispatcher.",
+    "In this engineering challenge, you construct a high-throughput HTTP/1.1 request parser and router from first principles. Rather than opening network sockets, your server processes a stream of requests over standard input (stdin) and writes responses to standard output (stdout). You will build the raw byte tokenizer, status line parser, radix trie router, header parser, and keep-alive session coordinator.",
   whyItMatters:
     "Every web framework is an abstraction over raw TCP streams and HTTP protocol specifications. By building the parser and dispatcher by hand, you master socket byte buffers, Content-Length framing, connection pooling, and how servers handle thousands of concurrent requests.",
   finalOutcome:
@@ -95,20 +95,20 @@ export const httpServerChallenge: ChallengeData = {
       difficulty: "Easy",
       tagline: "Parse HTTP/1.1 methods and URI paths from raw streams. Return formatted 200 OK or 404 Not Found.",
       diagram: `INPUT (Raw Stream)            PARSER / ENGINE               OUTPUT (HTTP Wire)
-GET /hello HTTP/1.1    ──────► method="GET", path="/hello" ──► HTTP/1.1 200 OK\\r\\n
-                                                              Content-Length: 11\\r\\n
-                                                              \\r\\n
-                                                              Hello World
+GET /hello             ──────► method="GET", path="/hello" ──► HTTP/1.1 200 OK\\n
+                                                               Content-Length: 11\\n
+                                                               \\n
+                                                               Hello World
 
-GET /missing HTTP/1.1  ──────► path not found              ──► HTTP/1.1 404 Not Found\\r\\n
+GET /missing           ──────► path not found              ──► HTTP/1.1 404 Not Found\\n
                                                               Content-Length: 9\\r\\n
                                                               \\r\\n
                                                               Not Found`,
       importantChallenge: {
         title: "TCP stream framing vs message boundaries",
         description:
-          "In real TCP networks, a single read() call might return half an HTTP header, or two pipelined requests stuck together, or split the \\r\\n\\r\\n delimiter across packet boundaries. Your parser must maintain an internal byte buffer and scan for the CRLF delimiter rather than assuming one read = one HTTP request.",
-        codeOrFormat: "GET /hello HTTP/1.1\\r\\nHost: algo.io\\r\\n\\r\\n ──► status line + headers + body",
+          "In real TCP networks, a single read() call might return half an HTTP header, or two pipelined requests stuck together. Here, you will read line by line scanning for the \\n delimiter rather than assuming one read = one HTTP request.",
+        codeOrFormat: "GET /hello\\nHost: algo.io\\n\\n ──► status line + headers + body",
       },
       endGoalDemonstration: `GET /hello
 HTTP/1.1 200 OK
@@ -135,7 +135,9 @@ Not Found`,
       operations: [
         { cmd: "GET /hello", desc: "Returns HTTP/1.1 200 OK with body 'Hello World'." },
         { cmd: "GET /ping", desc: "Returns HTTP/1.1 200 OK with body 'PONG'." },
+        { cmd: "GET /", desc: "Returns HTTP/1.1 200 OK with body 'ALGO'." },
         { cmd: "GET /<unknown>", desc: "Returns HTTP/1.1 404 Not Found." },
+        { cmd: "<OTHER> <path>", desc: "Returns HTTP/1.1 405 Method Not Allowed." },
       ],
       examples: [
         {
@@ -144,7 +146,7 @@ Not Found`,
           output: "HTTP/1.1 200 OK\nContent-Length: 11\n\nHello World",
         },
       ],
-      constraints: ["Strict RFC-7230 newline delimiters", "Content-Length must match exact body bytes"],
+      constraints: ["Strict \\n newline delimiters", "Content-Length must match exact body bytes"],
       cases: [
         { name: "Case 1: GET /hello", input: "GET /hello", expected: "HTTP/1.1 200 OK\nContent-Length: 11\n\nHello World" },
         { name: "Case 2: GET /ping", input: "GET /ping", expected: "HTTP/1.1 200 OK\nContent-Length: 4\n\nPONG" },
@@ -278,6 +280,7 @@ Over-read (Len > actual)  ──► Reads exactly N bytes, leaving remainder for
       operations: [
         { cmd: "POST /echo with Content-Length: <n> and payload", desc: "Echoes received payload back to client." },
         { cmd: "POST /uppercase with payload", desc: "Returns uppercase version of body string." },
+        { cmd: "POST /json with payload", desc: "Echoes JSON payload back." },
       ],
       examples: [
         { title: "POST /echo", input: "POST /echo\nContent-Length: 5\n\nhello", output: "HTTP/1.1 200 OK\nContent-Length: 5\n\nhello" },
@@ -323,6 +326,7 @@ Eliminates 3-way TCP handshake + TLS negotiation on repeated asset requests.`,
       operations: [
         { cmd: "Connection: keep-alive", desc: "Instructs server to keep stream open for subsequent requests." },
         { cmd: "Connection: close", desc: "Closes connection after current response." },
+        { cmd: "---", desc: "Delimiter for pipelined requests on standard input." },
       ],
       examples: [
         { title: "2 Pipelined Requests", input: "GET /hello\n---\nGET /ping", output: "HTTP/1.1 200 OK\nContent-Length: 11\nConnection: keep-alive\n\nHello World\n---\nHTTP/1.1 200 OK\nContent-Length: 4\nConnection: close\n\nPONG" },
@@ -371,6 +375,7 @@ Client Sockets ──►   Linux epoll / kqueue  │
       },
       operations: [
         { cmd: "STATS", desc: "Returns server metrics: REQUESTS: <n> ACTIVE_CONNS: <c> P99_MS: <ms>." },
+        { cmd: "QUIT", desc: "Drains the server and exits with 'SERVER_DRAINED'." },
       ],
       examples: [
         { title: "Server Stats", input: "GET /hello\nGET /ping\nSTATS", output: "HTTP/1.1 200 OK\nContent-Length: 11\n\nHello World\nHTTP/1.1 200 OK\nContent-Length: 4\n\nPONG\nREQUESTS: 2 CONNS: 1 STATUS: HEALTHY" },
@@ -399,9 +404,8 @@ def build_response(status_code: int, status_text: str, body: str, keep_alive: bo
     return f"HTTP/1.1 {status_code} {status_text}\\nContent-Length: {len(body_bytes)}{conn_header}\\n\\n{body}"
 
 def main():
-    lines = []
     for line in sys.stdin:
-        line = line.rstrip("\\r\\n")
+        line = line.rstrip("\\n")
         if line == "EXIT":
             break
         if line == "QUIT":
@@ -418,7 +422,8 @@ def main():
         parts = line.split(" ", 2)
         if len(parts) >= 2:
             method, path = parts[0], parts[1]
-            # Route dispatching
+            
+            # --- LEVEL 1: Basic Request Line Parsing ---
             if method == "GET":
                 if path == "/hello":
                     print(build_response(200, "OK", "Hello World"))
@@ -426,40 +431,18 @@ def main():
                     print(build_response(200, "OK", "PONG"))
                 elif path == "/":
                     print(build_response(200, "OK", "ALGO"))
-                elif path.startswith("/users/"):
-                    uid = path[len("/users/"):]
-                    if uid == "me":
-                        print(build_response(200, "OK", "Current User"))
-                    elif uid == "42/status":
-                        print(build_response(200, "OK", "User 42 Active"))
-                    elif uid:
-                        print(build_response(200, "OK", f"User {uid}"))
-                    else:
-                        print(build_response(404, "Not Found", "Not Found"))
-                elif path.startswith("/posts/"):
-                    slug = path[len("/posts/"):]
-                    print(build_response(200, "OK", f"Post {slug}"))
+                # --- HIGHER LEVEL STUBS ---
+                elif path.startswith("/users/") or path.startswith("/posts/"):
+                    # TODO: Level 2 - Implement Radix Trie for parameterized routing
+                    print(build_response(200, "OK", "Stub Response"))
                 elif path.startswith("/search"):
-                    query = path.split("?q=")[-1] if "?q=" in path else "None"
-                    if not query or query == path:
-                        query = "None"
-                    print(build_response(200, "OK", f"Search: {query}"))
-                elif path.startswith("/filter"):
-                    print(build_response(200, "OK", "Type: db Sort: desc"))
-                elif path == "/agent":
-                    print(build_response(200, "OK", "Agent Unknown"))
+                    # TODO: Level 3 - Implement Query String parsing
+                    print(build_response(200, "OK", "Search: None"))
                 else:
                     print(build_response(404, "Not Found", "Not Found"))
             elif method == "POST":
-                # Basic echo/uppercase support
-                if path == "/echo":
-                    print(build_response(200, "OK", "hello"))
-                elif path == "/uppercase":
-                    print(build_response(200, "OK", "ALGO"))
-                elif path == "/json":
-                    print(build_response(200, "OK", '{"ok":true}'))
-                else:
-                    print(build_response(200, "OK", ""))
+                # TODO: Level 4 - Implement exact Content-Length body framing
+                print(build_response(200, "OK", "hello"))
             else:
                 print(build_response(405, "Method Not Allowed", "Method Not Allowed"))
 
@@ -502,6 +485,7 @@ int main() {
         std::string method, path;
         ss >> method >> path;
 
+        // --- LEVEL 1: Basic Request Line Parsing ---
         if (method == "GET") {
             if (path == "/hello") {
                 std::cout << build_response(200, "OK", "Hello World") << "\\n";
@@ -509,30 +493,20 @@ int main() {
                 std::cout << build_response(200, "OK", "PONG") << "\\n";
             } else if (path == "/") {
                 std::cout << build_response(200, "OK", "ALGO") << "\\n";
-            } else if (path.rfind("/users/", 0) == 0) {
-                std::string uid = path.substr(7);
-                if (uid == "me") std::cout << build_response(200, "OK", "Current User") << "\\n";
-                else if (uid == "42/status") std::cout << build_response(200, "OK", "User 42 Active") << "\\n";
-                else if (!uid.empty()) std::cout << build_response(200, "OK", "User " + uid) << "\\n";
-                else std::cout << build_response(404, "Not Found", "Not Found") << "\\n";
-            } else if (path.rfind("/posts/", 0) == 0) {
-                std::cout << build_response(200, "OK", "Post " + path.substr(7)) << "\\n";
+            } 
+            // --- HIGHER LEVEL STUBS ---
+            else if (path.rfind("/users/", 0) == 0 || path.rfind("/posts/", 0) == 0) {
+                // TODO: Level 2 - Implement Radix Trie for parameterized routing
+                std::cout << build_response(200, "OK", "Stub Response") << "\\n";
             } else if (path.rfind("/search", 0) == 0) {
-                std::string q = (path.find("?q=") != std::string::npos) ? path.substr(path.find("?q=") + 3) : "None";
-                if (q.empty()) q = "None";
-                std::cout << build_response(200, "OK", "Search: " + q) << "\\n";
-            } else if (path.rfind("/filter", 0) == 0) {
-                std::cout << build_response(200, "OK", "Type: db Sort: desc") << "\\n";
-            } else if (path == "/agent") {
-                std::cout << build_response(200, "OK", "Agent Unknown") << "\\n";
+                // TODO: Level 3 - Implement Query String parsing
+                std::cout << build_response(200, "OK", "Search: None") << "\\n";
             } else {
                 std::cout << build_response(404, "Not Found", "Not Found") << "\\n";
             }
         } else if (method == "POST") {
-            if (path == "/echo") std::cout << build_response(200, "OK", "hello") << "\\n";
-            else if (path == "/uppercase") std::cout << build_response(200, "OK", "ALGO") << "\\n";
-            else if (path == "/json") std::cout << build_response(200, "OK", "{\\"ok\\":true}") << "\\n";
-            else std::cout << build_response(200, "OK", "") << "\\n";
+            // TODO: Level 4 - Implement exact Content-Length body framing
+            std::cout << build_response(200, "OK", "hello") << "\\n";
         } else {
             std::cout << build_response(405, "Method Not Allowed", "Method Not Allowed") << "\\n";
         }
