@@ -101,6 +101,17 @@ export const shellChallenge: ChallengeData = {
       title: "Interactive REPL & Builtins",
       difficulty: "Easy",
       tagline: "Parse command lines and execute echo, pwd, cd, and exit builtins.",
+      description: `Every shell begins with an interactive Read-Eval-Print Loop (REPL). In Level 1, your shell must continuously read command lines from standard input (stdin), parse the command name and arguments, and execute four fundamental builtins: echo, pwd, cd, and exit.
+
+Builtin commands execute directly within the shell process itself rather than launching an external program. This is critical for commands like 'cd' (change directory), because if 'cd' were run in an external child process, it would only alter the child's working directory, leaving the parent shell unchanged.`,
+      implementationGuide: [
+        "Initialize an interactive REPL loop reading line-by-line from standard input (stdin) until reaching EOF.",
+        "Tokenize each line by splitting on whitespace into the command name and its argument tokens.",
+        "Implement 'echo [args...]': join the arguments with a single space and print to stdout.",
+        "Implement 'pwd': print the current working directory. (When called from the initial start directory in tests, print 'OK').",
+        "Implement 'cd <dir>': change the current working directory using chdir().",
+        "Implement 'exit': break the REPL loop and terminate cleanly.",
+      ],
       diagram: `USER INPUT: "echo hello world"
       │
       ▼
@@ -150,6 +161,22 @@ export const shellChallenge: ChallengeData = {
       title: "Process Fork & Exec",
       difficulty: "Medium",
       tagline: "Spawn child processes using fork() and execvp() using the 'run' prefix, and capture return status.",
+      description: `In Level 1, your shell could only execute internal builtins compiled directly into its code. In Level 2, you unlock the defining feature of Unix shells: executing arbitrary external binaries located anywhere on the host filesystem.
+
+When a user executes 'run <bin> [args...]', the shell must NOT call execvp directly in its own process, because doing so replaces the current process image and kills the shell! Instead, it must follow the classic Unix process lifecycle:
+1. fork(): The OS duplicates the shell process, creating an identical child process.
+2. execvp(): The child replaces its address space with the target executable.
+3. waitpid(): The parent shell blocks and waits for the child to finish, capturing its exit status code.
+
+Additionally, you will implement 'which <bin>', which scans the directories listed in the PATH environment variable to locate where an executable lives.`,
+      implementationGuide: [
+        "Tokenize the line: the first token is 'which' or 'run'.",
+        "For 'which <bin>': split the PATH environment variable on ':' and check each directory for the binary file. Print the full matching path (e.g. '/bin/ls').",
+        "For 'run <bin> [args...]': spawn a child process via fork() (or subprocess in Python).",
+        "In the child process: invoke execvp(bin, args). If the binary does not exist, print 'No such file or directory' and exit with status code 127.",
+        "In the parent process: wait for the child using waitpid(). Capture the termination status using WEXITSTATUS.",
+        "Format output: print the binary's stdout followed by '[Process exited with code <code>]'.",
+      ],
       diagram: `INPUT COMMAND: "run ls -l /tmp"
       │
       ▼
@@ -202,6 +229,18 @@ OUTPUT: [binary stdout...] \\n [Process exited with code 0]`,
       title: "Signal Handling & Zombie Reaping",
       difficulty: "Medium",
       tagline: "Trap SIGINT (Ctrl+C) and reap background zombies.",
+      description: `A production shell must never die when an interactive user presses Ctrl+C to abort a command. In Level 3, you implement asynchronous signal handling and background process zombie reaping.
+
+When Ctrl+C is pressed, the terminal driver sends a SIGINT signal. By default, the operating system terminates the process immediately. Your shell must intercept SIGINT via a custom signal handler, outputting '^C' and safely returning to a fresh prompt without exiting.
+
+Additionally, when commands are run in the background ('spawn-bg <cmd>'), they execute concurrently. Once a background child terminates, its process entry remains in the kernel process table as a 'zombie' (<defunct>) until the parent calls waitpid(). You must implement non-blocking zombie reaping using waitpid(-1, &status, WNOHANG) so system resources are never leaked.`,
+      implementationGuide: [
+        "Register a signal handler for SIGINT (using sigaction or signal module) that outputs '^C' and preserves shell state.",
+        "For simulated 'sigint' input tokens from stdin, invoke your SIGINT handler routine.",
+        "Implement 'spawn-bg <cmd> [args...]': fork a child process, execute the binary in the background, and track its PID.",
+        "Implement 'reap': execute a non-blocking waitpid(-1, &status, WNOHANG) loop, counting how many zombie children were collected, and output 'REAPED: <count>'.",
+        "On 'exit', if background tasks are still running, wait for their completion and output 'CLEAN_EXIT'.",
+      ],
       diagram: `SIGNAL TRAP & ZOMBIE REAPING:
   Parent Shell ──► sigaction(SIGINT, handler, NULL)
       │
@@ -253,6 +292,22 @@ BACKGROUND & REAPING:
       title: "Multi-stage Pipelines & Redirection",
       difficulty: "Hard",
       tagline: "Chain raw commands (without 'run' prefix) with pipe() and redirect I/O streams.",
+      description: `The Unix philosophy centers on composability: writing modular tools that each do one thing well, interconnected via pipes. In Level 4, you build multi-stage command pipelines ('cmd1 | cmd2 | cmd3') and standard stream redirection ('>', '>>').
+
+A pipe is an anonymous kernel buffer with two file descriptors: a write end and a read end. When chaining commands:
+1. The shell allocates a pipe via pipe(pipefd) before forking.
+2. The upstream process redirects its standard output (file descriptor 1) into the pipe's write end via dup2().
+3. The downstream process redirects its standard input (file descriptor 0) from the pipe's read end via dup2().
+4. Both processes (and the parent shell) close unused pipe ends so the downstream reader receives an EOF when upstream finishes.`,
+      implementationGuide: [
+        "Parse the command line by splitting on the pipe symbol '|' into a list of pipeline stages.",
+        "In pipelines, commands are invoked directly without the 'run' prefix (e.g. 'echo hello | tr a-z A-Z').",
+        "For each stage, check for redirection operators: '>' for file truncation or '>>' for appending.",
+        "For an N-stage pipeline, allocate N-1 pipes using pipe().",
+        "Fork child processes for each stage: use dup2() to attach stdin from the previous pipe's read end and stdout to the next pipe's write end.",
+        "Close all pipe descriptors in the parent shell so children can receive EOF signals upon upstream completion.",
+        "Wait for all pipeline stages to terminate before returning to the prompt.",
+      ],
       diagram: `INPUT: "cat names.txt | sort | head -n 1 > top.txt"
 
 ┌───────────────┐      pipefd1      ┌───────────────┐      pipefd2      ┌───────────────┐
@@ -301,6 +356,17 @@ BACKGROUND & REAPING:
       title: "Process Latency & Syscall Profiling",
       difficulty: "Hard",
       tagline: "Profile fork/exec latency and IPC throughput.",
+      description: `In high-performance infrastructure (such as serverless runtimes and CI/CD sandboxes), process creation and inter-process communication (IPC) overhead are major bottlenecks. In Level 5, you build a performance profiler directly into the shell.
+
+Your shell measures the high-resolution elapsed time of commands, distinguishes between instantaneous in-process builtins and heavyweight external process forks, and measures the raw streaming throughput of kernel pipe buffers across megabytes of data.`,
+      implementationGuide: [
+        "Implement 'profile <cmd>': record monotonic timestamp before command execution and after completion.",
+        "For builtins: print the command output followed by 'TYPE: BUILTIN ELAPSED_US: < 100'.",
+        "For external binaries: fork and wait, outputting 'TYPE: EXTERNAL FORK_US: OK'.",
+        "Implement 'bench-pipe <bytes>': write data through an anonymous pipe in 64KB blocks, measure elapsed transfer time, and output 'THROUGHPUT: > 500 MB/s'.",
+        "Implement 'memcheck <n>': loop N times executing builtins and verify zero heap leaks ('LEAKS: 0 BYTES').",
+        "Implement 'zombie-check': sweep the process table and verify no zombie processes exist ('ZOMBIES: 0').",
+      ],
       diagram: `INPUT: "profile echo fast"
       │
       ▼
@@ -354,6 +420,18 @@ OUTPUT: fast \\n [ELAPSED_US: 1420 SYSCALLS: FORK,EXEC,WAIT]`,
       title: "Zero-Allocation Fast Path & Buffer Recycling",
       difficulty: "Hard",
       tagline: "Eliminate heap allocations during command parsing and dispatch.",
+      description: `In high-throughput environments executing millions of commands, dynamic heap allocation (malloc/free or garbage collection pauses) creates significant latency jitter. In Level 6, you build a zero-allocation fast path for shell command evaluation.
+
+Instead of duplicating strings into arrays of dynamic heap buffers, the shell reuses a single pre-allocated contiguous buffer. By replacing whitespace characters in-place with null terminators ('\\0') and using a fixed-size pointer array, command parsing completes with zero heap allocations. Builtin commands are resolved via an indexed dispatch table.`,
+      implementationGuide: [
+        "Pre-allocate a fixed-size input buffer (e.g. 4096 bytes) and an argument pointer array (argv) statically.",
+        "Implement in-place tokenization: scan the buffer, skip whitespace, record pointer addresses, and insert null terminators at word boundaries.",
+        "Implement a static lookup table for builtin commands so no string allocations occur during dispatch.",
+        "Implement 'fast-eval <cmd>': execute the parsed command through the zero-allocation path, returning output and 'HEAP_ALLOCS: 0'.",
+        "Implement 'bench-allocs <n>': run N fast-eval cycles and verify heap allocations remain strictly 0.",
+        "Implement 'repeat <n> <cmd>': execute the command N times in a tight loop.",
+        "Implement 'audit-engine': verify full compliance across all levels, outputting 'COMPLIANT: ZERO_ALLOC_FAST_PATH'.",
+      ],
       diagram: `ZERO-ALLOCATION HOT PATH:
 Raw Buffer: "echo   hello   world\\0"
               ▲       ▲       ▲

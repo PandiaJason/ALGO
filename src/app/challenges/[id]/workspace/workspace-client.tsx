@@ -579,6 +579,39 @@ export function WorkspaceClient({
                   </div>
                 </div>
 
+                {/* 1.5. Deep Dive Concept & System Architecture */}
+                {currentLevelInfo.description && (
+                  <div className="rounded-xl bg-slate-50/80 border border-slate-200 p-3.5 space-y-2 text-xs leading-relaxed text-slate-800 shadow-2xs">
+                    <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#099BE9] flex items-center gap-1.5">
+                      <BookOpen className="w-3.5 h-3.5 text-[#099BE9]" />
+                      <span>Level Deep Dive &amp; Architecture</span>
+                    </div>
+                    <div className="text-slate-800 font-normal leading-relaxed whitespace-pre-line text-xs">
+                      {currentLevelInfo.description}
+                    </div>
+                  </div>
+                )}
+
+                {/* 1.6. Step-by-Step Implementation Guide */}
+                {Array.isArray(currentLevelInfo.implementationGuide) && currentLevelInfo.implementationGuide.length > 0 && (
+                  <div className="rounded-xl border border-indigo-200/90 bg-indigo-50/50 p-3.5 space-y-2.5 shadow-2xs">
+                    <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase text-indigo-950">
+                      <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
+                      <span>Implementation Steps</span>
+                    </div>
+                    <ol className="space-y-1.5 text-xs text-slate-800 font-medium list-none">
+                      {currentLevelInfo.implementationGuide.map((step: string, idx: number) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <span className="flex items-center justify-center w-4 h-4 rounded-full bg-indigo-200/80 text-indigo-900 text-[10px] font-mono font-bold shrink-0 mt-0.5">
+                            {idx + 1}
+                          </span>
+                          <span className="leading-relaxed text-slate-800">{step}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+
                 {/* 2. Operations & Protocol Specification */}
                 {Array.isArray(currentLevelInfo.operations) && currentLevelInfo.operations.length > 0 && (
                   <div className="space-y-2">

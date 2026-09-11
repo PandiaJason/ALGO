@@ -100,6 +100,26 @@ export const distributedConsensusChallenge: ChallengeData = {
       title: "Leader Election & Heartbeat Protocol",
       difficulty: "Medium",
       tagline: "Elect a stable cluster leader using randomized timeouts and RequestVote RPCs.",
+      description: `In Level 1 (Leader Election & Heartbeat Protocol), you engineer the core mechanisms for Distributed Consensus Engine (Raft).
+
+Elect a stable cluster leader using randomized timeouts and RequestVote RPCs.
+
+Core Engineering Problem: What prevents two nodes from voting for themselves simultaneously and causing an endless split vote tie?
+
+Key Mechanisms Implemented:
+• Randomized election timeouts (e.g. 150ms-300ms) to stagger candidate campaigns.
+• RequestVote RPC parameters: term, candidateId, lastLogIndex, lastLogTerm.
+• Periodic empty AppendEntries heartbeats from leader to suppress new elections.
+
+You build the fundamental election safety loop that guarantees a single leader per term.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'tick <nodeId>': Advances node timer, triggering election if timeout expires.",
+        "Implement 'request-vote <candidate> <term>': Dispatches RequestVote RPC to all cluster nodes.",
+        "Implement 'status': Reports current cluster roles (Leader, Candidate, Follower) and terms.",
+        "Enforce system constraints: Exactly 1 vote per node per term; Leaders must maintain regular heartbeats.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `RAFT LEADER ELECTION STATE MACHINE:
 
   [Follower] ──(Election Timeout Expires)──► [Candidate]
@@ -157,6 +177,26 @@ export const distributedConsensusChallenge: ChallengeData = {
       title: "Log Replication & State Machine Commit",
       difficulty: "Hard",
       tagline: "Replicate log entries across a majority quorum and advance commitIndex.",
+      description: `In Level 2 (Log Replication & State Machine Commit), you engineer the core mechanisms for Distributed Consensus Engine (Raft).
+
+Replicate log entries across a majority quorum and advance commitIndex.
+
+Core Engineering Problem: How does a leader know an entry is safely committed and cannot be lost even if the leader crashes immediately?
+
+Key Mechanisms Implemented:
+• AppendEntries RPC framing: prevLogIndex, prevLogTerm, entries[], leaderCommit.
+• Follower log consistency check: rejecting entries if previous index/term mismatch.
+• Advancing commitIndex only when entry is replicated to a strict majority (> N/2).
+
+You master quorum replication and linearizable state machine application.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'client-write <cmd>': Submits state mutation to current cluster leader.",
+        "Implement 'replicate': Leader sends AppendEntries RPC to followers.",
+        "Implement 'get-state': Queries committed state across all nodes.",
+        "Enforce system constraints: Strict majority required for commit; Followers must match leader log prefix exactly.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `QUORUM LOG REPLICATION PIPELINE:
 
   Client ──► Leader (Node 1)
@@ -212,6 +252,26 @@ export const distributedConsensusChallenge: ChallengeData = {
       title: "Network Partitions & Split-Brain Mitigation",
       difficulty: "Hard",
       tagline: "Prevent split-brain writes during asymmetric network splits.",
+      description: `In Level 3 (Network Partitions & Split-Brain Mitigation), you engineer the core mechanisms for Distributed Consensus Engine (Raft).
+
+Prevent split-brain writes during asymmetric network splits.
+
+Core Engineering Problem: What happens when a 5-node cluster splits into 2 nodes (minority) and 3 nodes (majority)? Can the minority commit writes?
+
+Key Mechanisms Implemented:
+• Split-brain hazard: two nodes believing they are both legitimate leaders.
+• Majority quorum constraint: minority partition cannot commit (lacks > N/2 votes).
+• Partition healing: higher term from majority partition forces stale minority leader to step down and overwrite uncommitted entries.
+
+You prove that your consensus engine preserves safety and serializability under severe partitions.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'partition <groupA> | <groupB>': Partitions cluster nodes into isolated network groups.",
+        "Implement 'heal-partition': Restores full network connectivity between all nodes.",
+        "Implement 'write-minority <nodeId> <cmd>': Attempts to write to the leader of a minority partition.",
+        "Enforce system constraints: Zero split-brain committed values; Overwritten uncommitted entries must be cleanly discarded.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `5-NODE CLUSTER ASYMMETRIC PARTITION:
 
   Minority Partition (2 nodes):
@@ -273,6 +333,26 @@ export const distributedConsensusChallenge: ChallengeData = {
       title: "Cluster Membership Changes & Log Compaction",
       difficulty: "Expert",
       tagline: "Add/remove nodes dynamically and compact infinite logs with snapshots.",
+      description: `In Level 4 (Cluster Membership Changes & Log Compaction), you engineer the core mechanisms for Distributed Consensus Engine (Raft).
+
+Add/remove nodes dynamically and compact infinite logs with snapshots.
+
+Core Engineering Problem: If a cluster runs for 3 years, the log would grow to billions of entries. How does a new node join without replaying 3 years of logs?
+
+Key Mechanisms Implemented:
+• Joint consensus configuration: transitioning from C_old to C_new without split-brain.
+• State machine snapshots: serializing applied state and discarding historic log entries up to snapshotIndex.
+• InstallSnapshot RPC: streaming compressed point-in-time images to lagging followers.
+
+You enable zero-downtime cluster scaling and bound disk memory usage.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'add-node <nodeId>': Initiates joint consensus configuration to add node to cluster.",
+        "Implement 'take-snapshot': Compacts committed log entries into a state machine snapshot.",
+        "Implement 'install-snapshot <nodeId>': Sends a snapshot to a lagging node to catch it up.",
+        "Enforce system constraints: Snapshots must include lastIncludedIndex and lastIncludedTerm; Joint consensus during config change.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `LOG COMPACTION & POINT-IN-TIME SNAPSHOTTING:
 
   Historical Log:
@@ -327,6 +407,26 @@ export const distributedConsensusChallenge: ChallengeData = {
       title: "Election Convergence & Replication Lag",
       difficulty: "Hard",
       tagline: "Measure failover election latency and replication lag.",
+      description: `In Level 5 (Election Convergence & Replication Lag), you engineer the core mechanisms for Distributed Consensus Engine (Raft).
+
+Measure failover election latency and replication lag.
+
+Core Engineering Problem: What is the true upper bound on downtime when the leader crashes, and how does network jitter affect it?
+
+Key Mechanisms Implemented:
+• Leader failover latency percentiles (p50, p95, p99).
+• Follower replication lag (difference between leader commitIndex and follower matchIndex).
+• Impact of packet drops and RPC retransmissions on quorum commits.
+
+You quantify distributed consensus latency and measure recovery boundaries.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'kill-leader': Terminates current leader and benchmarks election recovery time.",
+        "Implement 'measure-lag': Returns replication lag across all active followers.",
+        "Implement 'bench-commits <count>': Saturates the cluster with writes to measure commit throughput.",
+        "Enforce system constraints: Election duration under 150ms; Zero divergent commits during failover.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `FAILOVER LATENCY TIMELINE & REPLICATION LAG:
 
   Leader Crashes (t = 0 ms)
@@ -382,6 +482,26 @@ export const distributedConsensusChallenge: ChallengeData = {
       title: "Pipelined Log Replication & Batching",
       difficulty: "Expert",
       tagline: "Eliminate synchronous round-trips via pipelined AppendEntries and read-index.",
+      description: `In Level 6 (Pipelined Log Replication & Batching), you engineer the core mechanisms for Distributed Consensus Engine (Raft).
+
+Eliminate synchronous round-trips via pipelined AppendEntries and read-index.
+
+Core Engineering Problem: How does etcd achieve 50,000+ writes/sec without blocking the leader waiting for network ACKs on every single entry?
+
+Key Mechanisms Implemented:
+• Asynchronous RPC pipelining: streaming multiple AppendEntries requests without waiting for previous responses.
+• Batching concurrent client write requests into single log entries.
+• ReadIndex optimization: serving linearizable read queries without writing entries to the Raft log.
+
+You achieve state-of-the-art consensus throughput via pipelining and linearizable reads.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'enable-pipelining': Enables asynchronous streaming AppendEntries pipeline.",
+        "Implement 'read-index <key>': Executes linearizable read without disk write overhead.",
+        "Implement 'bench-pipeline <count>': Benchmarks throughput with pipelining enabled.",
+        "Enforce system constraints: Strict linearizability guarantee; Zero lost pipeline entries.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `SYNCHRONOUS vs PIPELINED REPLICATION:
 
   Synchronous (Sequential Round-trips):

@@ -89,6 +89,17 @@ export const lruCacheChallenge: ChallengeData = {
       title: "Basic LRU Eviction & O(1) Linked List",
       difficulty: "Easy",
       tagline: "Build a fixed-capacity LRU cache. When capacity is exceeded, evict the least recently inserted key.",
+      description: `An LRU (Least Recently Used) cache discards the least recently accessed items first when its capacity limit is reached. In Level 1, you build a fixed-capacity LRU cache.
+
+To achieve strict O(1) operational complexity, a production cache pairs a Hash Map (for instant O(1) key-to-node pointer lookups) with a Doubly-Linked List (for instant O(1) node addition, removal, and splicing).`,
+      implementationGuide: [
+        "Initialize a Doubly-Linked List with sentinel dummy head and dummy tail nodes to eliminate null-pointer checks.",
+        "Initialize a hash map storing key -> node pointer references.",
+        "Implement 'CAPACITY <n>': configure maximum cache capacity.",
+        "Implement 'PUT <key> <val>': if key exists, update value. If key is new, add node at the head (MRU).",
+        "If count exceeds capacity after insertion, evict the node right before dummy tail (LRU), and delete from hash map.",
+        "Implement 'GET <key>': return value if found, or 'NULL' if missing."
+],
       diagram: `INPUT (Capacity=2)            CACHE STATE (MRU ──► LRU)      OUTPUT
 PUT k1 v1              ──────► [k1:v1]                   ──► OK
 PUT k2 v2              ──────► [k2:v2] ──► [k1:v1]       ──► OK
@@ -148,6 +159,15 @@ GET b
       title: "Touch on Read & Pointer Re-linking",
       difficulty: "Medium",
       tagline: "A GET request must 'touch' the accessed key, promoting it to Most Recently Used (MRU) head.",
+      description: `In a true LRU cache, reads (GET) are not read-only operations—they mutate cache state!
+
+Whenever an existing key is accessed via 'GET <key>', it becomes the Most Recently Used item. You must splice the node out from its current position in the doubly-linked list and re-insert it directly after the dummy head, all in O(1) pointer operations without modifying the hash map.`,
+      implementationGuide: [
+        "In 'GET <key>': if the key is found, unlink the node from its current position.",
+        "Splice the unlinked node to the front of the list directly following the dummy head.",
+        "Ensure overwriting an existing key in 'PUT <key> <val>' also promotes the node to the head of the list.",
+        "Verify that evicted keys are always the ones that have gone the longest without either a GET or PUT."
+],
       diagram: `GET QUERY                     POINTER SPLICING (MRU PROMOTION)       CACHE ORDER
 State: [a] <-> [b]     ──► GET a touches node "a"             ──► [a] promoted to HEAD
 PUT c 3                ──► Capacity=2: Evicts tail "b"!       ──► Cache: [c] <-> [a]
@@ -190,6 +210,15 @@ After GET(a):   [HEAD] <──► [ a ] <──► [ b ] <──► [TAIL]`,
       title: "Least Frequently Used (LFU) Mode",
       difficulty: "Hard",
       tagline: "Implement LFU mode. Track access frequency counts and evict the least frequently queried key.",
+      description: `LRU caches can be polluted by sequential scans. In Level 3, you implement LFU (Least Frequently Used) eviction.
+
+In LFU mode, each key tracks an access frequency counter. When capacity is reached, the key with the lowest frequency is evicted. If multiple keys share the same lowest frequency, LRU recency is used as a tie-breaker.`,
+      implementationGuide: [
+        "Implement 'MODE LFU': switch the eviction policy to frequency-based eviction.",
+        "Track an integer access frequency counter on each cache node (initialized to 1 on insert, incremented on every GET/PUT).",
+        "Implement 'FREQ <key>': return the current access count of the given key.",
+        "When evicting under LFU mode, locate the node with the minimum frequency. Tie-break using recency."
+],
       diagram: `ACCESS WORKLOAD               FREQUENCY BUCKET TRACKING              EVICTION DECISION
 MODE LFU               ──► Switch policy to LFU               ──► OK
 PUT a 1, GET a, GET a  ──► freq["a"] = 3                      ──► 1
@@ -231,6 +260,14 @@ Freq 3: [ a ] (Protected by high query volume)`,
       title: "TTL & Key Expiration",
       difficulty: "Hard",
       tagline: "Implement SETEX for millisecond key expiration. Expired keys must never be returned or count against capacity.",
+      description: `Cached entries often have a limited lifespan after which their data becomes stale. In Level 4, you implement Time-To-Live (TTL) key expiration.
+
+Each cached item can be assigned an expiration timestamp (e.g. 'SETEX <key> <ttl_seconds> <value>'). When 'GET <key>' is invoked, the cache checks if the current time exceeds the expiration threshold. If expired, the key is immediately purged and returns NULL.`,
+      implementationGuide: [
+        "Implement 'SETEX <key> <ttl> <val>': store the value along with its expiration timestamp (now + ttl).",
+        "Implement 'TTL <key>': return the remaining seconds before expiration, or -1 if no TTL, or -2 if missing.",
+        "In 'GET <key>': check if expiration timestamp has passed. If expired, delete the key, unlink node, and return 'NULL'."
+],
       diagram: `TEMPORAL OPERATION            TTL LIFECYCLE EVALUATION               RETURN VALUE
 SETEX token 5000 abc   ──► Store val="abc", expire_at=T+5000 ──► OK
 TTL token              ──► Check remaining monotonic ms      ──► 4998 ms
@@ -271,6 +308,15 @@ Read Access (GET / TTL) ──► Is expired? ──► YES ──► Delete & R
       title: "Byte-Accurate Memory Caps",
       difficulty: "Hard",
       tagline: "Evict based on payload byte weight (MAXMEMORY <bytes>) rather than fixed item count.",
+      description: `Real caches (such as Redis maxmemory) enforce memory limits based on total byte consumption rather than simple item counts.
+
+In Level 5, you implement byte-level memory budgeting. Every key and value calculates its serialized byte size. When total memory exceeds 'MAXMEMORY <bytes>', items are evicted until usage drops below the threshold.`,
+      implementationGuide: [
+        "Implement 'MAXMEMORY <bytes>': configure the byte budget threshold for the cache.",
+        "Track total memory usage: calculate key.length + value.length on insertion.",
+        "When inserting, loop and evict LRU items from the tail until total memory usage <= maxmemory.",
+        "Implement 'MEMORY_USED': output current total byte usage."
+],
       diagram: `BYTE BUDGET                   HEAP CONSUMPTION TRACKER              EVICTION LOOP
 MAXMEMORY 10           ──► Set hard ceiling = 10 bytes        ──► OK
 PUT a 12345 (6 bytes)  ──► Used: 6B <= 10B                   ──► OK
@@ -312,6 +358,14 @@ Total = 12 Bytes > 10 Bytes Limit ──► Evict Tail until used <= 10B`,
       title: "Hit-Rate Telemetry & Workload Benchmarking",
       difficulty: "Hard",
       tagline: "Track cache hits, misses, and eviction metrics under heavy 1,000,000 request simulation workloads.",
+      description: `Production caching systems require deep telemetry to determine cache efficiency, sizing, and hit ratios under high-concurrency workloads.
+
+In Level 6, you build internal telemetry tracking hit counts, miss counts, eviction counts, and total hit ratio percentages.`,
+      implementationGuide: [
+        "Track metrics: total_requests, hits, misses, and evictions.",
+        "Implement 'STATS': output formatted cache metrics including 'HITS: <n>', 'MISSES: <n>', 'HIT_RATIO: <pct>%'.",
+        "Implement 'FLUSHALL': cleanly purge all keys, reset memory usage to 0, and restore sentinel pointers."
+],
       diagram: `CACHE WORKLOAD                TELEMETRY COUNTERS                     STATS OUTPUT
 GET a (Found in cache) ──► Hits++ (Hits = 1)                 ──► 1
 GET b (Not in cache)   ──► Misses++ (Misses = 1)             ──► NULL

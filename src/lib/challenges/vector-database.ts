@@ -96,6 +96,26 @@ export const vectorDatabaseChallenge: ChallengeData = {
       title: "Exact Nearest Neighbors (Brute Force)",
       difficulty: "Easy",
       tagline: "Insert multi-dimensional vectors and find exact nearest neighbors using cosine similarity.",
+      description: `In Level 1 (Exact Nearest Neighbors (Brute Force)), you engineer the core mechanisms for Vector Database (HNSW Index).
+
+Insert multi-dimensional vectors and find exact nearest neighbors using cosine similarity.
+
+Core Engineering Problem: How do you calculate similarity between two 128-dimensional float arrays without floating-point drift?
+
+Key Mechanisms Implemented:
+• Cosine similarity formula: dot(A, B) / (norm(A) * norm(B)).
+• Linear O(N) scan: comparing a query vector against all N stored vectors.
+• Bounded priority queue (min-heap) to track the top-K highest similarity candidates.
+
+You implement exact ground-truth nearest-neighbor retrieval.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'insert-vector <id> <dim1,dim2,...>': Inserts a vector embedding into storage.",
+        "Implement 'query-knn <dim1,dim2,...> <k>': Performs brute-force scan returning top-K nearest IDs as TOP_N: id1, id2, ...",
+        "Implement 'query-l2 <dim1,dim2,...> <k>': Performs brute-force scan using Euclidean L2 distance.",
+        "Enforce system constraints: Support up to 128 dimensions; Scores normalized between -1.0 and 1.0.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `EXACT K-NEAREST NEIGHBORS (FLAT SCAN):
 
   Query Vector Q: [1.0, 0.0, 0.0]  (k=2)
@@ -151,6 +171,27 @@ export const vectorDatabaseChallenge: ChallengeData = {
       title: "Hierarchical Navigable Small World (HNSW)",
       difficulty: "Hard",
       tagline: "Build a multi-layer skip-graph and search in O(log N) time.",
+      description: `In Level 2 (Hierarchical Navigable Small World (HNSW)), you engineer the core mechanisms for Vector Database (HNSW Index).
+
+Build a multi-layer skip-graph and search in O(log N) time.
+
+Core Engineering Problem: When the database grows to 1,000,000 vectors, brute force takes 500ms. How does HNSW find neighbors in 0.2ms?
+
+Key Mechanisms Implemented:
+• Probabilistic layer assignment (similar to skip-lists).
+• Greedy routing on upper layers (jumping large geometric distances).
+• Beam search with candidate set (efSearch) on Layer 0.
+• Heuristic neighbor pruning: connecting to diverse nearest nodes (M max connections).
+
+You master the gold-standard algorithm for high-dimensional vector search.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'hnsw-insert <id> <vector>': Inserts vector into multi-layer HNSW graph structure.",
+        "Implement 'hnsw-search <vector> <k> <efSearch>': Searches HNSW index using beam search parameter.",
+        "Implement 'inspect-hnsw-layers': Checks if multi-layer graph routing is populated.",
+        "Enforce system constraints: Max connections M=16; Logarithmic search hop complexity.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `HNSW MULTI-LAYER SKIP GRAPH NAVIGATION:
 
   Layer 2 (Expressway):
@@ -206,6 +247,26 @@ export const vectorDatabaseChallenge: ChallengeData = {
       title: "Dynamic Deletions & Disconnected Components",
       difficulty: "Hard",
       tagline: "Delete nodes without leaving disconnected graph islands.",
+      description: `In Level 3 (Dynamic Deletions & Disconnected Components), you engineer the core mechanisms for Vector Database (HNSW Index).
+
+Delete nodes without leaving disconnected graph islands.
+
+Core Engineering Problem: What happens when an entry-point node is deleted? Does the rest of the graph become completely unreachable?
+
+Key Mechanisms Implemented:
+• Tombstoning: marking nodes as deleted to exclude from search without immediate re-wiring.
+• Neighbor edge healing: connecting a deleted node's neighbors to each other.
+• Entry point relocation if the top-layer entry node is deleted.
+
+You protect vector graph integrity against structural degradation over continuous updates.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'hnsw-delete <id>': Deletes or tombstones vector, re-wiring adjacent edges.",
+        "Implement 'compact-graph': Purges tombstones and rebalances layer connectivity.",
+        "Implement 'delete-entry-point': Deletes the topmost entry point to test migration.",
+        "Enforce system constraints: Zero disconnected components after deletion; Automatic entry-point migration.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `TOMBSTONING & GRAPH EDGE HEALING:
 
   Original Graph:
@@ -259,6 +320,26 @@ export const vectorDatabaseChallenge: ChallengeData = {
       title: "Concurrent Graph Updates & Multi-Index Sharding",
       difficulty: "Hard",
       tagline: "Shard vectors across 4 independent partitions and search in parallel.",
+      description: `In Level 4 (Concurrent Graph Updates & Multi-Index Sharding), you engineer the core mechanisms for Vector Database (HNSW Index).
+
+Shard vectors across 4 independent partitions and search in parallel.
+
+Core Engineering Problem: When an index exceeds 10GB of RAM, how do you distribute it across partitions while maintaining single-query top-K?
+
+Key Mechanisms Implemented:
+• Vector collection sharding: hash or centroid partitioning.
+• Scatter-gather query execution across sharded worker threads.
+• Heap-based top-K merger to consolidate sorted results from all shards.
+
+You scale vector search horizontally across multi-core and multi-partition workers.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'create-shards <count>': Initializes N partitioned vector index shards.",
+        "Implement 'sharded-query <vector> <k>': Queries all shards in parallel and aggregates top-K.",
+        "Implement 'verify-top-k-sort': Verifies the consolidated heap returns strictly descending scores.",
+        "Enforce system constraints: Parallel scatter-gather dispatch; Merge top-K strictly by similarity score.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `SCATTER-GATHER SHARDED VECTOR SEARCH:
 
   Query: Q [dim=128, k=5]
@@ -316,6 +397,26 @@ export const vectorDatabaseChallenge: ChallengeData = {
       title: "Recall vs. QPS Tradeoff Profiling",
       difficulty: "Hard",
       tagline: "Plot the Pareto frontier of Recall@10 against QPS.",
+      description: `In Level 5 (Recall vs. QPS Tradeoff Profiling), you engineer the core mechanisms for Vector Database (HNSW Index).
+
+Plot the Pareto frontier of Recall@10 against QPS.
+
+Core Engineering Problem: How do you systematically tune efSearch to achieve 98% recall without dropping QPS below 3,000?
+
+Key Mechanisms Implemented:
+• Recall@K metric: |Exact_TopK ∩ Approx_TopK| / K.
+• The fundamental trade-off: higher efSearch increases recall but linearly increases distance evaluations.
+• Building an empirical Pareto efficiency frontier.
+
+You measure empirical vector retrieval accuracy and tune latency/quality trade-offs.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'measure-recall <k> <efSearch>': Calculates Recall@K against brute-force baseline for given efSearch.",
+        "Implement 'bench-qps <threads>': Measures queries per second under multi-threaded load.",
+        "Implement 'measure-p99-latency': Measures p99 tail latency for queries.",
+        "Enforce system constraints: Recall@10 must exceed 95%; Microsecond latency measurement.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `PARETO FRONTIER: RECALL@10 vs QUERY LATENCY:
 
   Recall@10
@@ -366,6 +467,26 @@ export const vectorDatabaseChallenge: ChallengeData = {
       title: "Scalar Quantization & SIMD Dot-Product",
       difficulty: "Expert",
       tagline: "Compress vectors 4x via int8 quantization and evaluate with AVX2 dot-products.",
+      description: `In Level 6 (Scalar Quantization & SIMD Dot-Product), you engineer the core mechanisms for Vector Database (HNSW Index).
+
+Compress vectors 4x via int8 quantization and evaluate with AVX2 dot-products.
+
+Core Engineering Problem: Why do floating-point vector comparisons saturate memory bus bandwidth, and how does int8 quantization unlock 10x throughput?
+
+Key Mechanisms Implemented:
+• Scalar Quantization (SQ8): mapping 32-bit float [-1.0, 1.0] to 8-bit signed int [-128, 127].
+• SIMD dot product instructions (_mm256_maddubs_epi16 / vdotq_s32).
+• Cache footprint reduction: fitting 4x more vectors directly into CPU L3 cache.
+
+You achieve maximum vector search throughput through memory compression and vector intrinsics.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'enable-quantization': Quantizes 32-bit float vectors into int8 representations.",
+        "Implement 'bench-simd-search': Compares float32 vs quantized int8 SIMD query throughput.",
+        "Implement 'check-quant-recall': Checks that quantization does not drop recall by more than 2%.",
+        "Enforce system constraints: 75% memory footprint reduction; Accuracy loss under 2% recall.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `SCALAR QUANTIZATION (SQ8) & AVX2 INTRINSICS:
 
   Raw Float32 Vector (128 dims):

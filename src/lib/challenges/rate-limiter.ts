@@ -96,6 +96,26 @@ export const rateLimiterChallenge: ChallengeData = {
       title: "Fixed-Window Epoch Rate Limiter",
       difficulty: "Easy",
       tagline: "Track request counts per fixed time window. Allow requests under capacity and reject those exceeding the threshold.",
+      description: `In Level 1 (Fixed-Window Epoch Rate Limiter), you engineer the core mechanisms for Concurrent Rate Limiter & Traffic Shaper.
+
+Track request counts per fixed time window. Allow requests under capacity and reject those exceeding the threshold.
+
+Core Engineering Problem: Unbounded API requests can take down application servers. Fixed windows partition time into predictable intervals.
+
+Key Mechanisms Implemented:
+• Computing window epoch = floor(timestamp_ms / (window_sec * 1000)).
+• Resetting counter when client enters a new epoch.
+• Calculating precise retry_after_ms to inform throttled clients.
+
+You implement epoch-based time partitioning and deterministic quota enforcement.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'CONFIG <limit> <window_sec>': Sets global limit and window in seconds. Returns 'OK'.",
+        "Implement 'REQUEST <client_id> <timestamp_ms>': Evaluates request. Returns 'ALLOWED <remaining>' or 'REJECTED <retry_after_ms>'.",
+        "Implement 'RESET <client_id>': Resets client's counter. Returns 'OK'.",
+        "Enforce system constraints: window_sec is positive integer; timestamp_ms is positive integer millisecond.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `REQUEST EVALUATION                        RATE LIMIT ENGINE               DECISION
 CONFIG 2 10                   ──► configure global window  ──► OK
 REQUEST alice 1000            ──► epoch 0 (1 req seen)     ──► ALLOWED 1
@@ -177,6 +197,25 @@ ALLOWED 1`,
       title: "Sliding Window Timestamp Log",
       difficulty: "Medium",
       tagline: "Prevent 2x edge bursts. Store timestamps in a sliding window log and evict timestamps outside the active window.",
+      description: `In Level 2 (Sliding Window Timestamp Log), you engineer the core mechanisms for Concurrent Rate Limiter & Traffic Shaper.
+
+Prevent 2x edge bursts. Store timestamps in a sliding window log and evict timestamps outside the active window.
+
+Core Engineering Problem: Fixed windows suffer from boundary spikes: sending the full quota at 00:09 and another at 00:10 yields 2x throughput in 1 second.
+
+Key Mechanisms Implemented:
+• Sliding window: Rolling interval [timestamp - window_ms, timestamp].
+• Evicting timestamps older than the sliding threshold.
+• Computing accurate retry_after based on the earliest timestamp in the log.
+
+You eliminate burst edge vulnerabilities using sliding window logs.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'CONFIG_SLIDING <limit> <window_sec>': Configures sliding window log. Returns 'OK'.",
+        "Implement 'REQUEST_SLIDING <client_id> <timestamp_ms>': Evaluates request using sliding window. Returns 'ALLOWED <remaining>' or 'REJECTED <retry_after_ms>'.",
+        "Enforce system constraints: Timestamps within a client are monotonically non-decreasing.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `REQUEST STREAM (ROLLING WINDOW)           TIMESTAMP LOG DEQUE (c1)              DECISION
 CONFIG_SLIDING 2 5 (limit=2, win=5s)
 REQUEST_SLIDING c1 4000  ──► [t=4000]                                     ──► ALLOWED 1
@@ -240,6 +279,25 @@ REQUEST_SLIDING c1 9100  ──► Evict < 4100 ──► [t=4500, t=9100]      
       title: "Continuous Refill Token Bucket",
       difficulty: "Medium",
       tagline: "Refill tokens lazily based on elapsed time. Allow short bursts up to bucket capacity while enforcing average rate.",
+      description: `In Level 3 (Continuous Refill Token Bucket), you engineer the core mechanisms for Concurrent Rate Limiter & Traffic Shaper.
+
+Refill tokens lazily based on elapsed time. Allow short bursts up to bucket capacity while enforcing average rate.
+
+Core Engineering Problem: Sliding window logs consume O(N) memory per client. Token buckets track only two scalar numbers: tokens available and last refill time.
+
+Key Mechanisms Implemented:
+• Lazy refill: tokens = min(capacity, current_tokens + elapsed_sec * rate).
+• Deducting acquired tokens atomically.
+• Burst capability: allowing spikes up to capacity when bucket is full.
+
+You implement the most memory-efficient and burst-tolerant rate limiter in systems engineering.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'CONFIG_BUCKET <client_id> <capacity> <refill_rate_per_sec>': Initializes token bucket (starts full). Returns 'OK'.",
+        "Implement 'ACQUIRE <client_id> <tokens> <timestamp_ms>': Attempts to consume tokens. Returns 'ALLOWED <tokens_remaining>' or 'REJECTED'.",
+        "Enforce system constraints: Capacity and refill rate are positive integers; Tokens remaining printed as integer floor.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `INCOMING ACQUIRE                          TOKEN BUCKET (c1: cap=5, rate=1/s)     STATUS
 CONFIG_BUCKET c1 5 1                     ┌─────────────────────────────┐
 ACQUIRE c1 3 1000        ──► Deduct 3    │ Tokens: [● ● ● ● ●] (5/5)   │ ──► ALLOWED 2
@@ -304,6 +362,26 @@ ACQUIRE c1 1 2000        ──► Deduct 1    │ Tokens: [●]         (1/5)  
       title: "Smooth Outbound Traffic Shaping",
       difficulty: "Medium",
       tagline: "Smooth bursty inbound spikes into a constant outbound flow. Buffer requests up to queue capacity and drop overflows.",
+      description: `In Level 4 (Smooth Outbound Traffic Shaping), you engineer the core mechanisms for Concurrent Rate Limiter & Traffic Shaper.
+
+Smooth bursty inbound spikes into a constant outbound flow. Buffer requests up to queue capacity and drop overflows.
+
+Core Engineering Problem: Token buckets permit burst spikes to hit downstream services. Leaky buckets shape traffic into an exact, steady dispatch frequency.
+
+Key Mechanisms Implemented:
+• Queuing inbound requests in a bounded buffer.
+• Leaking items at a constant rate = elapsed_sec * leak_rate.
+• Dropping requests immediately when buffer exceeds maximum capacity.
+
+You implement traffic smoothing and buffer overflow protection.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'CONFIG_LEAKY <capacity> <leak_rate_per_sec>': Sets leaky queue capacity and leak rate. Returns 'OK'.",
+        "Implement 'ENQUEUE <request_id> <timestamp_ms>': Enqueues request. Returns 'QUEUED <queue_len>' or 'DROPPED'.",
+        "Implement 'LEAK <timestamp_ms>': Drains processed requests up to timestamp. Returns 'PROCESSED <ids...>' or 'IDLE'.",
+        "Enforce system constraints: Capacity is maximum items that can wait in queue; If the queue is empty and last_leak_ms is 0, initialize last_leak_ms to the timestamp of the first ENQUEUE or LEAK..",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `INBOUND BURST (ENQUEUE)                   LEAKY BUCKET BUFFER (cap=3, leak=1/s)  OUTBOUND FLOW
 ENQUEUE r1 1000 ────────┐                 ┌─────────────────────────────┐
 ENQUEUE r2 1000 ────────┼───────────────► │ [r3] [r2] [r1] (3/3 FULL)   │ ──► QUEUED 1..3
@@ -369,6 +447,26 @@ LEAK 2000 ───────────────────────�
       title: "Multi-Tenant Tiered Quotas & SLA Enforcement",
       difficulty: "Hard",
       tagline: "Assign clients to subscription tiers (FREE, PRO, ENTERPRISE) with independent quotas and burst allowances.",
+      description: `In Level 5 (Multi-Tenant Tiered Quotas & SLA Enforcement), you engineer the core mechanisms for Concurrent Rate Limiter & Traffic Shaper.
+
+Assign clients to subscription tiers (FREE, PRO, ENTERPRISE) with independent quotas and burst allowances.
+
+Core Engineering Problem: Hardcoding one limit treats free trial users and paying enterprise customers identically. Tiered limiting enforces monetization SLAs.
+
+Key Mechanisms Implemented:
+• Dynamic tier configuration (rate limits per time window).
+• Mapping client identity to tier policies with default fallbacks.
+• Independent tenant quota state tracking.
+
+You implement multi-tenant customer tier management and differentiated rate limiting.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'ADD_TIER <tier> <limit> <window_sec>': Registers tier policy. Returns 'OK'.",
+        "Implement 'ASSIGN_TIER <client_id> <tier>': Assigns client to tier. Returns 'OK' or 'NOT_FOUND'.",
+        "Implement 'REQUEST_TIER <client_id> <timestamp_ms>': Evaluates request under client's tier. Returns 'ALLOWED <tier> <remaining>' or 'REJECTED <tier>'.",
+        "Enforce system constraints: Unassigned clients default to FREE tier if FREE exists, else rejected.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `CLIENT REQUESTS                           TIER SLA REGISTRY                      QUOTA ENFORCEMENT
 REQUEST_TIER alice 1000                   ┌─────────────────────────────┐
        │                                  │ FREE: limit=1, window=10s   │ ──► ALLOWED FREE 0
@@ -436,6 +534,25 @@ REQUEST_TIER bob 2000                     │ Current usage: 2/5          │ �
       title: "Rate Limiting Telemetry & State Tracking",
       difficulty: "Hard",
       tagline: "Track rate limiter telemetry and state without overshooting limits. (Note: this is sequential state tracking in standard I/O, not a multi-threaded system).",
+      description: `In Level 6 (Rate Limiting Telemetry & State Tracking), you engineer the core mechanisms for Concurrent Rate Limiter & Traffic Shaper.
+
+Track rate limiter telemetry and state without overshooting limits. (Note: this is sequential state tracking in standard I/O, not a multi-threaded system).
+
+Core Engineering Problem: In distributed clusters, tracking exact allocations avoids race conditions. Even sequentially, you must ensure strict bounds.
+
+Key Mechanisms Implemented:
+• Tracking complete state per client.
+• Zero-overshoot guarantees.
+• Client rate telemetry: Total allowed, total rejected, current tokens.
+
+You master state tracking and operational telemetry for rate limiters.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'ATOMIC_ACQUIRE <client_id> <tokens> <timestamp_ms>': Executes atomic acquire. Returns 'ALLOWED <remaining>' or 'RATE_LIMITED'.",
+        "Implement 'CLIENT_STATS <client_id>': Returns 'STATS <client_id> ALLOWED <n> REJECTED <n> TOKENS <n>'.",
+        "Enforce system constraints: All acquisitions must update client telemetry counters.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `EVENT STREAM                              TELEMETRY / STATE CORE                 TELEMETRY / METRICS
 Event-1: ATOMIC_ACQUIRE c1 3 ──┐          ┌─────────────────────────────┐
 Event-2: ATOMIC_ACQUIRE c1 3 ──┼────────► │ Token Tracking Engine       │ ──► ALLOWED 2 (c1: 2 rem)

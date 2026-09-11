@@ -94,6 +94,17 @@ export const httpServerChallenge: ChallengeData = {
       title: "Basic Request Line Parsing",
       difficulty: "Easy",
       tagline: "Parse HTTP/1.1 methods and URI paths from raw streams. Return formatted 200 OK or 404 Not Found.",
+      description: `HTTP/1.1 is the foundational wire protocol of the web. In Level 1, you build the initial request line parser.
+
+Every HTTP request begins with a request line containing the HTTP method and URI path (e.g. 'GET /hello'). Your server reads standard input stream lines, parses the method and path, and responds with a properly formatted HTTP status line ('HTTP/1.1 200 OK' or 'HTTP/1.1 404 Not Found'), Content-Length header, and payload.`,
+      implementationGuide: [
+        "Read input lines from standard input until EOF.",
+        "Parse the request line: extract the HTTP method and request path.",
+        "Support static routes: '/hello' -> 'Hello World', '/ping' -> 'PONG', '/' -> 'ALGO'.",
+        "If a route is unrecognized, return 'HTTP/1.1 404 Not Found' with body 'Not Found'.",
+        "If a non-GET method targets a GET-only path, return 'HTTP/1.1 405 Method Not Allowed'.",
+        "Format the response string: Status Line + '\\n' + 'Content-Length: <len>\\n\\n' + Body."
+],
       diagram: `INPUT (Raw Stream)            PARSER / ENGINE               OUTPUT (HTTP Wire)
 GET /hello             ──────► method="GET", path="/hello" ──► HTTP/1.1 200 OK\\n
                                                                Content-Length: 11\\n
@@ -161,6 +172,16 @@ Not Found`,
       title: "Parameter Routing & Path Matching",
       difficulty: "Medium",
       tagline: "Implement parameterized route matching (e.g. /users/:id) and wildcard subpaths.",
+      description: `Production web servers route thousands of dynamic endpoints using Radix Tries (prefix trees) rather than linear if/else scans.
+
+In Level 2, you implement path routing with dynamic route parameters (e.g. '/users/:id'). A Radix Tree breaks the URL path by slashes ('/') and matches tokens against tree nodes. If a node begins with ':', it captures the parameter value dynamically and provides it to the route handler.`,
+      implementationGuide: [
+        "Construct a Radix Trie router where each node represents a path segment between slashes.",
+        "Support parameter segments prefixed with ':' (e.g. '/users/:id').",
+        "When routing an incoming path, match exact literal segments first, then parameter wildcard segments.",
+        "Extract named parameter values (e.g. '/users/42' extracts id=42) and return 'User 42'.",
+        "Return 404 Not Found if no trie path matches the incoming request."
+],
       diagram: `RADIX TRIE ROUTER                        PARAMETER EXTRACTION            DISPATCH
 GET /users/42          ──► Trie Lookup ──► matches /users/:id (id=42) ──► 200 OK "User 42"
 GET /posts/systems     ──► Trie Lookup ──► matches /posts/:slug       ──► 200 OK "Post systems"
@@ -207,6 +228,16 @@ Lookup: O(path length) prefix traversal without linear route array scanning.`,
       title: "Header Parsing & Query Parameters",
       difficulty: "Medium",
       tagline: "Parse case-insensitive HTTP headers and URL query strings (?key=val&sort=asc).",
+      description: `HTTP headers carry critical metadata for content negotiation, authentication, and caching. In Level 3, you implement full HTTP header parsing.
+
+Header fields follow the request line as key-value pairs formatted as 'Key: Value'. Header names are strictly case-insensitive (e.g. 'content-type' is identical to 'Content-Type'). Headers terminate with an empty blank line ('\n') before any request body begins.`,
+      implementationGuide: [
+        "Read lines following the request line until encountering an empty line.",
+        "Split each header line on the first ':' into key and value, trimming whitespace.",
+        "Store headers in a case-insensitive map.",
+        "Support 'GET /echo-header': inspect the requested header and return its value in the body.",
+        "Properly compute and attach Content-Length and Content-Type response headers."
+],
       diagram: `HEADER & QUERY PARSER                    EXTRACTION PIPELINE             NORMALIZED OUTPUT
 GET /search?q=redis    ──► Query Tokenizer ──► param["q"] = "redis"   ──► 200 OK "Search: redis"
 user-agent: AlgoClient ──► Lowercase Normalizer──► header["user-agent"] ──► 200 OK "Agent AlgoClient"
@@ -253,6 +284,16 @@ Query String Splitting:
       title: "Payload Framing & POST Processing",
       difficulty: "Hard",
       tagline: "Handle POST requests with exact Content-Length body framing. Prevent HTTP request smuggling.",
+      description: `HTTP POST and PUT methods transmit arbitrary payloads within the request body. In Level 4, you implement body framing.
+
+Because TCP streams do not preserve message boundaries, an HTTP parser relies on the 'Content-Length' header to know exactly how many bytes to read after the header separator blank line.`,
+      implementationGuide: [
+        "Detect if the request method has a body (e.g. POST).",
+        "Parse the 'Content-Length' header to determine the exact byte count of the body payload.",
+        "Read exactly Content-Length bytes from standard input immediately after the header blank line.",
+        "For 'POST /echo': echo the exact request body back with 'Content-Type: text/plain'.",
+        "For 'POST /json': parse the incoming JSON payload and respond with status 200."
+],
       diagram: `POST PAYLOAD INGESTION                   BODY FRAMING ENGINE             PROCESSED RESPONSE
 POST /echo             ──► Read Header: Content-Length: 5 ──► Payload: "hello" (5 bytes)
 Payload: hello         ──► Buffer exact N bytes (no desync) ──► 200 OK "hello"
@@ -300,6 +341,15 @@ Over-read (Len > actual)  ──► Reads exactly N bytes, leaving remainder for
       title: "Persistent TCP Keep-Alive Sessions",
       difficulty: "Hard",
       tagline: "Reuse a single persistent connection across multiple sequential HTTP requests without closing socket.",
+      description: `Opening a new connection for every request adds significant handshake latency. In Level 5, you implement persistent Keep-Alive connections and HTTP/1.1 pipelining.
+
+Under Keep-Alive, multiple sequential requests are streamed over the same session. In ALGO's evaluation stream, requests are separated by the '---' delimiter. Your parser must process each request sequentially, flush its response, and immediately be ready for the next request.`,
+      implementationGuide: [
+        "Process request batches separated by the '---' delimiter on standard input.",
+        "Format and flush the full HTTP response for request N before beginning output for request N+1.",
+        "Attach 'Connection: keep-alive' or 'Connection: close' response headers appropriately.",
+        "Terminate cleanly when 'Connection: close' is requested or EOF is reached."
+],
       diagram: `CLIENT TCP STREAM                        SESSION COORDINATOR             PIPELINED STREAM
 Request 1: GET /hello  ──► Process Req 1 ──► Keep socket OPEN ──────► Res 1: 200 OK (keep-alive)
 Request 2: GET /ping   ──► Process Req 2 ──► Final req in stream ───► Res 2: 200 OK (close)
@@ -346,6 +396,14 @@ Eliminates 3-way TCP handshake + TLS negotiation on repeated asset requests.`,
       title: "Connection Pooling & Peak Throughput",
       difficulty: "Hard",
       tagline: "Scale to 50,000+ requests/sec. Implement non-blocking I/O event handling with sub-millisecond p99 latency.",
+      description: `Modern web servers use an asynchronous event loop (epoll on Linux, kqueue on macOS) to handle 50,000+ requests/sec on a single thread.
+
+In Level 6, you build an event-driven request dispatcher. You will measure requests per second, monitor throughput, and handle concurrent connection states using streaming state machine parsing.`,
+      implementationGuide: [
+        "Implement a non-blocking streaming state machine parser that transitions between REQUEST_LINE, HEADERS, BODY, and RESPONSE states.",
+        "Support 'GET /stats': report total requests processed, active connections, and requests per second.",
+        "Ensure zero-copy buffer slicing so large request bodies do not allocate redundant memory strings."
+],
       diagram: `EVENT LOOP (epoll/kqueue)                WORKER DISPATCHER               CONCURRENCY PEAK
 Socket 1: Ready to Read ──► epoll_wait() ──► Zero-Copy Parse ──► 200 OK
 Socket 2: Ready to Read ──► Non-Blocking ──► Direct Write    ──► 200 OK

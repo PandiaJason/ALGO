@@ -424,7 +424,9 @@ export default async function ChallengeDetailPage({ params }: Props) {
           title: l.title || codeLevel?.title || `Level ${lvlNum}`,
           shortTitle: l.shortTitle || (l.title ? (l.title.length > 25 ? l.title.slice(0, 25) + "..." : l.title) : (codeLevel?.shortTitle || `Level ${lvlNum}`)),
           difficulty: l.difficulty || codeLevel?.difficulty || "Medium",
-          tagline: l.tagline || l.description || codeLevel?.tagline || "",
+          tagline: l.tagline || codeLevel?.tagline || l.description || "",
+          description: l.description || codeLevel?.description || undefined,
+          implementationGuide: l.implementationGuide || codeLevel?.implementationGuide || undefined,
           diagram: l.diagram || codeLevel?.diagram || undefined,
           importantChallenge: l.importantChallenge || codeLevel?.importantChallenge || undefined,
           endGoalDemonstration: l.endGoalDemonstration || codeLevel?.endGoalDemonstration || undefined,
@@ -700,10 +702,41 @@ export default async function ChallengeDetailPage({ params }: Props) {
                             <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block mb-1">
                               Stage Objective
                             </span>
-                            <p className="text-xs text-slate-700 leading-relaxed font-normal">
+                            <p className="text-xs text-slate-800 leading-relaxed font-medium">
                               {lvl.tagline || lvl.description}
                             </p>
                           </div>
+
+                          {/* Level Deep Dive / Mechanism */}
+                          {lvl.description && (
+                            <div className="p-3.5 rounded-xl bg-white border border-slate-200 text-xs space-y-1.5 shadow-2xs">
+                              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#099BE9] block">
+                                Core Mechanism &amp; Architecture
+                              </span>
+                              <p className="text-slate-700 leading-relaxed whitespace-pre-line font-normal">
+                                {lvl.description}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Step-by-Step Implementation Guide */}
+                          {Array.isArray(lvl.implementationGuide) && lvl.implementationGuide.length > 0 && (
+                            <div className="p-3.5 rounded-xl bg-indigo-50/60 border border-indigo-200 text-xs space-y-2 shadow-2xs">
+                              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-indigo-900 block">
+                                Step-by-Step Implementation Guide
+                              </span>
+                              <ol className="space-y-1.5 list-none text-slate-800">
+                                {lvl.implementationGuide.map((step: string, sIdx: number) => (
+                                  <li key={sIdx} className="flex items-start gap-2">
+                                    <span className="flex items-center justify-center w-4 h-4 rounded-full bg-indigo-200 text-indigo-900 text-[10px] font-mono font-bold shrink-0 mt-0.5">
+                                      {sIdx + 1}
+                                    </span>
+                                    <span className="leading-relaxed">{step}</span>
+                                  </li>
+                                ))}
+                              </ol>
+                            </div>
+                          )}
 
                           {/* Key Systems Bottleneck */}
                           {bottleneck && (

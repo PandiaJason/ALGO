@@ -98,6 +98,26 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       title: "Service Registry & TTL Heartbeat Monitor",
       difficulty: "Easy",
       tagline: "Register services with IP:port, refresh heartbeats, and evict expired nodes.",
+      description: `In Level 1 (Service Registry & TTL Heartbeat Monitor), you engineer the core mechanisms for Service Discovery & DNS Registry.
+
+Register services with IP:port, refresh heartbeats, and evict expired nodes.
+
+Core Engineering Problem: How does a registry know when a microservice crashes silently without leaving a deregistration message?
+
+Key Mechanisms Implemented:
+• TTL (Time-To-Live) leases: nodes must send periodic heartbeat pings.
+• Background reaper loops: evicting instances that miss their TTL deadline.
+• Multi-instance lookup: returning all healthy endpoints for a given service name.
+
+You implement the core service catalog with automatic lease expiration.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'register <service> <id> <ip> <port> <ttl_ms>': Registers an instance with heartbeat lease.",
+        "Implement 'heartbeat <id>': Refreshes TTL lease for instance.",
+        "Implement 'lookup <service>': Returns list of healthy IP:port endpoints.",
+        "Enforce system constraints: Instantly evict nodes exceeding TTL; Support multiple instances per service.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `TTL HEARTBEAT LEASE ENGINE:
 
   Client Microservice              Registry Catalog Table
@@ -150,6 +170,26 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       title: "RFC 1035 UDP DNS Server",
       difficulty: "Medium",
       tagline: "Parse raw UDP DNS wire packets and return binary A & SRV records.",
+      description: `In Level 2 (RFC 1035 UDP DNS Server), you engineer the core mechanisms for Service Discovery & DNS Registry.
+
+Parse raw UDP DNS wire packets and return binary A & SRV records.
+
+Core Engineering Problem: Why do systems use DNS on UDP port 53 for service discovery rather than HTTP REST APIs?
+
+Key Mechanisms Implemented:
+• RFC 1035 DNS packet layout: Header (12 bytes), Question, Answer, Authority, Additional.
+• Domain name label encoding ('3www4algo2io0').
+• Binary serialization of type A (IPv4) and SRV (priority, weight, port, target) records.
+
+You build an authoritative RFC 1035 DNS server resolving services directly over UDP.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'dns-query <name> <type>': Simulates DNS query for A or SRV records. Default built-in entries like web.service.algo or multi.service.algo may be queried without prior registration.",
+        "Implement 'inspect-dns-packet <hex>': Parses binary DNS query payload.",
+        "Implement 'test-dns-compression': Validates that DNS compression pointers are handled correctly.",
+        "Enforce system constraints: Strict RFC 1035 header flags (QR, AA, RCODE); Binary-safe wire encoding.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `RFC 1035 UDP DNS PACKET FLOW:
 
   DNS Client                     ALGO DNS Server (UDP Port 53)
@@ -203,6 +243,26 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       title: "Flapping Node Damping & Split-Horizon DNS",
       difficulty: "Hard",
       tagline: "Suppress flapping nodes oscillating between up and down.",
+      description: `In Level 3 (Flapping Node Damping & Split-Horizon DNS), you engineer the core mechanisms for Service Discovery & DNS Registry.
+
+Suppress flapping nodes oscillating between up and down.
+
+Core Engineering Problem: What happens when a sick service instance crashes and restarts every 2 seconds, causing millions of DNS cache flushes?
+
+Key Mechanisms Implemented:
+• Flap damping with hysteresis: accumulating penalty points on state changes.
+• Suppress threshold: withholding flapping nodes from DNS responses until stable.
+• Exponential decay of penalty points over quiet periods.
+
+You protect downstream microservices from routing thrashing and cascading failures.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'flap-instance <id> <times>': Rapidly toggles instance between healthy and dead.",
+        "Implement 'check-suppression <id>': Reports whether instance is suppressed by flap damper.",
+        "Implement 'tick-quiet-period <ms>': Advances time to allow penalty decay for suppressed instances.",
+        "Enforce system constraints: Automatically suppress node after 3 rapid state changes; Exponential decay of penalty.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `FLAP DAMPING HYSTERESIS STATE MACHINE:
 
   Node State Transitions:
@@ -255,6 +315,26 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       title: "SWIM Gossip Protocol Node Membership",
       difficulty: "Hard",
       tagline: "Implement decentralized failure detection across a 50-node cluster.",
+      description: `In Level 4 (SWIM Gossip Protocol Node Membership), you engineer the core mechanisms for Service Discovery & DNS Registry.
+
+Implement decentralized failure detection across a 50-node cluster.
+
+Core Engineering Problem: Why does centralized heartbeat monitoring fail at 10,000 nodes, and how does SWIM gossip scale linearly?
+
+Key Mechanisms Implemented:
+• SWIM failure detector: randomized ping to member every T interval.
+• Indirect ping (ping-req) via k random peers if direct ping times out.
+• Suspicion mechanism: placing unconfirmed nodes in SUSPECT state before declaring DEAD.
+
+You master decentralized, weakly-consistent cluster membership protocols.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'join-cluster <nodeId>': Adds node to SWIM gossip mesh.",
+        "Implement 'init-gossip-mesh <size>': Initializes a gossip mesh of the specified size.",
+        "Implement 'gossip-tick': Runs one round of randomized ping and ping-req protocol.",
+        "Enforce system constraints: O(1) message overhead per node per period; Zero false positives on transient network delay.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `SWIM GOSSIP FAILURE DETECTION PROTOCOL:
 
   Round t: Node A probes Node B:
@@ -314,6 +394,26 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       title: "Convergence Time & DNS Latency Profiling",
       difficulty: "Hard",
       tagline: "Measure cluster gossip convergence time and DNS QPS.",
+      description: `In Level 5 (Convergence Time & DNS Latency Profiling), you engineer the core mechanisms for Service Discovery & DNS Registry.
+
+Measure cluster gossip convergence time and DNS QPS.
+
+Core Engineering Problem: How many seconds does it take for 50 nodes to learn that a node died, and what is DNS query latency under load?
+
+Key Mechanisms Implemented:
+• Epidemic gossip dissemination mathematics (O(log N) rounds to complete convergence).
+• DNS query latency percentiles (p50, p95, p99).
+• Measuring UDP packet drop rates under high socket buffer saturation.
+
+You quantify distributed failure detection speed and benchmark DNS throughput.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'bench-dns-qps <threads>': Measures DNS queries resolved per second.",
+        "Implement 'measure-convergence <nodes>': Measures rounds required for full cluster convergence.",
+        "Implement 'measure-dns-tail-latency': Measures the p99 tail latency for DNS queries.",
+        "Enforce system constraints: DNS latency p99 under 0.5ms; Gossip convergence within O(log N) rounds.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `EPIDEMIC GOSSIP DISSEMINATION vs DNS QPS:
 
   Epidemic Spread Timeline (50 nodes):
@@ -364,6 +464,26 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       title: "Lock-Free Routing Tables & UDP Zero-Copy",
       difficulty: "Hard",
       tagline: "Eliminate mutex contention using RCU atomic pointer swaps for route tables.",
+      description: `In Level 6 (Lock-Free Routing Tables & UDP Zero-Copy), you engineer the core mechanisms for Service Discovery & DNS Registry.
+
+Eliminate mutex contention using RCU atomic pointer swaps for route tables.
+
+Core Engineering Problem: Why do read-write locks (std::shared_mutex) cause severe cache line bouncing under 100,000 DNS queries/sec?
+
+Key Mechanisms Implemented:
+• Read-Copy-Update (RCU) architecture: atomic pointer swap for updates, lock-free reads.
+• Zero-allocation UDP response formatting.
+• Batching UDP packet reads using Linux recvmmsg/sendmmsg syscalls.
+
+You achieve lock-free routing resolution and maximize UDP network packet processing.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'enable-rcu-tables': Switches catalog to atomic snapshot RCU tables.",
+        "Implement 'bench-concurrent-dns <workers>': Tests DNS throughput under concurrent writes and reads.",
+        "Implement 'test-atomic-swap': Verifies the safety of lock-free RCU table swaps.",
+        "Enforce system constraints: Zero lock contention on read queries; Atomic route table swap.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `READ-COPY-UPDATE (RCU) LOCK-FREE CATALOG:
 
   Active Routing Pointer:

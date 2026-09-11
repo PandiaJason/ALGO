@@ -94,6 +94,26 @@ export const loadBalancerChallenge: ChallengeData = {
       title: "Basic Round-Robin Dispatcher",
       difficulty: "Easy",
       tagline: "Distribute incoming requests uniformly across registered backends in cyclical order.",
+      description: `In Level 1 (Basic Round-Robin Dispatcher), you engineer the core mechanisms for Dynamic Layer-7 Load Balancer.
+
+Distribute incoming requests uniformly across registered backends in cyclical order.
+
+Core Engineering Problem: Direct client-to-server connections overwhelm single nodes. Round-robin spreads load across horizontal workers.
+
+Key Mechanisms Implemented:
+• Tracking registered server list.
+• Cyclic pointer increment: index = (index + 1) % N.
+• Handling empty backend pools gracefully.
+
+You implement cyclical dispatch and backend pool management.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'ADD_BACKEND <server_id>': Registers an active backend. Returns 'OK'.",
+        "Implement 'ROUTE <req_id>': Routes request to next backend. Returns 'FORWARD -> <server_id>' or 'NO_BACKENDS'.",
+        "Implement 'LIST_BACKENDS': Returns 'BACKENDS <id1> <id2>...' in registration order.",
+        "Enforce system constraints: Server IDs and Request IDs are alphanumeric strings.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `CLIENT REQUEST                            LOAD BALANCER                   ROUTED TARGET
 ADD_BACKEND s1                ──► register server in pool  ──► OK
 ADD_BACKEND s2                ──► register server in pool  ──► OK
@@ -175,6 +195,25 @@ FORWARD -> web-1`,
       title: "Smooth Weighted Round-Robin (Nginx Algorithm)",
       difficulty: "Medium",
       tagline: "Interleave requests smoothly according to server weights using Nginx's current_weight algorithm.",
+      description: `In Level 2 (Smooth Weighted Round-Robin (Nginx Algorithm)), you engineer the core mechanisms for Dynamic Layer-7 Load Balancer.
+
+Interleave requests smoothly according to server weights using Nginx's current_weight algorithm.
+
+Core Engineering Problem: Naive weighted round-robin sends 10 consecutive requests to server A (weight 10) then 1 to B (weight 1). This causes CPU spikes on A. Smooth weighted distributes them evenly: A, A, A, B, A, A...
+
+Key Mechanisms Implemented:
+• For each route: For all servers: current_weight += effective_weight.
+• Select server with highest current_weight.
+• Subtract total_weight from the selected server's current_weight.
+
+You implement smooth interleaved weighted balancing.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'ADD_WEIGHTED <server_id> <weight>': Registers backend with integer weight. Returns 'OK'.",
+        "Implement 'ROUTE_WEIGHTED <req_id>': Dispatches request using smooth weighted algorithm. Returns 'FORWARD -> <server_id>'.",
+        "Enforce system constraints: Weights are positive integers; When a backend is added via ADD_WEIGHTED, its current_weight is initialized to 0..",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `INCOMING REQUEST                          NGINX SMOOTH WEIGHT ENGINE             SELECTED UPSTREAM
 ROUTE_WEIGHTED 1 ──┐                      ┌──────────────────────────────┐
 ROUTE_WEIGHTED 2 ──┼────────────────────► │ Weights: a=4, b=2, c=1 (Σ=7)  │ ──► FORWARD -> a
@@ -238,6 +277,26 @@ Sequence: a -> b -> a -> a -> c -> b -> a (Smooth interleaving without burst clu
       title: "Dynamic Least-Connections Routing",
       difficulty: "Medium",
       tagline: "Track active in-flight requests. Route new requests to the backend with the fewest active connections.",
+      description: `In Level 3 (Dynamic Least-Connections Routing), you engineer the core mechanisms for Dynamic Layer-7 Load Balancer.
+
+Track active in-flight requests. Route new requests to the backend with the fewest active connections.
+
+Core Engineering Problem: Round-robin fails when some requests take 10 seconds while others take 10ms. Least connections adapts dynamically to slow servers.
+
+Key Mechanisms Implemented:
+• Tracking in-flight request counter per backend.
+• Selecting backend with minimum active connections.
+• Tie-breaking backends alphabetically by server_id.
+
+You implement dynamic connection-aware traffic routing.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'TRACK_START <server_id> <req_id>': Increments active connection count. Returns 'OK'.",
+        "Implement 'TRACK_END <server_id> <req_id>': Decrements active connection count. Returns 'OK'.",
+        "Implement 'ROUTE_LEAST_CONN <req_id>': Routes to backend with fewest active conns, increments its count. Returns 'FORWARD -> <server_id>'.",
+        "Enforce system constraints: Active connection count cannot drop below 0.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `INCOMING REQUEST                          ACTIVE CONNECTION TRACKER              ROUTING DECISION
 ROUTE_LEAST_CONN r1 ──┐                   ┌──────────────────────────────┐
 ROUTE_LEAST_CONN r2 ──┼─────────────────► │ [s1] Active Connections: 1   │ ──► FORWARD -> s1
@@ -304,6 +363,27 @@ ROUTE_LEAST_CONN r4 ────────────────────
       title: "Passive Health Checks & Failover",
       difficulty: "Hard",
       tagline: "Track consecutive backend errors. Trip unhealthy nodes to DOWN after exceeding threshold, rerouting traffic.",
+      description: `In Level 4 (Passive Health Checks & Failover), you engineer the core mechanisms for Dynamic Layer-7 Load Balancer.
+
+Track consecutive backend errors. Trip unhealthy nodes to DOWN after exceeding threshold, rerouting traffic.
+
+Core Engineering Problem: Routing traffic to dead backends creates cascading 500/502 errors. Passive health checks circuit-break failing nodes automatically.
+
+Key Mechanisms Implemented:
+• Tracking consecutive failures per backend.
+• Tripping server status from UP to DOWN after failure threshold.
+• Excluding DOWN servers from all routing algorithms.
+• Probing and restoring server status to UP upon success.
+
+You implement circuit-breaking and fault-tolerant failover.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'SET_FAIL_THRESHOLD <count>': Sets max consecutive fails before marking DOWN (default 3). Returns 'OK'.",
+        "Implement 'FAIL <server_id>': Records failure. Returns 'STATUS <server_id> <UP|DOWN>'.",
+        "Implement 'SUCCESS <server_id>': Records success. Resets fail count to 0, marks UP. Returns 'STATUS <server_id> UP'.",
+        "Enforce system constraints: If all backends are DOWN, ROUTE returns 'NO_BACKENDS'; ALL routing strategies (ROUTE, ROUTE_WEIGHTED, ROUTE_LEAST_CONN) must exclude servers in DOWN or DRAINING state..",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `SERVER PROBING / TRAFFIC                  CIRCUIT BREAKER STATE (Thresh=2)       TRAFFIC ROUTING
 FAIL s1 (count=1)    ──► s1: UP (1/2)     ┌──────────────────────────────┐
 FAIL s1 (count=2)    ──► s1: DOWN (TRIP!) │ [s1] STATUS: DOWN (Tripped)  │ ──► Excluded from pool
@@ -369,6 +449,25 @@ SUCCESS s1 (Probe)   ──► s1: UP (0/2)     ──► Restored to Pool      
       title: "Ketama Consistent Hashing Ring",
       difficulty: "Hard",
       tagline: "Implement a circular hash ring with virtual nodes for sticky session affinity and minimal cache relocation.",
+      description: `In Level 5 (Ketama Consistent Hashing Ring), you engineer the core mechanisms for Dynamic Layer-7 Load Balancer.
+
+Implement a circular hash ring with virtual nodes for sticky session affinity and minimal cache relocation.
+
+Core Engineering Problem: Modulo routing hash(key) % N invalidates almost all cache keys when a server is added or removed. Consistent hashing remaps only K/N keys.
+
+Key Mechanisms Implemented:
+• Hashing keys to 32-bit integer space [0, 2^32 - 1] using FNV-1a.
+• Placing virtual nodes: hash(server_id + '#' + vnode_idx).
+• Finding first virtual node clockwise on ring whose hash >= hash(key).
+
+You implement virtual-node consistent hashing for session and cache affinity.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'ADD_RING_NODE <server_id> <vnodes>': Adds server with virtual nodes to the hash ring. Returns 'OK'.",
+        "Implement 'ROUTE_KEY <cache_key>': Routes key to nearest clockwise server. Returns 'HASH_FORWARD -> <server_id>' or 'NO_BACKENDS'.",
+        "Enforce system constraints: Use FNV-1a 32-bit hash algorithm: offset_basis=2166136261, prime=16777619.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `CACHE KEY REQUEST                         32-BIT CIRCULAR HASH RING              TARGET NODE
 ROUTE_KEY user:100                        ┌──────────────────────────────┐
       │                                   │          0 / 2^32            │
@@ -433,6 +532,25 @@ ROUTE_KEY user:200 ────────────────────�
       title: "Zero-Downtime Connection Draining",
       difficulty: "Hard",
       tagline: "Drain servers gracefully during rolling deploys: accept 0 new requests, wait for active connections to finish, then remove.",
+      description: `In Level 6 (Zero-Downtime Connection Draining), you engineer the core mechanisms for Dynamic Layer-7 Load Balancer.
+
+Drain servers gracefully during rolling deploys: accept 0 new requests, wait for active connections to finish, then remove.
+
+Core Engineering Problem: Immediately killing an upstream node aborts users mid-checkout. Connection draining waits for in-flight requests to complete before terminating.
+
+Key Mechanisms Implemented:
+• State lifecycle: UP -> DRAINING -> REMOVED.
+• DRAINING servers are immediately excluded from new ROUTE calls.
+• When active connections reach 0 on a DRAINING server, state transitions to REMOVED.
+
+You master zero-downtime rolling maintenance and connection lifecycle management.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'DRAIN <server_id>': Transitions server to DRAINING state. Returns 'DRAINING <server_id> ACTIVE <conns>' or 'REMOVED <server_id>'.",
+        "Implement 'SERVER_STATUS <server_id>': Returns 'STATE <UP|DOWN|DRAINING|REMOVED> ACTIVE <conns>' or 'NOT_FOUND'.",
+        "Enforce system constraints: Draining an idle server (active=0) transitions immediately to REMOVED.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `MAINTENANCE SIGNAL                        SERVER DRAIN LIFECYCLE                 NEW TRAFFIC ROUTING
 DRAIN s1 (active=1)  ──► State: DRAINING  ┌──────────────────────────────┐
                                           │ [s1] DRAINING (active: 1)    │ ──► 0 new requests

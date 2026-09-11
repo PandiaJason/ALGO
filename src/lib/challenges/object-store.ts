@@ -100,6 +100,26 @@ export const objectStoreChallenge: ChallengeData = {
       title: "Content-Addressed Blob Storage",
       difficulty: "Easy",
       tagline: "Implement PUT, GET, and DELETE operations with SHA-256 content addressing.",
+      description: `In Level 1 (Content-Addressed Blob Storage), you engineer the core mechanisms for Object Storage Engine.
+
+Implement PUT, GET, and DELETE operations with SHA-256 content addressing.
+
+Core Engineering Problem: How does an object store manage millions of files without overloading a single flat directory?
+
+Key Mechanisms Implemented:
+• SHA-256 content hashing to derive immutable storage identifiers.
+• Directory sharding: splitting hashes into prefix folders (e.g. /ab/cd/abcdef...).
+• Handling missing keys with standard 404 error semantics.
+
+You build the fundamental PUT/GET/DELETE interface of cloud object stores.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'PUT <key> <data>': Stores object data under key, returning 'PUT_OK'.",
+        "Implement 'GET <key>': Retrieves the data stored under the given key.",
+        "Implement 'DELETE <key>': Removes the object from storage.",
+        "Enforce system constraints: Return accurate SHA-256 hashes; 404 NOT_FOUND on nonexistent keys.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `INPUT: "PUT doc.txt Hello S3"
       │
       ▼
@@ -153,6 +173,26 @@ OUTPUT: PUT_OK 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824`
       title: "Rabin Fingerprinting & Deduplication",
       difficulty: "Medium",
       tagline: "Split streams into content-defined chunks and reuse identical blocks.",
+      description: `In Level 2 (Rabin Fingerprinting & Deduplication), you engineer the core mechanisms for Object Storage Engine.
+
+Split streams into content-defined chunks and reuse identical blocks.
+
+Core Engineering Problem: If two users upload 1GB files that differ by only 1 byte at the beginning, why does fixed chunking fail to deduplicate?
+
+Key Mechanisms Implemented:
+• Fixed chunking vs Content-Defined Chunking (CDC).
+• Rabin rolling hashes that find chunk boundaries based on content patterns.
+• Manifest references: mapping an object to an ordered list of shared chunk hashes.
+
+You implement content-defined deduplication and understand storage amplification savings.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'PUT-DEDUP <key> <data>': Chunks data, stores unique blocks, and records manifest.",
+        "Implement 'STATS-DEDUP': Reports deduplication stats (e.g. 'PHYSICAL_CHUNKS: <n>' or 'SHARED_CHUNKS: <n>').",
+        "Implement 'check-dedup-ratio': Checks deduplication savings ratio.",
+        "Enforce system constraints: Chunks must be content-defined; Identical blocks must only be written to disk once.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `CONTENT-DEFINED CHUNKING (CDC) & DEDUPLICATION:
 
 Stream: [AAAAA_BBBBB_CCCCC_DDDDD]
@@ -207,6 +247,26 @@ Object Manifest for User 2: [H1, H2, H5, H4] ──► 75% Storage Saved!`,
       title: "Bit Rot Detection & Background Scrubbing",
       difficulty: "Hard",
       tagline: "Detect silent data corruption via periodic block scrubbing.",
+      description: `In Level 3 (Bit Rot Detection & Background Scrubbing), you engineer the core mechanisms for Object Storage Engine.
+
+Detect silent data corruption via periodic block scrubbing.
+
+Core Engineering Problem: What happens when physical disk magnets flip a bit silently without the OS throwing an I/O error?
+
+Key Mechanisms Implemented:
+• End-to-end checksum verification (CRC32C, BLAKE3).
+• Background scrubber daemons reading idle blocks and re-verifying hashes.
+• Quarantining corrupted chunks to prevent returning poisoned data to clients.
+
+You protect storage durability against silent hardware corruption.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'corrupt-block <hash>': Simulates silent bit rot by flipping bits in a chunk file.",
+        "Implement 'scrub': Performs full background scrub, reporting healthy vs corrupted blocks.",
+        "Implement 'GET-CHUNK <hash>': Retrieves chunk data directly by hash.",
+        "Enforce system constraints: Zero tolerance for checksum mismatches; Quarantine damaged blocks immediately.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `BACKGROUND SCRUBBER PIPELINE:
 
   Block Storage Drive
@@ -265,6 +325,26 @@ Object Manifest for User 2: [H1, H2, H5, H4] ──► 75% Storage Saved!`,
       title: "Concurrent Multipart Uploads",
       difficulty: "Hard",
       tagline: "Support multi-gigabyte uploads via parallel part streaming.",
+      description: `In Level 4 (Concurrent Multipart Uploads), you engineer the core mechanisms for Object Storage Engine.
+
+Support multi-gigabyte uploads via parallel part streaming.
+
+Core Engineering Problem: How do you reliably upload a 50GB file over flaky networks without restarting from byte 0 on failure?
+
+Key Mechanisms Implemented:
+• Multipart upload state machine: Initiate, UploadPart, CompleteMultipartUpload.
+• Part ordering, checksum validation, and out-of-order parallel arrivals.
+• Cleaning up aborted multipart uploads to prevent zombie disk leaks.
+
+You master robust multi-part transfer protocols for massive file transfers.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'init-multipart <key>': Initiates upload session, returning uploadId.",
+        "Implement 'upload-part <uploadId> <partNum> <data>': Uploads a numbered chunk part.",
+        "Implement 'complete-multipart <uploadId>': Assembles parts in numerical order and commits object.",
+        "Enforce system constraints: Allow parts to arrive out of order; Assemble strictly by part number sequence.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `MULTIPART UPLOAD STATE MACHINE:
 
   1. init-multipart "large.iso" ──► Session ID: UP_123
@@ -319,6 +399,26 @@ Object Manifest for User 2: [H1, H2, H5, H4] ──► 75% Storage Saved!`,
       title: "IOPS Saturation & Write Amplification",
       difficulty: "Hard",
       tagline: "Measure chunking CPU costs vs disk write amplification.",
+      description: `In Level 5 (IOPS Saturation & Write Amplification), you engineer the core mechanisms for Object Storage Engine.
+
+Measure chunking CPU costs vs disk write amplification.
+
+Core Engineering Problem: At what point does CDC chunking calculation consume more CPU time than the disk write savings are worth?
+
+Key Mechanisms Implemented:
+• Write amplification factor (WAF): physical bytes written / logical bytes submitted.
+• Rabin rolling hash window size trade-offs.
+• Disk IOPS saturation limits during parallel random block lookups.
+
+You quantify the economic and hardware trade-offs of deduplication systems.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'bench-waf <bytes>': Measures write amplification factor for submitted payload.",
+        "Implement 'bench-iops <threads>': Measures random read IOPS across 10,000 chunks.",
+        "Implement 'profile-chunker': Profiles CDC chunking CPU throughput.",
+        "Enforce system constraints: Report exact WAF ratio to 2 decimal places; Report IOPS under concurrency.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `WRITE AMPLIFICATION FACTOR (WAF) & CHUNKER PROFILING:
 
   Logical Payload: 1,048,576 bytes (1.0 MB)
@@ -375,6 +475,26 @@ Object Manifest for User 2: [H1, H2, H5, H4] ──► 75% Storage Saved!`,
       title: "Zero-Copy Direct I/O & Block Coalescing",
       difficulty: "Hard",
       tagline: "Eliminate kernel page cache pollution using O_DIRECT aligned writes.",
+      description: `In Level 6 (Zero-Copy Direct I/O & Block Coalescing), you engineer the core mechanisms for Object Storage Engine.
+
+Eliminate kernel page cache pollution using O_DIRECT aligned writes.
+
+Core Engineering Problem: How do you stream multi-gigabyte files to disk without evicting active database pages from the Linux page cache?
+
+Key Mechanisms Implemented:
+• Direct I/O (O_DIRECT) with 4KB sector alignment.
+• Block coalescing: merging adjacent small writes into contiguous 64KB I/O blocks.
+• Zero-copy socket splicing to disk.
+
+You master bare-metal disk throughput without page cache thrashing.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'direct-write <key> <size>': Writes block using sector-aligned direct I/O buffers.",
+        "Implement 'verify-pagecache': Confirms that direct I/O did not pollute kernel page cache.",
+        "Implement 'bench-coalesce': Measures block coalescing efficiency.",
+        "Enforce system constraints: 512-byte / 4096-byte hardware buffer alignment; Kernel page cache bypass.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `DIRECT I/O vs BUFFERED KERNEL PAGE CACHE:
 
   Standard I/O (Thrashing):

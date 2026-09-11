@@ -94,6 +94,26 @@ export const taskSchedulerChallenge: ChallengeData = {
       title: "Cluster Node Registry & FIFO Scheduling",
       difficulty: "Easy",
       tagline: "Register cluster nodes with CPU and RAM capacities. Schedule queued tasks in arrival order on the first eligible node.",
+      description: `In Level 1 (Cluster Node Registry & FIFO Scheduling), you engineer the core mechanisms for Multi-Resource Task Scheduler.
+
+Register cluster nodes with CPU and RAM capacities. Schedule queued tasks in arrival order on the first eligible node.
+
+Core Engineering Problem: Simple schedulers fail to track multi-resource constraints. A node must have both enough CPU AND enough RAM to accept a task.
+
+Key Mechanisms Implemented:
+• Tracking node CPU and RAM capacity vs allocated usage.
+• Iterating nodes in registration order to find first fitting node (First-Fit).
+• Queuing tasks when no node currently has sufficient capacity.
+
+You implement node registration and multi-resource capacity checking.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'ADD_NODE <node_id> <cpu> <ram>': Registers a worker node. Returns 'OK'.",
+        "Implement 'SUBMIT <task_id> <cpu> <ram>': Submits task to the queue. Returns 'QUEUED'.",
+        "Implement 'SCHEDULE': Attempts to schedule the next queued task. Returns 'SCHEDULED <task_id> -> <node_id>' or 'WAITING'.",
+        "Enforce system constraints: Node IDs and Task IDs are alphanumeric strings; CPU is integer cores, RAM is integer MB.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `TASK SUBMISSION                           SCHEDULING ENGINE               ASSIGNMENT
 ADD_NODE worker-1 4 8192      ──► register node capacity   ──► OK
 SUBMIT task-1 2 2048          ──► enqueue pending job      ──► QUEUED
@@ -173,6 +193,25 @@ RUNNING worker-1`,
       title: "Task Priority Ordering & Starvation Prevention",
       difficulty: "Medium",
       tagline: "Incorporate task priority (1-100). Higher-priority tasks must schedule before lower-priority tasks.",
+      description: `In Level 2 (Task Priority Ordering & Starvation Prevention), you engineer the core mechanisms for Multi-Resource Task Scheduler.
+
+Incorporate task priority (1-100). Higher-priority tasks must schedule before lower-priority tasks.
+
+Core Engineering Problem: FIFO causes priority inversion: a batch of low-priority reporting jobs blocks critical customer-facing API workers.
+
+Key Mechanisms Implemented:
+• Priority queue dispatch: Higher priority number dispatches first.
+• Tie-breaking by submission order (FIFO among same priority).
+• Skipping non-fitting high priority tasks or blocking until resources open.
+
+You implement priority-ordered queueing with deterministic tie-breaking.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'SUBMIT_P <task_id> <priority> <cpu> <ram>': Submits task with priority (higher int = higher priority). Returns 'QUEUED'.",
+        "Implement 'SCHEDULE': Schedules highest priority pending task that fits. Returns 'SCHEDULED <task_id> -> <node_id>' or 'WAITING'.",
+        "Enforce system constraints: Priority is integer between 1 and 1000; Higher value means higher priority.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `TASK SUBMISSION (PRIORITY QUEUE)          READY QUEUE (ORDERED HEAP)             SCHEDULER
 SUBMIT_P low  10 2 2048  ──► ┌──────────────────────────────────────────┐ ──► SCHEDULE
 SUBMIT_P high 90 2 2048  ──► │ P90: [high] (cpu=2, ram=2048)  ▲ HIGHEST │       │
@@ -235,6 +274,24 @@ SUBMIT_P med  50 2 2048  ──► │ P50: [med]  (cpu=2, ram=2048)  │       
       title: "Best-Fit Resource Packing",
       difficulty: "Medium",
       tagline: "Select the node with the least remaining resources that still fits the task (Best-Fit) to minimize fragmentation.",
+      description: `In Level 3 (Best-Fit Resource Packing), you engineer the core mechanisms for Multi-Resource Task Scheduler.
+
+Select the node with the least remaining resources that still fits the task (Best-Fit) to minimize fragmentation.
+
+Core Engineering Problem: First-Fit spreads tasks thinly across all nodes, leaving no node with enough contiguous capacity for a large upcoming task.
+
+Key Mechanisms Implemented:
+• Best-Fit algorithm: Score nodes based on remaining capacity after placing the task.
+• Score metric: Minimized remaining CPU + RAM normalized ratio.
+• Tie-breaking nodes deterministically by alphabetical node_id.
+
+You implement best-fit bin-packing to compact cluster resource utilization.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'SCHEDULE_BEST': Schedules highest priority task on node with least leftover capacity. Returns 'SCHEDULED <t> -> <n>' or 'WAITING'.",
+        "Enforce system constraints: Score by leftover CPU remaining + leftover RAM remaining / 1024.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `INCOMING TASK                               CLUSTER NODES (FIT & SCORE)            PLACEMENT
 SUBMIT_P t1 10 2 2048                        ┌──────────────────────────────┐
        │                                     │ [n-large] (16c, 32GB)        │
@@ -298,6 +355,25 @@ Min leftover capacity wins                   │ Leftover: 0c / 0MB   (BEST!) �
       title: "Task Lifecycle & Dynamic Deallocation",
       difficulty: "Medium",
       tagline: "Support task completion, freeing assigned CPU and RAM, and allowing waiting tasks to schedule immediately.",
+      description: `In Level 4 (Task Lifecycle & Dynamic Deallocation), you engineer the core mechanisms for Multi-Resource Task Scheduler.
+
+Support task completion, freeing assigned CPU and RAM, and allowing waiting tasks to schedule immediately.
+
+Core Engineering Problem: Schedulers are dynamic: workloads finish and return resources. Resource leaks during deallocation permanently paralyze nodes.
+
+Key Mechanisms Implemented:
+• Transitions: PENDING -> RUNNING -> COMPLETED.
+• Atomic subtraction of allocated resources upon task completion.
+• Cluster utilization statistics reporting.
+
+You implement atomic deallocation and cluster utilization telemetry.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'COMPLETE <task_id>': Marks running task finished, frees node resources. Returns 'COMPLETED <task_id>' or 'NOT_FOUND'.",
+        "Implement 'CLUSTER_STATS': Returns 'NODES <count> RUNNING <count> CPU_FREE <cores> RAM_FREE <mb>'.",
+        "Enforce system constraints: Completing non-running task returns 'NOT_FOUND'.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `TASK LIFECYCLE                               NODE CAPACITY STATE                   QUEUED JOBS
 COMPLETE t1 (cpu=4, ram=4096)                 ┌─────────────────────────────┐
        │                                      │ [worker-1] Total: 4c / 4GB  │
@@ -362,6 +438,24 @@ COMPLETE t1 (cpu=4, ram=4096)                 ┌──────────�
       title: "Node Heartbeat Failure & Pod Eviction",
       difficulty: "Hard",
       tagline: "Handle node crashes. Tasks running on dead nodes must be evicted and returned to PENDING state with original priority.",
+      description: `In Level 5 (Node Heartbeat Failure & Pod Eviction), you engineer the core mechanisms for Multi-Resource Task Scheduler.
+
+Handle node crashes. Tasks running on dead nodes must be evicted and returned to PENDING state with original priority.
+
+Core Engineering Problem: Hardware fails constantly in large clusters. If a node loses connection, its tasks must be automatically rescheduled elsewhere.
+
+Key Mechanisms Implemented:
+• Removing node from active cluster topology.
+• Iterating running tasks assigned to the dead node and resetting their status to PENDING.
+• Re-inserting evicted tasks into the priority scheduling queue.
+
+You master fault-tolerant failure recovery and automated rescheduling.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'KILL_NODE <node_id>': Simulates node crash. Evicts running tasks back to PENDING queue. Returns 'DEAD <node_id> EVICTED <count>' or 'NOT_FOUND'.",
+        "Enforce system constraints: Dead nodes cannot receive future tasks.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `CRASH DETECTOR                               DEAD NODE WORKLOADS                   RE-SCHEDULING
 KILL_NODE n1 (Node Failure)                  ┌─────────────────────────────┐
        │                                     │ [n1 (DEAD)]                 │
@@ -427,6 +521,26 @@ DEAD n1 EVICTED 2                            │  • t2 (P10) ──► EVICTED
       title: "Multi-Tenant Dominant Resource Fairness (DRF)",
       difficulty: "Hard",
       tagline: "Implement DRF across multiple tenants. Allocate to the tenant with the lowest dominant share.",
+      description: `In Level 6 (Multi-Tenant Dominant Resource Fairness (DRF)), you engineer the core mechanisms for Multi-Resource Task Scheduler.
+
+Implement DRF across multiple tenants. Allocate to the tenant with the lowest dominant share.
+
+Core Engineering Problem: Naive priority allows one user with memory-heavy jobs to starve users with CPU-heavy jobs. DRF calculates dominant resource share for true fair-share scheduling.
+
+Key Mechanisms Implemented:
+• Dominant share = max(allocated_cpu / total_cpu, allocated_ram / total_ram).
+• Selecting tenant with minimum dominant share for next allocation.
+• Multi-tenant fairness in shared computing clusters.
+
+You implement the premier distributed systems multi-resource fairness algorithm.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'SUBMIT_USER <user> <task_id> <cpu> <ram>': Submits task under a tenant/user account. Returns 'QUEUED'.",
+        "Implement 'SCHEDULE_DRF': Schedules next task for tenant with lowest dominant share. Returns 'DRF_SCHEDULED <user> <task_id> -> <node_id>' or 'WAITING'.",
+        "Implement 'USER_SHARE <user>': Returns 'SHARE <user> <pct>%' where pct is dominant share percentage rounded to 1 decimal place.",
+        "Enforce system constraints: Dominant share is max(allocated_cpu / total_cluster_cpu, allocated_ram / total_cluster_ram).",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `TENANT SUBMISSIONS                           DOMINANT SHARE TRACKER                DRF ARBITRATOR
 Alice: SUBMIT_USER alice (2c, 100M)  ──►     ┌──────────────────────────────┐ ──► Min dominant share:
 Bob:   SUBMIT_USER bob   (1c, 400M)  ──►     │ Alice: 2c/10c=20%, 100M/1G=10%│     Alice (0.0% -> 20.0%)

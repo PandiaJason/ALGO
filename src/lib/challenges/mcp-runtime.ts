@@ -98,6 +98,25 @@ export const mcpRuntimeChallenge: ChallengeData = {
       title: "JSON-RPC 2.0 Stdio Transport & Tool Discovery",
       difficulty: "Easy",
       tagline: "Handle JSON-RPC 2.0 initialize, tools/list, and tools/call over stdin/stdout.",
+      description: `In Level 1 (JSON-RPC 2.0 Stdio Transport & Tool Discovery), you engineer the core mechanisms for Model Context Protocol (MCP) Runtime.
+
+Handle JSON-RPC 2.0 initialize, tools/list, and tools/call over stdin/stdout.
+
+Core Engineering Problem: How do processes communicate over stdio pipes without interleaving or corrupting JSON message boundaries?
+
+Key Mechanisms Implemented:
+• JSON-RPC 2.0 message specification: jsonrpc, id, method, params.
+• MCP capability negotiation during the 'initialize' handshake.
+• Listing available tools and executing a basic 'echo' tool.
+
+You implement the foundational transport and capability discovery of MCP.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'send-rpc <json>': Sends a raw JSON-RPC string over stdin. For notifications (no 'id' field), prints NOTIFICATION_ACK.",
+        "Implement 'register-tool <name> <description>': Registers an executable tool into the runtime.",
+        "Enforce system constraints: Strict JSON-RPC 2.0 compliance; Echo exact request id in response.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `STDIO JSON-RPC 2.0 FRAMING & TOOL DISCOVERY:
 
 Client (AI Agent)                       MCP Host Runtime
@@ -155,6 +174,26 @@ Client (AI Agent)                       MCP Host Runtime
       title: "Resource Templates & Dynamic Context Providers",
       difficulty: "Medium",
       tagline: "Resolve URI resource templates and stream contextual data to agents.",
+      description: `In Level 2 (Resource Templates & Dynamic Context Providers), you engineer the core mechanisms for Model Context Protocol (MCP) Runtime.
+
+Resolve URI resource templates and stream contextual data to agents.
+
+Core Engineering Problem: How does an agent read file or database schemas without executing heavy shell commands?
+
+Key Mechanisms Implemented:
+• MCP Resources specification: resources/list and resources/read.
+• URI template matching (e.g. file:///logs/{date}.log or cpp://scope/{symbol}).
+• Returning MIME-typed text or binary blobs inside resource contents.
+
+You implement structured resource template resolution for contextual perception.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'register-resource <uriTemplate> <mime>': Registers a dynamic resource template handler.",
+        "Implement 'read-resource <uri>': Fetches context content for designated URI (tested via send-rpc resources/read).",
+        "Implement 'subscribe-resource <uri>': Subscribes client to resource updates.",
+        "Enforce system constraints: Handle parameterized URI patterns; Return 404 resource not found on invalid URI.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `URI RESOURCE TEMPLATE MATCHING & CONTEXT RESOLUTION:
 
 Client (Context Resolver)                    Resource Router Engine
@@ -219,6 +258,26 @@ Client (Context Resolver)                    Resource Router Engine
       title: "Schema Validation & Zombie Subprocess Reaping",
       difficulty: "Hard",
       tagline: "Enforce strict JSON Schema and terminate runaway tools.",
+      description: `In Level 3 (Schema Validation & Zombie Subprocess Reaping), you engineer the core mechanisms for Model Context Protocol (MCP) Runtime.
+
+Enforce strict JSON Schema and terminate runaway tools.
+
+Core Engineering Problem: What stops a tool from getting stuck in an infinite while loop and freezing the entire AI agent forever?
+
+Key Mechanisms Implemented:
+• JSON Schema validation: verifying required properties, types, and ranges before execution.
+• Subprocess timeout deadlines (e.g. 50ms max execution).
+• Sending SIGKILL and reaping child process zombie descriptors when tools exceed time budgets.
+
+You protect agents against malformed parameters and runaway zombie subprocesses.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'set-tool-timeout <ms>': Configures hard execution timeout for all tool subprocesses.",
+        "Implement 'execute-tool-sandboxed <name> <args>': Executes tool under strict timeout and schema verification.",
+        "Implement 'check-tool-zombies': Verifies no zombie processes are left on host.",
+        "Enforce system constraints: Strict 50ms execution deadline; Zero zombie processes left on host.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `SCHEMA VALIDATION & SUBPROCESS TIMEOUT ISOLATION:
 
 Incoming "tools/call"
@@ -280,6 +339,26 @@ Incoming "tools/call"
       title: "Multi-Agent Parallel Tool Orchestration",
       difficulty: "Hard",
       tagline: "Concurrently dispatch 50 tool executions across multiple agents.",
+      description: `In Level 4 (Multi-Agent Parallel Tool Orchestration), you engineer the core mechanisms for Model Context Protocol (MCP) Runtime.
+
+Concurrently dispatch 50 tool executions across multiple agents.
+
+Core Engineering Problem: When 5 subagents call search, git, and compiler tools simultaneously, how do you prevent thread contention?
+
+Key Mechanisms Implemented:
+• Asynchronous task IDs: correlating responses to requests via unique JSON-RPC ids.
+• Non-blocking worker pool: executing independent tools concurrently.
+• Request cancellation: routing 'notifications/cancelled' to terminate target jobs.
+
+You scale tool execution to multi-agent parallel workflows.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'dispatch-parallel <count>': Fires N simultaneous tool requests across worker pool.",
+        "Implement 'cancel-request <id>': Cancels active in-flight tool execution.",
+        "Implement 'dispatch-long-job id=<id>': Dispatches a job that runs long enough to be cancelled.",
+        "Enforce system constraints: Correct request ID correlation; Cancel request must immediately free worker.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `CONCURRENT ASYNC TOOL DISPATCH & CANCELLATION:
 
 Agent 1 (id: 101) ──┐
@@ -340,6 +419,26 @@ Agent 3 (id: 103) ──┘        │
       title: "Protocol Overhead & Dispatch Profiling",
       difficulty: "Hard",
       tagline: "Measure microsecond JSON-RPC framing tax vs tool execution.",
+      description: `In Level 5 (Protocol Overhead & Dispatch Profiling), you engineer the core mechanisms for Model Context Protocol (MCP) Runtime.
+
+Measure microsecond JSON-RPC framing tax vs tool execution.
+
+Core Engineering Problem: How much latency does JSON string serialization add compared to raw binary IPC?
+
+Key Mechanisms Implemented:
+• JSON-RPC protocol tax: serialization, schema parsing, and pipe context switches.
+• Measuring p50, p95, p99 dispatch latency.
+• Quantifying CPU heap allocations during high-frequency agent tool calls.
+
+You measure empirical tool execution latency and isolate serialization bottlenecks.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'profile-tool-overhead': Benchmarks round-trip latency of an empty no-op tool call.",
+        "Implement 'bench-dispatch-qps <threads>': Measures tool dispatches per second under multi-threaded load.",
+        "Implement 'measure-p99-dispatch': Measures the p99 tail latency for tool dispatch.",
+        "Enforce system constraints: Dispatch overhead under 0.8ms; Microsecond latency accuracy.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `DISPATCH LATENCY BREAKDOWN & METRICS PROFILING:
 
 Round-Trip Tool Call Timeline (Total Overhead: 0.75ms):
@@ -398,6 +497,26 @@ Round-Trip Tool Call Timeline (Total Overhead: 0.75ms):
       title: "Zero-Copy JSON Stream Parsing & Fast Dispatch",
       difficulty: "Hard",
       tagline: "Achieve sub-0.1ms tool dispatch using SIMD JSON parsing and buffer recycling.",
+      description: `In Level 6 (Zero-Copy JSON Stream Parsing & Fast Dispatch), you engineer the core mechanisms for Model Context Protocol (MCP) Runtime.
+
+Achieve sub-0.1ms tool dispatch using SIMD JSON parsing and buffer recycling.
+
+Core Engineering Problem: How does simdjson parse gigabytes of JSON per second, and how can an MCP runtime use it to eliminate serialization bottlenecks?
+
+Key Mechanisms Implemented:
+• SIMD structural indexing: finding quotes, colons, and braces in 64-byte chunks with vector intrinsics.
+• Zero-copy string views directly referencing input stdin buffers.
+• Recycling argument vectors to achieve 0 heap allocations during tool routing.
+
+You achieve lightning-fast tool execution with zero-copy SIMD parsing.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'enable-simd-parser': Activates SIMD-accelerated zero-copy JSON tokenizer.",
+        "Implement 'bench-fast-dispatch 10000': Measures 10,000 tool dispatches through optimized pipeline.",
+        "Implement 'verify-zero-allocs': Checks that no heap allocations occur during hot-path dispatch.",
+        "Enforce system constraints: Sub-0.1ms average dispatch overhead; Zero heap allocations on hot path.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `SIMD-ACCELERATED ZERO-COPY DISPATCH PIPELINE:
 
 Raw Stdin Byte Stream (e.g. 4KB chunk):

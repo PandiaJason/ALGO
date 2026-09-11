@@ -94,6 +94,25 @@ export const messageQueueChallenge: ChallengeData = {
       title: "Basic Topic Publishing & Consumption",
       difficulty: "Easy",
       tagline: "Implement foundational PUB and POLL commands across isolated in-memory topics.",
+      description: `In Level 1 (Basic Topic Publishing & Consumption), you engineer the core mechanisms for Commit Log & Message Queue.
+
+Implement foundational PUB and POLL commands across isolated in-memory topics.
+
+Core Engineering Problem: How do message brokers guarantee First-In-First-Out (FIFO) delivery without memory leaks or consumer contention?
+
+Key Mechanisms Implemented:
+• Topic queues as FIFO ring buffers / linked deques.
+• Publisher push (PUB <topic> <payload>) and Consumer pull (POLL <topic>).
+• Handling empty queues deterministically (EMPTY vs blocking).
+
+You master topic separation, FIFO queue semantics, and producer-consumer handshake contracts.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'PUB <topic> <message>': Appends message to topic. Returns 'OK <offset>'.",
+        "Implement 'POLL <topic>': Retrieves oldest unconsumed message. Returns '<message>' or 'EMPTY'.",
+        "Enforce system constraints: Strict FIFO delivery order; Multiple isolated topics.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `INPUT (Commands)              BROKER / QUEUE ENGINE          OUTPUT
 PUB orders item_1     ──────► topic["orders"].push(item_1) ──► OK 0
 PUB orders item_2     ──────► topic["orders"].push(item_2) ──► OK 1
@@ -150,6 +169,26 @@ EMPTY`,
       title: "Log Offsets & Non-Destructive Reads",
       difficulty: "Medium",
       tagline: "Transition from destructive queue polling to append-only commit logs where messages can be read by offset.",
+      description: `In Level 2 (Log Offsets & Non-Destructive Reads), you engineer the core mechanisms for Commit Log & Message Queue.
+
+Transition from destructive queue polling to append-only commit logs where messages can be read by offset.
+
+Core Engineering Problem: Traditional queues delete messages on read, preventing replay or multiple independent consumer inspection. How do commit logs enable replayability?
+
+Key Mechanisms Implemented:
+• Non-destructive commit logs: Messages persist after being read.
+• Zero-indexed monotonic offsets.
+• SEEK / READ_AT <topic> <offset> operations.
+
+You build non-destructive append-only logs with offset-based indexed retrieval.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'PUB <topic> <message>': Appends message to topic. Returns 'OK <offset>'.",
+        "Implement 'READ_AT <topic> <offset>': Retrieves message at exact offset without removing it. Returns '<msg>' or 'NOT_FOUND'.",
+        "Implement 'LEN <topic>': Returns total message count in topic log.",
+        "Enforce system constraints: Offsets start at 0 and increment by 1; Reading at offset must never delete message.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `INPUT                         COMMIT LOG ARCHITECTURE               OUTPUT
 PUB events click       ──► append(offset=0, "click")         ──► OK 0
 READ_AT events 0       ──► log[0] (non-destructive)          ──► click
@@ -196,6 +235,26 @@ Message: ┌─────────┐   ┌─────────┐  
       title: "Consumer Groups & Commit Offsets",
       difficulty: "Hard",
       tagline: "Implement consumer groups with independent read cursors and explicit commit acknowledgments.",
+      description: `In Level 3 (Consumer Groups & Commit Offsets), you engineer the core mechanisms for Commit Log & Message Queue.
+
+Implement consumer groups with independent read cursors and explicit commit acknowledgments.
+
+Core Engineering Problem: When multiple worker replicas consume the same topic, how do you prevent duplicate work while allowing other consumer groups (e.g. analytics vs billing) to read the same stream?
+
+Key Mechanisms Implemented:
+• Consumer group abstraction: Each group has an independent read offset pointer.
+• GROUP_POLL <group> <topic>: advances group's cursor.
+• GROUP_COMMIT <group> <topic> <offset>: persists committed progress.
+
+You implement independent group offsets, at-least-once delivery, and progress checkpointing.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'PUB <topic> <message>': Appends message to topic. Returns 'OK <offset>'.",
+        "Implement 'GROUP_POLL <group> <topic>': Fetches next unconsumed message for consumer group. Returns 'OFFSET: <o> MSG: <m>' or 'EMPTY'.",
+        "Implement 'GROUP_COMMIT <group> <topic> <offset>': Commits consumer group progress. Returns 'OK'.",
+        "Enforce system constraints: Groups maintain separate offsets; Polling advances group cursor automatically.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `PRODUCER STREAM               CONSUMER GROUP CURSORS                INDEPENDENT OUTPUT
 PUB orders $50         ──► log[0] = "$50"                    ──► OK 0
 GROUP_POLL billing     ──► cursor["billing"]=0 (advances)    ──► OFFSET: 0 MSG: $50
@@ -241,6 +300,25 @@ Topic: orders log
       title: "Key-Based Partitioning",
       difficulty: "Hard",
       tagline: "Shard topics into multiple independent partitions. Route messages deterministically by key hash.",
+      description: `In Level 4 (Key-Based Partitioning), you engineer the core mechanisms for Commit Log & Message Queue.
+
+Shard topics into multiple independent partitions. Route messages deterministically by key hash.
+
+Core Engineering Problem: A single commit log is bottlenecked by single-core disk write throughput. Sharding into partitions allows parallel linear scaling across cores.
+
+Key Mechanisms Implemented:
+• Consistent hashing of message keys across P partitions.
+• Per-partition offset tracking: (topic, partition, offset).
+• Guaranteeing strict ordering per key while enabling multi-core parallelism.
+
+You implement topic partition sharding, hash routing, and ordered key streams.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'PART_PUB <topic> <key> <msg>': Hashes key to partition 0..N-1 and appends. Returns 'PARTITION: <p> OFFSET: <o>'.",
+        "Implement 'PART_READ <topic> <partition> <offset>': Reads from specific partition log. Returns '<msg>' or 'NOT_FOUND'.",
+        "Enforce system constraints: Use 4 partitions per topic (0, 1, 2, 3); Identical keys must map to identical partitions.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `KEY-HASH ROUTER               PARTITION ARRAYS                      CONSUMER STREAMS
 PART_PUB users u1 A    ──► hash("u1") % 4 = Part 1           ──► PARTITION: 1 OFFSET: 0
 PART_PUB users u1 B    ──► hash("u1") % 4 = Part 1 (ordered) ──► PARTITION: 1 OFFSET: 1
@@ -283,6 +361,26 @@ Murmur3    ├──► Partition 2: [msg...]
       title: "Batch Ingestion & Flushes",
       difficulty: "Hard",
       tagline: "Batch multiple messages into single synchronous flushes to maximize throughput over 100,000 msg/sec.",
+      description: `In Level 5 (Batch Ingestion & Flushes), you engineer the core mechanisms for Commit Log & Message Queue.
+
+Batch multiple messages into single synchronous flushes to maximize throughput over 100,000 msg/sec.
+
+Core Engineering Problem: Calling fsync or acquiring mutexes on every single message drops throughput to <5,000 msg/sec. Grouping messages into micro-batches reaches 100K+ msg/sec.
+
+Key Mechanisms Implemented:
+• Batch compression and buffer accumulation.
+• Atomic batch publishing: BATCH_PUB <topic> <count> <msg1> <msg2>...
+• Batch offset allocation in a single atomic increment.
+
+You amortize I/O overhead using high-performance message batching.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'BATCH_PUB <topic> <msg1> <msg2> ...': Atomically appends batch of messages. Returns 'BATCH_OK COUNT: <c> FIRST_OFFSET: <o>'.",
+        "Implement 'READ_AT <topic> <offset>': Retrieves message at exact offset without removing it. Returns '<msg>' or 'NOT_FOUND'.",
+        "Implement 'LEN <topic>': Returns total message count in topic log.",
+        "Enforce system constraints: Atomic batch offset allocation; Sub-millisecond batch processing.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `BATCH ACCUMULATOR             ATOMIC ALLOCATION                     BATCH COMMIT
 BATCH_PUB e1 e2 e3     ──► Allocate 3 contiguous offsets     ──► BATCH_OK COUNT: 3
                            log[0]=e1, log[1]=e2, log[2]=e3       FIRST_OFFSET: 0
@@ -324,6 +422,26 @@ Producers ──► [Buffer Queue: e1, e2, e3] ──► Single Mutex Lock
       title: "Commit Log Persistence & Crash Recovery",
       difficulty: "Hard",
       tagline: "Guarantee zero message loss across sudden SIGKILL process termination. Reconstitute unconsumed offsets on boot.",
+      description: `In Level 6 (Commit Log Persistence & Crash Recovery), you engineer the core mechanisms for Commit Log & Message Queue.
+
+Guarantee zero message loss across sudden SIGKILL process termination. Reconstitute unconsumed offsets on boot.
+
+Core Engineering Problem: If a broker abruptly crashes, RAM is wiped. How do you guarantee zero message loss and exact consumer group cursor reconstitution?
+
+Key Mechanisms Implemented:
+• Segmented disk log serialization.
+• Synchronous fsync commit intervals.
+• Boot recovery replay of topics and consumer group progress.
+
+You master crash-safe commit logs, fsync durability, and zero-loss crash recovery.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'PUB <topic> <message>': Appends message to topic. Returns 'OK <offset>'.",
+        "Implement 'COMMIT': Forces synchronous flush of all topic logs and group offsets to disk. Returns 'OK'.",
+        "Implement 'STATS': Returns broker metrics: TOPICS: <t> MESSAGES: <m> STORAGE_BYTES: <b>.",
+        "Enforce system constraints: Zero message loss on simulated restart; Sub-50ms recovery time.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `IN-MEMORY BUFFER              SEGMENTED DISK LOG                    CRASH RECOVERY
 PUB t test             ──► Memory Append                     ──► OK 0
 COMMIT                 ──► fsync() to segment_0001.log       ──► OK

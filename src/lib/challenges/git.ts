@@ -97,6 +97,26 @@ export const gitChallenge: ChallengeData = {
       title: "Blob Storage & SHA-1 Hashing",
       difficulty: "Easy",
       tagline: "Compute SHA-1 object headers ('blob <size>\\0<data>') and store objects.",
+      description: `In Level 1 (Blob Storage & SHA-1 Hashing), you engineer the core mechanisms for Git Version Control Engine.
+
+Compute SHA-1 object headers ('blob <size>\0<data>') and store objects.
+
+Core Engineering Problem: How does Git ensure two identical files with different names only occupy disk space once?
+
+Key Mechanisms Implemented:
+• Content-addressed storage: object path derived from payload hash.
+• Standard Git header framing: 'blob <byte_count>\0'.
+• Hexadecimal digest calculation and loose object layout.
+
+You master content-addressable storage and deterministic cryptographic hashing.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'hash-object <content>': Computes and returns a deterministic content hash string for 'blob <len>\\0<content>'. Hashing the same content multiple times must return the same string.",
+        "Implement 'cat-file -p <hash>': Prints the raw content of the stored object by its hash.",
+        "Implement 'cat-file -s <hash>': Returns the size in bytes of the object.",
+        "Enforce system constraints: Follow exact Git header framing; Return 40-character hex hash.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `INPUT: "hash-object hello world"
       │
       ▼
@@ -154,6 +174,26 @@ OUTPUT: 95d09f2b10159347eece71399a7e2e907ea3df4f`,
       title: "Tree Hierarchy & Commit DAG",
       difficulty: "Medium",
       tagline: "Assemble directory trees and link commits into an immutable DAG.",
+      description: `In Level 2 (Tree Hierarchy & Commit DAG), you engineer the core mechanisms for Git Version Control Engine.
+
+Assemble directory trees and link commits into an immutable DAG.
+
+Core Engineering Problem: How does Git represent directories containing files and subdirectories while maintaining immutability?
+
+Key Mechanisms Implemented:
+• Tree object structure: sorted entries of <mode> <name>\0<hash>.
+• Commit object format: tree hash, parent commit hash(es), author metadata, and message.
+• Directed Acyclic Graph (DAG) construction through immutable parent hashes.
+
+You understand Merkle trees, directory serialization, and lineage graphs.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'write-tree <entries...>': Serializes directory entries into a tree object. Returns 'TREE_OK', or 'SORTED_OK' if entries were sorted.",
+        "Implement 'commit-tree <tree_hash> [-p <parent>] -m <msg>': Creates a commit object pointing to a tree and optional parent. Returns 'COMMIT_OK' (or 'COMMIT_CHILD_OK' if parent provided).",
+        "Implement 'log <commit_hash>': Traverses commit parent pointers back to root.",
+        "Enforce system constraints: Tree entries must be sorted lexicographically; Commits must record exact parent pointer.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `DIRECTORY TREE & COMMIT MERKLE GRAPH:
 
   Commit Object (Hash: c7a1f...)
@@ -211,6 +251,26 @@ OUTPUT: 95d09f2b10159347eece71399a7e2e907ea3df4f`,
       title: "Object Integrity & Corruption Recovery",
       difficulty: "Medium",
       tagline: "Detect bit rot, dangling objects, and cyclic history.",
+      description: `In Level 3 (Object Integrity & Corruption Recovery), you engineer the core mechanisms for Git Version Control Engine.
+
+Detect bit rot, dangling objects, and cyclic history.
+
+Core Engineering Problem: What happens if a disk sector corrupts an object, or an adversary tampers with a parent commit hash?
+
+Key Mechanisms Implemented:
+• Cryptographic hash verification: recomputing SHA-1 over stored bytes.
+• Dangling object identification (unreachable blobs or trees not linked to any ref).
+• Cycle detection in directed commit graphs.
+
+You build verification routines that guarantee Merkle tree consistency and detect tampering.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'fsck': Verifies hash integrity of all objects and reports corruptions or dangling pointers.",
+        "Implement 'corrupt <hash> <byte_offset>': Simulates bit rot by flipping a byte in an object.",
+        "Implement 'add-dangling-blob': Adds an unreachable blob to test dangling object detection.",
+        "Enforce system constraints: Report exact hash of corrupted objects; Zero tolerance for hash mismatches.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `FSCK INTEGRITY VERIFICATION PIPELINE:
 
   Objects in Store ──► For each object on disk:
@@ -266,6 +326,26 @@ Match stored id?     Mismatch!          Reachable?             Orphaned?
       title: "Fast Tree Diffing & Branching",
       difficulty: "Hard",
       tagline: "Compare large directory trees in O(differences) time.",
+      description: `In Level 4 (Fast Tree Diffing & Branching), you engineer the core mechanisms for Git Version Control Engine.
+
+Compare large directory trees in O(differences) time.
+
+Core Engineering Problem: When a repo contains 500,000 files and 1 file changes, how does Git diff them without scanning 499,999 untouched files?
+
+Key Mechanisms Implemented:
+• Merkle tree skip optimization: if two tree hashes match, their entire subtrees are identical.
+• Two-pointer sorted tree traversal.
+• Branch reference resolution (.git/refs/heads/main).
+
+You master high-speed tree diffing and lightweight branch references.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'diff-tree <tree1> <tree2>': Compares two trees and outputs added, modified, or deleted files.",
+        "Implement 'branch <name> <commit_hash>': Creates or updates a branch ref pointer.",
+        "Implement 'get-ref <name>': Retrieves the commit hash for a branch ref.",
+        "Enforce system constraints: O(differences) traversal complexity; Do not descend into identical subtrees.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `MERKLE TREE DIFFING ALGORITHM:
 
   Tree A (Hash: X9)                  Tree B (Hash: Y2)
@@ -316,6 +396,26 @@ Match stored id?     Mismatch!          Reachable?             Orphaned?
       title: "Repository Footprint & Graph Traversal",
       difficulty: "Hard",
       tagline: "Measure loose object fragmentation and commit traversal speed.",
+      description: `In Level 5 (Repository Footprint & Graph Traversal), you engineer the core mechanisms for Git Version Control Engine.
+
+Measure loose object fragmentation and commit traversal speed.
+
+Core Engineering Problem: Why does having 100,000 loose files in .git/objects crush filesystem performance?
+
+Key Mechanisms Implemented:
+• Inode table pressure from tens of thousands of individual loose files.
+• Commit graph traversal depth benchmarks.
+• Measuring repository disk amplification compared to working tree size.
+
+You measure empirical repository metrics and diagnose filesystem performance degradation.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'count-objects': Reports number of loose objects and total disk bytes.",
+        "Implement 'bench-traversal <depth>': Measures microseconds required to walk N commit generations.",
+        "Implement 'reachability-check <head> <target>': Checks if target is reachable from head.",
+        "Enforce system constraints: Accurate loose object count; Microsecond commit walking benchmark.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `LOOSE REPOSITORY METRICS & GRAPH WALKING:
 
   Filesystem Inode Overhead:
@@ -367,6 +467,26 @@ Match stored id?     Mismatch!          Reachable?             Orphaned?
       title: "Delta Compression & Packfile Format",
       difficulty: "Hard",
       tagline: "Compress loose objects into a binary packfile with sliding-window deltas.",
+      description: `In Level 6 (Delta Compression & Packfile Format), you engineer the core mechanisms for Git Version Control Engine.
+
+Compress loose objects into a binary packfile with sliding-window deltas.
+
+Core Engineering Problem: How does Git reduce a 1GB repository with 10,000 edits of the same files down to 50MB?
+
+Key Mechanisms Implemented:
+• Sliding-window delta compression: finding similar files by size and path.
+• Delta representation: COPY (offset, length) and INSERT (data) opcodes.
+• Binary packfile (.pack) and indexed table of contents (.idx) layout.
+
+You achieve massive storage savings via binary delta encoding and packfile consolidation.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'repack': Packs all loose objects into a single delta-compressed packfile.",
+        "Implement 'verify-pack <packfile>': Verifies packfile integrity and reports compression ratio.",
+        "Implement 'read-packed <hash>': Reads an object directly from a packfile.",
+        "Enforce system constraints: Delta chain depth bounded to 10; Packfile must be self-contained and indexable.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `PACKFILE (.pack) & INDEX (.idx) BINARY STRUCTURE:
 
   .idx File (Fanout Table):

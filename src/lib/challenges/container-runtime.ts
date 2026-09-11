@@ -99,6 +99,26 @@ export const containerRuntimeChallenge: ChallengeData = {
       title: "Process Isolation with Linux Namespaces",
       difficulty: "Medium",
       tagline: "Spawn a child process with isolated PID and hostname namespaces.",
+      description: `In Level 1 (Process Isolation with Linux Namespaces), you engineer the core mechanisms for Container Runtime / Sandbox.
+
+Spawn a child process with isolated PID and hostname namespaces.
+
+Core Engineering Problem: How does a process think its PID is 1 when the host OS sees it as PID 48219?
+
+Key Mechanisms Implemented:
+• Syscall flags: CLONE_NEWPID, CLONE_NEWUTS, CLONE_NEWIPC.
+• PID 1 responsibilities: reaping child processes and handling default signal behavior.
+• Hostname isolation: changing container hostname without affecting host.
+
+You create an isolated process boundary where the child sees itself as PID 1.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'spawn-ns <hostname> <command>': Spawns command in new PID and UTS namespace.",
+        "Implement 'get-container-pid': Returns the internal PID (must be 1) and external host PID.",
+        "Implement 'exit': Exits the current command sequence.",
+        "Enforce system constraints: Internal PID must report 1; Container hostname change must not leak to host.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `LINUX NAMESPACE DUAL-PERSPECTIVE MAPPING:
 
 HOST OS VIEW (Global Kernel Table):
@@ -148,6 +168,26 @@ CONTAINER INTERNAL VIEW:
       title: "Filesystem Isolation & Pivot Root",
       difficulty: "Hard",
       tagline: "Securely jail container processes using pivot_root into a fresh rootfs.",
+      description: `In Level 2 (Filesystem Isolation & Pivot Root), you engineer the core mechanisms for Container Runtime / Sandbox.
+
+Securely jail container processes using pivot_root into a fresh rootfs.
+
+Core Engineering Problem: Why is chroot insecure (vulnerable to breakout via '..'), and how does pivot_root solve this?
+
+Key Mechanisms Implemented:
+• Mount namespaces (CLONE_NEWNS) and mount propagation flags (MS_REC | MS_PRIVATE).
+• pivot_root(new_root, put_old) mechanics.
+• Unmounting old host root (umount2 with MNT_DETACH) to completely jail the container.
+
+You eliminate filesystem breakout risks and jail container processes inside isolated root directories.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'mount-rootfs <dir>': Prepares mount points and executes pivot_root into container rootfs.",
+        "Implement 'ls-container-root': Lists root directory inside the container.",
+        "Implement 'test-chroot-escape': Attempts to breakout to the host root.",
+        "Enforce system constraints: Host filesystem must be completely unreachable; Must unmount host root completely.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `PIVOT_ROOT JAIL MECHANICS:
 
   Host Mount Hierarchy:
@@ -204,6 +244,27 @@ CONTAINER INTERNAL VIEW:
       title: "Cgroups V2 Resource Constraints",
       difficulty: "Hard",
       tagline: "Enforce memory limits, CPU quotas, and fork-bomb protection.",
+      description: `In Level 3 (Cgroups V2 Resource Constraints), you engineer the core mechanisms for Container Runtime / Sandbox.
+
+Enforce memory limits, CPU quotas, and fork-bomb protection.
+
+Core Engineering Problem: What stops a buggy or malicious student script from allocating 64GB RAM or running ':(){ :|:& };:' (fork bomb)?
+
+Key Mechanisms Implemented:
+• cgroups v2 unified hierarchy: /sys/fs/cgroup/<group>/.
+• memory.max and memory.oom.group policies.
+• pids.max for fork-bomb mitigation.
+• cpu.max bandwidth throttling (quota and period).
+
+You protect host servers from resource starvation and fork bombs.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'set-limits --mem <bytes> --pids <num> [--cpu <quota> <period>]': Configures cgroups v2 resource limits for container.",
+        "Implement 'run-with-limits <cmd>': Executes workload. Available commands: alloc-16M, alloc-32M, fork-bomb, burn-cpu.",
+        "Implement 'cleanup-cgroups': Cleans up cgroup directories.",
+        "Enforce system constraints: Strict 0 byte overshoot above memory.max; Instantly reject forks exceeding pids.max.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `CGROUPS V2 UNIFIED CONTROLLERS:
 
   /sys/fs/cgroup/algo_sandbox_42/
@@ -258,6 +319,26 @@ CONTAINER INTERNAL VIEW:
       title: "Multi-Tenant Parallel Sandbox Spawning",
       difficulty: "Hard",
       tagline: "Concurrently spawn 50 isolated sandboxes with veth bridge networking.",
+      description: `In Level 4 (Multi-Tenant Parallel Sandbox Spawning), you engineer the core mechanisms for Container Runtime / Sandbox.
+
+Concurrently spawn 50 isolated sandboxes with veth bridge networking.
+
+Core Engineering Problem: How do platforms like LeetCode or ALGO run thousands of untrusted student submissions simultaneously?
+
+Key Mechanisms Implemented:
+• Ephemeral sandbox lifecycles: create, execute, capture stdout/stderr, destroy.
+• Virtual ethernet pairs (veth) and container network namespaces (CLONE_NEWNET).
+• Automated file descriptor and cgroup cleanup upon container termination.
+
+You master scalable multi-tenant execution architectures.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'spawn-pool <count>': Spawns N concurrent sandboxes and reports active container IDs.",
+        "Implement 'exec-sandbox <id> <command>': Executes command inside designated sandbox.",
+        "Implement 'exec-parallel <cmd>': Executes a command across all sandboxes in parallel.",
+        "Enforce system constraints: Sandboxes must be 100% mutually isolated; Zero network traffic between sandboxes.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `MULTI-TENANT ISOLATED EXECUTION POOL:
 
        Host Supervisor / Dispatcher
@@ -316,6 +397,26 @@ CONTAINER INTERNAL VIEW:
       title: "Startup Latency & Cold-Start Microbenchmarks",
       difficulty: "Hard",
       tagline: "Profile container cold-start down to the microsecond.",
+      description: `In Level 5 (Startup Latency & Cold-Start Microbenchmarks), you engineer the core mechanisms for Container Runtime / Sandbox.
+
+Profile container cold-start down to the microsecond.
+
+Core Engineering Problem: Where does container startup time actually go: clone(), pivot_root(), cgroup setup, or rootfs mount?
+
+Key Mechanisms Implemented:
+• Microsecond latency breakdown of container bootstrap.
+• Rootfs copy vs bind-mount startup latency.
+• Measuring process context switch overhead under cgroup constraints.
+
+You capture granular latency profiles and isolate virtualization bottlenecks.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'profile-boot': Runs single container boot and reports microsecond timeline.",
+        "Implement 'bench-spawn-rate <count>': Measures container creations per second.",
+        "Implement 'measure-footprint': Measures container memory overhead.",
+        "Enforce system constraints: Total cold boot under 15ms; Microsecond timeline precision.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `CONTAINER COLD-BOOT TIMELINE (Microsecond Precision):
 
 Time: 0 μs             +1,200 μs            +3,300 μs        +4,100 μs
@@ -366,6 +467,26 @@ Time: 0 μs             +1,200 μs            +3,300 μs        +4,100 μs
       title: "Pre-Forked Worker Pools & Fast Clone",
       difficulty: "Expert",
       tagline: "Achieve sub-3ms cold starts via pre-initialized standby worker pools.",
+      description: `In Level 6 (Pre-Forked Worker Pools & Fast Clone), you engineer the core mechanisms for Container Runtime / Sandbox.
+
+Achieve sub-3ms cold starts via pre-initialized standby worker pools.
+
+Core Engineering Problem: How does Cloudflare Workers or AWS Lambda achieve near-instant execution without waiting for cold boots?
+
+Key Mechanisms Implemented:
+• Pre-forking: pre-allocating idle container processes paused at clone().
+• Snapshotting and Copy-on-Write (CoW) rootfs overlays.
+• Waking pre-forked workers on demand via Unix domain sockets.
+
+You engineer near-instant container execution with pre-forked worker pools.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'init-hot-pool <size>': Pre-forks and pauses hot standby containers in isolated namespaces.",
+        "Implement 'fast-exec <command>': Wakes hot container and executes command with sub-3ms latency. Accepts 'check-clean'.",
+        "Implement 'audit-engine': Audits the entire execution engine.",
+        "Enforce system constraints: Sub-3ms execution dispatch; Re-seed security state between runs.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `PRE-FORKED HOT STANDBY DISPATCH:
 
   Idle Pre-Forked Pool (Paused at Unix Domain Socket recv):

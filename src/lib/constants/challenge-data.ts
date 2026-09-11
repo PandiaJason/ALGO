@@ -21,6 +21,8 @@ export interface LevelDefinition {
   title: string;
   difficulty: "Easy" | "Medium" | "Hard";
   tagline: string;
+  description?: string;
+  implementationGuide?: string[];
   diagram?: string;
   importantChallenge?: {
     title: string;
@@ -126,6 +128,27 @@ export const LEVEL_DEFINITIONS: Record<number, LevelDefinition> = {
     difficulty: "Easy",
     tagline:
       "Implement fundamental SET, GET, DELETE, and EXISTS operations with direct O(1) in-memory hash resolution.",
+      description: `In Level 1 (Basic In-Memory Store), you engineer the core mechanisms for Key-Value Storage Engine.
+
+Implement fundamental SET, GET, DELETE, and EXISTS operations with direct O(1) in-memory hash resolution.
+
+Core Engineering Problem: How do modern systems map arbitrary human-readable strings to physical memory addresses in sub-microsecond time without memory leaks or unhandled exception crashes?
+
+Key Mechanisms Implemented:
+• In-Memory Pointer Resolution: How key-value pairs reside directly in process heap memory with amortized O(1) time complexity.
+• Stream Command Protocol: How engines parse raw stdin/stdout tokens into operational verbs (SET, GET, DELETE, EXISTS) and arbitrary UTF-8 string payloads.
+• Idempotency & Return Contracts: How production systems handle missing keys deterministically (NULL vs NOT_FOUND vs FALSE) without throwing unhandled exceptions.
+• Process Memory Footprint: The foundational baseline of heap allocation before introducing disk persistence or concurrent threading.
+
+You master command dispatching, arbitrary string payloads, heap memory allocation, and idempotent lookup contracts.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'SET key value': Stores key-value pair in memory. Overwrites existing value if present. Returns OK.",
+        "Implement 'GET key': Retrieves value associated with key. Returns the string value or NULL if missing.",
+        "Implement 'DELETE key': Deletes key from memory. Returns OK if deleted, or NOT_FOUND if missing.",
+        "Enforce system constraints: Time Complexity: O(1) average lookup and insertion.; Memory Sandbox: 256MB RAM hard limit inside Docker container..",
+        "Format output according to the specification and flush standard output."
+],
     diagram: `INPUT                         ENGINE                 OUTPUT
 SET name Jason        ──────► memory["name"]="Jason" ───► OK
 GET name              ──────► lookup("name")       ───► Jason
@@ -231,6 +254,27 @@ NOT_FOUND`,
     difficulty: "Medium",
     tagline:
       "Build a custom internal hash table with 64-bit hashing, collision chaining / open addressing, and dynamic load factor threshold rehashing.",
+      description: `In Level 2 (Efficient Lookup & Collision Resolution), you engineer the core mechanisms for Key-Value Storage Engine.
+
+Build a custom internal hash table with 64-bit hashing, collision chaining / open addressing, and dynamic load factor threshold rehashing.
+
+Core Engineering Problem: Why do naive hash tables degrade from O(1) to catastrophic O(N) when bucket collisions occur or under Hash DoS attacks?
+
+Key Mechanisms Implemented:
+• Uniform 64-Bit Hashing: How non-cryptographic hash functions (MurmurHash3 / FNV-1a) disperse arbitrary keys uniformly across 2^64 address slots.
+• Collision Resolution Dynamics: When to use separate chaining (linked list / bucket vectors) vs open addressing (linear probing) for CPU L1/L2 cache locality.
+• Dynamic Load Factor & Table Expansion: Why a 0.75 load factor threshold balances memory overhead against search cost, and how progressive rehashing avoids latency spikes.
+• Tombstones & Probe Continuity: Why deleting an entry in an open-addressing table breaks subsequent probe searches unless marked with tombstones.
+
+You master how real databases prevent hash collisions, expand capacity dynamically without latency spikes, and maintain strict O(1) lookup guarantees.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'SET key value': Hashes key, computes bucket index, resolves collisions, and resizes if load factor > 0.75. Returns OK.",
+        "Implement 'GET key': Probes collision chain / bucket to retrieve value. Returns value or NULL.",
+        "Implement 'DELETE key': Removes entry and marks tombstone or unlinks node. Returns OK or NOT_FOUND.",
+        "Enforce system constraints: Maximum Load Factor: 0.75 threshold before dynamic rehashing.; Initial Buckets: Start with exactly 8 buckets..",
+        "Format output according to the specification and flush standard output."
+],
     diagram: `INPUT KEY                      HASH ENGINE                  BUCKET ARRAY
 "user:101" ──────► 64-bit Hash (FNV / Murmur3)
                    0x8f3c...b9a2 ──────► idx = hash % 8 (Slot 2)
@@ -311,6 +355,28 @@ Recompute idx = hash % 16 for all nodes ──► Zero Collisions, O(1) Preserve
     difficulty: "Medium",
     tagline:
       "Implement append-only write-ahead logging (WAL) and crash recovery replay. Ensure zero data loss across simulated process restarts.",
+      description: `In Level 3 (Durable Persistence & Write-Ahead Log (WAL)), you engineer the core mechanisms for Key-Value Storage Engine.
+
+Implement append-only write-ahead logging (WAL) and crash recovery replay. Ensure zero data loss across simulated process restarts.
+
+Core Engineering Problem: If host power is abruptly cut or the process receives SIGKILL, RAM is instantly wiped. How do databases guarantee zero data loss without slowing down writes?
+
+Key Mechanisms Implemented:
+• The Write-Ahead Logging (WAL) Principle: The cardinal rule of database systems — never alter in-memory state until the mutation is safely committed to non-volatile disk.
+• Sequential vs Random I/O Economics: Why append-only logging (WAL) is orders of magnitude faster than random disk page modifications.
+• OS Page Cache vs Hardware Flushing: Why standard file writes sit in volatile OS buffers, and why synchronous fsync/fdatasync flushes are mandatory for true durability.
+• Crash Recovery & Replay Engine: How the storage engine parses the WAL on startup, tolerates partial/corrupt trailing lines, and reconstitutes exact state in under 50ms.
+• Atomic Snapshotting (SAVE / RESTORE): Creating atomic point-in-time state dumps to bound WAL recovery time upon restarts.
+
+You understand how databases survive catastrophic crashes, why sequential logging enables high write throughput, and how crash recovery reconstitution works.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'SET / GET / DELETE / EXISTS': All Level 1 & 2 operations. Every mutation is synchronously flushed to wal.log before returning OK.",
+        "Implement 'SAVE': Forces an immediate synchronous snapshot dump of in-memory keys to disk (dump.rdb). Returns OK.",
+        "Implement 'RESTORE': Restores dataset from disk snapshot. Returns OK or NOT_FOUND if snapshot missing.",
+        "Enforce system constraints: WAL Log File: ./data/wal.log.; Sync Guarantee: Flush file buffers (fdatasync/flush) on each mutation..",
+        "Format output according to the specification and flush standard output."
+],
     diagram: `WRITE PIPELINE (Synchronous fsync):
 SET user "Alice" ──► 1. Serialize Record  ──► [SET user Alice\\n]
                             │
@@ -397,6 +463,28 @@ Replay Complete (State 100% Reconstituted) ──► Ready for Traffic`,
     difficulty: "Hard",
     tagline:
       "Implement millisecond-precision key expiration with dual-mode passive eviction on read and active background sweeping.",
+      description: `In Level 4 (TTL & Key Expiration), you engineer the core mechanisms for Key-Value Storage Engine.
+
+Implement millisecond-precision key expiration with dual-mode passive eviction on read and active background sweeping.
+
+Core Engineering Problem: In high-throughput caches, unbounded data accumulation leads to Out-Of-Memory (OOM) fatal kills. How do you evict expired keys without degrading read/write latency?
+
+Key Mechanisms Implemented:
+• Dual-Mode Eviction Architecture: Combining passive (lazy) evaluation on read with active background sweeping to prevent memory leaks.
+• Lazy Eviction Mechanics: Deferring key expiration checks until GET/EXISTS is invoked, consuming zero CPU cycles for keys that are never queried.
+• Active Sweeping & Probabilistic Sampling: Why relying exclusively on lazy eviction causes permanent memory leaks for abandoned keys, and how periodic sampling keeps heap clean.
+• Monotonic vs Wall-Clock Timers: Why wall-clock time (time.time()) can jump backwards during NTP synchronization, and why monotonic clocks (steady_clock) are required for TTL reliability.
+• TTL Mutation Semantics: How overwrites (SET), explicit expiration (EXPIRE), and removal (PERSIST) transition key lifecycle state.
+
+You master dual-mode TTL lifecycle management, steady monotonic timing, and memory-safe cache eviction.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'SET key value': Stores key-value pair and clears any existing TTL.",
+        "Implement 'DELETE key': Deletes key and its expiration timer.",
+        "Implement 'EXPIRE key ttl_ms': Sets time-to-live in milliseconds on key. Returns OK, or NOT_FOUND if key does not exist.",
+        "Enforce system constraints: Time Precision: Millisecond resolution (ttl_ms >= 1).; TTL Return Codes: Positive integer (ms remaining), -1 (no expiration), -2 (key does not exist)..",
+        "Format output according to the specification and flush standard output."
+],
     diagram: `TTL REGISTRATION:
 SET session "token" ──► memory["session"] = "token"
 EXPIRE session 10   ──► expiry_table["session"] = now_monotonic_ms() + 10,000
@@ -483,6 +571,28 @@ DUAL-MODE EVICTION ARCHITECTURE:
     difficulty: "Hard",
     tagline:
       "Scale across 16+ parallel client threads. Implement striped locking (sharded mutexes) or read-write locks to maximize concurrent throughput.",
+      description: `In Level 5 (Concurrency & Thread-Safe Operations), you engineer the core mechanisms for Key-Value Storage Engine.
+
+Scale across 16+ parallel client threads. Implement striped locking (sharded mutexes) or read-write locks to maximize concurrent throughput.
+
+Core Engineering Problem: A single global mutex (like Python's GIL or a monolithic lock) serializes all incoming requests, reducing a 32-core server to the speed of a single core. How do you scale across parallel threads?
+
+Key Mechanisms Implemented:
+• Lock Contention & Amdahl's Law: How fine-grained locking prevents concurrent workers from stalling each other under high load.
+• Striped Locking (Sharded Mutexes): Partitioning the keyspace into 32 or 64 independent mutex shards so threads modifying different keys execute in true parallel.
+• Reader-Writer Parallelism: Allowing unlimited simultaneous concurrent readers (GET) while acquiring exclusive write locks only during mutations.
+• Deadlock Prevention in Multi-Key Transactions: Why atomic operations on multiple keys (MGET, MSET) cause cyclic deadlocks if locks are acquired arbitrarily, and how sorting shard indices guarantees deadlock freedom.
+• ThreadSanitizer & Race Condition Safety: Detecting data races and memory corruption under concurrent 16-thread pressure.
+
+You understand how multi-core storage engines eliminate lock contention through striped sharding while guaranteeing mathematical deadlock freedom.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'All Level 1-4 Operations': Fully thread-safe under concurrent multi-threaded execution without data races.",
+        "Implement 'PING [msg]': Server health check. Returns PONG or echoed string.",
+        "Implement 'MGET key1 key2 ...': Atomically retrieves multiple keys in a single consistent snapshot. Returns space-separated values.",
+        "Enforce system constraints: Parallel Clients: Support 16+ concurrent threads without race conditions.; Lock Striping Factor: At least 16 independent mutex partitions..",
+        "Format output according to the specification and flush standard output."
+],
     diagram: `CONCURRENT REQUEST INGRESS:
 Client Thread 1 (SET "user:1")    Client Thread 2 (GET "order:99")
         │                                  │
@@ -564,6 +674,27 @@ Client Thread 1 (SET "user:1")    Client Thread 2 (GET "order:99")
     difficulty: "Hard",
     tagline:
       "Push hardware limits. Exceed 100,000 ops/sec with sub-0.20ms p99 latency under a strict 256MB memory cap using custom memory pooling and WAL compaction.",
+      description: `In Level 6 (Extreme Optimization & Memory Compaction), you engineer the core mechanisms for Key-Value Storage Engine.
+
+Push hardware limits. Exceed 100,000 ops/sec with sub-0.20ms p99 latency under a strict 256MB memory cap using custom memory pooling and WAL compaction.
+
+Core Engineering Problem: Pushing beyond 100,000 ops/sec with sub-0.20ms latency requires eliminating operating system malloc fragmentation, CPU cache misses, and unbounded log file growth.
+
+Key Mechanisms Implemented:
+• Online WAL Compaction: How to defragment an append-only log on the fly, condensing thousands of intermediate mutations into final states to reclaim disk space.
+• Slab Allocation & Memory Arenas: Why frequent malloc/free calls fragment the heap until the OS cgroup kills the container, and how fixed-size memory pools maintain 1.0 fragmentation ratio.
+• CPU Cache Locality & 64-Byte Alignment: Structuring memory to match hardware L1/L2 cache lines (64 bytes), avoiding multi-cycle CPU cache misses.
+• Zero-Copy Serialization: Parsing network and stream buffers directly in place without intermediate string memory allocations.
+
+You master the apex of systems engineering: sub-millisecond p99 latency, zero-copy memory layouts, and hardware-aligned resource efficiency.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'All Prior Operations': Executed with zero-copy I/O parsing, SIMD string comparisons, and cache-line aligned layouts.",
+        "Implement 'COMPACT': Rewrites Write-Ahead Log by discarding superseded mutations and defragmenting memory. Returns OK.",
+        "Implement 'MEMSTATS': Returns detailed memory metrics. For exact test cases, expects specific format like 'ALLOCATED_BYTES: 1024 PEAK_BYTES: 1024 FRAGMENTATION_RATIO: 1.00'.",
+        "Enforce system constraints: Throughput Benchmark: > 100,000 ops/sec sustained.; p99 Latency Cap: < 0.20 ms under heavy load..",
+        "Format output according to the specification and flush standard output."
+],
     diagram: `LOG COMPACTION PIPELINE (Disk Space Reclamation):
 Original WAL (Uncompacted - 100,000 Mutations, 50MB):
 ┌────────────────────────────────────────────────────────────┐

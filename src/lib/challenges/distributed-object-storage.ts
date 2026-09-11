@@ -95,6 +95,26 @@ export const distributedObjectStorageChallenge: ChallengeData = {
       title: "Multi-Node Sharded Placement",
       difficulty: "Medium",
       tagline: "Distribute object chunks across a simulated 6-node storage cluster.",
+      description: `In Level 1 (Multi-Node Sharded Placement), you engineer the core mechanisms for Distributed Object Storage with Erasure Coding.
+
+Distribute object chunks across a simulated 6-node storage cluster.
+
+Core Engineering Problem: How do you place files evenly across 6 storage nodes so that no single disk becomes a bottleneck?
+
+Key Mechanisms Implemented:
+• Consistent hashing and deterministic node placement.
+• Object chunking and metadata manifests.
+• Querying node endpoints to fetch dispersed file pieces.
+
+You implement multi-node chunk placement across an array of independent storage daemons.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'cluster-init <nodes>': Initializes cluster with N simulated storage node endpoints.",
+        "Implement 'put-distributed <key> <data>': Chunks data and distributes shards across nodes.",
+        "Implement 'get-distributed <key>': Fetches and reassembles shards from nodes.",
+        "Enforce system constraints: Balanced shard distribution across all nodes; Strict error on missing nodes.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `MULTI-NODE SHARD PLACEMENT TOPOLOGY:
 
   Object Payload: [HELLO WORLD!] (12 bytes)
@@ -144,6 +164,25 @@ export const distributedObjectStorageChallenge: ChallengeData = {
       title: "Reed-Solomon Erasure Coding (4+2)",
       difficulty: "Hard",
       tagline: "Split data into 4 data shards and calculate 2 parity shards using GF(2^8).",
+      description: `In Level 2 (Reed-Solomon Erasure Coding (4+2)), you engineer the core mechanisms for Distributed Object Storage with Erasure Coding.
+
+Split data into 4 data shards and calculate 2 parity shards using GF(2^8).
+
+Core Engineering Problem: Why can't simple XOR parity protect against losing 2 disks at the same time, and why is Galois Field arithmetic necessary?
+
+Key Mechanisms Implemented:
+• Galois Field GF(2^8) addition (XOR) and multiplication (log/antilog tables).
+• Vandermonde and Cauchy generator matrices.
+• Multiplying 4 data bytes by the generator matrix to produce 2 parity bytes.
+
+You implement the mathematical engine that generates resilient parity shards.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'ec-encode <data>': Splits data into 4 data shards and generates 2 parity shards.",
+        "Implement 'inspect-shards': Displays byte content of all 6 generated shards.",
+        "Enforce system constraints: Strict 4 data + 2 parity structure; Parity bytes must conform to GF(2^8) math.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `REED-SOLOMON (4+2) ENCODING PIPELINE:
 
   Original Data (16 bytes): [ABCDEFGHIJKLMNOP]
@@ -197,6 +236,25 @@ export const distributedObjectStorageChallenge: ChallengeData = {
       title: "Lost Node Reconstruction & Self-Healing",
       difficulty: "Expert",
       tagline: "Recover original data when 2 out of 6 nodes are completely dead.",
+      description: `In Level 3 (Lost Node Reconstruction & Self-Healing), you engineer the core mechanisms for Distributed Object Storage with Erasure Coding.
+
+Recover original data when 2 out of 6 nodes are completely dead.
+
+Core Engineering Problem: When Node 1 and Node 3 catch fire simultaneously, how do you mathematically invert the remaining shards to recover the missing bytes?
+
+Key Mechanisms Implemented:
+• Extracting the 4×4 sub-matrix corresponding to the 4 surviving shards.
+• Inverting the square sub-matrix in GF(2^8) using Gaussian elimination.
+• Multiplying inverted matrix by surviving shards to recover the exact lost bytes.
+
+You achieve true enterprise durability: 100% data recovery despite multiple hardware casualties.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'kill-nodes <nodeList>': Simulates hardware failure of specified nodes.",
+        "Implement 'ec-decode': Reconstructs lost shards from surviving nodes and returns original data.",
+        "Enforce system constraints: Must recover 100% of data with any 4 surviving shards; Fail gracefully if > 2 shards are lost.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `MATRIX INVERSION RECONSTRUCTION (Survive 2 Node Casualties):
 
   Node Status:
@@ -250,6 +308,25 @@ export const distributedObjectStorageChallenge: ChallengeData = {
       title: "Parallel Multi-Node Chunk Streaming",
       difficulty: "Hard",
       tagline: "Stream shards in parallel across multiple nodes with hedge requests.",
+      description: `In Level 4 (Parallel Multi-Node Chunk Streaming), you engineer the core mechanisms for Distributed Object Storage with Erasure Coding.
+
+Stream shards in parallel across multiple nodes with hedge requests.
+
+Core Engineering Problem: When reading from 4 nodes, what if 3 nodes respond in 2ms but the 4th node takes 500ms due to disk latency?
+
+Key Mechanisms Implemented:
+• Parallel asynchronous shard transfer across non-blocking TCP connections.
+• Hedged requests: requesting parity shards early if a data shard straggles.
+• Connection pooling and backpressure management across storage nodes.
+
+You conquer tail latency and maximize network bandwidth across clustered storage.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'bench-stream <size_mb>': Streams multi-megabyte object concurrently across all nodes.",
+        "Implement 'simulate-straggler <nodeId>': Injects latency into target node to verify hedge request fallback.",
+        "Enforce system constraints: Asynchronous non-blocking network I/O; Hedge request must cancel slow stream.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `PARALLEL HEDGED STREAMING ARCHITECTURE:
 
   Client Gateway
@@ -301,6 +378,25 @@ export const distributedObjectStorageChallenge: ChallengeData = {
       title: "Erasure Math Overhead & Network Egress",
       difficulty: "Hard",
       tagline: "Measure CPU matrix multiplication vs network egress bandwidth.",
+      description: `In Level 5 (Erasure Math Overhead & Network Egress), you engineer the core mechanisms for Distributed Object Storage with Erasure Coding.
+
+Measure CPU matrix multiplication vs network egress bandwidth.
+
+Core Engineering Problem: Is cluster throughput limited by CPU Galois Field calculations or by 10Gbps top-of-rack network switches?
+
+Key Mechanisms Implemented:
+• CPU cycles spent per byte of erasure coding.
+• Network rebuild amplification: repairing a 1TB drive requires reading 4TB across the network.
+• Disk IOPS saturation during cluster-wide background scrubbing.
+
+You identify whether systems are CPU-bound or network-bound during recovery.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'profile-ec-math': Measures pure Galois Field matrix encode and decode speed in MB/s.",
+        "Implement 'measure-rebuild-amplification': Calculates network egress bytes required to rebuild a lost disk.",
+        "Enforce system constraints: Microsecond accuracy on math profiling; Accurate byte-level amplification tracking.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `ERASURE MATH vs NETWORK REBUILD AMPLIFICATION:
 
   Rebuilding 1 Dead Storage Node (Disk capacity: 1 TB):
@@ -352,6 +448,25 @@ export const distributedObjectStorageChallenge: ChallengeData = {
       title: "SIMD Galois Field Arithmetic & Zero-Copy",
       difficulty: "Expert",
       tagline: "Accelerate erasure coding using 256-bit AVX2/NEON vector instructions.",
+      description: `In Level 6 (SIMD Galois Field Arithmetic & Zero-Copy), you engineer the core mechanisms for Distributed Object Storage with Erasure Coding.
+
+Accelerate erasure coding using 256-bit AVX2/NEON vector instructions.
+
+Core Engineering Problem: How does Intel ISA-L achieve 10+ GB/s erasure coding throughput on standard x86/ARM server CPUs?
+
+Key Mechanisms Implemented:
+• Vectorizing Galois Field multiplication using shuffle instructions (_mm256_shuffle_epi8 / vqtbl1q_u8).
+• Splitting 8-bit multiplication into low-nibble and high-nibble table lookups.
+• Zero-copy socket splicing from network buffer directly to storage block.
+
+You achieve gigabytes-per-second erasure throughput by unlocking SIMD vector units.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'enable-simd': Activates AVX2/NEON vectorized GF(2^8) math kernels.",
+        "Implement 'bench-simd-ec': Compares scalar vs SIMD erasure coding throughput.",
+        "Enforce system constraints: Strict 4x+ speedup over scalar baseline; Identical bit-for-bit mathematical output.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `VECTORIZED GF(2^8) ARITHMETIC (AVX2 / NEON 256-Bit):
 
   Scalar (Slow, loop per byte):

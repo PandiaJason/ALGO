@@ -83,6 +83,8 @@ export interface LevelDefinition {
   title: string;
   difficulty: "Easy" | "Medium" | "Hard" | "Expert";
   tagline: string;
+  description?: string;
+  implementationGuide?: string[];
   diagram?: string;
   importantChallenge?: {
     title: string;

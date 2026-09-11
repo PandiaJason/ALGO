@@ -100,6 +100,26 @@ export const llmInferenceChallenge: ChallengeData = {
       title: "Autoregressive Decoder Forward Pass",
       difficulty: "Easy",
       tagline: "Implement token generation loop with greedy sampling and stop token detection.",
+      description: `In Level 1 (Autoregressive Decoder Forward Pass), you engineer the core mechanisms for LLM Inference Engine & KV Cache.
+
+Implement token generation loop with greedy sampling and stop token detection.
+
+Core Engineering Problem: Why do LLMs generate text one token at a time rather than producing the entire paragraph in one pass?
+
+Key Mechanisms Implemented:
+• Autoregressive generation: each new token is conditioned on all previous tokens.
+• Logits to probabilities: Softmax(logits / temperature).
+• Greedy sampling vs temperature sampling and detecting end-of-sequence (<EOS>) tokens.
+
+You implement the fundamental autoregressive decoding loop of modern LLMs.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'decode-step <prompt> <max_tokens>': Runs autoregressive loop using fixed/deterministic simulation rules until max_tokens or EOS token.",
+        "Implement 'sample-token <logits> <temp>': Applies temperature scaling and selects next token.",
+        "Implement 'validate-logits <logits>': Validates that logit probabilities sum to one.",
+        "Enforce system constraints: Stop instantly on <EOS> token; Strict adherence to temperature=0.0 greedy selection.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `AUTOREGRESSIVE TOKEN GENERATION LOOP:
 
 Prompt: "The capital of France is"
@@ -157,6 +177,26 @@ Prompt: "The capital of France is"
       title: "Key-Value (KV) Cache Manager",
       difficulty: "Medium",
       tagline: "Cache Key and Value tensors to eliminate redundant O(N^2) attention math.",
+      description: `In Level 2 (Key-Value (KV) Cache Manager), you engineer the core mechanisms for LLM Inference Engine & KV Cache.
+
+Cache Key and Value tensors to eliminate redundant O(N^2) attention math.
+
+Core Engineering Problem: Why does generating token 100 take 100 times longer without a KV cache?
+
+Key Mechanisms Implemented:
+• Self-attention mechanism: Q * K^T * V.
+• Past token keys and values never change during generation.
+• By caching past K and V tensors, we only compute Q for the single newly emitted token.
+
+You transform quadratic generation slowdown into linear runtime via KV caching.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'enable-kv-cache': Activates KV cache tensor allocation.",
+        "Implement 'inspect-kv-size': Reports number of cached token vectors and memory footprint.",
+        "Implement 'decode-with-cache <prompt> <max_tokens>': Generates tokens utilizing the KV cache to skip redundant matrix math.",
+        "Enforce system constraints: Only compute Q projection for current token; Cache footprint must scale linearly.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `NAIVE ATTENTION vs KV CACHE ATTENTION:
 
 Without KV Cache (O(N^2) Flops Explosion):
@@ -210,6 +250,26 @@ Token 3 ──► ONLY Compute Q3!
       title: "Context Window Overflow & OOM Eviction",
       difficulty: "Hard",
       tagline: "Prevent GPU OOM crashes via sliding-window cache eviction.",
+      description: `In Level 3 (Context Window Overflow & OOM Eviction), you engineer the core mechanisms for LLM Inference Engine & KV Cache.
+
+Prevent GPU OOM crashes via sliding-window cache eviction.
+
+Core Engineering Problem: What happens when a user submits a 32,000 token prompt that exceeds physical memory boundaries?
+
+Key Mechanisms Implemented:
+• Sliding window attention: keeping the first N tokens (system prompt) and the most recent M tokens.
+• Dynamic context truncation: discarding intermediate tokens when memory exceeds limit.
+• Preventing hard SIGKILL / Out-Of-Memory segmentation faults on host.
+
+You harden the inference runtime against memory exhaustion and context window overflow.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'set-max-context <tokens>': Sets hard memory boundary on context tokens.",
+        "Implement 'sliding-window-evict <window>': Evicts middle tokens when context overflows (Note: indirectly tested via feed-tokens).",
+        "Implement 'feed-tokens <count>': Feeds tokens to trigger sliding window eviction on overflow.",
+        "Enforce system constraints: Strict 0 byte overshoot above allocated memory limit; Preserve initial system prompt tokens.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `SLIDING-WINDOW CONTEXT EVICTION:
 
   Memory Capacity: 2,048 Tokens
@@ -262,6 +322,26 @@ Token 3 ──► ONLY Compute Q3!
       title: "PagedAttention & Continuous Batching",
       difficulty: "Expert",
       tagline: "Implement non-contiguous block tables and iteration-level batching.",
+      description: `In Level 4 (PagedAttention & Continuous Batching), you engineer the core mechanisms for LLM Inference Engine & KV Cache.
+
+Implement non-contiguous block tables and iteration-level batching.
+
+Core Engineering Problem: Why does static batching force fast 5-token requests to wait for slow 500-token requests, and why does contiguous memory fragment?
+
+Key Mechanisms Implemented:
+• Continuous batching (iteration-level scheduling): inserting new requests on every decode step.
+• PagedAttention: dividing KV cache into fixed physical blocks (e.g. 16 tokens/block).
+• Block tables: mapping logical token positions to non-contiguous physical memory pages.
+
+You build the industry-standard memory paging and continuous scheduling engine.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'init-paged-attention --block-size <tokens>': Initializes physical block table memory manager.",
+        "Implement 'schedule-continuous-batch': Steps scheduler, admitting waiting requests and retiring finished ones.",
+        "Implement 'inspect-block-table <req_id>': Inspects logical to physical block mappings for a request.",
+        "Enforce system constraints: Zero internal memory fragmentation; Dynamic request entry and exit at any iteration step.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `PAGEDATTENTION NON-CONTIGUOUS MEMORY PAGING:
 
   Logical KV Cache (Request 1):
@@ -317,6 +397,26 @@ Token 3 ──► ONLY Compute Q3!
       title: "TTFT & Inter-Token Latency (ITL)",
       difficulty: "Hard",
       tagline: "Measure prefill Time-to-First-Token vs decode Inter-Token Latency.",
+      description: `In Level 5 (TTFT & Inter-Token Latency (ITL)), you engineer the core mechanisms for LLM Inference Engine & KV Cache.
+
+Measure prefill Time-to-First-Token vs decode Inter-Token Latency.
+
+Core Engineering Problem: Why is prompt processing compute-bound while token generation is memory-bandwidth bound?
+
+Key Mechanisms Implemented:
+• TTFT (Time-to-First-Token): prompt prefill throughput (parallel matrix multiplication).
+• ITL (Inter-Token Latency): autoregressive decode time per token (moving KV weights from memory to compute cores).
+• Arithmetic intensity: FLOPs per byte of memory transfer.
+
+You quantify empirical serving latency and diagnose GPU/CPU utilization bottlenecks.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'bench-serving --prompts <count> --tokens <len>': Runs end-to-end benchmark reporting TTFT and ITL.",
+        "Implement 'profile-bandwidth': Measures memory bus saturation during token decoding.",
+        "Implement 'measure-ttft': Measures Time-To-First-Token prefill throughput.",
+        "Enforce system constraints: TTFT under 25ms; ITL under 5ms.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `SERVING LATENCY BREAKDOWN:
 
 Request Arrives (t = 0ms)
@@ -374,6 +474,26 @@ Request Arrives (t = 0ms)
       title: "FlashAttention Kernel & Weight Quantization",
       difficulty: "Expert",
       tagline: "Fuse attention online without materializing N×N matrices and unpack 4-bit weights.",
+      description: `In Level 6 (FlashAttention Kernel & Weight Quantization), you engineer the core mechanisms for LLM Inference Engine & KV Cache.
+
+Fuse attention online without materializing N×N matrices and unpack 4-bit weights.
+
+Core Engineering Problem: Why does standard attention run out of memory on long documents, and how does FlashAttention compute it in O(N) space?
+
+Key Mechanisms Implemented:
+• FlashAttention tiling: dividing Q, K, V into SRAM blocks and computing Softmax incrementally.
+• Avoiding writing the massive N×N intermediate attention matrix to slow DRAM.
+• Weight-only 4-bit quantization (AWQ/GPTQ) to double effective memory bandwidth.
+
+You achieve hardware-optimal inference speed with fused SRAM attention and quantized weights.`,
+      implementationGuide: [
+        "Read input commands line-by-line from standard input and parse arguments.",
+        "Implement 'enable-flash-attention': Replaces standard attention with tiled fused SRAM kernel.",
+        "Implement 'load-quant-weights --int4': Loads 4-bit packed weights for high-bandwidth generation.",
+        "Implement 'bench-long-ctx <len>': Tests memory usage for long sequences with FlashAttention.",
+        "Enforce system constraints: Zero N×N attention matrix materialization in DRAM; Bit-exact numerical match.",
+        "Format output according to the specification and flush standard output."
+],
       diagram: `FLASHATTENTION SRAM TILING vs STANDARD DRAM:
 
   Standard Attention (Memory Bottleneck):
