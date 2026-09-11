@@ -405,14 +405,15 @@ export async function runQuickTest(
   const caseResults = await Promise.all(
     suite.map(async (testDef) => {
       try {
-        const input = testDef.input.trim() + "\n";
+        const normalizedInput = (testDef.input || "").replace(/\\n/g, "\n");
+        const input = normalizedInput.trim() + "\n";
         const testTimeout = language === "python" ? 4000 : 9000;
         const res = await runInSandbox(code, language, input, testTimeout);
 
         if (res.exitCode === 124) {
           return {
             name: testDef.name,
-            input: testDef.input,
+            input: normalizedInput,
             expected: testDef.expected,
             actual: "Execution timed out (Time Limit Exceeded)",
             passed: false,
@@ -424,7 +425,7 @@ export async function runQuickTest(
         if (res.exitCode !== 0 && !res.stdout) {
           return {
             name: testDef.name,
-            input: testDef.input,
+            input: normalizedInput,
             expected: testDef.expected,
             actual: res.stderr || `Exit code ${res.exitCode}`,
             passed: false,
@@ -434,7 +435,7 @@ export async function runQuickTest(
         }
 
         const actualTrimmed = res.stdout.trim();
-        let expectedTrimmed = testDef.expected.trim();
+        let expectedTrimmed = (testDef.expected || "").replace(/\\n/g, "\n").trim();
 
         let isPass = testDef.check
           ? testDef.check(actualTrimmed, expectedTrimmed)
@@ -442,7 +443,7 @@ export async function runQuickTest(
 
         // Smart flexible match for Shell L1 pwd:
         // A real shell returns its current working directory (e.g. /dev/shm/... or /tmp)
-        if (!isPass && (testDef.input.trim() === "pwd\nexit" || testDef.name.toLowerCase().includes("pwd"))) {
+        if (!isPass && (normalizedInput.trim() === "pwd\nexit" || testDef.name.toLowerCase().includes("pwd"))) {
           if (actualTrimmed.startsWith("/") || actualTrimmed === "OK") {
             isPass = true;
             expectedTrimmed = actualTrimmed; // Match display so UI shows clean pass

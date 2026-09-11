@@ -100,42 +100,46 @@ export const llmInferenceChallenge: ChallengeData = {
       title: "Autoregressive Decoder Forward Pass",
       difficulty: "Easy",
       tagline: "Implement token generation loop with greedy sampling and stop token detection.",
-      whatAreYouBuilding: `You are going to build the system that translates human text into math.
+            whatAreYouBuilding: `You are going to build the core next-token prediction loop of an LLM.
 
-Think of a phone keyboard's autocomplete. The model can't read English, so you first convert words into unique ID numbers (tokens), and then turn those IDs into large arrays of numbers (embeddings) that capture their meaning.
+Large language models don't write an entire sentence at once; they generate text one word (token) at a time, feeding each generated token back into the input for the next round.
 
 For example:
-tokenize "Hello AI"
-embed "Hello AI"
+decode-step 'hello' 3
+sample-token 1.2,5.4,0.1 0.0
+validate-logits 0.5,0.5
 
-It should convert text to numbers:
-TOKENS: [87, 342]
-EMBEDDINGS: [[0.12, -0.45, ...], [0.88, 0.02, ...]]`,
-      howItWorks: `1. The user types a sentence like "Hello AI".
-2. The tokenizer splits it into chunks and looks up their integer IDs (e.g., 'Hello' = 87).
-3. The embedding layer takes those IDs and looks them up in a massive pre-trained lookup table.
-4. It returns a vector (a list of floats) for each token, ready to be processed by the neural network.`,
+It should predict the next token and sample greedy output:
+TOKENS: world !
+TOKEN_ID: 1
+PROBS_SUM_TO_ONE: TRUE`,
+      howItWorks: `1. The model takes a prompt and converts words into a sequence of input tokens.
+2. A forward pass computes raw prediction scores (logits) across the entire vocabulary.
+3. Softmax divides the logits by temperature to create a probability distribution that sums to 1.
+4. A sampling strategy (greedy argmax or probabilistic sampling) picks the winning token.
+5. The new token is appended to the prompt, and the loop repeats until <EOS> or max tokens.`,
       technicalTerms: [
         {
-          "term": "Tokenizer",
-          "definition": "A tool that chops text into smaller pieces (words or subwords) and assigns them unique ID numbers."
+          term: "Autoregressive",
+          definition: "A process where each new output depends on the sequence of previous outputs."
         },
         {
-          "term": "Word Embeddings",
-          "definition": "Large arrays of numbers that represent the meaning of a token."
+          term: "Logits",
+          definition: "The raw, unnormalized prediction scores output by the neural network for each vocabulary word."
         },
         {
-          "term": "Lookup table",
-          "definition": "A simple database mapping token IDs to their pre-trained embedding vectors."
+          term: "Softmax",
+          definition: "A mathematical formula that converts a vector of raw scores into probabilities summing to 1.0."
         }
       ],
-      description: `Neural networks only understand numbers, specifically floating-point matrices. In Level 1, you build the critical translation layer: the tokenizer and the embedding lookup.
+      description: `At the heart of every modern AI model lies the autoregressive decoding loop. In Level 1, you implement next-token prediction.
 
-Tokenization handles the messy reality of human language—punctuation, casing, and unknown words—converting them into a clean sequence of integers. The embedding layer then projects these integers into a high-dimensional space, providing the model with its initial understanding of the meaning of each word before any actual 'thinking' occurs.`,
+You take an input prompt, compute logits for candidate next tokens, convert logits to normalized probabilities via Softmax, and apply greedy sampling. You repeat this generation loop sequentially until an End-Of-Sequence (<EOS>) token is emitted or the max token budget is reached.`,
       implementationGuide: [
-        "Implement 'tokenize <text>'. Split the text by spaces/punctuation and map each chunk to its ID using a predefined dictionary.",
-        "Handle unknown words by mapping them to a special '<UNK>' token ID.",
-        "Implement 'embed <text>'. First tokenize it, then use the IDs as indexes to pull rows from the embedding weight matrix."
+        "Implement 'decode-step <prompt> <max_tokens>': Run the token generation loop using deterministic simulation rules until <EOS> or max_tokens.",
+        "Implement 'sample-token <logits> <temp>': Apply temperature scaling to logits and select the winning token ID.",
+        "Implement 'validate-logits <logits>': Verify that the normalized probability distribution sums to 1.0.",
+        "Enforce constraints: Stop immediately on <EOS> token and handle temperature=0.0 greedy selection."
       ],
       diagram: `AUTOREGRESSIVE TOKEN GENERATION LOOP:
 
@@ -180,11 +184,11 @@ Prompt: "The capital of France is"
       ],
       constraints: ["Stop instantly on <EOS> token", "Strict adherence to temperature=0.0 greedy selection"],
       cases: [
-        { name: "Case 1: Generate short sequence", input: "decode-step 'hello' 3\\nexit", expected: "TOKENS: world !" },
-        { name: "Case 2: Immediate EOS detection", input: "decode-step 'bye' 5\\nexit", expected: "TOKENS: bye <EOS>" },
-        { name: "Case 3: Temperature 0.0 greedy check", input: "sample-token 1.2,5.4,0.1 0.0\\nexit", expected: "TOKEN_ID: 1" },
-        { name: "Case 4: Max token boundary", input: "decode-step 'repeat' 2\\nexit", expected: "TOKENS_EMITTED: 2 (HIT_MAX)" },
-        { name: "Case 5: Logits validation", input: "validate-logits 0.5,0.5\\nexit", expected: "PROBS_SUM_TO_ONE: TRUE" },
+        { name: "Case 1: Generate short sequence", input: "decode-step 'hello' 3\nexit", expected: "TOKENS: world !" },
+        { name: "Case 2: Immediate EOS detection", input: "decode-step 'bye' 5\nexit", expected: "TOKENS: bye <EOS>" },
+        { name: "Case 3: Temperature 0.0 greedy check", input: "sample-token 1.2,5.4,0.1 0.0\nexit", expected: "TOKEN_ID: 1" },
+        { name: "Case 4: Max token boundary", input: "decode-step 'repeat' 2\nexit", expected: "TOKENS_EMITTED: 2 (HIT_MAX)" },
+        { name: "Case 5: Logits validation", input: "validate-logits 0.5,0.5\nexit", expected: "PROBS_SUM_TO_ONE: TRUE" },
       ],
     },
     2: {
@@ -194,42 +198,48 @@ Prompt: "The capital of France is"
       title: "Key-Value (KV) Cache Manager",
       difficulty: "Medium",
       tagline: "Cache Key and Value tensors to eliminate redundant O(N^2) attention math.",
-      whatAreYouBuilding: `You are going to build the core "thinking" engine of modern AI.
+            whatAreYouBuilding: `You are going to add a Key-Value (KV) Cache to eliminate redundant calculations.
 
-When reading "The bank of the river," the word "bank" means dirt. In "The bank on Main Street," it means money. Self-attention lets the model look at the surrounding words to figure out the correct context.
+Without a cache, generating the 100th word requires recalculating attention for words 1 through 99 all over again—a massive O(N^2) slowdown!
 
 For example:
-attention "The bank of the river"
+enable-kv-cache
+decode-with-cache 'hello' 3
+inspect-kv-size
+reset-cache
 
-It should show which words focus on which other words:
-ATTENTION_MATRIX CALCULATED
-'bank' highly attends to 'river' (weight: 0.85)`,
-      howItWorks: `1. For each word, the model generates three new vectors: Query (what am I looking for?), Key (what do I contain?), and Value (what is my actual meaning?).
-2. It calculates the dot product between a word's Query and every other word's Key to find out how related they are (attention scores).
-3. It converts these scores into probabilities using a Softmax function.
-4. It multiplies these probabilities by the Value vectors to create a new, context-aware understanding of the word.`,
+It should save previous token tensors in memory:
+KV_CACHE_ENABLED: TRUE
+TOKENS: world !
+KV_SIZE: 3_TOKENS
+KV_RESET_OK`,
+      howItWorks: `1. During text generation, words 1 through N already have computed Key and Value vectors that never change.
+2. Without a cache, generating word N+1 recalculates Q, K, and V for all prior N words.
+3. With a KV Cache, we store the past K and V tensors in a memory buffer.
+4. For word N+1, we only compute its single Query vector Q, and attend against the cached K and V.
+5. This turns each generation step from an O(N) calculation into an instant O(1) operation.`,
       technicalTerms: [
         {
-          "term": "Self-Attention",
-          "definition": "A mechanism that allows words to weigh the importance of all other words in a sentence."
+          term: "KV Cache",
+          definition: "A memory buffer storing Key and Value projection vectors of previous tokens."
         },
         {
-          "term": "Query, Key, Value (QKV)",
-          "definition": "The three mathematical projections used to calculate attention, conceptually similar to a database search."
+          term: "Attention complexity",
+          definition: "Without cache, generating N tokens takes O(N^2) math; with cache, it takes O(N)."
         },
         {
-          "term": "Softmax",
-          "definition": "A math function that turns a list of raw scores into percentages that add up to 100%."
+          term: "Prefill vs Decode",
+          definition: "Prefill processes the prompt in one parallel pass; decode generates one token at a time."
         }
       ],
-      description: `Before Transformers, AI processed text strictly from left to right, forgetting earlier words. In Level 2, you implement Self-Attention, the breakthrough that revolutionized AI.
+      description: `Generating tokens one by one is severely memory-bandwidth constrained. In Level 2, you implement the Key-Value (KV) Cache.
 
-Self-Attention allows every token to directly interact with every other token in the sequence simultaneously. By dynamically calculating Query-Key interactions, the model can resolve pronouns ("it"), understand context ("bank"), and learn complex grammatical structures in a highly parallelizable way.`,
+Self-attention computes Q * K^T * V. Because previous tokens never change their Key and Value representations during generation, caching them in memory avoids recomputing them on every step. This single optimization unlocks real-time inference speeds.`,
       implementationGuide: [
-        "Implement 'attention <text>'. Get the embeddings for the tokens.",
-        "Multiply the embeddings by three separate weight matrices to get Q, K, and V.",
-        "Calculate the attention scores: (Q dot K_transpose) / sqrt(dimension).",
-        "Apply softmax to the scores, then multiply by V to get the final context-aware output."
+        "Implement 'enable-kv-cache': Initialize the memory buffer for Key and Value tensors.",
+        "Implement 'decode-with-cache <prompt> <max_tokens>': Reuse cached K and V vectors across sequential decode steps.",
+        "Implement 'inspect-kv-size' and 'reset-cache': Check current cache memory usage and clear state between requests.",
+        "Implement 'verify-cache-math': Confirm cached attention outputs match full recomputation."
       ],
       diagram: `NAIVE ATTENTION vs KV CACHE ATTENTION:
 
@@ -270,11 +280,11 @@ Token 3 ──► ONLY Compute Q3!
       ],
       constraints: ["Only compute Q projection for current token", "Cache footprint must scale linearly"],
       cases: [
-        { name: "Case 1: Enable KV cache", input: "enable-kv-cache\\nexit", expected: "KV_CACHE_ENABLED: OK" },
-        { name: "Case 2: Verify zero redundant recomputation", input: "decode-with-cache 'test' 3\\nexit", expected: "FLOP_SAVINGS: > 70%" },
-        { name: "Case 3: Memory footprint tracking", input: "inspect-kv-size\\nexit", expected: "CACHED_TENSORS: OK" },
-        { name: "Case 4: Sequence reset clears cache", input: "reset-cache\\ninspect-kv-size\\nexit", expected: "CACHED_TOKENS: 0" },
-        { name: "Case 5: Cache consistency check", input: "verify-cache-math\\nexit", expected: "OUTPUT_MATCHES_NAIVE: TRUE" },
+        { name: "Case 1: Enable KV cache", input: "enable-kv-cache\nexit", expected: "KV_CACHE_ENABLED: OK" },
+        { name: "Case 2: Verify zero redundant recomputation", input: "decode-with-cache 'test' 3\nexit", expected: "FLOP_SAVINGS: > 70%" },
+        { name: "Case 3: Memory footprint tracking", input: "inspect-kv-size\nexit", expected: "CACHED_TENSORS: OK" },
+        { name: "Case 4: Sequence reset clears cache", input: "reset-cache\ninspect-kv-size\nexit", expected: "CACHED_TOKENS: 0" },
+        { name: "Case 5: Cache consistency check", input: "verify-cache-math\nexit", expected: "OUTPUT_MATCHES_NAIVE: TRUE" },
       ],
     },
     3: {
@@ -284,43 +294,48 @@ Token 3 ──► ONLY Compute Q3!
       title: "Context Window Overflow & OOM Eviction",
       difficulty: "Hard",
       tagline: "Prevent GPU OOM crashes via sliding-window cache eviction.",
-      whatAreYouBuilding: `You are going to add the memory and reasoning layer to the AI.
+            whatAreYouBuilding: `You are going to handle conversations that exceed the model's memory limit.
 
-If attention is how the model understands the *current* sentence, the Feed-Forward network is where it stores all its *past* knowledge (like facts and grammar rules) to process the attention results.
+GPUs have finite RAM. When a conversation becomes too long, you must evict older messages while strictly keeping the system prompt pinned at the beginning.
 
 For example:
-forward-pass "Capital of France is"
+set-max-context 2048
+feed-tokens 3000
+check-system-prompt-pinned
+check-eviction-integrity
 
-It should process the context through the network:
-FFN_ACTIVATION: Non-linear ReLU applied
-RESIDUAL_ADDED: Original + Processed
-OUTPUT_STATE: [0.55, -0.12, ...]`,
-      howItWorks: `1. The context-aware vectors from the attention layer are passed into a Feed-Forward Network (FFN).
-2. The FFN projects the vectors into a much wider dimension to 'think' about them, applies a non-linear activation (like ReLU), and shrinks them back down.
-3. The result is added directly back to the original input vector (a residual connection).
-4. Finally, layer normalization stabilizes the numbers so they don't grow too large.`,
+It should slide the eviction window while protecting pinned system rules:
+MAX_CONTEXT: 2048
+OVERFLOW_EVICTED: 952_TOKENS
+PINNED_SYSTEM_PROMPT: PRESERVED
+EVICTION_INTEGRITY: OK`,
+      howItWorks: `1. The context window has a hard memory ceiling (e.g. 2,048 tokens).
+2. Incoming tokens push the total count past the limit, threatening an Out-Of-Memory (OOM) crash.
+3. The system prompt contains the AI's core instructions and personality; it must NEVER be evicted.
+4. A sliding-window eviction strategy discards the oldest conversational tokens from the middle of the buffer.
+5. The surviving prompt consists of [Pinned System Prompt] + [Most Recent K Tokens].`,
       technicalTerms: [
         {
-          "term": "Feed-Forward Network (FFN)",
-          "definition": "A standard neural network layer applied independently to each token to process its context."
+          term: "Context window",
+          definition: "The maximum number of tokens a model can hold in its active memory."
         },
         {
-          "term": "Residual Connection",
-          "definition": "Adding the original input back to the output of a layer to help information flow through the network."
+          term: "Sliding window",
+          definition: "Evicting the oldest items to make room for newest items while keeping a fixed capacity."
         },
         {
-          "term": "Layer Normalization",
-          "definition": "A technique that scales the numbers in a vector to keep them stable and prevent math errors during training."
+          term: "System prompt pinning",
+          definition: "Protecting critical instructions at index 0 from ever being evicted during memory pressure."
         }
       ],
-      description: `Attention tells the model *where* to look, but the Feed-Forward Network (FFN) tells it *what* it is looking at. In Level 3, you complete the Transformer block.
+      description: `LLMs have hard physical memory limits. In Level 3, you build context window overflow handling and OOM eviction.
 
-The FFN acts as a massive key-value memory bank storing the world knowledge learned during training. Furthermore, the residual connections (adding the input to the output) are crucial: they create a mathematical 'fast lane' that prevents the signal from dying out in deep networks, allowing modern LLMs to stack dozens of layers successfully.`,
+When conversational history exceeds context capacity, naive runtimes crash with Out-Of-Memory errors. You implement sliding-window context eviction that discards stale conversational turns while strictly pinning the system prompt at index 0, guaranteeing continuous uptime.`,
       implementationGuide: [
-        "Implement 'forward-pass <text>'. Run the attention mechanism from Level 2.",
-        "Pass the attention output through the FFN: multiply by Weight1, apply ReLU (max(0, x)), multiply by Weight2.",
-        "Add the original input vector to this output (Residual).",
-        "Apply layer normalization by subtracting the mean and dividing by the variance."
+        "Implement 'set-max-context <tokens>': Configure the memory budget for active tokens.",
+        "Implement 'feed-tokens <count>': Ingest tokens and trigger eviction when capacity is exceeded.",
+        "Implement 'check-system-prompt-pinned': Verify tokens 0..S (system instructions) remain untouched.",
+        "Implement 'check-eviction-integrity': Verify memory usage never exceeds the ceiling and ordering is preserved."
       ],
       diagram: `SLIDING-WINDOW CONTEXT EVICTION:
 
@@ -360,11 +375,11 @@ The FFN acts as a massive key-value memory bank storing the world knowledge lear
       ],
       constraints: ["Strict 0 byte overshoot above allocated memory limit", "Preserve initial system prompt tokens"],
       cases: [
-        { name: "Case 1: Context within limit", input: "set-max-context 2048\\nfeed-tokens 1000\\nexit", expected: "CONTEXT_OK: 1000/2048" },
-        { name: "Case 2: Context overflow eviction", input: "set-max-context 100\\nfeed-tokens 150\\nexit", expected: "EVICTION_TRIGGERED: RETAINED_100" },
-        { name: "Case 3: System prompt preservation", input: "check-system-prompt-pinned\\nexit", expected: "SYSTEM_PROMPT_INTACT: TRUE" },
-        { name: "Case 4: Graceful OOM rejection", input: "set-max-context 50\\nfeed-tokens 500\\nexit", expected: "OOM_PREVENTED: SAFE_TRUNCATION" },
-        { name: "Case 5: Cache state integrity check", input: "check-eviction-integrity\\nexit", expected: "STATUS: HEALTHY" },
+        { name: "Case 1: Context within limit", input: "set-max-context 2048\nfeed-tokens 1000\nexit", expected: "CONTEXT_OK: 1000/2048" },
+        { name: "Case 2: Context overflow eviction", input: "set-max-context 100\nfeed-tokens 150\nexit", expected: "EVICTION_TRIGGERED: RETAINED_100" },
+        { name: "Case 3: System prompt preservation", input: "check-system-prompt-pinned\nexit", expected: "SYSTEM_PROMPT_INTACT: TRUE" },
+        { name: "Case 4: Graceful OOM rejection", input: "set-max-context 50\nfeed-tokens 500\nexit", expected: "OOM_PREVENTED: SAFE_TRUNCATION" },
+        { name: "Case 5: Cache state integrity check", input: "check-eviction-integrity\nexit", expected: "STATUS: HEALTHY" },
       ],
     },
     4: {
@@ -374,46 +389,48 @@ The FFN acts as a massive key-value memory bank storing the world knowledge lear
       title: "PagedAttention & Continuous Batching",
       difficulty: "Expert",
       tagline: "Implement non-contiguous block tables and iteration-level batching.",
-      whatAreYouBuilding: `You are going to make the AI actually write text, one word at a time.
+            whatAreYouBuilding: `You are going to implement PagedAttention—virtual memory paging for LLM inference.
 
-Like the autocomplete on your phone, you give it a starting phrase, and it loops over and over, predicting the most likely next word, adding it to the phrase, and repeating until it finishes.
+In standard inference, allocating contiguous memory for each request wastes up to 80% of GPU RAM due to fragmentation. PagedAttention stores KV cache in non-contiguous pages (blocks) of memory.
 
 For example:
-generate "The color of the sky is" 3
+init-paged-attention --block-size 16
+schedule-continuous-batch
+inspect-block-table 1
+retire-request 1
 
-It should predict the next words:
-STEP 1: " blue"
-STEP 2: " and"
-STEP 3: " clear"
-OUTPUT: "The color of the sky is blue and clear"`,
-      howItWorks: `1. You pass the input prompt into the model.
-2. The model outputs a massive list of probabilities, one for every possible word in the dictionary.
-3. You pick the word with the highest probability (greedy decoding).
-4. You append this new word to the input prompt.
-5. You feed the entire new, longer prompt back into the model to predict the *next* word.
-6. You repeat this loop until the model predicts a special '<END>' token.`,
+It should allocate non-contiguous memory blocks and eliminate fragmentation:
+PAGED_ATTENTION_INITIALIZED: BLOCK_SIZE=16
+BATCH_SCHEDULED: 4_REQUESTS
+BLOCK_TABLE: REQ_1 -> BLOCKS [0, 4, 9]
+REQUEST_RETIRED: BLOCKS_FREED=3`,
+      howItWorks: `1. Similar to OS virtual memory, physical GPU memory is divided into fixed-size blocks (e.g. 16 tokens each).
+2. A Request's logical KV cache does not need to be contiguous in physical memory.
+3. A Block Table maps logical token positions (request_id, token_idx) to physical block IDs.
+4. Continuous batching: New requests dynamically grab free blocks from the pool, while finished requests immediately free their blocks.
+5. This eliminates memory waste, allowing servers to handle 4x to 8x more concurrent users.`,
       technicalTerms: [
         {
-          "term": "Autoregressive",
-          "definition": "A model that uses its own past predictions as the input for its next prediction."
+          term: "PagedAttention",
+          definition: "Managing KV cache memory using virtual memory paging concepts (inspired by vLLM)."
         },
         {
-          "term": "Logits",
-          "definition": "The raw, unnormalized scores output by the final layer of the network before being turned into probabilities."
+          term: "Block Table",
+          definition: "A lookup table mapping a request's logical token offsets to physical memory blocks."
         },
         {
-          "term": "Greedy decoding",
-          "definition": "A simple generation strategy that always picks the single most likely next word."
+          term: "Continuous batching",
+          definition: "Dynamically inserting new requests into an active batch at token-level granularity."
         }
       ],
-      description: `LLMs do not think in complete paragraphs; they are fundamentally "next-token predictors". In Level 4, you build the autoregressive generation loop.
+      description: `KV cache memory fragmentation is the primary bottleneck in high-throughput LLM serving. In Level 4, you implement PagedAttention and continuous batching.
 
-This is the core loop that powers ChatGPT. By mapping the final hidden state to the vocabulary (the logits) and applying a softmax, you get a probability distribution over the entire language. Feeding the output back in as the new input is what makes the model 'autoregressive', allowing it to generate open-ended text of any length.`,
+Inspired by virtual memory paging in operating systems, PagedAttention breaks the KV cache into non-contiguous blocks. By maintaining a dynamic block table, you eliminate internal and external memory fragmentation, enabling continuous iteration-level batching across multi-tenant workloads.`,
       implementationGuide: [
-        "Implement 'generate <prompt> <max_tokens>'. Run the prompt through the full Transformer block.",
-        "Multiply the final token's output state by the language model head (vocab weight matrix) to get the logits.",
-        "Find the index of the highest logit (argmax), which is your predicted token ID.",
-        "Append this token ID to your input, convert it back to text, and loop until max_tokens is reached."
+        "Implement 'init-paged-attention --block-size <tokens>': Create a physical block pool and free list.",
+        "Implement 'schedule-continuous-batch': Allocate blocks on-demand as tokens are generated across concurrent requests.",
+        "Implement 'inspect-block-table <req_id>' and 'retire-request <req_id>': Trace block mappings and reclaim blocks upon completion.",
+        "Implement 'check-free-pages' and 'audit-fragmentation': Verify zero internal memory fragmentation."
       ],
       diagram: `PAGEDATTENTION NON-CONTIGUOUS MEMORY PAGING:
 
@@ -456,11 +473,11 @@ This is the core loop that powers ChatGPT. By mapping the final hidden state to 
       ],
       constraints: ["Zero internal memory fragmentation", "Dynamic request entry and exit at any iteration step"],
       cases: [
-        { name: "Case 1: Allocate physical page block", input: "init-paged-attention --block-size 16\\nexit", expected: "PAGED_ATTENTION_READY" },
-        { name: "Case 2: Continuous batch dynamic entry", input: "schedule-continuous-batch\\nexit", expected: "BATCH_ACTIVE: 3 REQUESTS" },
-        { name: "Case 3: Block table mapping check", input: "inspect-block-table req_1\\nexit", expected: "PAGES: [0, 2]" },
-        { name: "Case 4: Immediate block reclamation on finish", input: "retire-request req_1\\ncheck-free-pages\\nexit", expected: "PAGES_RECLAIMED: 2" },
-        { name: "Case 5: Zero fragmentation audit", input: "audit-fragmentation\\nexit", expected: "FRAGMENTATION: < 4%" },
+        { name: "Case 1: Allocate physical page block", input: "init-paged-attention --block-size 16\nexit", expected: "PAGED_ATTENTION_READY" },
+        { name: "Case 2: Continuous batch dynamic entry", input: "schedule-continuous-batch\nexit", expected: "BATCH_ACTIVE: 3 REQUESTS" },
+        { name: "Case 3: Block table mapping check", input: "inspect-block-table req_1\nexit", expected: "PAGES: [0, 2]" },
+        { name: "Case 4: Immediate block reclamation on finish", input: "retire-request req_1\ncheck-free-pages\nexit", expected: "PAGES_RECLAIMED: 2" },
+        { name: "Case 5: Zero fragmentation audit", input: "audit-fragmentation\nexit", expected: "FRAGMENTATION: < 4%" },
       ],
     },
     5: {
@@ -470,44 +487,44 @@ This is the core loop that powers ChatGPT. By mapping the final hidden state to 
       title: "TTFT & Inter-Token Latency (ITL)",
       difficulty: "Hard",
       tagline: "Measure prefill Time-to-First-Token vs decode Inter-Token Latency.",
-      whatAreYouBuilding: `You are going to dramatically speed up text generation by giving the AI a short-term memory.
-
-Without this, when the model predicts the 100th word, it recalculates the first 99 words from scratch. The KV Cache remembers the math for the first 99 words so it only has to calculate the 100th word.
+            whatAreYouBuilding: `You are going to benchmark the two golden metrics of LLM serving: Time-To-First-Token (TTFT, prefill phase) and Inter-Token Latency (ITL, decode phase).
 
 For example:
-enable-kv-cache
-generate-fast "Tell me a story" 50
+measure-ttft
+measure-itl
+profile-bandwidth
+bench-concurrency-curve
 
-It should generate text much faster:
-KV_CACHE: ENABLED
-SPEEDUP: 15.4x (Avoided redundant matrix multiplications)`,
-      howItWorks: `1. During the first pass, the model calculates the Keys (K) and Values (V) for all the words in the prompt.
-2. Instead of throwing them away, it saves these K and V vectors in memory (the cache).
-3. On the next step, it only calculates the K and V for the single brand-new word.
-4. It attaches this new K and V to the cached list.
-5. It then calculates Attention using only the Query of the new word against the entire cached list of Keys.`,
+It should profile serving performance and identify the compute vs bandwidth boundary:
+TTFT: < 50ms (PREFILL_COMPUTE_BOUND)
+ITL: < 15ms (DECODE_BANDWIDTH_BOUND)
+MEMORY_BANDWIDTH: 850_GB/s
+CONCURRENCY_CURVE: OPTIMAL`,
+      howItWorks: `1. Phase 1: Prefill (Prompt Processing): The model processes the entire prompt in parallel. This is compute-bound (saturating tensor cores) and determines TTFT.
+2. Phase 2: Decode (Token Generation): The model generates tokens one-by-one. Each step must read all model weights and KV cache from GPU memory. This is memory-bandwidth bound and determines ITL.
+3. You measure both latency metrics under increasing concurrency to determine the saturation knee of your hardware.`,
       technicalTerms: [
         {
-          "term": "KV Cache",
-          "definition": "A memory buffer that stores the Key and Value vectors of previously processed tokens to avoid recalculating them."
+          term: "Time-To-First-Token (TTFT)",
+          definition: "The latency from sending the prompt until the very first token is streamed back."
         },
         {
-          "term": "Prompt phase (Prefill)",
-          "definition": "The initial step where the entire user prompt is processed in parallel to populate the KV Cache."
+          term: "Inter-Token Latency (ITL)",
+          definition: "The time elapsed between emitting consecutive tokens during generation."
         },
         {
-          "term": "Decode phase",
-          "definition": "The fast generation loop where only one token is processed at a time, using the KV Cache."
+          term: "Memory bandwidth bound",
+          definition: "A condition where the CPU/GPU waits for data to travel across the memory bus rather than computing."
         }
       ],
-      description: `Autoregressive generation is inherently O(N^2) if implemented naively, because every new token forces the model to re-process the entire growing sequence. In Level 5, you implement the KV Cache, the most important optimization in LLM inference.
+      description: `Serving LLMs requires balancing two distinct hardware bottlenecks. In Level 5, you profile Time-To-First-Token (TTFT) and Inter-Token Latency (ITL).
 
-By caching the Key and Value tensors of past tokens, you eliminate massive amounts of redundant matrix multiplication. The computational complexity of generating a new token drops from O(N^2) to O(N), transforming generation from agonizingly slow to lightning-fast. This is exactly how production systems like vLLM and HuggingFace TGI operate.`,
+Prompt prefill is compute-bound: all prompt tokens are processed concurrently, fully saturating tensor cores. Token generation is memory-bandwidth bound: each generated token requires reading billions of weight bytes from DRAM. You measure empirical latencies and profile hardware saturation curves under concurrent load.`,
       implementationGuide: [
-        "Implement 'enable-kv-cache' to allocate memory for the cache.",
-        "Update your attention mechanism. During generation, only pass the *newest* token into the Q, K, and V projections.",
-        "Append the new K and V to the global cache.",
-        "Calculate attention by multiplying the single new Query against the entire accumulated Key cache, rather than against just itself."
+        "Implement 'measure-ttft': Profile the prefill phase wall-clock time for varying prompt lengths.",
+        "Implement 'measure-itl': Measure the delta between consecutive tokens during autoregressive generation.",
+        "Implement 'profile-bandwidth' and 'bench-concurrency-curve': Profile memory bus utilization under concurrent requests.",
+        "Implement 'audit-serving-metrics': Verify compliance with SLA thresholds."
       ],
       diagram: `SERVING LATENCY BREAKDOWN:
 
@@ -552,11 +569,11 @@ Request Arrives (t = 0ms)
       ],
       constraints: ["TTFT under 25ms", "ITL under 5ms"],
       cases: [
-        { name: "Case 1: Measure TTFT", input: "measure-ttft\\nexit", expected: "TTFT: < 25ms" },
-        { name: "Case 2: Measure ITL", input: "measure-itl\\nexit", expected: "ITL: < 5ms" },
-        { name: "Case 3: Memory bus saturation", input: "profile-bandwidth\\nexit", expected: "BANDWIDTH_SATURATION: > 80%" },
-        { name: "Case 4: Concurrency scaling curve", input: "bench-concurrency-curve\\nexit", expected: "THROUGHPUT_SCALING: LINEAR" },
-        { name: "Case 5: Metrics audit", input: "audit-serving-metrics\\nexit", expected: "SERVING_SLA: MET" },
+        { name: "Case 1: Measure TTFT", input: "measure-ttft\nexit", expected: "TTFT: < 25ms" },
+        { name: "Case 2: Measure ITL", input: "measure-itl\nexit", expected: "ITL: < 5ms" },
+        { name: "Case 3: Memory bus saturation", input: "profile-bandwidth\nexit", expected: "BANDWIDTH_SATURATION: > 80%" },
+        { name: "Case 4: Concurrency scaling curve", input: "bench-concurrency-curve\nexit", expected: "THROUGHPUT_SCALING: LINEAR" },
+        { name: "Case 5: Metrics audit", input: "audit-serving-metrics\nexit", expected: "SERVING_SLA: MET" },
       ],
     },
     6: {
@@ -566,44 +583,45 @@ Request Arrives (t = 0ms)
       title: "FlashAttention Kernel & Weight Quantization",
       difficulty: "Expert",
       tagline: "Fuse attention online without materializing N×N matrices and unpack 4-bit weights.",
-      whatAreYouBuilding: `You are going to make the AI creative instead of robotic.
-
-If you always pick the #1 most likely word, the AI sounds boring and repetitive. By introducing randomness (Temperature) and limiting choices to the top few options (Top-K), the AI can write poetry and stories.
+            whatAreYouBuilding: `You are going to break through the GPU memory wall using FlashAttention SRAM tiling and INT4 weight quantization.
 
 For example:
-set-temperature 0.8
-set-top-k 5
-generate-creative "Once upon a time" 10
+enable-flash-attention
+load-quant-weights --int4
+bench-long-ctx 8192
+bench-optimized-throughput
 
-It should output diverse text across multiple runs:
-RUN 1: "Once upon a time there was a brave knight"
-RUN 2: "Once upon a time in a dark forest lived"`,
-      howItWorks: `1. Instead of just picking the highest probability word, you treat the probabilities like a lottery. A word with 80% probability gets 80 lottery tickets.
-2. 'Temperature' scales the probabilities. High temperature gives the rare words more tickets; low temperature takes tickets away from them.
-3. 'Top-K' throws away all the tickets for words that aren't in the top 5 (or 10) choices, preventing the AI from picking completely nonsensical words.
-4. You draw a random ticket from the remaining pool to pick the next word.`,
+It should tile attention in fast on-chip SRAM and serve long contexts at peak speed:
+FLASH_ATTENTION: ENABLED (SRAM_TILING)
+QUANT_WEIGHTS: INT4_LOADED (4X_COMPRESSION)
+LONG_CTX_8K: < 100ms
+THROUGHPUT: > 2500_TOKENS/SEC`,
+      howItWorks: `1. Standard attention computes an N x N attention matrix and writes it to slow High-Bandwidth Memory (HBM/DRAM), then reads it back to multiply by Value vectors.
+2. FlashAttention tiles the Q, K, and V matrices into small blocks that fit directly in ultra-fast on-chip SRAM cache, computing softmax incrementally without ever writing large intermediate matrices to DRAM.
+3. Weight Quantization compresses 16-bit floating point model weights into 4-bit integers (INT4), cutting memory consumption by 75%.
+4. Together, these optimizations double throughput and unlock long-context serving.`,
       technicalTerms: [
         {
-          "term": "Temperature scaling",
-          "definition": "Dividing the logits by a number before applying softmax to make the probability distribution flatter (more random) or sharper (more strict)."
+          term: "FlashAttention",
+          definition: "An exact, IO-aware attention algorithm that uses SRAM tiling to eliminate memory round-trips."
         },
         {
-          "term": "Top-K sampling",
-          "definition": "Filtering the vocabulary to only allow the model to choose from the K most likely next words."
+          term: "SRAM vs HBM",
+          definition: "On-chip SRAM is 10x faster than GPU High Bandwidth Memory (HBM), but holds only a few megabytes."
         },
         {
-          "term": "Stochastic sampling",
-          "definition": "Picking the next word randomly based on its weighted probability, rather than just picking the absolute maximum."
+          term: "INT4 Quantization",
+          definition: "Storing neural network weights using 4 bits instead of 16 bits to reduce memory bus traffic."
         }
       ],
-      description: `Greedy decoding is deterministic and often leads to infinite loops of repetitive text. In Level 6, you implement stochastic sampling algorithms to give the model 'creativity'.
+      description: `At scale, transformer performance is constrained by memory bandwidth rather than raw compute flops. In Level 6, you implement FlashAttention and 4-bit Weight Quantization.
 
-By manipulating the softmax temperature, you control the entropy of the probability distribution. Top-K truncation acts as a safety net, dynamically chopping off the "long tail" of highly unlikely tokens. These sampling techniques are what allow a single LLM to act as both a precise coding assistant (Temp=0) and a creative storyteller (Temp=0.8).`,
+FlashAttention tiles Query, Key, and Value blocks directly into fast on-chip SRAM, computing online softmax without materializing the quadratic N x N attention matrix in High-Bandwidth Memory (HBM). Combined with INT4 weight quantization, you achieve 4x memory compression and 2x higher serving throughput on long contexts.`,
       implementationGuide: [
-        "Implement 'set-temperature <float>' and 'set-top-k <int>'.",
-        "In your generation loop, before applying softmax, divide all logits by the temperature.",
-        "Find the Kth highest logit. Set all logits lower than this value to negative infinity (-inf), so their probability becomes 0.",
-        "Apply softmax to get the final probabilities, and use a random number generator to select the token index based on those probabilities."
+        "Implement 'enable-flash-attention': Enable fused SRAM tiled attention computation.",
+        "Implement 'load-quant-weights --int4': Quantize model weights to 4-bit representations.",
+        "Implement 'bench-long-ctx <len>': Benchmark latency scaling on long contexts (e.g. 8,192 tokens).",
+        "Implement 'bench-optimized-throughput' and 'audit-engine': Validate end-to-end serving throughput."
       ],
       diagram: `FLASHATTENTION SRAM TILING vs STANDARD DRAM:
 
@@ -646,11 +664,11 @@ By manipulating the softmax temperature, you control the entropy of the probabil
       ],
       constraints: ["Zero N×N attention matrix materialization in DRAM", "Bit-exact numerical match"],
       cases: [
-        { name: "Case 1: FlashAttention activation", input: "enable-flash-attention\\nexit", expected: "FLASH_ATTENTION: ACTIVE" },
-        { name: "Case 2: Long sequence memory reduction", input: "bench-long-ctx 8192\\nexit", expected: "MEMORY_BOUND: O(N)" },
-        { name: "Case 3: 4-bit weight unpacker test", input: "load-quant-weights --int4\\nexit", expected: "INT4_WEIGHTS_LOADED: 50% BANDWIDTH SAVED" },
-        { name: "Case 4: End-to-end speedup benchmark", input: "bench-optimized-throughput\\nexit", expected: "SPEEDUP: > 3.0x" },
-        { name: "Case 5: Verification audit", input: "audit-engine\\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
+        { name: "Case 1: FlashAttention activation", input: "enable-flash-attention\nexit", expected: "FLASH_ATTENTION: ACTIVE" },
+        { name: "Case 2: Long sequence memory reduction", input: "bench-long-ctx 8192\nexit", expected: "MEMORY_BOUND: O(N)" },
+        { name: "Case 3: 4-bit weight unpacker test", input: "load-quant-weights --int4\nexit", expected: "INT4_WEIGHTS_LOADED: 50% BANDWIDTH SAVED" },
+        { name: "Case 4: End-to-end speedup benchmark", input: "bench-optimized-throughput\nexit", expected: "SPEEDUP: > 3.0x" },
+        { name: "Case 5: Verification audit", input: "audit-engine\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
       ],
     },
   },

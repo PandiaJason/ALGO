@@ -155,6 +155,7 @@ By splitting files into chunks and distributing them across multiple independent
         { cmd: "cluster-init <nodes>", desc: "Initializes cluster with N simulated storage node endpoints." },
         { cmd: "put-distributed <key> <data>", desc: "Chunks data and distributes shards across nodes." },
         { cmd: "get-distributed <key>", desc: "Fetches and reassembles shards from nodes." },
+        { cmd: "check-node-shards", desc: "Verifies balanced distribution of shards across nodes." },
       ],
       examples: [
         {
@@ -165,11 +166,11 @@ By splitting files into chunks and distributing them across multiple independent
       ],
       constraints: ["Balanced shard distribution across all nodes", "Strict error on missing nodes"],
       cases: [
-        { name: "Case 1: Initialize 6-node cluster", input: "cluster-init 6\\nexit", expected: "CLUSTER_READY: 6 NODES" },
-        { name: "Case 2: Distributed write and read", input: "cluster-init 6\\nput-distributed k1 test_payload\\nget-distributed k1\\nexit", expected: "DISTRIBUTED_OK\\ntest_payload" },
-        { name: "Case 3: Verify shards per node", input: "check-node-shards\\nexit", expected: "BALANCED_SHARDS: 1_PER_NODE" },
-        { name: "Case 4: Reassemble multi-chunk object", input: "put-distributed k2 large_payload_123456\\nget-distributed k2\\nexit", expected: "DISTRIBUTED_OK\\nlarge_payload_123456" },
-        { name: "Case 5: Nonexistent key", input: "get-distributed nonexistent\\nexit", expected: "NOT_FOUND" },
+        { name: "Case 1: Initialize 6-node cluster", input: "cluster-init 6\nexit", expected: "CLUSTER_READY: 6 NODES" },
+        { name: "Case 2: Distributed write and read", input: "cluster-init 6\nput-distributed k1 test_payload\nget-distributed k1\nexit", expected: "DISTRIBUTED_OK\ntest_payload" },
+        { name: "Case 3: Verify shards per node", input: "check-node-shards\nexit", expected: "BALANCED_SHARDS: 1_PER_NODE" },
+        { name: "Case 4: Reassemble multi-chunk object", input: "put-distributed k2 large_payload_123456\nget-distributed k2\nexit", expected: "DISTRIBUTED_OK\nlarge_payload_123456" },
+        { name: "Case 5: Nonexistent key", input: "get-distributed nonexistent\nexit", expected: "NOT_FOUND" },
       ],
     },
     2: {
@@ -246,6 +247,8 @@ By calculating mathematical parity shards using Reed-Solomon, you can survive lo
       operations: [
         { cmd: "ec-encode <data>", desc: "Splits data into 4 data shards and generates 2 parity shards." },
         { cmd: "inspect-shards", desc: "Displays byte content of all 6 generated shards." },
+        { cmd: "test-gf-mult <x> <y>", desc: "Tests Galois Field GF(2^8) byte multiplication." },
+        { cmd: "verify-generator-matrix", desc: "Verifies Cauchy generator matrix coefficients." },
       ],
       examples: [
         {
@@ -256,11 +259,11 @@ By calculating mathematical parity shards using Reed-Solomon, you can survive lo
       ],
       constraints: ["Strict 4 data + 2 parity structure", "Parity bytes must conform to GF(2^8) math"],
       cases: [
-        { name: "Case 1: Encode 16-byte payload", input: "ec-encode ABCDEFGHIJKLMNOP\\nexit", expected: "ENCODED: 4_DATA_2_PARITY" },
-        { name: "Case 2: Verify parity determinism", input: "ec-encode TEST1234TEST1234\\ninspect-shards\\nexit", expected: "PARITY_VALID: OK" },
-        { name: "Case 3: Padding uneven payload", input: "ec-encode HELLO\\ninspect-shards\\nexit", expected: "PADDED_AND_ENCODED" },
-        { name: "Case 4: Galois field multiplication check", input: "test-gf-mult 3 7\\nexit", expected: "GF_RESULT: 9" },
-        { name: "Case 5: Generator matrix check", input: "verify-generator-matrix\\nexit", expected: "MATRIX_VALID" },
+        { name: "Case 1: Encode 16-byte payload", input: "ec-encode ABCDEFGHIJKLMNOP\nexit", expected: "ENCODED: 4_DATA_2_PARITY" },
+        { name: "Case 2: Verify parity determinism", input: "ec-encode TEST1234TEST1234\ninspect-shards\nexit", expected: "PARITY_VALID: OK" },
+        { name: "Case 3: Padding uneven payload", input: "ec-encode HELLO\ninspect-shards\nexit", expected: "PADDED_AND_ENCODED" },
+        { name: "Case 4: Galois field multiplication check", input: "test-gf-mult 3 7\nexit", expected: "GF_RESULT: 9" },
+        { name: "Case 5: Generator matrix check", input: "verify-generator-matrix\nexit", expected: "MATRIX_VALID" },
       ],
     },
     3: {
@@ -339,6 +342,8 @@ This is the hardest part of erasure coding: matrix inversion. When shards are lo
       operations: [
         { cmd: "kill-nodes <nodeList>", desc: "Simulates hardware failure of specified nodes." },
         { cmd: "ec-decode", desc: "Reconstructs lost shards from surviving nodes and returns original data." },
+        { cmd: "rebuild-disk <nodeId>", desc: "Triggers reconstruction of lost shards onto replacement disk." },
+        { cmd: "check-cluster-health", desc: "Audits cluster quorum and shard recoverability." },
       ],
       examples: [
         {
@@ -349,11 +354,11 @@ This is the hardest part of erasure coding: matrix inversion. When shards are lo
       ],
       constraints: ["Must recover 100% of data with any 4 surviving shards", "Fail gracefully if > 2 shards are lost"],
       cases: [
-        { name: "Case 1: Single node loss (Node 1 dead)", input: "kill-nodes n1\\nec-decode\\nexit", expected: "RECOVERED_FROM_5_SHARDS" },
-        { name: "Case 2: Dual node loss (Node 1 and Node 2 dead)", input: "kill-nodes n1,n2\\nec-decode\\nexit", expected: "RECOVERED_FROM_4_SHARDS" },
-        { name: "Case 3: Dual parity loss (Node 5 and Node 6 dead)", input: "kill-nodes n5,n6\\nec-decode\\nexit", expected: "DATA_INTACT_FROM_ORIGINAL" },
-        { name: "Case 4: Fatal node loss (3 nodes dead - unrecoverable)", input: "kill-nodes n1,n2,n3\\nec-decode\\nexit", expected: "ERROR: INSUFFICIENT_SHARDS (3 < 4)" },
-        { name: "Case 5: Self-healing rebuild disk", input: "rebuild-disk n1\\ncheck-cluster-health\\nexit", expected: "CLUSTER_HEALTH: 100%" },
+        { name: "Case 1: Single node loss (Node 1 dead)", input: "kill-nodes n1\nec-decode\nexit", expected: "RECOVERED_FROM_5_SHARDS" },
+        { name: "Case 2: Dual node loss (Node 1 and Node 2 dead)", input: "kill-nodes n1,n2\nec-decode\nexit", expected: "RECOVERED_FROM_4_SHARDS" },
+        { name: "Case 3: Dual parity loss (Node 5 and Node 6 dead)", input: "kill-nodes n5,n6\nec-decode\nexit", expected: "DATA_INTACT_FROM_ORIGINAL" },
+        { name: "Case 4: Fatal node loss (3 nodes dead - unrecoverable)", input: "kill-nodes n1,n2,n3\nec-decode\nexit", expected: "ERROR: INSUFFICIENT_SHARDS (3 < 4)" },
+        { name: "Case 5: Self-healing rebuild disk", input: "rebuild-disk n1\ncheck-cluster-health\nexit", expected: "CLUSTER_HEALTH: 100%" },
       ],
     },
     4: {
@@ -429,6 +434,10 @@ By requesting parity shards when a data shard is delayed, you trade a tiny bit o
       operations: [
         { cmd: "bench-stream <size_mb>", desc: "Streams multi-megabyte object concurrently across all nodes." },
         { cmd: "simulate-straggler <nodeId>", desc: "Injects latency into target node to verify hedge request fallback." },
+        { cmd: "get-distributed <key>", desc: "Fetches and reassembles shards from nodes." },
+        { cmd: "check-conn-pool", desc: "Verifies HTTP/TCP socket connection reuse across storage nodes." },
+        { cmd: "bench-concurrent-reads <threads>", desc: "Measures throughput of parallel chunk downloads." },
+        { cmd: "check-network-health", desc: "Audits socket pool health and connection leaks." },
       ],
       examples: [
         {
@@ -439,11 +448,11 @@ By requesting parity shards when a data shard is delayed, you trade a tiny bit o
       ],
       constraints: ["Asynchronous non-blocking network I/O", "Hedge request must cancel slow stream"],
       cases: [
-        { name: "Case 1: Parallel stream test", input: "bench-stream 50\\nexit", expected: "AGGREGATE_THROUGHPUT: > 400 MB/s" },
-        { name: "Case 2: Straggler node hedge request", input: "simulate-straggler n1\\nget-distributed file_stream\\nexit", expected: "HEDGE_REQUEST_TRIGGERED: RECOVERED_VIA_PARITY" },
-        { name: "Case 3: Connection pool reuse", input: "check-conn-pool\\nexit", expected: "POOLED_CONNECTIONS: 6 ACTIVE" },
-        { name: "Case 4: Multi-client concurrent read", input: "bench-concurrent-reads 10\\nexit", expected: "CONCURRENT_READS: OK" },
-        { name: "Case 5: Network saturation check", input: "check-network-health\\nexit", expected: "STATUS: SATURATED_BALANCED" },
+        { name: "Case 1: Parallel stream test", input: "bench-stream 50\nexit", expected: "AGGREGATE_THROUGHPUT: > 400 MB/s" },
+        { name: "Case 2: Straggler node hedge request", input: "simulate-straggler n1\nget-distributed file_stream\nexit", expected: "HEDGE_REQUEST_TRIGGERED: RECOVERED_VIA_PARITY" },
+        { name: "Case 3: Connection pool reuse", input: "check-conn-pool\nexit", expected: "POOLED_CONNECTIONS: 6 ACTIVE" },
+        { name: "Case 4: Multi-client concurrent read", input: "bench-concurrent-reads 10\nexit", expected: "CONCURRENT_READS: OK" },
+        { name: "Case 5: Network saturation check", input: "check-network-health\nexit", expected: "STATUS: SATURATED_BALANCED" },
       ],
     },
     5: {
@@ -514,6 +523,9 @@ Rebuilding a dead drive is incredibly expensive. In a 4+2 cluster, replacing 1TB
       operations: [
         { cmd: "profile-ec-math", desc: "Measures pure Galois Field matrix encode and decode speed in MB/s." },
         { cmd: "measure-rebuild-amplification", desc: "Calculates network egress bytes required to rebuild a lost disk." },
+        { cmd: "parity-latency <size>", desc: "Measures computational latency of Galois Field matrix multiplications." },
+        { cmd: "check-disk-queues", desc: "Profiles disk queue depth and I/O wait times during recovery." },
+        { cmd: "audit-durability", desc: "Performs full SLA durability audit under continuous disk failures." },
       ],
       examples: [
         {
@@ -524,11 +536,11 @@ Rebuilding a dead drive is incredibly expensive. In a 4+2 cluster, replacing 1TB
       ],
       constraints: ["Microsecond accuracy on math profiling", "Accurate byte-level amplification tracking"],
       cases: [
-        { name: "Case 1: Measure encode throughput", input: "profile-ec-math\\nexit", expected: "MATH_THROUGHPUT: > 600 MB/s" },
-        { name: "Case 2: Rebuild network amplification", input: "measure-rebuild-amplification 1000\\nexit", expected: "NETWORK_AMPLIFICATION: 4.0x" },
-        { name: "Case 3: Parity calculation latency", input: "parity-latency 1MB\\nexit", expected: "LATENCY_MS: < 2.0" },
-        { name: "Case 4: Disk queue saturation test", input: "check-disk-queues\\nexit", expected: "DISK_QUEUE: HEALTHY" },
-        { name: "Case 5: Durability metrics audit", input: "audit-durability\\nexit", expected: "DURABILITY_SCORE: 99.999999999%" },
+        { name: "Case 1: Measure encode throughput", input: "profile-ec-math\nexit", expected: "MATH_THROUGHPUT: > 600 MB/s" },
+        { name: "Case 2: Rebuild network amplification", input: "measure-rebuild-amplification 1000\nexit", expected: "NETWORK_AMPLIFICATION: 4.0x" },
+        { name: "Case 3: Parity calculation latency", input: "parity-latency 1MB\nexit", expected: "LATENCY_MS: < 2.0" },
+        { name: "Case 4: Disk queue saturation test", input: "check-disk-queues\nexit", expected: "DISK_QUEUE: HEALTHY" },
+        { name: "Case 5: Durability metrics audit", input: "audit-durability\nexit", expected: "DURABILITY_SCORE: 99.999999999%" },
       ],
     },
     6: {
@@ -603,6 +615,9 @@ By vectorizing the Galois Field arithmetic using AVX2 or NEON intrinsics, you pr
       operations: [
         { cmd: "enable-simd", desc: "Activates AVX2/NEON vectorized GF(2^8) math kernels." },
         { cmd: "bench-simd-ec", desc: "Compares scalar vs SIMD erasure coding throughput." },
+        { cmd: "verify-simd-correctness", desc: "Verifies AVX2 SIMD GF arithmetic results match scalar logic." },
+        { cmd: "bench-splice", desc: "Measures zero-copy Linux splice/vmsplice chunk transfer throughput." },
+        { cmd: "audit-engine", desc: "Validates final distributed object storage engine integrity and metrics." },
       ],
       examples: [
         {
@@ -613,11 +628,11 @@ By vectorizing the Galois Field arithmetic using AVX2 or NEON intrinsics, you pr
       ],
       constraints: ["Strict 4x+ speedup over scalar baseline", "Identical bit-for-bit mathematical output"],
       cases: [
-        { name: "Case 1: SIMD kernel activation", input: "enable-simd\\nexit", expected: "SIMD_ENABLED: OK" },
-        { name: "Case 2: SIMD throughput benchmark", input: "bench-simd-ec\\nexit", expected: "SIMD_THROUGHPUT: > 3000 MB/s" },
-        { name: "Case 3: Bit-for-bit equality check", input: "verify-simd-correctness\\nexit", expected: "BIT_FOR_BIT_IDENTICAL: TRUE" },
-        { name: "Case 4: Zero-copy socket splice", input: "bench-splice\\nexit", expected: "ZERO_COPY_SPLICE: ACTIVE" },
-        { name: "Case 5: Verification audit", input: "audit-engine\\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
+        { name: "Case 1: SIMD kernel activation", input: "enable-simd\nexit", expected: "SIMD_ENABLED: OK" },
+        { name: "Case 2: SIMD throughput benchmark", input: "bench-simd-ec\nexit", expected: "SIMD_THROUGHPUT: > 3000 MB/s" },
+        { name: "Case 3: Bit-for-bit equality check", input: "verify-simd-correctness\nexit", expected: "BIT_FOR_BIT_IDENTICAL: TRUE" },
+        { name: "Case 4: Zero-copy socket splice", input: "bench-splice\nexit", expected: "ZERO_COPY_SPLICE: ACTIVE" },
+        { name: "Case 5: Verification audit", input: "audit-engine\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
       ],
     },
   },

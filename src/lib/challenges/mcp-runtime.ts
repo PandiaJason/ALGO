@@ -25,18 +25,22 @@ export const mcpRuntimeChallenge: ChallengeData = {
           [MCP Client Runtime (Host Process)]
           JSON-RPC 2.0 (via send-rpc wrapper)
                            │
-             ┌─────────────┴─────────────┐
+             ┌─────────────┼─────────────┐
              ▼                           ▼
-      "tools/list"                 "tools/call"
+     [Tools Dispatcher]          [Resource Provider]
+    "tools/list", "call"        "resources/read", URI
              │                           │
              ▼                           ▼
-     [Schema Validator]          [Subprocess Sandbox]
-    Validates arguments         Spawns isolated worker
-    against JSON Schema         with strict 50ms timeout
+     [Schema Validator]          [Template Router]
+    Validates arguments         file:///{path} pattern
+             │                           │
+             ▼                           ▼
+    [Subprocess Sandbox]        [Context Streamer]
+    Isolated worker timeout     MIME-typed SCO contents
              │                           │
              └─────────────┬─────────────┘
                            ▼
-               Structured Tool Result SCO
+               Structured Agent Result
                 {"content": [{"type": "text"}]}`,
   levelRoadmap: [
     { level: 1, stage: "BUILD", whatWeBuild: "JSON-RPC 2.0 Stdio Transport & Tool Discovery", mainConcept: "Framing JSON-RPC over stdin/stdout via send-rpc wrapper, handling 'tools/list' and 'tools/call' requests" },
@@ -191,43 +195,47 @@ Client (AI Agent)                       MCP Host Runtime
       title: "Resource Templates & Dynamic Context Providers",
       difficulty: "Medium",
       tagline: "Resolve URI resource templates and stream contextual data to agents.",
-      whatAreYouBuilding: `You are going to let the universal remote learn new buttons.
+            whatAreYouBuilding: `You are going to give the AI agent the ability to read documents and system context using URI Resource Templates.
 
-You will build a system where a new device (like a smart bulb) can tell the remote, "Here are the buttons you can press to control me."
+Instead of running heavy terminal commands or guessing file paths, the AI requests contextual resources using standard URIs (like file:///{path} or db://users/{id}), and your runtime resolves the content dynamically.
 
 For example:
-register-tool get_weather {"location": "string"}
-call-tool get_weather {"location": "London"}
+send-rpc {"jsonrpc":"2.0","id":1,"method":"resources/templates/list","params":{}}
+send-rpc {"jsonrpc":"2.0","id":2,"method":"resources/read","params":{"uri":"file:///system/info"}}
+subscribe-resource file:///logs
+notify-change file:///logs
 
-It should execute the registered tool:
-TOOL_EXECUTED: get_weather
-RESULT: "Sunny, 20C"`,
-      howItWorks: `1. An external tool registers itself with the runtime, providing its name and a schema describing the arguments it requires.
-2. The runtime stores this tool in an internal dictionary.
-3. When the AI wants to use a tool, it sends a 'call-tool' RPC request with the tool name and arguments.
-4. The runtime looks up the tool in the dictionary, passes the arguments to it, and returns the tool's output back to the AI.`,
+It should resolve templates and broadcast change notifications:
+{"resourceTemplates":[{"uriTemplate":"file:///{path}"}]}
+{"contents":[{"text":"OS: Linux"}]}
+NOTIFICATION: RESOURCE_UPDATED`,
+      howItWorks: `1. The runtime registers resource templates with URI patterns (e.g. file:///{path}).
+2. When the AI agent requests context, it sends a JSON-RPC 'resources/read' call with a specific URI.
+3. The router matches the URI against registered templates, extracts parameters (like path="app/config.json"), and fetches the content.
+4. If a resource doesn't exist, the runtime returns an error with code -32002 (Resource Not Found).
+5. Agents can subscribe to resources (subscribe-resource), receiving real-time push notifications whenever data changes (notify-change).`,
       technicalTerms: [
         {
-          "term": "Dynamic Dispatch",
-          "definition": "Looking up and executing a function at runtime based on a string name rather than hardcoding the function call."
+          term: "Resource Template",
+          definition: "A parameterized URI pattern (e.g. file:///{path}) used by agents to discover and read structured context."
         },
         {
-          "term": "JSON Schema",
-          "definition": "A standard way to describe the required format and data types of JSON objects."
+          term: "Context Provider Protocol",
+          definition: "A structured protocol for AI agents to perceive repository and system state without terminal scraping."
         },
         {
-          "term": "Tool Registry",
-          "definition": "An internal dictionary or map that stores all available tools and their metadata."
+          term: "Resource Subscription",
+          definition: "Subscribing to a URI to receive push event notifications whenever its underlying content updates."
         }
       ],
-      description: `Hardcoding tools into an AI's prompt is unscalable. In Level 2, you implement dynamic tool registration, the core feature of the MCP.
+      description: `Autonomous agents require structured perception of their environment. In Level 2, you implement the MCP Resource Provider subsystem.
 
-By allowing tools to register themselves dynamically via JSON Schema, you create a plugin architecture. The AI can now ask "What tools are available?" and adapt its behavior on the fly based on the specific capabilities of the environment it is currently running in, whether that's a code editor, a database, or a web browser.`,
+Rather than granting unrestricted shell access, MCP exposes context via structured URIs. You build a pattern matcher that maps URI templates to underlying content providers, supports MIME-typed payloads, and implements publish-subscribe change notifications.`,
       implementationGuide: [
-        "Implement 'register-tool <name> <schema_json>' to store the tool metadata and an execution callback in a dictionary.",
-        "Implement 'list-tools' to return an array of all registered tools and their schemas.",
-        "Implement 'call-tool <name> <args_json>'. Look up the tool in the dictionary. If it doesn't exist, return a Method Not Found (-32601) error.",
-        "If it exists, execute the callback with the arguments and return the result."
+        "Implement JSON-RPC 'resources/templates/list': Return array of registered URI templates.",
+        "Implement JSON-RPC 'resources/read': Extract URI parameter, match against patterns, and return resource contents or error -32002.",
+        "Implement 'subscribe-resource <uri>': Register client subscriptions for specific URIs.",
+        "Implement 'notify-change <uri>': Broadcast 'NOTIFICATION: RESOURCE_UPDATED' to subscribed listeners."
       ],
       diagram: `URI RESOURCE TEMPLATE MATCHING & CONTEXT RESOLUTION:
 
@@ -265,10 +273,10 @@ Client (Context Resolver)                    Resource Router Engine
         outcomeSummary: "You implement structured resource template resolution for contextual perception.",
       },
       operations: [
-        { cmd: "register-resource <uriTemplate> <mime>", desc: "Registers a dynamic resource template handler." },
-        { cmd: "read-resource <uri>", desc: "Fetches context content for designated URI (tested via send-rpc resources/read)." },
-        { cmd: "subscribe-resource <uri>", desc: "Subscribes client to resource updates." },
-        { cmd: "notify-change <uri>", desc: "Triggers a resource change notification." },
+        { cmd: "send-rpc <json>", desc: "Dispatches JSON-RPC 2.0 resource requests ('resources/templates/list', 'resources/read')." },
+        { cmd: "register-resource <uriTemplate> <mime>", desc: "Registers a dynamic URI resource template handler." },
+        { cmd: "subscribe-resource <uri>", desc: "Subscribes client to real-time resource update events." },
+        { cmd: "notify-change <uri>", desc: "Triggers a push notification event to all subscribed listeners." },
       ],
       examples: [
         {
@@ -490,45 +498,50 @@ Agent 3 (id: 103) ──┘        │
       title: "Protocol Overhead & Dispatch Profiling",
       difficulty: "Hard",
       tagline: "Measure microsecond JSON-RPC framing tax vs tool execution.",
-      whatAreYouBuilding: `You are going to replace the single wire with a live, two-way radio.
+            whatAreYouBuilding: `You are going to profile the execution overhead of the MCP tool calling protocol.
 
-Instead of the AI asking a question and waiting for a single answer, both the AI and the tools can stream data back and forth continuously over an open connection.
+Every tool call incurs a 'protocol tax': JSON deserialization, schema validation, inter-process communication (IPC), and process execution. You will measure this latency down to microseconds to ensure tool dispatch remains lightning-fast.
 
 For example:
-connect-sse
-stream-status
+profile-tool-overhead
+bench-dispatch-qps 8
+measure-p99-dispatch
+measure-allocs-per-call
+audit-protocol-metrics
 
-It should receive real-time updates without polling:
-SSE_CONNECTED
-EVENT: progress 10%
-EVENT: progress 50%
-EVENT: progress 100%`,
-      howItWorks: `1. The client establishes a continuous HTTP connection using Server-Sent Events (SSE).
-2. The server keeps the connection open indefinitely.
-3. When the server wants to send data (like progress updates), it pushes text starting with 'data: ' directly to the client.
-4. The client receives these events instantly without having to constantly ask "Are you done yet?".`,
+It should profile dispatch stages and enforce latency SLAs:
+TOTAL_OVERHEAD: < 0.8ms
+QPS: > 5000
+P99_LATENCY: < 1.5ms
+HEAP_ALLOCS: < 10
+METRICS_AUDIT: PASSED`,
+      howItWorks: `1. When an AI tool call arrives, it passes through 4 sequential stages: JSON deserialization, schema validation, stdio IPC piping, and worker execution.
+2. Telemetry hooks measure the exact nanoseconds spent inside each stage.
+3. You calculate percentile distributions (p50, p95, p99) across thousands of requests to isolate tail latency.
+4. You profile heap memory allocations per call to identify garbage collection bottlenecks.
+5. You verify that total protocol overhead stays under 0.8ms and supports over 5,000 queries per second.`,
       technicalTerms: [
         {
-          "term": "Server-Sent Events (SSE)",
-          "definition": "A web standard allowing servers to push real-time updates to a client over a single HTTP connection."
+          term: "Protocol Overhead",
+          definition: "The time spent parsing, validating, and routing a tool request before the tool's actual code executes."
         },
         {
-          "term": "Streaming",
-          "definition": "Delivering data incrementally as it is generated, rather than waiting for the entire batch to finish."
+          term: "Tail Latency (p99)",
+          definition: "The response time experienced by the slowest 1% of requests, crucial for reliable agentic loops."
         },
         {
-          "term": "Polling",
-          "definition": "The inefficient practice of a client repeatedly asking a server for updates. SSE eliminates the need for polling."
+          term: "Heap Allocation Tax",
+          definition: "Memory allocated per request that increases Garbage Collection pauses in high-throughput servers."
         }
       ],
-      description: `Standard HTTP is request-response: the client asks, the server answers, and the connection closes. In Level 5, you implement the official MCP transport layer: Server-Sent Events (SSE).
+      description: `In autonomous AI workflows, agents execute dozens of tool calls per second. In Level 5, you profile protocol dispatch latency and memory overhead.
 
-SSE provides a lightweight, unidirectional stream from the server to the client, perfectly suited for LLM generation tokens or tool progress updates. Combined with standard HTTP POST requests for client-to-server communication, SSE creates a highly efficient, real-time bidirectional channel that avoids the heavy overhead of WebSockets while easily bypassing corporate firewalls.`,
+You build an empirical benchmarking harness that instruments each stage of tool invocation: JSON parsing, schema checking, IPC transport, and subprocess execution. By identifying serialization bottlenecks, you ensure the host runtime never becomes the bottleneck in the agent's decision loop.`,
       implementationGuide: [
-        "Implement an HTTP endpoint `/sse` that sets the `Content-Type: text/event-stream` header and keeps the connection open.",
-        "Implement a mechanism to push strings formatted as 'data: <json_string>\\n\\n' to the connected client.",
-        "Update your long-running tools to periodically emit progress events to the SSE stream.",
-        "Ensure the connection is safely closed and resources are cleaned up when the client disconnects."
+        "Implement 'profile-tool-overhead': Measure end-to-end latency of a no-op tool call and output total overhead.",
+        "Implement 'bench-dispatch-qps <threads>': Stress-test concurrent dispatch and verify throughput exceeds 5,000 QPS.",
+        "Implement 'measure-p99-dispatch': Capture latency percentiles and verify p99 remains below 1.5ms.",
+        "Implement 'measure-allocs-per-call' and 'audit-protocol-metrics': Profile heap allocations and verify protocol SLA compliance."
       ],
       diagram: `DISPATCH LATENCY BREAKDOWN & METRICS PROFILING:
 
@@ -588,44 +601,50 @@ Round-Trip Tool Call Timeline (Total Overhead: 0.75ms):
       title: "Zero-Copy JSON Stream Parsing & Fast Dispatch",
       difficulty: "Hard",
       tagline: "Achieve sub-0.1ms tool dispatch using SIMD JSON parsing and buffer recycling.",
-      whatAreYouBuilding: `You are going to prevent the AI from getting overwhelmed by too much information.
+            whatAreYouBuilding: `You are going to build an ultra-fast, zero-copy JSON stream dispatcher using SIMD vector instructions.
 
-If the AI asks to read a 1,000-page book, the runtime won't throw the whole book at it at once. It will give the AI page 1, and teach the AI how to ask for page 2.
+Standard JSON parsers allocate dozens of temporary strings on the heap for every request, creating garbage collection pauses. You will parse incoming JSON-RPC streams directly in place with zero memory allocations.
 
 For example:
-read-resource massive_log_file --limit 100
-read-resource massive_log_file --cursor "page_2"
+enable-simd-parser
+bench-fast-dispatch 10000
+verify-zero-allocs
+bench-fast-qps
+audit-engine
 
-It should return paginated chunks:
-RESOURCE_CHUNK 1: "Log lines 1-100..."
-NEXT_CURSOR: "page_2"`,
-      howItWorks: `1. An external tool wants to return a massive amount of data (like a gigabyte log file).
-2. The runtime intercepts the data and chops it into a small 'page' (e.g., 100 items).
-3. It sends this page to the AI, along with a special 'cursor' (a bookmark).
-4. If the AI wants to read more, it calls the tool again, providing the cursor.
-5. The runtime uses the cursor to fetch the exact next page of data.`,
+It should process tool calls with zero heap allocations and 10x throughput:
+SIMD_PARSER: ENABLED
+FAST_DISPATCH: 10000_CALLS_COMPLETED
+HEAP_ALLOCATIONS: 0
+FAST_QPS: > 10000
+ENGINE_AUDIT: OK`,
+      howItWorks: `1. Raw bytes arrive over standard input into a reusable 4KB ring buffer.
+2. SIMD vector instructions (AVX2 / NEON) scan 32 bytes simultaneously to locate structural delimiters ({, }, ", :, ,).
+3. The parser extracts string views (pointer + length) pointing directly into the input buffer without calling malloc() or creating new string objects.
+4. The dispatcher routes the tool call using zero-copy string views and recycled worker buffers.
+5. This eliminates garbage collection pauses and boosts dispatch speed to over 10,000 QPS.`,
       technicalTerms: [
         {
-          "term": "Context Window",
-          "definition": "The maximum number of words (tokens) an AI can hold in its memory at one time."
+          term: "Zero-Copy Parsing",
+          definition: "Reading data directly from existing memory buffers using pointers without allocating new heap memory."
         },
         {
-          "term": "Cursor-based pagination",
-          "definition": "Using a unique pointer (bookmark) to fetch the next sequential chunk of data, which is faster and safer than offset pagination."
+          term: "SIMD JSON Parsing",
+          definition: "Using CPU vector instructions to scan 32 to 64 bytes of JSON text in a single clock cycle (e.g. simdjson)."
         },
         {
-          "term": "Payload truncation",
-          "definition": "Automatically cutting off data that exceeds a safe size limit to prevent system crashes."
+          term: "String View",
+          definition: "A lightweight reference consisting of a pointer and length that references an existing byte array."
         }
       ],
-      description: `LLMs have strict Context Window limits. If a tool returns a 2-megabyte JSON response, it will instantly crash the model by exceeding its maximum token limit. In Level 6, you implement Resource Pagination.
+      description: `High-performance agentic runtimes cannot afford the overhead of standard JSON libraries. In Level 6, you build a zero-copy SIMD JSON parser and fast-dispatch engine.
 
-This is a critical safety feature of production MCP runtimes. By enforcing strict limits on payload sizes and implementing cursor-based pagination, you guarantee that the LLM is never overwhelmed. The AI learns to iteratively request more context only when necessary, drastically reducing token costs and preventing context-window overflow errors.`,
+By processing raw byte buffers with vectorized SIMD scans, you extract method and argument tokens in-place without heap allocations. Paired with buffer recycling, your runtime achieves sub-0.1ms dispatch latencies and 10,000+ QPS throughput.`,
       implementationGuide: [
-        "Implement a simulated 'read-resource' tool that generates an array of 10,000 strings.",
-        "Add a mandatory `limit` parameter to the tool (e.g., max 100 items).",
-        "Generate an opaque `cursor` string (like base64 encoding the last index) and return it alongside the data.",
-        "Update the tool to accept a `cursor` parameter. When provided, decode the cursor and return the *next* 100 items starting from that point."
+        "Implement 'enable-simd-parser': Enable vectorized in-place scanning for JSON structural tokens.",
+        "Implement 'bench-fast-dispatch <iterations>': Run zero-copy tool dispatch across N iterations.",
+        "Implement 'verify-zero-allocs': Confirm that tool routing executes with zero heap allocations.",
+        "Implement 'bench-fast-qps' and 'audit-engine': Measure throughput (> 10,000 QPS) and verify final engine durability."
       ],
       diagram: `SIMD-ACCELERATED ZERO-COPY DISPATCH PIPELINE:
 

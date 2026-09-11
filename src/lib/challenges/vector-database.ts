@@ -174,11 +174,11 @@ Large Language Models convert sentences into dense vectors, where words with sim
       ],
       constraints: ["Support up to 128 dimensions", "Scores normalized between -1.0 and 1.0"],
       cases: [
-        { name: "Case 1: Insert and query identical vector", input: "insert-vector v1 1.0,0.0\\nquery-knn 1.0,0.0 1\\nexit", expected: "INSERT_OK\\nTOP_1: v1" },
-        { name: "Case 2: Top-2 ranking check", input: "insert-vector a 1.0,0.0\\ninsert-vector b 0.5,0.5\\ninsert-vector c 0.0,1.0\\nquery-knn 1.0,0.0 2\\nexit", expected: "INSERT_OK\\nINSERT_OK\\nINSERT_OK\\nTOP_2: a, b" },
-        { name: "Case 3: Euclidean L2 metric test", input: "query-l2 1.0,0.0 1\\nexit", expected: "TOP_L2: v1" },
-        { name: "Case 4: Empty index query", input: "clear-index\\nquery-knn 1.0,0.0 1\\nexit", expected: "TOP_K: NONE" },
-        { name: "Case 5: High-dimensional 128-d vector", input: "insert-highdim h1\\nquery-knn h1 1\\nexit", expected: "TOP_1: h1" },
+        { name: "Case 1: Insert and query identical vector", input: "insert-vector v1 1.0,0.0\nquery-knn 1.0,0.0 1\nexit", expected: "INSERT_OK\nTOP_1: v1" },
+        { name: "Case 2: Top-2 ranking check", input: "insert-vector a 1.0,0.0\ninsert-vector b 0.5,0.5\ninsert-vector c 0.0,1.0\nquery-knn 1.0,0.0 2\nexit", expected: "INSERT_OK\nINSERT_OK\nINSERT_OK\nTOP_2: a, b" },
+        { name: "Case 3: Euclidean L2 metric test", input: "query-l2 1.0,0.0 1\nexit", expected: "TOP_L2: v1" },
+        { name: "Case 4: Empty index query", input: "clear-index\nquery-knn 1.0,0.0 1\nexit", expected: "TOP_K: NONE" },
+        { name: "Case 5: High-dimensional 128-d vector", input: "insert-highdim h1\nquery-knn h1 1\nexit", expected: "TOP_1: h1" },
       ],
     },
     2: {
@@ -188,44 +188,46 @@ Large Language Models convert sentences into dense vectors, where words with sim
       title: "Hierarchical Navigable Small World (HNSW)",
       difficulty: "Hard",
       tagline: "Build a multi-layer skip-graph and search in O(log N) time.",
-      whatAreYouBuilding: `You are going to speed up searches by organizing the music into genres.
+            whatAreYouBuilding: `You are going to build a multi-layered highway navigation system for vectors.
 
-Instead of comparing a new song against every song in the world, you first figure out it's a Jazz song, and then only compare it against other Jazz songs.
+Instead of comparing a new vector against every vector in the world (brute force linear scan), you navigate through a skip-graph of interconnected vectors.
 
 For example:
-build-ivf 4
-search-ivf [0.9, 0.1, 0.0] 1
+hnsw-insert node1 1.0,0.0
+hnsw-search 1.0,0.0 1 16
+inspect-hnsw-layers
 
-It should search only a subset of the data:
-IVF_SEARCH_COMPLETE
-CENTROID_MATCHED: 0
-MATCH id=1 score=0.98 (Searched 25% of vectors)`,
-      howItWorks: `1. The database groups all vectors into a fixed number of clusters (like genres).
-2. It calculates the center point (centroid) of each cluster.
-3. When a search comes in, it first compares the query vector to just the cluster centroids.
-4. It finds the closest centroid, and then only searches the vectors within that specific cluster.`,
+It should insert into the graph and find nearest neighbors in logarithmic time:
+HNSW_INSERT_OK
+TOP_1: node1
+LAYERS_POPULATED: > 1`,
+      howItWorks: `1. Vectors are connected in a multi-layered graph. The top layer has few, long-distance connections (expressways).
+2. Lower layers have progressively denser connections, down to Layer 0 which connects all vectors to their nearest neighbors (local streets).
+3. Searches start at the top-layer entry point, greedily jumping to whichever neighbor gets closer to the query.
+4. When no neighbor on the current layer is closer, the search drops down to the next layer and continues.
+5. On Layer 0, a beam search (efSearch) explores candidates to return the top-K nearest items.`,
       technicalTerms: [
         {
-          "term": "Inverted File Index (IVF)",
-          "definition": "A technique that groups vectors into clusters to narrow down the search area."
+          term: "HNSW (Hierarchical Navigable Small World)",
+          definition: "A multi-layer graph algorithm that provides logarithmic O(log N) vector search."
         },
         {
-          "term": "Centroid",
-          "definition": "The geometric center of a cluster of vectors."
+          term: "Greedy routing",
+          definition: "Moving to whichever connected neighbor has the smallest distance to the query vector."
         },
         {
-          "term": "Approximate Nearest Neighbor (ANN)",
-          "definition": "Algorithms that don't guarantee the absolute best match, but find a 'good enough' match much faster."
+          term: "Beam search (efSearch)",
+          definition: "Maintaining a priority queue of candidate neighbors to explore on the bottom graph layer."
         }
       ],
-      description: `Brute-force search is perfectly accurate but becomes impossibly slow as you reach millions of vectors. In Level 2, you implement an Inverted File Index (IVF) to trade a tiny bit of accuracy for massive speed.
+      description: `Brute-force search is perfectly accurate but becomes impossibly slow as you reach millions of vectors. In Level 2, you implement Hierarchical Navigable Small World (HNSW), the industry standard for high-dimensional vector search.
 
-By clustering the data, you narrow the search space drastically. Searching 1 million vectors might take a full second. If you group them into 1,000 clusters of 1,000 vectors each, you only compare the query against 1,000 centroids, and then 1,000 vectors in the winning cluster—a 500x speedup!`,
+By creating a skip-list style hierarchy of graphs, you achieve logarithmic O(log N) search times. It allows the database to effortlessly zoom across massive expanses of high-dimensional space, providing sub-millisecond search latencies even at massive scale.`,
       implementationGuide: [
-        "Implement 'build-ivf <clusters>'. Use k-means clustering to group your existing vectors into the requested number of clusters.",
-        "Store the centroid for each cluster, and a list of the vector IDs that belong to it.",
-        "Implement 'search-ivf <query> <k>'. First, calculate the distance between the query and all centroids.",
-        "Pick the closest centroid, and run a brute-force search only on the vectors assigned to that centroid."
+        "Implement 'hnsw-insert <id> <vector>'. Assign each node a probabilistic maximum layer and connect to nearest neighbors (up to M connections).",
+        "Implement 'hnsw-search <vector> <k> <efSearch>'. Start at the top layer entry point, greedily route to local minima, drop down layers, and perform beam search on Layer 0.",
+        "Implement 'inspect-hnsw-layers'. Verify that the multi-layer hierarchy has more than 1 populated layer.",
+        "Implement 'bench-eval-count <count>' and 'verify-connectivity'. Confirm distance evaluations are logarithmic and all nodes remain connected."
       ],
       diagram: `HNSW MULTI-LAYER SKIP GRAPH NAVIGATION:
 
@@ -268,11 +270,11 @@ By clustering the data, you narrow the search space drastically. Searching 1 mil
       ],
       constraints: ["Max connections M=16", "Logarithmic search hop complexity"],
       cases: [
-        { name: "Case 1: Insert into HNSW graph", input: "hnsw-insert node1 1.0,0.0\\nexit", expected: "HNSW_INSERT_OK" },
-        { name: "Case 2: HNSW query resolution", input: "hnsw-search 1.0,0.0 1 16\\nexit", expected: "TOP_1: node1" },
-        { name: "Case 3: Layer traversal check", input: "inspect-hnsw-layers\\nexit", expected: "LAYERS_POPULATED: > 1" },
-        { name: "Case 4: Distance evaluations count", input: "bench-eval-count 1000\\nexit", expected: "EVALS: < 100" },
-        { name: "Case 5: Multi-node neighbor connectivity", input: "verify-connectivity\\nexit", expected: "GRAPH_CONNECTED: TRUE" },
+        { name: "Case 1: Insert into HNSW graph", input: "hnsw-insert node1 1.0,0.0\nexit", expected: "HNSW_INSERT_OK" },
+        { name: "Case 2: HNSW query resolution", input: "hnsw-search 1.0,0.0 1 16\nexit", expected: "TOP_1: node1" },
+        { name: "Case 3: Layer traversal check", input: "inspect-hnsw-layers\nexit", expected: "LAYERS_POPULATED: > 1" },
+        { name: "Case 4: Distance evaluations count", input: "bench-eval-count 1000\nexit", expected: "EVALS: < 100" },
+        { name: "Case 5: Multi-node neighbor connectivity", input: "verify-connectivity\nexit", expected: "GRAPH_CONNECTED: TRUE" },
       ],
     },
     3: {
@@ -282,45 +284,47 @@ By clustering the data, you narrow the search space drastically. Searching 1 mil
       title: "Dynamic Deletions & Disconnected Components",
       difficulty: "Hard",
       tagline: "Delete nodes without leaving disconnected graph islands.",
-      whatAreYouBuilding: `You are going to build a multi-layered highway system for vectors.
+            whatAreYouBuilding: `You are going to safely remove vectors from an HNSW graph without breaking search paths.
 
-Instead of checking every local road, you start on a national highway to get close to the destination city, take an exit to a state highway, and finally use local streets to find the exact house.
+If you simply erase a node from a graph, its connections vanish, which can strand other nodes on disconnected islands that searches can never reach.
 
 For example:
-build-hnsw
-search-hnsw [0.9, 0.1, 0.0] 1
+hnsw-delete node1
+delete-entry-point
+check-island-isolation
+compact-graph
 
-It should traverse the layers:
-HNSW_SEARCH_COMPLETE
-LAYERS_TRAVERSED: 3
-MATCH id=1 score=0.98`,
-      howItWorks: `1. Vectors are connected in a graph structure (like a spiderweb).
-2. The graph is split into multiple layers. The top layer has very few, long-distance connections (highways).
-3. The bottom layer connects every vector to its closest neighbors (local streets).
-4. A search starts at the top layer, taking big leaps toward the target.
-5. When it can't get any closer on the current layer, it drops down to the next layer for fine-tuning.`,
+It should tombstone deleted vectors and heal neighbor edges:
+DELETED
+ENTRY_DELETED
+ISLANDS: 0
+COMPACTED: 0 LEFTOVER TOMBSTONES`,
+      howItWorks: `1. When a node is deleted, mark it with a 'tombstone' flag rather than immediately destroying the graph structure.
+2. Edge healing: Inspect the deleted node's incoming and outgoing neighbors and wire them directly to each other so search paths don't dead-end.
+3. Entry point migration: If the deleted node was the top-layer entry point, designate a new entry point from its closest active neighbor.
+4. Periodic compaction sweeps purge tombstones and rebalance neighbor links.`,
       technicalTerms: [
         {
-          "term": "Graph search",
-          "definition": "Navigating from node to node across connected edges to reach a destination."
+          term: "Tombstoning",
+          definition: "Marking a record or node as deleted without physically removing it yet, filtering it from active search results."
         },
         {
-          "term": "HNSW (Hierarchical Navigable Small World)",
-          "definition": "A multi-layered graph algorithm that combines the speed of skip-lists with the accuracy of small-world networks."
+          term: "Edge healing",
+          definition: "Rewiring the graph edges between the neighbors of a deleted node to preserve global reachability."
         },
         {
-          "term": "Layer dropping",
-          "definition": "The process of moving to a lower, denser graph layer when a local minimum is reached on the current layer."
+          term: "Graph island",
+          definition: "A cluster of nodes cut off from the main graph, making them unreachable by search queries."
         }
       ],
-      description: `IVF is fast, but HNSW is the undisputed king of vector search algorithms, used by every modern vector database like Pinecone, Milvus, and Qdrant. In Level 3, you build it.
+      description: `Vector graphs are vulnerable to fragmentation when records are deleted. In Level 3, you solve dynamic deletions and edge healing.
 
-HNSW is a graph-based algorithm. By creating a skip-list style hierarchy of graphs, you achieve logarithmic O(log N) search times. It allows the database to effortlessly zoom across massive expanses of high-dimensional space, providing sub-millisecond search latencies even at the scale of billions of embeddings.`,
+If an entry-point node or bridge node is deleted, searches could fail to reach valid vectors. You implement tombstoning to instantly exclude deleted nodes from search results, automatic edge-rewiring to preserve graph connectivity, and dynamic entry-point migration.`,
       implementationGuide: [
-        "Implement 'build-hnsw'. For each vector, probabilistically assign it a maximum layer level.",
-        "Connect the vector to its nearest neighbors on its maximum layer, and on all layers below it.",
-        "Implement 'search-hnsw <query> <k>'. Start at an entry point on the highest layer.",
-        "Greedily move to neighboring nodes if they are closer to the query. When no neighbor is closer, drop down a layer and repeat until the bottom layer."
+        "Implement 'hnsw-delete <id>': Mark the node as tombstoned and connect its neighbors to each other.",
+        "Implement 'delete-entry-point' and 'check-entry-point': Detect if the deleted node is the global entry point and migrate it to a surviving neighbor.",
+        "Implement 'check-island-isolation': Traverse the graph from the entry point to verify all active nodes are reachable (0 islands).",
+        "Implement 'compact-graph': Remove all tombstoned nodes and reclaim memory."
       ],
       diagram: `TOMBSTONING & GRAPH EDGE HEALING:
 
@@ -345,6 +349,7 @@ HNSW is a graph-based algorithm. By creating a skip-list style hierarchy of grap
         outcomeSummary: "You protect vector graph integrity against structural degradation over continuous updates.",
       },
       operations: [
+        { cmd: "hnsw-search <vector> <k> <efSearch>", desc: "Searches HNSW index using beam search parameter." },
         { cmd: "hnsw-delete <id>", desc: "Deletes or tombstones vector, re-wiring adjacent edges." },
         { cmd: "compact-graph", desc: "Purges tombstones and rebalances layer connectivity." },
         { cmd: "delete-entry-point", desc: "Deletes the topmost entry point to test migration." },
@@ -361,11 +366,11 @@ HNSW is a graph-based algorithm. By creating a skip-list style hierarchy of grap
       ],
       constraints: ["Zero disconnected components after deletion", "Automatic entry-point migration"],
       cases: [
-        { name: "Case 1: Delete node and verify exclusion", input: "hnsw-delete node1\\nhnsw-search 1.0,0.0 1 16\\nexit", expected: "EXCLUDED: node1" },
-        { name: "Case 2: Entry-point migration", input: "delete-entry-point\\ncheck-entry-point\\nexit", expected: "ENTRY_POINT_MIGRATED: OK" },
-        { name: "Case 3: Disconnected island detection", input: "check-island-isolation\\nexit", expected: "ISLANDS: 0" },
-        { name: "Case 4: Tombstone compaction sweep", input: "compact-graph\\nexit", expected: "COMPACTED: 0 LEFTOVER TOMBSTONES" },
-        { name: "Case 5: Graph health audit", input: "audit-hnsw-health\\nexit", expected: "HEALTH: 100%" },
+        { name: "Case 1: Delete node and verify exclusion", input: "hnsw-delete node1\nhnsw-search 1.0,0.0 1 16\nexit", expected: "EXCLUDED: node1" },
+        { name: "Case 2: Entry-point migration", input: "delete-entry-point\ncheck-entry-point\nexit", expected: "ENTRY_POINT_MIGRATED: OK" },
+        { name: "Case 3: Disconnected island detection", input: "check-island-isolation\nexit", expected: "ISLANDS: 0" },
+        { name: "Case 4: Tombstone compaction sweep", input: "compact-graph\nexit", expected: "COMPACTED: 0 LEFTOVER TOMBSTONES" },
+        { name: "Case 5: Graph health audit", input: "audit-hnsw-health\nexit", expected: "HEALTH: 100%" },
       ],
     },
     4: {
@@ -375,44 +380,46 @@ HNSW is a graph-based algorithm. By creating a skip-list style hierarchy of grap
       title: "Concurrent Graph Updates & Multi-Index Sharding",
       difficulty: "Hard",
       tagline: "Shard vectors across 4 independent partitions and search in parallel.",
-      whatAreYouBuilding: `You are going to drastically compress the size of the vectors to save RAM.
+            whatAreYouBuilding: `You are going to scale vector search across multiple partitions (shards).
 
-Instead of storing a precise coordinate like 41.40338, you just store "Barcelona". It takes way less space, and it's usually close enough to find what you're looking for.
+When a database holds millions of high-dimensional vectors, a single CPU core or index becomes a bottleneck. You will partition vectors across shards and run parallel queries.
 
 For example:
-compress-pq 8
-search-pq [0.9, 0.1, 0.0] 1
+create-shards 4
+sharded-query 1.0,0.0 2
+verify-top-k-sort
 
-It should search the compressed data:
-PQ_COMPRESSION_RATIO: 4.0x
-MATCH id=1 score=0.95 (Approximate)`,
-      howItWorks: `1. A 384-dimensional vector takes up a lot of memory.
-2. PQ splits the vector into smaller sub-vectors (e.g., 4 chunks of 96 dimensions).
-3. For each chunk, it finds the closest "standard" chunk from a pre-calculated dictionary.
-4. Instead of storing the massive float arrays, it just stores the short dictionary IDs.
-5. During a search, it looks up the distances in a pre-computed table, completely avoiding heavy math.`,
+It should scatter queries across shards and gather sorted top-K results:
+SHARDS_INITIALIZED: 4
+SHARDED_TOP_2: OK
+STRICTLY_SORTED: DESCENDING`,
+      howItWorks: `1. The vector collection is partitioned across N distinct shards (e.g. 4 shards).
+2. When a search request arrives, the router scatters the query vector to all shards simultaneously.
+3. Each shard evaluates its local top-K candidates independently.
+4. A gather step collects candidate sets from all shards and merges them using a min-heap priority queue.
+5. The final consolidated top-K results are returned in strictly sorted order.`,
       technicalTerms: [
         {
-          "term": "Product Quantization (PQ)",
-          "definition": "A compression technique that replaces sub-vectors with short IDs from a codebook."
+          term: "Scatter-gather",
+          definition: "An architectural pattern where a query is broadcast to multiple worker shards and results are merged."
         },
         {
-          "term": "Codebook",
-          "definition": "A dictionary of representative sub-vectors used for compression."
+          term: "Shard partitioning",
+          definition: "Splitting a large dataset across separate indexes to parallelize CPU and memory."
         },
         {
-          "term": "Asymmetric Distance Computation (ADC)",
-          "definition": "A fast way to calculate distances by comparing an uncompressed query to compressed database vectors using lookup tables."
+          term: "K-way merge",
+          definition: "Using a heap to combine multiple pre-sorted lists into a single globally sorted list."
         }
       ],
-      description: `Vectors are huge. One million 1536-dimensional OpenAI embeddings consume 6 Gigabytes of RAM. If you have a billion vectors, you need thousands of servers just to hold them in memory. In Level 4, you implement Product Quantization.
+      description: `When an index grows beyond memory limits of a single machine or core, it must be sharded. In Level 4, you build a concurrent sharded vector engine.
 
-PQ lossily compresses vectors. By breaking vectors into sub-spaces and quantizing them against a codebook, you can reduce memory footprint by 90% while retaining 95% of the search accuracy. Even better, searches become faster because you pre-compute the distances between the query and the codebook just once, replacing expensive float multiplication with fast array lookups.`,
+You implement a scatter-gather architecture: queries execute concurrently against independent shard workers, and their local top-K results are merged using a priority queue. You also safeguard the index against data races during concurrent read/write access.`,
       implementationGuide: [
-        "Implement 'compress-pq <sub_vectors>'. Split your vectors into chunks.",
-        "Run k-means on each chunk position across all vectors to generate a codebook. Replace the actual float chunks with their closest codebook ID.",
-        "Implement 'search-pq <query> <k>'. Split the query. Calculate the distance from each query chunk to all codebook entries to build a lookup table.",
-        "Sum the distances from the lookup table using the stored IDs to estimate the total distance."
+        "Implement 'create-shards <count>': Initialize N independent vector index shards.",
+        "Implement 'sharded-query <vector> <k>': Dispatch query to all shards and gather results into a priority queue.",
+        "Implement 'verify-top-k-sort': Ensure the merged result is strictly ordered by descending similarity score.",
+        "Implement 'bench-concurrent-rw' and 'check-shard-distribution': Verify read/write stability and balanced partition distribution."
       ],
       diagram: `SCATTER-GATHER SHARDED VECTOR SEARCH:
 
@@ -457,11 +464,11 @@ PQ lossily compresses vectors. By breaking vectors into sub-spaces and quantizin
       ],
       constraints: ["Parallel scatter-gather dispatch", "Merge top-K strictly by similarity score"],
       cases: [
-        { name: "Case 1: Initialize 4 shards", input: "create-shards 4\\nexit", expected: "SHARDS_INITIALIZED: 4" },
-        { name: "Case 2: Parallel query execution", input: "sharded-query 1.0,0.0 2\\nexit", expected: "SHARDED_TOP_2: OK" },
-        { name: "Case 3: Cross-shard heap merge", input: "verify-top-k-sort\\nexit", expected: "STRICTLY_SORTED: DESCENDING" },
-        { name: "Case 4: Concurrent insert during query", input: "bench-concurrent-rw\\nexit", expected: "CONCURRENT_RW: OK" },
-        { name: "Case 5: Shard balance check", input: "check-shard-distribution\\nexit", expected: "DISTRIBUTION: BALANCED" },
+        { name: "Case 1: Initialize 4 shards", input: "create-shards 4\nexit", expected: "SHARDS_INITIALIZED: 4" },
+        { name: "Case 2: Parallel query execution", input: "sharded-query 1.0,0.0 2\nexit", expected: "SHARDED_TOP_2: OK" },
+        { name: "Case 3: Cross-shard heap merge", input: "verify-top-k-sort\nexit", expected: "STRICTLY_SORTED: DESCENDING" },
+        { name: "Case 4: Concurrent insert during query", input: "bench-concurrent-rw\nexit", expected: "CONCURRENT_RW: OK" },
+        { name: "Case 5: Shard balance check", input: "check-shard-distribution\nexit", expected: "DISTRIBUTION: BALANCED" },
       ],
     },
     5: {
@@ -471,43 +478,46 @@ PQ lossily compresses vectors. By breaking vectors into sub-spaces and quantizin
       title: "Recall vs. QPS Tradeoff Profiling",
       difficulty: "Hard",
       tagline: "Plot the Pareto frontier of Recall@10 against QPS.",
-      whatAreYouBuilding: `You are going to combine meaning-based search with strict rules.
+            whatAreYouBuilding: `You are going to measure and tune the trade-off between search quality (Recall@10) and search speed (Queries Per Second).
 
-Imagine searching for "upbeat jazz" (vector meaning) but strictly filtering for "released after 2020" and "artist = Miles Davis" (metadata rules).
+In approximate nearest neighbor search, you can achieve 99% accuracy by searching thoroughly, or 10x higher throughput by searching quickly.
 
 For example:
-insert-meta 1 [0.9, 0.1] {"year": 2021}
-search-hybrid [1.0, 0.0] {"year": 2021} 1
+measure-recall 10 32
+bench-qps 8
+measure-dist-calcs
 
-It should apply the filter before searching:
-PRE_FILTER_APPLIED: 1 vector remains
-MATCH id=1 score=0.98`,
-      howItWorks: `1. You store JSON metadata alongside the vector embeddings.
-2. When a hybrid search arrives, you first look at the strict metadata rules.
-3. You filter out any vectors that don't match the rules (e.g., songs from 1990).
-4. You then perform the vector search *only* on the remaining candidates.`,
+It should measure accuracy against a brute-force baseline and plot the Pareto frontier:
+RECALL@10: > 95%
+QPS: > 4000
+DIST_CALCS_PER_QUERY: < 150`,
+      howItWorks: `1. Ground truth: First calculate true nearest neighbors using exact brute-force linear scan.
+2. Approximate search: Run HNSW with varying beam widths (efSearch = 8, 16, 32, 64, 128).
+3. Calculate Recall@K: Count how many of the top-K approximate results match the true ground truth.
+4. Measure cost: Track wall-clock latency, distance calculations per query, and QPS throughput.
+5. Find the sweet spot: Tune efSearch so Recall@10 exceeds 95% while keeping latency under 0.5ms.`,
       technicalTerms: [
         {
-          "term": "Hybrid search",
-          "definition": "Combining traditional keyword or metadata filtering with semantic vector search."
+          term: "Recall@K",
+          definition: "The percentage of true nearest neighbors correctly returned in the top-K results."
         },
         {
-          "term": "Pre-filtering",
-          "definition": "Applying metadata filters to narrow the candidate list *before* running the vector search."
+          term: "Pareto frontier",
+          definition: "The curve of optimal trade-offs where you cannot increase recall without sacrificing QPS."
         },
         {
-          "term": "Graph disconnection",
-          "definition": "A failure state in HNSW where filtering out nodes creates dead ends, preventing the algorithm from finding the true nearest neighbors."
+          term: "efSearch",
+          definition: "The size of the dynamic candidate list maintained during HNSW beam search."
         }
       ],
-      description: `In real-world applications, pure vector search is rarely enough. Users usually want to restrict searches by tenant ID, date ranges, or category tags. In Level 5, you build a hybrid search engine.
+      description: `In real-world vector databases, latency SLAs and recall targets dictate production configurations. In Level 5, you profile the Pareto efficiency frontier.
 
-Filtering a graph like HNSW is incredibly complex. If you filter out too many nodes, the graph disconnects, and the search gets stuck. You will implement pre-filtering (filtering the list before the vector search) to ensure strict accuracy, simulating the complex query planning required in enterprise vector databases.`,
+You implement rigorous evaluation metrics: comparing approximate graph search results against an exact brute-force ground truth. By plotting Recall@10 against QPS across varying efSearch values, you discover the exact configuration that maximizes throughput while meeting accuracy targets.`,
       implementationGuide: [
-        "Update 'insert-meta <id> <vector> <metadata_json>' to store arbitrary JSON metadata alongside the vector.",
-        "Implement 'search-hybrid <query> <filter_json> <k>'.",
-        "Iterate through all stored items and strictly apply the JSON filter rules. Create a list of allowed IDs.",
-        "Run your vector search algorithm, but whenever it evaluates a candidate, immediately skip it if its ID is not in the allowed list."
+        "Implement 'measure-recall <k> <efSearch>': Compare HNSW results against brute-force to calculate Recall@K percentage.",
+        "Implement 'bench-qps <threads>': Measure sustained query throughput under concurrent query load.",
+        "Implement 'measure-p99-latency' and 'measure-dist-calcs': Measure tail latency and distance evaluation counts.",
+        "Implement 'audit-recall-curve': Verify the recall-vs-QPS curve forms an optimal Pareto frontier."
       ],
       diagram: `PARETO FRONTIER: RECALL@10 vs QUERY LATENCY:
 
@@ -545,11 +555,11 @@ Filtering a graph like HNSW is incredibly complex. If you filter out too many no
       ],
       constraints: ["Recall@10 must exceed 95%", "Microsecond latency measurement"],
       cases: [
-        { name: "Case 1: High recall configuration", input: "measure-recall 10 64\\nexit", expected: "RECALL@10: > 95%" },
-        { name: "Case 2: QPS benchmark", input: "bench-qps 8\\nexit", expected: "QPS: > 4000" },
-        { name: "Case 3: Latency percentiles p99", input: "measure-p99-latency\\nexit", expected: "P99_LATENCY: < 0.5ms" },
-        { name: "Case 4: Distance calculation count", input: "measure-dist-calcs\\nexit", expected: "DIST_CALCS_PER_QUERY: < 150" },
-        { name: "Case 5: Quality audit", input: "audit-recall-curve\\nexit", expected: "PARETO_CURVE: OPTIMAL" },
+        { name: "Case 1: High recall configuration", input: "measure-recall 10 64\nexit", expected: "RECALL@10: > 95%" },
+        { name: "Case 2: QPS benchmark", input: "bench-qps 8\nexit", expected: "QPS: > 4000" },
+        { name: "Case 3: Latency percentiles p99", input: "measure-p99-latency\nexit", expected: "P99_LATENCY: < 0.5ms" },
+        { name: "Case 4: Distance calculation count", input: "measure-dist-calcs\nexit", expected: "DIST_CALCS_PER_QUERY: < 150" },
+        { name: "Case 5: Quality audit", input: "audit-recall-curve\nexit", expected: "PARETO_CURVE: OPTIMAL" },
       ],
     },
     6: {
@@ -559,46 +569,44 @@ Filtering a graph like HNSW is incredibly complex. If you filter out too many no
       title: "Scalar Quantization & SIMD Dot-Product",
       difficulty: "Expert",
       tagline: "Compress vectors 4x via int8 quantization and evaluate with AVX2 dot-products.",
-      whatAreYouBuilding: `You are going to make the database capable of handling continuous, live updates.
-
-If new songs are uploaded every second, you can't freeze the system to rebuild the entire highway map (HNSW) from scratch. You will add songs to a temporary 'waiting room', and merge them in the background.
+            whatAreYouBuilding: `You are going to compress vectors by 4x using 8-bit scalar quantization (SQ8) and evaluate vector distances at hardware speed using AVX2 SIMD CPU instructions.
 
 For example:
-start-streaming
-insert-stream 1 [0.9, 0.1]
-insert-stream 2 [0.8, 0.2]
-compact-segments
+enable-quantization
+bench-simd-search
+check-quant-recall
 
-It should merge memory segments asynchronously:
-STREAMING_INSERT_OK
-COMPACTION_STARTED
-SEGMENTS_MERGED: 2 -> 1`,
-      howItWorks: `1. New vectors are inserted into a small, uncompressed, brute-force 'memory segment'.
-2. Because it's small, searches are still fast even without HNSW or IVF.
-3. When the memory segment gets full, it is frozen and written to disk. A new memory segment is opened.
-4. A background process takes the frozen segments, builds a highly optimized HNSW graph (compaction), and replaces them.
-5. Searches query all segments (the live memory and the optimized graphs) and merge the results.`,
+It should compress float32 vectors to int8 and accelerate dot products:
+QUANTIZATION_ENABLED: 8_BIT
+SIMD_THROUGHPUT_SPEEDUP: > 3X
+RECALL_DELTA: < 2%`,
+      howItWorks: `1. 32-bit floating point numbers (4 bytes each) consume massive RAM and saturate memory bandwidth.
+2. Scalar Quantization maps the continuous range [-1.0, 1.0] linearly into an 8-bit signed integer [-128, 127].
+3. A 128-dimensional vector shrinks from 512 bytes down to 128 bytes (a 75% memory reduction).
+4. Smaller vectors fit directly into the CPU's fast L1/L2/L3 caches.
+5. SIMD (Single Instruction, Multiple Data) dot-product instructions process 32 integer multiplications in a single clock cycle.`,
       technicalTerms: [
         {
-          "term": "Log-Structured Merge-tree (LSM)",
-          "definition": "A database architecture that buffers writes in memory and merges them into larger, optimized files in the background."
+          term: "Scalar Quantization (SQ8)",
+          definition: "Mapping 32-bit floating point numbers into 8-bit integers using scaling and offset factors."
         },
         {
-          "term": "Compaction",
-          "definition": "The background process of taking disorganized new data and building an optimized index (like HNSW) out of it."
+          term: "SIMD (Single Instruction Multiple Data)",
+          definition: "CPU vector instructions that perform math on multiple numbers simultaneously."
         },
         {
-          "term": "Segment merging",
-          "definition": "Querying multiple separate chunks of data simultaneously and combining the results to give the user a unified answer."
+          term: "Cache locality",
+          definition: "Keeping data small enough to reside in fast CPU caches instead of waiting on slow main memory (RAM)."
         }
       ],
-      description: `Vector indexes like IVF and HNSW are notoriously difficult to update dynamically. Adding vectors one by one destroys their optimized structure. In Level 6, you solve the streaming ingestion problem.
+      description: `High-dimensional vector search is fundamentally bounded by memory bandwidth. In Level 6, you break through the memory wall with Scalar Quantization and SIMD vectorization.
 
-By adopting a Log-Structured Merge-tree (LSM) approach, you buffer writes in memory and compact them in the background. This architecture is used by every major database to support massive write throughput without interrupting read latencies, transforming your static vector index into a real-time, production-ready AI database.`,
+By compressing 32-bit floats into signed 8-bit integers, you reduce RAM usage by 75% and fit 4x more vectors into the CPU L3 cache. You then accelerate distance computations with vectorized SIMD dot products, achieving a 10x throughput boost while preserving over 98% of original recall.`,
       implementationGuide: [
-        "Implement 'insert-stream'. Append new vectors to an active, brute-force memory array.",
-        "Implement 'compact-segments'. When the memory array hits a threshold, pass it to your 'build-hnsw' or 'build-ivf' function to create a read-optimized segment.",
-        "Update your search functions. When a query comes in, it must run against the active memory array AND all compacted segments, then merge and sort the combined results to find the global top 'k'."
+        "Implement 'enable-quantization': Convert stored float vectors into signed 8-bit integers with min/max scale factors.",
+        "Implement 'bench-simd-search': Compute dot products using SIMD vectorized math and measure speedup.",
+        "Implement 'check-quant-recall': Verify quantization accuracy loss does not drop recall by more than 2%.",
+        "Implement 'verify-simd-kernel' and 'audit-engine': Validate kernel mathematical correctness and system integrity."
       ],
       diagram: `SCALAR QUANTIZATION (SQ8) & AVX2 INTRINSICS:
 
@@ -638,11 +646,11 @@ By adopting a Log-Structured Merge-tree (LSM) approach, you buffer writes in mem
       ],
       constraints: ["75% memory footprint reduction", "Accuracy loss under 2% recall"],
       cases: [
-        { name: "Case 1: Enable scalar quantization", input: "enable-quantization\\nexit", expected: "SQ8_ENABLED: 75% MEMORY SAVED" },
-        { name: "Case 2: Quantized query throughput", input: "bench-simd-search\\nexit", expected: "THROUGHPUT: > 10000 QPS" },
-        { name: "Case 3: Accuracy retention check", input: "check-quant-recall\\nexit", expected: "RECALL_DROP: < 2%" },
-        { name: "Case 4: SIMD dot-product kernel check", input: "verify-simd-kernel\\nexit", expected: "SIMD_KERNEL: ACTIVE" },
-        { name: "Case 5: Verification audit", input: "audit-engine\\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
+        { name: "Case 1: Enable scalar quantization", input: "enable-quantization\nexit", expected: "SQ8_ENABLED: 75% MEMORY SAVED" },
+        { name: "Case 2: Quantized query throughput", input: "bench-simd-search\nexit", expected: "THROUGHPUT: > 10000 QPS" },
+        { name: "Case 3: Accuracy retention check", input: "check-quant-recall\nexit", expected: "RECALL_DROP: < 2%" },
+        { name: "Case 4: SIMD dot-product kernel check", input: "verify-simd-kernel\nexit", expected: "SIMD_KERNEL: ACTIVE" },
+        { name: "Case 5: Verification audit", input: "audit-engine\nexit", expected: "STAGE: OPTIMIZED AUDIT: PASSED" },
       ],
     },
   },

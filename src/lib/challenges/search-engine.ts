@@ -278,6 +278,7 @@ MATCHES d1 d3`,
         outcomeSummary: "You implement high-speed sorted postings merge algorithms for boolean search.",
       },
       operations: [
+        { cmd: "INDEX <doc_id> <words...>", desc: "Indexes document tokens into inverted postings lists (from L1)." },
         { cmd: "SEARCH_AND <t1> <t2>...", desc: "Intersects postings for all terms. Returns 'MATCHES <doc1> <doc2>...' or 'NO_MATCH'." },
         { cmd: "SEARCH_OR <t1> <t2>...", desc: "Unions postings for all terms. Returns 'MATCHES <doc1> <doc2>...' or 'NO_MATCH'." },
       ],
@@ -380,6 +381,7 @@ Calculate: TF(t,d) * IDF                  ├───────────�
         outcomeSummary: "You implement document relevance scoring and rank ordering.",
       },
       operations: [
+        { cmd: "INDEX <doc_id> <words...>", desc: "Indexes document tokens into inverted postings lists (from L1)." },
         { cmd: "TFIDF <term>", desc: "Ranks matching documents by TF * IDF score. Returns 'RANKED <doc_id>:<score>...' rounded to 2 decimals or 'NO_MATCH'." },
       ],
       examples: [
@@ -481,6 +483,7 @@ IDF * (TF*(k1+1)) / (TF + k1*len_norm)    │ d2: "kafka kafka kafka"      │ �
         outcomeSummary: "You master modern probabilistic information retrieval ranking.",
       },
       operations: [
+        { cmd: "INDEX <doc_id> <words...>", desc: "Indexes document tokens into inverted postings lists (from L1)." },
         { cmd: "BM25 <term>", desc: "Ranks matching documents using BM25 (k1=1.2, b=0.75). Returns 'BM25 <doc_id>:<score>...' rounded to 2 decimals or 'NO_MATCH'." },
       ],
       examples: [
@@ -586,6 +589,7 @@ Check: pos(w_i+1) == pos(w_i) + 1         │  • brown: pos 2 (1 + 1 = 2 ✓) 
         outcomeSummary: "You implement positional postings and exact phrase verification.",
       },
       operations: [
+        { cmd: "INDEX <doc_id> <words...>", desc: "Indexes document tokens into inverted postings lists (from L1)." },
         { cmd: "PHRASE <w1> <w2>...", desc: "Matches exact sequential phrase. Returns 'PHRASE_MATCH <doc1> <doc2>...' or 'NO_MATCH'." },
       ],
       examples: [
@@ -694,9 +698,12 @@ Consolidate Postings Lists ─────────────────�
         outcomeSummary: "You master LSM-style segment architecture and background index compaction.",
       },
       operations: [
+        { cmd: "INDEX <doc_id> <words...>", desc: "Indexes document tokens into inverted postings lists (from L1)." },
         { cmd: "COMMIT_SEGMENT", desc: "Freezes current buffer into an immutable segment. Returns 'COMMITTED <segment_id>'." },
         { cmd: "MERGE_SEGMENTS", desc: "Merges all segments into 1 consolidated segment. Returns 'MERGED <old_count> -> 1'." },
         { cmd: "SEGMENT_STATS", desc: "Returns 'SEGMENTS <count> TOTAL_DOCS <count>'." },
+        { cmd: "SEARCH_AND <t1> <t2>...", desc: "Queries terms across all immutable segments and active buffer (from L2)." },
+        { cmd: "SEARCH_OR <t1> <t2>...", desc: "Unions terms across all immutable segments and active buffer (from L2)." },
       ],
       examples: [
         {

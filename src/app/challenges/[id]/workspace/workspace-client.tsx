@@ -720,6 +720,26 @@ export function WorkspaceClient({
                   </div>
                 )}
 
+                {/* TIER 1.6: Level Data Flow Architecture Diagram */}
+                {currentLevelInfo.diagram && (
+                  <div className="rounded-xl border border-slate-200 bg-white overflow-hidden text-xs shadow-2xs">
+                    <div className="p-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Terminal className="w-3.5 h-3.5 text-[#099BE9]" />
+                        <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-900">
+                          Data Flow Diagram (Level {selectedLevel})
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono text-slate-500 font-semibold">
+                        Input ➔ Internal Logic ➔ Output
+                      </span>
+                    </div>
+                    <div className="p-3.5 bg-[#141416] font-mono text-[11px] text-[#09C899] overflow-x-auto">
+                      <pre className="whitespace-pre leading-relaxed font-medium">{currentLevelInfo.diagram}</pre>
+                    </div>
+                  </div>
+                )}
+
                 {/* TIER 2: Technical Terms Made Simple (Engineering Terminology Second) */}
                 {Array.isArray(currentLevelInfo.technicalTerms) && currentLevelInfo.technicalTerms.length > 0 && (
                   <div className="rounded-xl bg-[#141416] text-white p-4 space-y-2.5 shadow-sm border border-slate-800">
@@ -814,11 +834,11 @@ export function WorkspaceClient({
                           <div className="bg-white p-2.5 rounded border border-slate-200 font-mono text-xs text-slate-800 space-y-1.5">
                             <div>
                               <span className="text-slate-400 font-semibold block text-[10px]">Input (stdin):</span>
-                              <pre className="text-slate-900 font-medium whitespace-pre-wrap">{ex.input}</pre>
+                              <pre className="text-slate-900 font-medium whitespace-pre-wrap">{ex.input?.replace(/\\n/g, "\n")}</pre>
                             </div>
                             <div className="pt-1.5 border-t border-slate-100">
                               <span className="text-slate-400 font-semibold block text-[10px]">Expected Output (stdout):</span>
-                              <pre className="text-[#0AA793] font-semibold whitespace-pre-wrap">{ex.output}</pre>
+                              <pre className="text-[#0AA793] font-semibold whitespace-pre-wrap">{ex.output?.replace(/\\n/g, "\n")}</pre>
                             </div>
                           </div>
                         </div>
@@ -866,12 +886,12 @@ export function WorkspaceClient({
                   {Array.isArray(currentLevelInfo.constraints) && currentLevelInfo.constraints.length > 0 && (
                     <div className="space-y-1.5">
                       <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">
-                        Sandbox Constraints
+                        Physical Machine Constraints
                       </h3>
-                      <div className="p-3 rounded-lg bg-slate-50/80 border border-slate-200 space-y-1 text-xs text-slate-800 font-mono font-medium">
+                      <div className="p-3 rounded-lg bg-slate-50/80 border border-slate-200 space-y-1 text-xs text-slate-800 font-medium">
                         {currentLevelInfo.constraints.map((c: any, idx: number) => (
                           <div key={idx} className="flex items-start gap-2">
-                            <span className="text-[#099BE9] font-bold">•</span>
+                            <span className="text-rose-500 font-bold font-mono">▸</span>
                             <span>{c}</span>
                           </div>
                         ))}
@@ -880,23 +900,8 @@ export function WorkspaceClient({
                   )}
                 </div>
 
-                {/* 6. Optional Deep Dive Collapsibles */}
+                {/* 6. Systems Thinking & Mental Models */}
                 <div className="space-y-2 pt-2 border-t border-slate-200">
-                  {currentLevelInfo.diagram && (
-                    <details open className="rounded-lg border border-slate-200 bg-white overflow-hidden text-xs">
-                      <summary className="p-2.5 font-mono font-bold text-slate-800 cursor-pointer select-none hover:bg-slate-50 flex items-center justify-between">
-                        <span className="flex items-center gap-1.5 text-[#099BE9]">
-                          <Terminal className="w-3.5 h-3.5" />
-                          <span>Data Flow Diagram (L{selectedLevel})</span>
-                        </span>
-                        <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                      </summary>
-                      <div className="p-3.5 bg-[#141416] font-mono text-[11px] text-[#09C899] overflow-x-auto border-t border-slate-800">
-                        <pre className="whitespace-pre leading-relaxed font-medium">{currentLevelInfo.diagram}</pre>
-                      </div>
-                    </details>
-                  )}
-
                   {currentLevelInfo.learningLoop && (
                     <details className="rounded-lg border border-slate-200 bg-white overflow-hidden text-xs">
                       <summary className="p-2.5 font-mono font-bold text-slate-800 cursor-pointer select-none hover:bg-slate-50 flex items-center justify-between">
@@ -1344,7 +1349,7 @@ export function WorkspaceClient({
                           key={i}
                           onClick={() => {
                             setSelectedCaseIndex(i);
-                            setCustomInput(c.input);
+                            setCustomInput(c.input ? c.input.replace(/\\n/g, "\n") : "");
                           }}
                           className={`px-2.5 py-1 rounded-md text-xs font-mono transition-colors shrink-0 cursor-pointer ${
                             selectedCaseIndex === i
@@ -1482,7 +1487,7 @@ export function WorkspaceClient({
                                       Standard Input:
                                     </span>
                                     <pre className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-900 font-semibold whitespace-pre-wrap shadow-2xs">
-                                      {activeCase.input}
+                                      {activeCase.input?.replace(/\\n/g, "\n")}
                                     </pre>
                                   </div>
 
