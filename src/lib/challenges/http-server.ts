@@ -94,6 +94,35 @@ export const httpServerChallenge: ChallengeData = {
       title: "Basic Request Line Parsing",
       difficulty: "Easy",
       tagline: "Parse HTTP/1.1 methods and URI paths from raw streams. Return formatted 200 OK or 404 Not Found.",
+      whatAreYouBuilding: `In this level, you build: Basic Request Line Parsing.
+
+Parse HTTP/1.1 methods and URI paths from raw streams. Return formatted 200 OK or 404 Not Found.
+
+You are creating a reliable component of High-Concurrency HTTP Server. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• GET /hello -> Returns HTTP/1.1 200 OK with body 'Hello World'.
+• GET /ping -> Returns HTTP/1.1 200 OK with body 'PONG'.
+• GET / -> Returns HTTP/1.1 200 OK with body 'ALGO'.`,
+      technicalTerms: [
+        {
+                "term": "HTTP/1",
+                "definition": "1 wire protocol structure. Request line (<METHOD> <PATH> <VERSION>\\r\\n)."
+        },
+        {
+                "term": "Status codes and headers",
+                "definition": "Formatting HTTP/1.1 200 OK and Content.Length."
+        },
+        {
+                "term": "Deterministic 404 dispatch",
+                "definition": "Handling unknown routes gracefully."
+        }
+],
       description: `HTTP/1.1 is the foundational wire protocol of the web. In Level 1, you build the initial request line parser.
 
 Every HTTP request begins with a request line containing the HTTP method and URI path (e.g. 'GET /hello'). Your server reads standard input stream lines, parses the method and path, and responds with a properly formatted HTTP status line ('HTTP/1.1 200 OK' or 'HTTP/1.1 404 Not Found'), Content-Length header, and payload.`,
@@ -172,6 +201,34 @@ Not Found`,
       title: "Parameter Routing & Path Matching",
       difficulty: "Medium",
       tagline: "Implement parameterized route matching (e.g. /users/:id) and wildcard subpaths.",
+      whatAreYouBuilding: `In this level, you build: Parameter Routing & Path Matching.
+
+Implement parameterized route matching (e.g. /users/:id) and wildcard subpaths.
+
+You are creating a reliable component of High-Concurrency HTTP Server. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• GET /users/:id -> Extracts user ID and returns 'User <id>'.
+• GET /posts/:slug -> Extracts slug parameter and returns 'Post <slug>'.`,
+      technicalTerms: [
+        {
+                "term": "Prefix radix trees for route matching",
+                "definition": ""
+        },
+        {
+                "term": "Named parameter extraction (/users/",
+                "definition": "id .> id=42)."
+        },
+        {
+                "term": "Exact vs wildcard conflict precedence rules",
+                "definition": ""
+        }
+],
       description: `Production web servers route thousands of dynamic endpoints using Radix Tries (prefix trees) rather than linear if/else scans.
 
 In Level 2, you implement path routing with dynamic route parameters (e.g. '/users/:id'). A Radix Tree breaks the URL path by slashes ('/') and matches tokens against tree nodes. If a node begins with ':', it captures the parameter value dynamically and provides it to the route handler.`,
@@ -228,6 +285,34 @@ Lookup: O(path length) prefix traversal without linear route array scanning.`,
       title: "Header Parsing & Query Parameters",
       difficulty: "Medium",
       tagline: "Parse case-insensitive HTTP headers and URL query strings (?key=val&sort=asc).",
+      whatAreYouBuilding: `In this level, you build: Header Parsing & Query Parameters.
+
+Parse case-insensitive HTTP headers and URL query strings (?key=val&sort=asc).
+
+You are creating a reliable component of High-Concurrency HTTP Server. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• GET /search?q=<term> -> Extracts query parameter q and echoes 'Search: <term>'.
+• GET /echo-agent with User-Agent header -> Extracts and returns User-Agent header value.`,
+      technicalTerms: [
+        {
+                "term": "Case",
+                "definition": "insensitive header dictionary lookup."
+        },
+        {
+                "term": "Query string delimiter splitting and parameter map resolution",
+                "definition": ""
+        },
+        {
+                "term": "Content negotiation via Accept and Content",
+                "definition": "Type headers."
+        }
+],
       description: `HTTP headers carry critical metadata for content negotiation, authentication, and caching. In Level 3, you implement full HTTP header parsing.
 
 Header fields follow the request line as key-value pairs formatted as 'Key: Value'. Header names are strictly case-insensitive (e.g. 'content-type' is identical to 'Content-Type'). Headers terminate with an empty blank line ('\n') before any request body begins.`,
@@ -284,6 +369,35 @@ Query String Splitting:
       title: "Payload Framing & POST Processing",
       difficulty: "Hard",
       tagline: "Handle POST requests with exact Content-Length body framing. Prevent HTTP request smuggling.",
+      whatAreYouBuilding: `In this level, you build: Payload Framing & POST Processing.
+
+Handle POST requests with exact Content-Length body framing. Prevent HTTP request smuggling.
+
+You are creating a reliable component of High-Concurrency HTTP Server. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• POST /echo with Content-Length: <n> and payload -> Echoes received payload back to client.
+• POST /uppercase with payload -> Returns uppercase version of body string.
+• POST /json with payload -> Echoes JSON payload back.`,
+      technicalTerms: [
+        {
+                "term": "Content",
+                "definition": "Length framing rules. Exactly N bytes belong to this request body."
+        },
+        {
+                "term": "Handling payloads with spaces, JSON, and binary data",
+                "definition": ""
+        },
+        {
+                "term": "Preventing buffer overflows and request smuggling desync",
+                "definition": ""
+        }
+],
       description: `HTTP POST and PUT methods transmit arbitrary payloads within the request body. In Level 4, you implement body framing.
 
 Because TCP streams do not preserve message boundaries, an HTTP parser relies on the 'Content-Length' header to know exactly how many bytes to read after the header separator blank line.`,
@@ -341,6 +455,35 @@ Over-read (Len > actual)  ──► Reads exactly N bytes, leaving remainder for
       title: "Persistent TCP Keep-Alive Sessions",
       difficulty: "Hard",
       tagline: "Reuse a single persistent connection across multiple sequential HTTP requests without closing socket.",
+      whatAreYouBuilding: `In this level, you build: Persistent TCP Keep-Alive Sessions.
+
+Reuse a single persistent connection across multiple sequential HTTP requests without closing socket.
+
+You are creating a reliable component of High-Concurrency HTTP Server. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• Connection: keep-alive -> Instructs server to keep stream open for subsequent requests.
+• Connection: close -> Closes connection after current response.
+• --- -> Delimiter for pipelined requests on standard input.`,
+      technicalTerms: [
+        {
+                "term": "Connection",
+                "definition": "keep.alive state machine."
+        },
+        {
+                "term": "Sequential request pipelining on single stream",
+                "definition": ""
+        },
+        {
+                "term": "Connection",
+                "definition": "close handling and graceful termination."
+        }
+],
       description: `Opening a new connection for every request adds significant handshake latency. In Level 5, you implement persistent Keep-Alive connections and HTTP/1.1 pipelining.
 
 Under Keep-Alive, multiple sequential requests are streamed over the same session. In ALGO's evaluation stream, requests are separated by the '---' delimiter. Your parser must process each request sequentially, flush its response, and immediately be ready for the next request.`,
@@ -396,6 +539,34 @@ Eliminates 3-way TCP handshake + TLS negotiation on repeated asset requests.`,
       title: "Connection Pooling & Peak Throughput",
       difficulty: "Hard",
       tagline: "Scale to 50,000+ requests/sec. Implement non-blocking I/O event handling with sub-millisecond p99 latency.",
+      whatAreYouBuilding: `In this level, you build: Connection Pooling & Peak Throughput.
+
+Scale to 50,000+ requests/sec. Implement non-blocking I/O event handling with sub-millisecond p99 latency.
+
+You are creating a reliable component of High-Concurrency HTTP Server. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• STATS -> Returns server metrics: REQUESTS: <n> ACTIVE_CONNS: <c> P99_MS: <ms>.
+• QUIT -> Drains the server and exits with 'SERVER_DRAINED'.`,
+      technicalTerms: [
+        {
+                "term": "Non",
+                "definition": "blocking I/O multiplexing with event loops."
+        },
+        {
+                "term": "Zero",
+                "definition": "allocation buffer parsing for hot paths."
+        },
+        {
+                "term": "Connection pool backpressure and overload shedding",
+                "definition": ""
+        }
+],
       description: `Modern web servers use an asynchronous event loop (epoll on Linux, kqueue on macOS) to handle 50,000+ requests/sec on a single thread.
 
 In Level 6, you build an event-driven request dispatcher. You will measure requests per second, monitor throughput, and handle concurrent connection states using streaming state machine parsing.`,

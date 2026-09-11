@@ -94,6 +94,35 @@ export const loadBalancerChallenge: ChallengeData = {
       title: "Basic Round-Robin Dispatcher",
       difficulty: "Easy",
       tagline: "Distribute incoming requests uniformly across registered backends in cyclical order.",
+      whatAreYouBuilding: `In this level, you build: Basic Round-Robin Dispatcher.
+
+Distribute incoming requests uniformly across registered backends in cyclical order.
+
+You are creating a reliable component of Dynamic Layer-7 Load Balancer. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• ADD_BACKEND <server_id> -> Registers an active backend. Returns 'OK'.
+• ROUTE <req_id> -> Routes request to next backend. Returns 'FORWARD -> <server_id>' or 'NO_BACKENDS'.
+• LIST_BACKENDS -> Returns 'BACKENDS <id1> <id2>...' in registration order.`,
+      technicalTerms: [
+        {
+                "term": "Tracking registered server list",
+                "definition": ""
+        },
+        {
+                "term": "Cyclic pointer increment",
+                "definition": "index = (index + 1) % N."
+        },
+        {
+                "term": "Handling empty backend pools gracefully",
+                "definition": ""
+        }
+],
       description: `In Level 1 (Basic Round-Robin Dispatcher), you engineer the core mechanisms for Dynamic Layer-7 Load Balancer.
 
 Distribute incoming requests uniformly across registered backends in cyclical order.
@@ -195,6 +224,34 @@ FORWARD -> web-1`,
       title: "Smooth Weighted Round-Robin (Nginx Algorithm)",
       difficulty: "Medium",
       tagline: "Interleave requests smoothly according to server weights using Nginx's current_weight algorithm.",
+      whatAreYouBuilding: `In this level, you build: Smooth Weighted Round-Robin (Nginx Algorithm).
+
+Interleave requests smoothly according to server weights using Nginx's current_weight algorithm.
+
+You are creating a reliable component of Dynamic Layer-7 Load Balancer. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• ADD_WEIGHTED <server_id> <weight> -> Registers backend with integer weight. Returns 'OK'.
+• ROUTE_WEIGHTED <req_id> -> Dispatches request using smooth weighted algorithm. Returns 'FORWARD -> <server_id>'.`,
+      technicalTerms: [
+        {
+                "term": "For each route",
+                "definition": "For all servers. current_weight += effective_weight."
+        },
+        {
+                "term": "Select server with highest current_weight",
+                "definition": ""
+        },
+        {
+                "term": "Subtract total_weight from the selected server's current_weight",
+                "definition": ""
+        }
+],
       description: `In Level 2 (Smooth Weighted Round-Robin (Nginx Algorithm)), you engineer the core mechanisms for Dynamic Layer-7 Load Balancer.
 
 Interleave requests smoothly according to server weights using Nginx's current_weight algorithm.
@@ -277,6 +334,35 @@ Sequence: a -> b -> a -> a -> c -> b -> a (Smooth interleaving without burst clu
       title: "Dynamic Least-Connections Routing",
       difficulty: "Medium",
       tagline: "Track active in-flight requests. Route new requests to the backend with the fewest active connections.",
+      whatAreYouBuilding: `In this level, you build: Dynamic Least-Connections Routing.
+
+Track active in-flight requests. Route new requests to the backend with the fewest active connections.
+
+You are creating a reliable component of Dynamic Layer-7 Load Balancer. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• TRACK_START <server_id> <req_id> -> Increments active connection count. Returns 'OK'.
+• TRACK_END <server_id> <req_id> -> Decrements active connection count. Returns 'OK'.
+• ROUTE_LEAST_CONN <req_id> -> Routes to backend with fewest active conns, increments its count. Returns 'FORWARD -> <server_id>'.`,
+      technicalTerms: [
+        {
+                "term": "Tracking in",
+                "definition": "flight request counter per backend."
+        },
+        {
+                "term": "Selecting backend with minimum active connections",
+                "definition": ""
+        },
+        {
+                "term": "Tie",
+                "definition": "breaking backends alphabetically by server_id."
+        }
+],
       description: `In Level 3 (Dynamic Least-Connections Routing), you engineer the core mechanisms for Dynamic Layer-7 Load Balancer.
 
 Track active in-flight requests. Route new requests to the backend with the fewest active connections.
@@ -363,6 +449,39 @@ ROUTE_LEAST_CONN r4 ────────────────────
       title: "Passive Health Checks & Failover",
       difficulty: "Hard",
       tagline: "Track consecutive backend errors. Trip unhealthy nodes to DOWN after exceeding threshold, rerouting traffic.",
+      whatAreYouBuilding: `In this level, you build: Passive Health Checks & Failover.
+
+Track consecutive backend errors. Trip unhealthy nodes to DOWN after exceeding threshold, rerouting traffic.
+
+You are creating a reliable component of Dynamic Layer-7 Load Balancer. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• SET_FAIL_THRESHOLD <count> -> Sets max consecutive fails before marking DOWN (default 3). Returns 'OK'.
+• FAIL <server_id> -> Records failure. Returns 'STATUS <server_id> <UP|DOWN>'.
+• SUCCESS <server_id> -> Records success. Resets fail count to 0, marks UP. Returns 'STATUS <server_id> UP'.`,
+      technicalTerms: [
+        {
+                "term": "Tracking consecutive failures per backend",
+                "definition": ""
+        },
+        {
+                "term": "Tripping server status from UP to DOWN after failure threshold",
+                "definition": ""
+        },
+        {
+                "term": "Excluding DOWN servers from all routing algorithms",
+                "definition": ""
+        },
+        {
+                "term": "Probing and restoring server status to UP upon success",
+                "definition": ""
+        }
+],
       description: `In Level 4 (Passive Health Checks & Failover), you engineer the core mechanisms for Dynamic Layer-7 Load Balancer.
 
 Track consecutive backend errors. Trip unhealthy nodes to DOWN after exceeding threshold, rerouting traffic.
@@ -449,6 +568,34 @@ SUCCESS s1 (Probe)   ──► s1: UP (0/2)     ──► Restored to Pool      
       title: "Ketama Consistent Hashing Ring",
       difficulty: "Hard",
       tagline: "Implement a circular hash ring with virtual nodes for sticky session affinity and minimal cache relocation.",
+      whatAreYouBuilding: `In this level, you build: Ketama Consistent Hashing Ring.
+
+Implement a circular hash ring with virtual nodes for sticky session affinity and minimal cache relocation.
+
+You are creating a reliable component of Dynamic Layer-7 Load Balancer. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• ADD_RING_NODE <server_id> <vnodes> -> Adds server with virtual nodes to the hash ring. Returns 'OK'.
+• ROUTE_KEY <cache_key> -> Routes key to nearest clockwise server. Returns 'HASH_FORWARD -> <server_id>' or 'NO_BACKENDS'.`,
+      technicalTerms: [
+        {
+                "term": "Hashing keys to 32",
+                "definition": "bit integer space [0, 2^32 . 1] using FNV.1a."
+        },
+        {
+                "term": "Placing virtual nodes",
+                "definition": "hash(server_id + '#' + vnode_idx)."
+        },
+        {
+                "term": "Finding first virtual node clockwise on ring whose hash >= hash(key)",
+                "definition": ""
+        }
+],
       description: `In Level 5 (Ketama Consistent Hashing Ring), you engineer the core mechanisms for Dynamic Layer-7 Load Balancer.
 
 Implement a circular hash ring with virtual nodes for sticky session affinity and minimal cache relocation.
@@ -532,6 +679,34 @@ ROUTE_KEY user:200 ────────────────────�
       title: "Zero-Downtime Connection Draining",
       difficulty: "Hard",
       tagline: "Drain servers gracefully during rolling deploys: accept 0 new requests, wait for active connections to finish, then remove.",
+      whatAreYouBuilding: `In this level, you build: Zero-Downtime Connection Draining.
+
+Drain servers gracefully during rolling deploys: accept 0 new requests, wait for active connections to finish, then remove.
+
+You are creating a reliable component of Dynamic Layer-7 Load Balancer. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• DRAIN <server_id> -> Transitions server to DRAINING state. Returns 'DRAINING <server_id> ACTIVE <conns>' or 'REMOVED <server_id>'.
+• SERVER_STATUS <server_id> -> Returns 'STATE <UP|DOWN|DRAINING|REMOVED> ACTIVE <conns>' or 'NOT_FOUND'.`,
+      technicalTerms: [
+        {
+                "term": "State lifecycle",
+                "definition": "UP .> DRAINING .> REMOVED."
+        },
+        {
+                "term": "DRAINING servers are immediately excluded from new ROUTE calls",
+                "definition": ""
+        },
+        {
+                "term": "When active connections reach 0 on a DRAINING server, state transitions to REMOVED",
+                "definition": ""
+        }
+],
       description: `In Level 6 (Zero-Downtime Connection Draining), you engineer the core mechanisms for Dynamic Layer-7 Load Balancer.
 
 Drain servers gracefully during rolling deploys: accept 0 new requests, wait for active connections to finish, then remove.

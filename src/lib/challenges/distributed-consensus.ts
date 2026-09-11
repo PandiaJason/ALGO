@@ -100,6 +100,35 @@ export const distributedConsensusChallenge: ChallengeData = {
       title: "Leader Election & Heartbeat Protocol",
       difficulty: "Medium",
       tagline: "Elect a stable cluster leader using randomized timeouts and RequestVote RPCs.",
+      whatAreYouBuilding: `In this level, you build: Leader Election & Heartbeat Protocol.
+
+Elect a stable cluster leader using randomized timeouts and RequestVote RPCs.
+
+You are creating a reliable component of Distributed Consensus Engine (Raft). When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• tick <nodeId> -> Advances node timer, triggering election if timeout expires.
+• request-vote <candidate> <term> -> Dispatches RequestVote RPC to all cluster nodes.
+• status -> Reports current cluster roles (Leader, Candidate, Follower) and terms.`,
+      technicalTerms: [
+        {
+                "term": "Randomized election timeouts (e",
+                "definition": "g. 150ms.300ms) to stagger candidate campaigns."
+        },
+        {
+                "term": "RequestVote RPC parameters",
+                "definition": "term, candidateId, lastLogIndex, lastLogTerm."
+        },
+        {
+                "term": "Periodic empty AppendEntries heartbeats from leader to suppress new elections",
+                "definition": ""
+        }
+],
       description: `In Level 1 (Leader Election & Heartbeat Protocol), you engineer the core mechanisms for Distributed Consensus Engine (Raft).
 
 Elect a stable cluster leader using randomized timeouts and RequestVote RPCs.
@@ -177,6 +206,35 @@ You build the fundamental election safety loop that guarantees a single leader p
       title: "Log Replication & State Machine Commit",
       difficulty: "Hard",
       tagline: "Replicate log entries across a majority quorum and advance commitIndex.",
+      whatAreYouBuilding: `In this level, you build: Log Replication & State Machine Commit.
+
+Replicate log entries across a majority quorum and advance commitIndex.
+
+You are creating a reliable component of Distributed Consensus Engine (Raft). When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• client-write <cmd> -> Submits state mutation to current cluster leader.
+• replicate -> Leader sends AppendEntries RPC to followers.
+• get-state -> Queries committed state across all nodes.`,
+      technicalTerms: [
+        {
+                "term": "AppendEntries RPC framing",
+                "definition": "prevLogIndex, prevLogTerm, entries[], leaderCommit."
+        },
+        {
+                "term": "Follower log consistency check",
+                "definition": "rejecting entries if previous index/term mismatch."
+        },
+        {
+                "term": "Advancing commitIndex only when entry is replicated to a strict majority (> N/2)",
+                "definition": ""
+        }
+],
       description: `In Level 2 (Log Replication & State Machine Commit), you engineer the core mechanisms for Distributed Consensus Engine (Raft).
 
 Replicate log entries across a majority quorum and advance commitIndex.
@@ -252,6 +310,35 @@ You master quorum replication and linearizable state machine application.`,
       title: "Network Partitions & Split-Brain Mitigation",
       difficulty: "Hard",
       tagline: "Prevent split-brain writes during asymmetric network splits.",
+      whatAreYouBuilding: `In this level, you build: Network Partitions & Split-Brain Mitigation.
+
+Prevent split-brain writes during asymmetric network splits.
+
+You are creating a reliable component of Distributed Consensus Engine (Raft). When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• partition <groupA> | <groupB> -> Partitions cluster nodes into isolated network groups.
+• heal-partition -> Restores full network connectivity between all nodes.
+• write-minority <nodeId> <cmd> -> Attempts to write to the leader of a minority partition.`,
+      technicalTerms: [
+        {
+                "term": "Split",
+                "definition": "brain hazard. two nodes believing they are both legitimate leaders."
+        },
+        {
+                "term": "Majority quorum constraint",
+                "definition": "minority partition cannot commit (lacks > N/2 votes)."
+        },
+        {
+                "term": "Partition healing",
+                "definition": "higher term from majority partition forces stale minority leader to step down and overwrite uncommitted entries."
+        }
+],
       description: `In Level 3 (Network Partitions & Split-Brain Mitigation), you engineer the core mechanisms for Distributed Consensus Engine (Raft).
 
 Prevent split-brain writes during asymmetric network splits.
@@ -333,6 +420,35 @@ You prove that your consensus engine preserves safety and serializability under 
       title: "Cluster Membership Changes & Log Compaction",
       difficulty: "Expert",
       tagline: "Add/remove nodes dynamically and compact infinite logs with snapshots.",
+      whatAreYouBuilding: `In this level, you build: Cluster Membership Changes & Log Compaction.
+
+Add/remove nodes dynamically and compact infinite logs with snapshots.
+
+You are creating a reliable component of Distributed Consensus Engine (Raft). When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• add-node <nodeId> -> Initiates joint consensus configuration to add node to cluster.
+• take-snapshot -> Compacts committed log entries into a state machine snapshot.
+• install-snapshot <nodeId> -> Sends a snapshot to a lagging node to catch it up.`,
+      technicalTerms: [
+        {
+                "term": "Joint consensus configuration",
+                "definition": "transitioning from C_old to C_new without split.brain."
+        },
+        {
+                "term": "State machine snapshots",
+                "definition": "serializing applied state and discarding historic log entries up to snapshotIndex."
+        },
+        {
+                "term": "InstallSnapshot RPC",
+                "definition": "streaming compressed point.in.time images to lagging followers."
+        }
+],
       description: `In Level 4 (Cluster Membership Changes & Log Compaction), you engineer the core mechanisms for Distributed Consensus Engine (Raft).
 
 Add/remove nodes dynamically and compact infinite logs with snapshots.
@@ -407,6 +523,35 @@ You enable zero-downtime cluster scaling and bound disk memory usage.`,
       title: "Election Convergence & Replication Lag",
       difficulty: "Hard",
       tagline: "Measure failover election latency and replication lag.",
+      whatAreYouBuilding: `In this level, you build: Election Convergence & Replication Lag.
+
+Measure failover election latency and replication lag.
+
+You are creating a reliable component of Distributed Consensus Engine (Raft). When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• kill-leader -> Terminates current leader and benchmarks election recovery time.
+• measure-lag -> Returns replication lag across all active followers.
+• bench-commits <count> -> Saturates the cluster with writes to measure commit throughput.`,
+      technicalTerms: [
+        {
+                "term": "Leader failover latency percentiles (p50, p95, p99)",
+                "definition": ""
+        },
+        {
+                "term": "Follower replication lag (difference between leader commitIndex and follower matchIndex)",
+                "definition": ""
+        },
+        {
+                "term": "Impact of packet drops and RPC retransmissions on quorum commits",
+                "definition": ""
+        }
+],
       description: `In Level 5 (Election Convergence & Replication Lag), you engineer the core mechanisms for Distributed Consensus Engine (Raft).
 
 Measure failover election latency and replication lag.
@@ -482,6 +627,35 @@ You quantify distributed consensus latency and measure recovery boundaries.`,
       title: "Pipelined Log Replication & Batching",
       difficulty: "Expert",
       tagline: "Eliminate synchronous round-trips via pipelined AppendEntries and read-index.",
+      whatAreYouBuilding: `In this level, you build: Pipelined Log Replication & Batching.
+
+Eliminate synchronous round-trips via pipelined AppendEntries and read-index.
+
+You are creating a reliable component of Distributed Consensus Engine (Raft). When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• enable-pipelining -> Enables asynchronous streaming AppendEntries pipeline.
+• read-index <key> -> Executes linearizable read without disk write overhead.
+• bench-pipeline <count> -> Benchmarks throughput with pipelining enabled.`,
+      technicalTerms: [
+        {
+                "term": "Asynchronous RPC pipelining",
+                "definition": "streaming multiple AppendEntries requests without waiting for previous responses."
+        },
+        {
+                "term": "Batching concurrent client write requests into single log entries",
+                "definition": ""
+        },
+        {
+                "term": "ReadIndex optimization",
+                "definition": "serving linearizable read queries without writing entries to the Raft log."
+        }
+],
       description: `In Level 6 (Pipelined Log Replication & Batching), you engineer the core mechanisms for Distributed Consensus Engine (Raft).
 
 Eliminate synchronous round-trips via pipelined AppendEntries and read-index.

@@ -98,6 +98,34 @@ export const mcpRuntimeChallenge: ChallengeData = {
       title: "JSON-RPC 2.0 Stdio Transport & Tool Discovery",
       difficulty: "Easy",
       tagline: "Handle JSON-RPC 2.0 initialize, tools/list, and tools/call over stdin/stdout.",
+      whatAreYouBuilding: `In this level, you build: JSON-RPC 2.0 Stdio Transport & Tool Discovery.
+
+Handle JSON-RPC 2.0 initialize, tools/list, and tools/call over stdin/stdout.
+
+You are creating a reliable component of Model Context Protocol (MCP) Runtime. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• send-rpc <json> -> Sends a raw JSON-RPC string over stdin. For notifications (no 'id' field), prints NOTIFICATION_ACK.
+• register-tool <name> <description> -> Registers an executable tool into the runtime.`,
+      technicalTerms: [
+        {
+                "term": "JSON",
+                "definition": "RPC 2.0 message specification. jsonrpc, id, method, params."
+        },
+        {
+                "term": "MCP capability negotiation during the 'initialize' handshake",
+                "definition": ""
+        },
+        {
+                "term": "Listing available tools and executing a basic 'echo' tool",
+                "definition": ""
+        }
+],
       description: `In Level 1 (JSON-RPC 2.0 Stdio Transport & Tool Discovery), you engineer the core mechanisms for Model Context Protocol (MCP) Runtime.
 
 Handle JSON-RPC 2.0 initialize, tools/list, and tools/call over stdin/stdout.
@@ -174,6 +202,35 @@ Client (AI Agent)                       MCP Host Runtime
       title: "Resource Templates & Dynamic Context Providers",
       difficulty: "Medium",
       tagline: "Resolve URI resource templates and stream contextual data to agents.",
+      whatAreYouBuilding: `In this level, you build: Resource Templates & Dynamic Context Providers.
+
+Resolve URI resource templates and stream contextual data to agents.
+
+You are creating a reliable component of Model Context Protocol (MCP) Runtime. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• register-resource <uriTemplate> <mime> -> Registers a dynamic resource template handler.
+• read-resource <uri> -> Fetches context content for designated URI (tested via send-rpc resources/read).
+• subscribe-resource <uri> -> Subscribes client to resource updates.`,
+      technicalTerms: [
+        {
+                "term": "MCP Resources specification",
+                "definition": "resources/list and resources/read."
+        },
+        {
+                "term": "URI template matching (e",
+                "definition": "g. file.///logs/{date}.log or cpp.//scope/{symbol})."
+        },
+        {
+                "term": "Returning MIME",
+                "definition": "typed text or binary blobs inside resource contents."
+        }
+],
       description: `In Level 2 (Resource Templates & Dynamic Context Providers), you engineer the core mechanisms for Model Context Protocol (MCP) Runtime.
 
 Resolve URI resource templates and stream contextual data to agents.
@@ -258,6 +315,35 @@ Client (Context Resolver)                    Resource Router Engine
       title: "Schema Validation & Zombie Subprocess Reaping",
       difficulty: "Hard",
       tagline: "Enforce strict JSON Schema and terminate runaway tools.",
+      whatAreYouBuilding: `In this level, you build: Schema Validation & Zombie Subprocess Reaping.
+
+Enforce strict JSON Schema and terminate runaway tools.
+
+You are creating a reliable component of Model Context Protocol (MCP) Runtime. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• set-tool-timeout <ms> -> Configures hard execution timeout for all tool subprocesses.
+• execute-tool-sandboxed <name> <args> -> Executes tool under strict timeout and schema verification.
+• check-tool-zombies -> Verifies no zombie processes are left on host.`,
+      technicalTerms: [
+        {
+                "term": "JSON Schema validation",
+                "definition": "verifying required properties, types, and ranges before execution."
+        },
+        {
+                "term": "Subprocess timeout deadlines (e",
+                "definition": "g. 50ms max execution)."
+        },
+        {
+                "term": "Sending SIGKILL and reaping child process zombie descriptors when tools exceed time budgets",
+                "definition": ""
+        }
+],
       description: `In Level 3 (Schema Validation & Zombie Subprocess Reaping), you engineer the core mechanisms for Model Context Protocol (MCP) Runtime.
 
 Enforce strict JSON Schema and terminate runaway tools.
@@ -339,6 +425,35 @@ Incoming "tools/call"
       title: "Multi-Agent Parallel Tool Orchestration",
       difficulty: "Hard",
       tagline: "Concurrently dispatch 50 tool executions across multiple agents.",
+      whatAreYouBuilding: `In this level, you build: Multi-Agent Parallel Tool Orchestration.
+
+Concurrently dispatch 50 tool executions across multiple agents.
+
+You are creating a reliable component of Model Context Protocol (MCP) Runtime. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• dispatch-parallel <count> -> Fires N simultaneous tool requests across worker pool.
+• cancel-request <id> -> Cancels active in-flight tool execution.
+• dispatch-long-job id=<id> -> Dispatches a job that runs long enough to be cancelled.`,
+      technicalTerms: [
+        {
+                "term": "Asynchronous task IDs",
+                "definition": "correlating responses to requests via unique JSON.RPC ids."
+        },
+        {
+                "term": "Non",
+                "definition": "blocking worker pool. executing independent tools concurrently."
+        },
+        {
+                "term": "Request cancellation",
+                "definition": "routing 'notifications/cancelled' to terminate target jobs."
+        }
+],
       description: `In Level 4 (Multi-Agent Parallel Tool Orchestration), you engineer the core mechanisms for Model Context Protocol (MCP) Runtime.
 
 Concurrently dispatch 50 tool executions across multiple agents.
@@ -419,6 +534,35 @@ Agent 3 (id: 103) ──┘        │
       title: "Protocol Overhead & Dispatch Profiling",
       difficulty: "Hard",
       tagline: "Measure microsecond JSON-RPC framing tax vs tool execution.",
+      whatAreYouBuilding: `In this level, you build: Protocol Overhead & Dispatch Profiling.
+
+Measure microsecond JSON-RPC framing tax vs tool execution.
+
+You are creating a reliable component of Model Context Protocol (MCP) Runtime. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• profile-tool-overhead -> Benchmarks round-trip latency of an empty no-op tool call.
+• bench-dispatch-qps <threads> -> Measures tool dispatches per second under multi-threaded load.
+• measure-p99-dispatch -> Measures the p99 tail latency for tool dispatch.`,
+      technicalTerms: [
+        {
+                "term": "JSON",
+                "definition": "RPC protocol tax. serialization, schema parsing, and pipe context switches."
+        },
+        {
+                "term": "Measuring p50, p95, p99 dispatch latency",
+                "definition": ""
+        },
+        {
+                "term": "Quantifying CPU heap allocations during high",
+                "definition": "frequency agent tool calls."
+        }
+],
       description: `In Level 5 (Protocol Overhead & Dispatch Profiling), you engineer the core mechanisms for Model Context Protocol (MCP) Runtime.
 
 Measure microsecond JSON-RPC framing tax vs tool execution.
@@ -497,6 +641,35 @@ Round-Trip Tool Call Timeline (Total Overhead: 0.75ms):
       title: "Zero-Copy JSON Stream Parsing & Fast Dispatch",
       difficulty: "Hard",
       tagline: "Achieve sub-0.1ms tool dispatch using SIMD JSON parsing and buffer recycling.",
+      whatAreYouBuilding: `In this level, you build: Zero-Copy JSON Stream Parsing & Fast Dispatch.
+
+Achieve sub-0.1ms tool dispatch using SIMD JSON parsing and buffer recycling.
+
+You are creating a reliable component of Model Context Protocol (MCP) Runtime. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• enable-simd-parser -> Activates SIMD-accelerated zero-copy JSON tokenizer.
+• bench-fast-dispatch 10000 -> Measures 10,000 tool dispatches through optimized pipeline.
+• verify-zero-allocs -> Checks that no heap allocations occur during hot-path dispatch.`,
+      technicalTerms: [
+        {
+                "term": "SIMD structural indexing",
+                "definition": "finding quotes, colons, and braces in 64.byte chunks with vector intrinsics."
+        },
+        {
+                "term": "Zero",
+                "definition": "copy string views directly referencing input stdin buffers."
+        },
+        {
+                "term": "Recycling argument vectors to achieve 0 heap allocations during tool routing",
+                "definition": ""
+        }
+],
       description: `In Level 6 (Zero-Copy JSON Stream Parsing & Fast Dispatch), you engineer the core mechanisms for Model Context Protocol (MCP) Runtime.
 
 Achieve sub-0.1ms tool dispatch using SIMD JSON parsing and buffer recycling.

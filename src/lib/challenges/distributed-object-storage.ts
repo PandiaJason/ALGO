@@ -95,6 +95,35 @@ export const distributedObjectStorageChallenge: ChallengeData = {
       title: "Multi-Node Sharded Placement",
       difficulty: "Medium",
       tagline: "Distribute object chunks across a simulated 6-node storage cluster.",
+      whatAreYouBuilding: `In this level, you build: Multi-Node Sharded Placement.
+
+Distribute object chunks across a simulated 6-node storage cluster.
+
+You are creating a reliable component of Distributed Object Storage with Erasure Coding. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• cluster-init <nodes> -> Initializes cluster with N simulated storage node endpoints.
+• put-distributed <key> <data> -> Chunks data and distributes shards across nodes.
+• get-distributed <key> -> Fetches and reassembles shards from nodes.`,
+      technicalTerms: [
+        {
+                "term": "Consistent hashing and deterministic node placement",
+                "definition": ""
+        },
+        {
+                "term": "Object chunking and metadata manifests",
+                "definition": ""
+        },
+        {
+                "term": "Querying node endpoints to fetch dispersed file pieces",
+                "definition": ""
+        }
+],
       description: `In Level 1 (Multi-Node Sharded Placement), you engineer the core mechanisms for Distributed Object Storage with Erasure Coding.
 
 Distribute object chunks across a simulated 6-node storage cluster.
@@ -164,6 +193,34 @@ You implement multi-node chunk placement across an array of independent storage 
       title: "Reed-Solomon Erasure Coding (4+2)",
       difficulty: "Hard",
       tagline: "Split data into 4 data shards and calculate 2 parity shards using GF(2^8).",
+      whatAreYouBuilding: `In this level, you build: Reed-Solomon Erasure Coding (4+2).
+
+Split data into 4 data shards and calculate 2 parity shards using GF(2^8).
+
+You are creating a reliable component of Distributed Object Storage with Erasure Coding. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• ec-encode <data> -> Splits data into 4 data shards and generates 2 parity shards.
+• inspect-shards -> Displays byte content of all 6 generated shards.`,
+      technicalTerms: [
+        {
+                "term": "Galois Field GF(2^8) addition (XOR) and multiplication (log/antilog tables)",
+                "definition": ""
+        },
+        {
+                "term": "Vandermonde and Cauchy generator matrices",
+                "definition": ""
+        },
+        {
+                "term": "Multiplying 4 data bytes by the generator matrix to produce 2 parity bytes",
+                "definition": ""
+        }
+],
       description: `In Level 2 (Reed-Solomon Erasure Coding (4+2)), you engineer the core mechanisms for Distributed Object Storage with Erasure Coding.
 
 Split data into 4 data shards and calculate 2 parity shards using GF(2^8).
@@ -236,6 +293,34 @@ You implement the mathematical engine that generates resilient parity shards.`,
       title: "Lost Node Reconstruction & Self-Healing",
       difficulty: "Expert",
       tagline: "Recover original data when 2 out of 6 nodes are completely dead.",
+      whatAreYouBuilding: `In this level, you build: Lost Node Reconstruction & Self-Healing.
+
+Recover original data when 2 out of 6 nodes are completely dead.
+
+You are creating a reliable component of Distributed Object Storage with Erasure Coding. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• kill-nodes <nodeList> -> Simulates hardware failure of specified nodes.
+• ec-decode -> Reconstructs lost shards from surviving nodes and returns original data.`,
+      technicalTerms: [
+        {
+                "term": "Extracting the 4×4 sub",
+                "definition": "matrix corresponding to the 4 surviving shards."
+        },
+        {
+                "term": "Inverting the square sub",
+                "definition": "matrix in GF(2^8) using Gaussian elimination."
+        },
+        {
+                "term": "Multiplying inverted matrix by surviving shards to recover the exact lost bytes",
+                "definition": ""
+        }
+],
       description: `In Level 3 (Lost Node Reconstruction & Self-Healing), you engineer the core mechanisms for Distributed Object Storage with Erasure Coding.
 
 Recover original data when 2 out of 6 nodes are completely dead.
@@ -308,6 +393,34 @@ You achieve true enterprise durability: 100% data recovery despite multiple hard
       title: "Parallel Multi-Node Chunk Streaming",
       difficulty: "Hard",
       tagline: "Stream shards in parallel across multiple nodes with hedge requests.",
+      whatAreYouBuilding: `In this level, you build: Parallel Multi-Node Chunk Streaming.
+
+Stream shards in parallel across multiple nodes with hedge requests.
+
+You are creating a reliable component of Distributed Object Storage with Erasure Coding. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• bench-stream <size_mb> -> Streams multi-megabyte object concurrently across all nodes.
+• simulate-straggler <nodeId> -> Injects latency into target node to verify hedge request fallback.`,
+      technicalTerms: [
+        {
+                "term": "Parallel asynchronous shard transfer across non",
+                "definition": "blocking TCP connections."
+        },
+        {
+                "term": "Hedged requests",
+                "definition": "requesting parity shards early if a data shard straggles."
+        },
+        {
+                "term": "Connection pooling and backpressure management across storage nodes",
+                "definition": ""
+        }
+],
       description: `In Level 4 (Parallel Multi-Node Chunk Streaming), you engineer the core mechanisms for Distributed Object Storage with Erasure Coding.
 
 Stream shards in parallel across multiple nodes with hedge requests.
@@ -378,6 +491,34 @@ You conquer tail latency and maximize network bandwidth across clustered storage
       title: "Erasure Math Overhead & Network Egress",
       difficulty: "Hard",
       tagline: "Measure CPU matrix multiplication vs network egress bandwidth.",
+      whatAreYouBuilding: `In this level, you build: Erasure Math Overhead & Network Egress.
+
+Measure CPU matrix multiplication vs network egress bandwidth.
+
+You are creating a reliable component of Distributed Object Storage with Erasure Coding. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• profile-ec-math -> Measures pure Galois Field matrix encode and decode speed in MB/s.
+• measure-rebuild-amplification -> Calculates network egress bytes required to rebuild a lost disk.`,
+      technicalTerms: [
+        {
+                "term": "CPU cycles spent per byte of erasure coding",
+                "definition": ""
+        },
+        {
+                "term": "Network rebuild amplification",
+                "definition": "repairing a 1TB drive requires reading 4TB across the network."
+        },
+        {
+                "term": "Disk IOPS saturation during cluster",
+                "definition": "wide background scrubbing."
+        }
+],
       description: `In Level 5 (Erasure Math Overhead & Network Egress), you engineer the core mechanisms for Distributed Object Storage with Erasure Coding.
 
 Measure CPU matrix multiplication vs network egress bandwidth.
@@ -448,6 +589,34 @@ You identify whether systems are CPU-bound or network-bound during recovery.`,
       title: "SIMD Galois Field Arithmetic & Zero-Copy",
       difficulty: "Expert",
       tagline: "Accelerate erasure coding using 256-bit AVX2/NEON vector instructions.",
+      whatAreYouBuilding: `In this level, you build: SIMD Galois Field Arithmetic & Zero-Copy.
+
+Accelerate erasure coding using 256-bit AVX2/NEON vector instructions.
+
+You are creating a reliable component of Distributed Object Storage with Erasure Coding. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• enable-simd -> Activates AVX2/NEON vectorized GF(2^8) math kernels.
+• bench-simd-ec -> Compares scalar vs SIMD erasure coding throughput.`,
+      technicalTerms: [
+        {
+                "term": "Vectorizing Galois Field multiplication using shuffle instructions (_mm256_shuffle_epi8 / vqtbl1q_u8)",
+                "definition": ""
+        },
+        {
+                "term": "Splitting 8",
+                "definition": "bit multiplication into low.nibble and high.nibble table lookups."
+        },
+        {
+                "term": "Zero",
+                "definition": "copy socket splicing from network buffer directly to storage block."
+        }
+],
       description: `In Level 6 (SIMD Galois Field Arithmetic & Zero-Copy), you engineer the core mechanisms for Distributed Object Storage with Erasure Coding.
 
 Accelerate erasure coding using 256-bit AVX2/NEON vector instructions.

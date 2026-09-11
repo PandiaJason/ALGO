@@ -100,6 +100,35 @@ export const objectStoreChallenge: ChallengeData = {
       title: "Content-Addressed Blob Storage",
       difficulty: "Easy",
       tagline: "Implement PUT, GET, and DELETE operations with SHA-256 content addressing.",
+      whatAreYouBuilding: `In this level, you build: Content-Addressed Blob Storage.
+
+Implement PUT, GET, and DELETE operations with SHA-256 content addressing.
+
+You are creating a reliable component of Object Storage Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• PUT <key> <data> -> Stores object data under key, returning 'PUT_OK'.
+• GET <key> -> Retrieves the data stored under the given key.
+• DELETE <key> -> Removes the object from storage.`,
+      technicalTerms: [
+        {
+                "term": "SHA",
+                "definition": "256 content hashing to derive immutable storage identifiers."
+        },
+        {
+                "term": "Directory sharding",
+                "definition": "splitting hashes into prefix folders (e.g. /ab/cd/abcdef...)."
+        },
+        {
+                "term": "Handling missing keys with standard 404 error semantics",
+                "definition": ""
+        }
+],
       description: `In Level 1 (Content-Addressed Blob Storage), you engineer the core mechanisms for Object Storage Engine.
 
 Implement PUT, GET, and DELETE operations with SHA-256 content addressing.
@@ -173,6 +202,35 @@ OUTPUT: PUT_OK 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824`
       title: "Rabin Fingerprinting & Deduplication",
       difficulty: "Medium",
       tagline: "Split streams into content-defined chunks and reuse identical blocks.",
+      whatAreYouBuilding: `In this level, you build: Rabin Fingerprinting & Deduplication.
+
+Split streams into content-defined chunks and reuse identical blocks.
+
+You are creating a reliable component of Object Storage Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• PUT-DEDUP <key> <data> -> Chunks data, stores unique blocks, and records manifest.
+• STATS-DEDUP -> Reports deduplication stats (e.g. 'PHYSICAL_CHUNKS: <n>' or 'SHARED_CHUNKS: <n>').
+• check-dedup-ratio -> Checks deduplication savings ratio.`,
+      technicalTerms: [
+        {
+                "term": "Fixed chunking vs Content",
+                "definition": "Defined Chunking (CDC)."
+        },
+        {
+                "term": "Rabin rolling hashes that find chunk boundaries based on content patterns",
+                "definition": ""
+        },
+        {
+                "term": "Manifest references",
+                "definition": "mapping an object to an ordered list of shared chunk hashes."
+        }
+],
       description: `In Level 2 (Rabin Fingerprinting & Deduplication), you engineer the core mechanisms for Object Storage Engine.
 
 Split streams into content-defined chunks and reuse identical blocks.
@@ -247,6 +305,35 @@ Object Manifest for User 2: [H1, H2, H5, H4] ──► 75% Storage Saved!`,
       title: "Bit Rot Detection & Background Scrubbing",
       difficulty: "Hard",
       tagline: "Detect silent data corruption via periodic block scrubbing.",
+      whatAreYouBuilding: `In this level, you build: Bit Rot Detection & Background Scrubbing.
+
+Detect silent data corruption via periodic block scrubbing.
+
+You are creating a reliable component of Object Storage Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• corrupt-block <hash> -> Simulates silent bit rot by flipping bits in a chunk file.
+• scrub -> Performs full background scrub, reporting healthy vs corrupted blocks.
+• GET-CHUNK <hash> -> Retrieves chunk data directly by hash.`,
+      technicalTerms: [
+        {
+                "term": "End",
+                "definition": "to.end checksum verification (CRC32C, BLAKE3)."
+        },
+        {
+                "term": "Background scrubber daemons reading idle blocks and re",
+                "definition": "verifying hashes."
+        },
+        {
+                "term": "Quarantining corrupted chunks to prevent returning poisoned data to clients",
+                "definition": ""
+        }
+],
       description: `In Level 3 (Bit Rot Detection & Background Scrubbing), you engineer the core mechanisms for Object Storage Engine.
 
 Detect silent data corruption via periodic block scrubbing.
@@ -325,6 +412,35 @@ You protect storage durability against silent hardware corruption.`,
       title: "Concurrent Multipart Uploads",
       difficulty: "Hard",
       tagline: "Support multi-gigabyte uploads via parallel part streaming.",
+      whatAreYouBuilding: `In this level, you build: Concurrent Multipart Uploads.
+
+Support multi-gigabyte uploads via parallel part streaming.
+
+You are creating a reliable component of Object Storage Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• init-multipart <key> -> Initiates upload session, returning uploadId.
+• upload-part <uploadId> <partNum> <data> -> Uploads a numbered chunk part.
+• complete-multipart <uploadId> -> Assembles parts in numerical order and commits object.`,
+      technicalTerms: [
+        {
+                "term": "Multipart upload state machine",
+                "definition": "Initiate, UploadPart, CompleteMultipartUpload."
+        },
+        {
+                "term": "Part ordering, checksum validation, and out",
+                "definition": "of.order parallel arrivals."
+        },
+        {
+                "term": "Cleaning up aborted multipart uploads to prevent zombie disk leaks",
+                "definition": ""
+        }
+],
       description: `In Level 4 (Concurrent Multipart Uploads), you engineer the core mechanisms for Object Storage Engine.
 
 Support multi-gigabyte uploads via parallel part streaming.
@@ -399,6 +515,35 @@ You master robust multi-part transfer protocols for massive file transfers.`,
       title: "IOPS Saturation & Write Amplification",
       difficulty: "Hard",
       tagline: "Measure chunking CPU costs vs disk write amplification.",
+      whatAreYouBuilding: `In this level, you build: IOPS Saturation & Write Amplification.
+
+Measure chunking CPU costs vs disk write amplification.
+
+You are creating a reliable component of Object Storage Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• bench-waf <bytes> -> Measures write amplification factor for submitted payload.
+• bench-iops <threads> -> Measures random read IOPS across 10,000 chunks.
+• profile-chunker -> Profiles CDC chunking CPU throughput.`,
+      technicalTerms: [
+        {
+                "term": "Write amplification factor (WAF)",
+                "definition": "physical bytes written / logical bytes submitted."
+        },
+        {
+                "term": "Rabin rolling hash window size trade",
+                "definition": "offs."
+        },
+        {
+                "term": "Disk IOPS saturation limits during parallel random block lookups",
+                "definition": ""
+        }
+],
       description: `In Level 5 (IOPS Saturation & Write Amplification), you engineer the core mechanisms for Object Storage Engine.
 
 Measure chunking CPU costs vs disk write amplification.
@@ -475,6 +620,35 @@ You quantify the economic and hardware trade-offs of deduplication systems.`,
       title: "Zero-Copy Direct I/O & Block Coalescing",
       difficulty: "Hard",
       tagline: "Eliminate kernel page cache pollution using O_DIRECT aligned writes.",
+      whatAreYouBuilding: `In this level, you build: Zero-Copy Direct I/O & Block Coalescing.
+
+Eliminate kernel page cache pollution using O_DIRECT aligned writes.
+
+You are creating a reliable component of Object Storage Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• direct-write <key> <size> -> Writes block using sector-aligned direct I/O buffers.
+• verify-pagecache -> Confirms that direct I/O did not pollute kernel page cache.
+• bench-coalesce -> Measures block coalescing efficiency.`,
+      technicalTerms: [
+        {
+                "term": "Direct I/O (O_DIRECT) with 4KB sector alignment",
+                "definition": ""
+        },
+        {
+                "term": "Block coalescing",
+                "definition": "merging adjacent small writes into contiguous 64KB I/O blocks."
+        },
+        {
+                "term": "Zero",
+                "definition": "copy socket splicing to disk."
+        }
+],
       description: `In Level 6 (Zero-Copy Direct I/O & Block Coalescing), you engineer the core mechanisms for Object Storage Engine.
 
 Eliminate kernel page cache pollution using O_DIRECT aligned writes.

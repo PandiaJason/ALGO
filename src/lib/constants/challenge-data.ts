@@ -21,6 +21,9 @@ export interface LevelDefinition {
   title: string;
   difficulty: "Easy" | "Medium" | "Hard";
   tagline: string;
+  whatAreYouBuilding?: string;
+  howItWorks?: string;
+  technicalTerms?: Array<{ term: string; definition: string }>;
   description?: string;
   implementationGuide?: string[];
   diagram?: string;
@@ -128,6 +131,39 @@ export const LEVEL_DEFINITIONS: Record<number, LevelDefinition> = {
     difficulty: "Easy",
     tagline:
       "Implement fundamental SET, GET, DELETE, and EXISTS operations with direct O(1) in-memory hash resolution.",
+      whatAreYouBuilding: `In this level, you build: Basic In-Memory Store.
+
+Implement fundamental SET, GET, DELETE, and EXISTS operations with direct O(1) in-memory hash resolution.
+
+You are creating a reliable component of Key-Value Storage Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• SET key value -> Stores key-value pair in memory. Overwrites existing value if present. Returns OK.
+• GET key -> Retrieves value associated with key. Returns the string value or NULL if missing.
+• DELETE key -> Deletes key from memory. Returns OK if deleted, or NOT_FOUND if missing.`,
+      technicalTerms: [
+        {
+                "term": "In",
+                "definition": "Memory Pointer Resolution. How key.value pairs reside directly in process heap memory with amortized O(1) time complexity."
+        },
+        {
+                "term": "Stream Command Protocol",
+                "definition": "How engines parse raw stdin/stdout tokens into operational verbs (SET, GET, DELETE, EXISTS) and arbitrary UTF.8 string payloads."
+        },
+        {
+                "term": "Idempotency & Return Contracts",
+                "definition": "How production systems handle missing keys deterministically (NULL vs NOT_FOUND vs FALSE) without throwing unhandled exceptions."
+        },
+        {
+                "term": "Process Memory Footprint",
+                "definition": "The foundational baseline of heap allocation before introducing disk persistence or concurrent threading."
+        }
+],
       description: `In Level 1 (Basic In-Memory Store), you engineer the core mechanisms for Key-Value Storage Engine.
 
 Implement fundamental SET, GET, DELETE, and EXISTS operations with direct O(1) in-memory hash resolution.
@@ -254,6 +290,39 @@ NOT_FOUND`,
     difficulty: "Medium",
     tagline:
       "Build a custom internal hash table with 64-bit hashing, collision chaining / open addressing, and dynamic load factor threshold rehashing.",
+      whatAreYouBuilding: `In this level, you build: Efficient Lookup & Collision Resolution.
+
+Build a custom internal hash table with 64-bit hashing, collision chaining / open addressing, and dynamic load factor threshold rehashing.
+
+You are creating a reliable component of Key-Value Storage Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• SET key value -> Hashes key, computes bucket index, resolves collisions, and resizes if load factor > 0.75. Returns OK.
+• GET key -> Probes collision chain / bucket to retrieve value. Returns value or NULL.
+• DELETE key -> Removes entry and marks tombstone or unlinks node. Returns OK or NOT_FOUND.`,
+      technicalTerms: [
+        {
+                "term": "Uniform 64",
+                "definition": "Bit Hashing. How non.cryptographic hash functions (MurmurHash3 / FNV.1a) disperse arbitrary keys uniformly across 2^64 address slots."
+        },
+        {
+                "term": "Collision Resolution Dynamics",
+                "definition": "When to use separate chaining (linked list / bucket vectors) vs open addressing (linear probing) for CPU L1/L2 cache locality."
+        },
+        {
+                "term": "Dynamic Load Factor & Table Expansion",
+                "definition": "Why a 0.75 load factor threshold balances memory overhead against search cost, and how progressive rehashing avoids latency spikes."
+        },
+        {
+                "term": "Tombstones & Probe Continuity",
+                "definition": "Why deleting an entry in an open.addressing table breaks subsequent probe searches unless marked with tombstones."
+        }
+],
       description: `In Level 2 (Efficient Lookup & Collision Resolution), you engineer the core mechanisms for Key-Value Storage Engine.
 
 Build a custom internal hash table with 64-bit hashing, collision chaining / open addressing, and dynamic load factor threshold rehashing.
@@ -355,6 +424,39 @@ Recompute idx = hash % 16 for all nodes ──► Zero Collisions, O(1) Preserve
     difficulty: "Medium",
     tagline:
       "Implement append-only write-ahead logging (WAL) and crash recovery replay. Ensure zero data loss across simulated process restarts.",
+      whatAreYouBuilding: `In this level, you build: Durable Persistence & Write-Ahead Log (WAL).
+
+Implement append-only write-ahead logging (WAL) and crash recovery replay. Ensure zero data loss across simulated process restarts.
+
+You are creating a reliable component of Key-Value Storage Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• SET / GET / DELETE / EXISTS -> All Level 1 & 2 operations. Every mutation is synchronously flushed to wal.log before returning OK.
+• SAVE -> Forces an immediate synchronous snapshot dump of in-memory keys to disk (dump.rdb). Returns OK.
+• RESTORE -> Restores dataset from disk snapshot. Returns OK or NOT_FOUND if snapshot missing.`,
+      technicalTerms: [
+        {
+                "term": "The Write",
+                "definition": "Ahead Logging (WAL) Principle. The cardinal rule of database systems — never alter in.memory state until the mutation is safely committed to non.volatile disk."
+        },
+        {
+                "term": "Sequential vs Random I/O Economics",
+                "definition": "Why append.only logging (WAL) is orders of magnitude faster than random disk page modifications."
+        },
+        {
+                "term": "OS Page Cache vs Hardware Flushing",
+                "definition": "Why standard file writes sit in volatile OS buffers, and why synchronous fsync/fdatasync flushes are mandatory for true durability."
+        },
+        {
+                "term": "Crash Recovery & Replay Engine",
+                "definition": "How the storage engine parses the WAL on startup, tolerates partial/corrupt trailing lines, and reconstitutes exact state in under 50ms."
+        }
+],
       description: `In Level 3 (Durable Persistence & Write-Ahead Log (WAL)), you engineer the core mechanisms for Key-Value Storage Engine.
 
 Implement append-only write-ahead logging (WAL) and crash recovery replay. Ensure zero data loss across simulated process restarts.
@@ -463,6 +565,39 @@ Replay Complete (State 100% Reconstituted) ──► Ready for Traffic`,
     difficulty: "Hard",
     tagline:
       "Implement millisecond-precision key expiration with dual-mode passive eviction on read and active background sweeping.",
+      whatAreYouBuilding: `In this level, you build: TTL & Key Expiration.
+
+Implement millisecond-precision key expiration with dual-mode passive eviction on read and active background sweeping.
+
+You are creating a reliable component of Key-Value Storage Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• SET key value -> Stores key-value pair and clears any existing TTL.
+• DELETE key -> Deletes key and its expiration timer.
+• EXPIRE key ttl_ms -> Sets time-to-live in milliseconds on key. Returns OK, or NOT_FOUND if key does not exist.`,
+      technicalTerms: [
+        {
+                "term": "Dual",
+                "definition": "Mode Eviction Architecture. Combining passive (lazy) evaluation on read with active background sweeping to prevent memory leaks."
+        },
+        {
+                "term": "Lazy Eviction Mechanics",
+                "definition": "Deferring key expiration checks until GET/EXISTS is invoked, consuming zero CPU cycles for keys that are never queried."
+        },
+        {
+                "term": "Active Sweeping & Probabilistic Sampling",
+                "definition": "Why relying exclusively on lazy eviction causes permanent memory leaks for abandoned keys, and how periodic sampling keeps heap clean."
+        },
+        {
+                "term": "Monotonic vs Wall",
+                "definition": "Clock Timers. Why wall.clock time (time.time()) can jump backwards during NTP synchronization, and why monotonic clocks (steady_clock) are required for TTL reliability."
+        }
+],
       description: `In Level 4 (TTL & Key Expiration), you engineer the core mechanisms for Key-Value Storage Engine.
 
 Implement millisecond-precision key expiration with dual-mode passive eviction on read and active background sweeping.
@@ -571,6 +706,39 @@ DUAL-MODE EVICTION ARCHITECTURE:
     difficulty: "Hard",
     tagline:
       "Scale across 16+ parallel client threads. Implement striped locking (sharded mutexes) or read-write locks to maximize concurrent throughput.",
+      whatAreYouBuilding: `In this level, you build: Concurrency & Thread-Safe Operations.
+
+Scale across 16+ parallel client threads. Implement striped locking (sharded mutexes) or read-write locks to maximize concurrent throughput.
+
+You are creating a reliable component of Key-Value Storage Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• All Level 1-4 Operations -> Fully thread-safe under concurrent multi-threaded execution without data races.
+• PING [msg] -> Server health check. Returns PONG or echoed string.
+• MGET key1 key2 ... -> Atomically retrieves multiple keys in a single consistent snapshot. Returns space-separated values.`,
+      technicalTerms: [
+        {
+                "term": "Lock Contention & Amdahl's Law",
+                "definition": "How fine.grained locking prevents concurrent workers from stalling each other under high load."
+        },
+        {
+                "term": "Striped Locking (Sharded Mutexes)",
+                "definition": "Partitioning the keyspace into 32 or 64 independent mutex shards so threads modifying different keys execute in true parallel."
+        },
+        {
+                "term": "Reader",
+                "definition": "Writer Parallelism. Allowing unlimited simultaneous concurrent readers (GET) while acquiring exclusive write locks only during mutations."
+        },
+        {
+                "term": "Deadlock Prevention in Multi",
+                "definition": "Key Transactions. Why atomic operations on multiple keys (MGET, MSET) cause cyclic deadlocks if locks are acquired arbitrarily, and how sorting shard indices guarantees deadlock freedom."
+        }
+],
       description: `In Level 5 (Concurrency & Thread-Safe Operations), you engineer the core mechanisms for Key-Value Storage Engine.
 
 Scale across 16+ parallel client threads. Implement striped locking (sharded mutexes) or read-write locks to maximize concurrent throughput.
@@ -674,6 +842,39 @@ Client Thread 1 (SET "user:1")    Client Thread 2 (GET "order:99")
     difficulty: "Hard",
     tagline:
       "Push hardware limits. Exceed 100,000 ops/sec with sub-0.20ms p99 latency under a strict 256MB memory cap using custom memory pooling and WAL compaction.",
+      whatAreYouBuilding: `In this level, you build: Extreme Optimization & Memory Compaction.
+
+Push hardware limits. Exceed 100,000 ops/sec with sub-0.20ms p99 latency under a strict 256MB memory cap using custom memory pooling and WAL compaction.
+
+You are creating a reliable component of Key-Value Storage Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• All Prior Operations -> Executed with zero-copy I/O parsing, SIMD string comparisons, and cache-line aligned layouts.
+• COMPACT -> Rewrites Write-Ahead Log by discarding superseded mutations and defragmenting memory. Returns OK.
+• MEMSTATS -> Returns detailed memory metrics. For exact test cases, expects specific format like 'ALLOCATED_BYTES: 1024 PEAK_BYTES: 1024 FRAGMENTATION_RATIO: 1.00'.`,
+      technicalTerms: [
+        {
+                "term": "Online WAL Compaction",
+                "definition": "How to defragment an append.only log on the fly, condensing thousands of intermediate mutations into final states to reclaim disk space."
+        },
+        {
+                "term": "Slab Allocation & Memory Arenas",
+                "definition": "Why frequent malloc/free calls fragment the heap until the OS cgroup kills the container, and how fixed.size memory pools maintain 1.0 fragmentation ratio."
+        },
+        {
+                "term": "CPU Cache Locality & 64",
+                "definition": "Byte Alignment. Structuring memory to match hardware L1/L2 cache lines (64 bytes), avoiding multi.cycle CPU cache misses."
+        },
+        {
+                "term": "Zero",
+                "definition": "Copy Serialization. Parsing network and stream buffers directly in place without intermediate string memory allocations."
+        }
+],
       description: `In Level 6 (Extreme Optimization & Memory Compaction), you engineer the core mechanisms for Key-Value Storage Engine.
 
 Push hardware limits. Exceed 100,000 ops/sec with sub-0.20ms p99 latency under a strict 256MB memory cap using custom memory pooling and WAL compaction.

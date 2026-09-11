@@ -94,6 +94,35 @@ export const taskSchedulerChallenge: ChallengeData = {
       title: "Cluster Node Registry & FIFO Scheduling",
       difficulty: "Easy",
       tagline: "Register cluster nodes with CPU and RAM capacities. Schedule queued tasks in arrival order on the first eligible node.",
+      whatAreYouBuilding: `In this level, you build: Cluster Node Registry & FIFO Scheduling.
+
+Register cluster nodes with CPU and RAM capacities. Schedule queued tasks in arrival order on the first eligible node.
+
+You are creating a reliable component of Multi-Resource Task Scheduler. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• ADD_NODE <node_id> <cpu> <ram> -> Registers a worker node. Returns 'OK'.
+• SUBMIT <task_id> <cpu> <ram> -> Submits task to the queue. Returns 'QUEUED'.
+• SCHEDULE -> Attempts to schedule the next queued task. Returns 'SCHEDULED <task_id> -> <node_id>' or 'WAITING'.`,
+      technicalTerms: [
+        {
+                "term": "Tracking node CPU and RAM capacity vs allocated usage",
+                "definition": ""
+        },
+        {
+                "term": "Iterating nodes in registration order to find first fitting node (First",
+                "definition": "Fit)."
+        },
+        {
+                "term": "Queuing tasks when no node currently has sufficient capacity",
+                "definition": ""
+        }
+],
       description: `In Level 1 (Cluster Node Registry & FIFO Scheduling), you engineer the core mechanisms for Multi-Resource Task Scheduler.
 
 Register cluster nodes with CPU and RAM capacities. Schedule queued tasks in arrival order on the first eligible node.
@@ -193,6 +222,34 @@ RUNNING worker-1`,
       title: "Task Priority Ordering & Starvation Prevention",
       difficulty: "Medium",
       tagline: "Incorporate task priority (1-100). Higher-priority tasks must schedule before lower-priority tasks.",
+      whatAreYouBuilding: `In this level, you build: Task Priority Ordering & Starvation Prevention.
+
+Incorporate task priority (1-100). Higher-priority tasks must schedule before lower-priority tasks.
+
+You are creating a reliable component of Multi-Resource Task Scheduler. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• SUBMIT_P <task_id> <priority> <cpu> <ram> -> Submits task with priority (higher int = higher priority). Returns 'QUEUED'.
+• SCHEDULE -> Schedules highest priority pending task that fits. Returns 'SCHEDULED <task_id> -> <node_id>' or 'WAITING'.`,
+      technicalTerms: [
+        {
+                "term": "Priority queue dispatch",
+                "definition": "Higher priority number dispatches first."
+        },
+        {
+                "term": "Tie",
+                "definition": "breaking by submission order (FIFO among same priority)."
+        },
+        {
+                "term": "Skipping non",
+                "definition": "fitting high priority tasks or blocking until resources open."
+        }
+],
       description: `In Level 2 (Task Priority Ordering & Starvation Prevention), you engineer the core mechanisms for Multi-Resource Task Scheduler.
 
 Incorporate task priority (1-100). Higher-priority tasks must schedule before lower-priority tasks.
@@ -274,6 +331,33 @@ SUBMIT_P med  50 2 2048  ──► │ P50: [med]  (cpu=2, ram=2048)  │       
       title: "Best-Fit Resource Packing",
       difficulty: "Medium",
       tagline: "Select the node with the least remaining resources that still fits the task (Best-Fit) to minimize fragmentation.",
+      whatAreYouBuilding: `In this level, you build: Best-Fit Resource Packing.
+
+Select the node with the least remaining resources that still fits the task (Best-Fit) to minimize fragmentation.
+
+You are creating a reliable component of Multi-Resource Task Scheduler. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• SCHEDULE_BEST -> Schedules highest priority task on node with least leftover capacity. Returns 'SCHEDULED <t> -> <n>' or 'WAITING'.`,
+      technicalTerms: [
+        {
+                "term": "Best",
+                "definition": "Fit algorithm. Score nodes based on remaining capacity after placing the task."
+        },
+        {
+                "term": "Score metric",
+                "definition": "Minimized remaining CPU + RAM normalized ratio."
+        },
+        {
+                "term": "Tie",
+                "definition": "breaking nodes deterministically by alphabetical node_id."
+        }
+],
       description: `In Level 3 (Best-Fit Resource Packing), you engineer the core mechanisms for Multi-Resource Task Scheduler.
 
 Select the node with the least remaining resources that still fits the task (Best-Fit) to minimize fragmentation.
@@ -355,6 +439,34 @@ Min leftover capacity wins                   │ Leftover: 0c / 0MB   (BEST!) �
       title: "Task Lifecycle & Dynamic Deallocation",
       difficulty: "Medium",
       tagline: "Support task completion, freeing assigned CPU and RAM, and allowing waiting tasks to schedule immediately.",
+      whatAreYouBuilding: `In this level, you build: Task Lifecycle & Dynamic Deallocation.
+
+Support task completion, freeing assigned CPU and RAM, and allowing waiting tasks to schedule immediately.
+
+You are creating a reliable component of Multi-Resource Task Scheduler. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• COMPLETE <task_id> -> Marks running task finished, frees node resources. Returns 'COMPLETED <task_id>' or 'NOT_FOUND'.
+• CLUSTER_STATS -> Returns 'NODES <count> RUNNING <count> CPU_FREE <cores> RAM_FREE <mb>'.`,
+      technicalTerms: [
+        {
+                "term": "Transitions",
+                "definition": "PENDING .> RUNNING .> COMPLETED."
+        },
+        {
+                "term": "Atomic subtraction of allocated resources upon task completion",
+                "definition": ""
+        },
+        {
+                "term": "Cluster utilization statistics reporting",
+                "definition": ""
+        }
+],
       description: `In Level 4 (Task Lifecycle & Dynamic Deallocation), you engineer the core mechanisms for Multi-Resource Task Scheduler.
 
 Support task completion, freeing assigned CPU and RAM, and allowing waiting tasks to schedule immediately.
@@ -438,6 +550,33 @@ COMPLETE t1 (cpu=4, ram=4096)                 ┌──────────�
       title: "Node Heartbeat Failure & Pod Eviction",
       difficulty: "Hard",
       tagline: "Handle node crashes. Tasks running on dead nodes must be evicted and returned to PENDING state with original priority.",
+      whatAreYouBuilding: `In this level, you build: Node Heartbeat Failure & Pod Eviction.
+
+Handle node crashes. Tasks running on dead nodes must be evicted and returned to PENDING state with original priority.
+
+You are creating a reliable component of Multi-Resource Task Scheduler. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• KILL_NODE <node_id> -> Simulates node crash. Evicts running tasks back to PENDING queue. Returns 'DEAD <node_id> EVICTED <count>' or 'NOT_FOUND'.`,
+      technicalTerms: [
+        {
+                "term": "Removing node from active cluster topology",
+                "definition": ""
+        },
+        {
+                "term": "Iterating running tasks assigned to the dead node and resetting their status to PENDING",
+                "definition": ""
+        },
+        {
+                "term": "Re",
+                "definition": "inserting evicted tasks into the priority scheduling queue."
+        }
+],
       description: `In Level 5 (Node Heartbeat Failure & Pod Eviction), you engineer the core mechanisms for Multi-Resource Task Scheduler.
 
 Handle node crashes. Tasks running on dead nodes must be evicted and returned to PENDING state with original priority.
@@ -521,6 +660,35 @@ DEAD n1 EVICTED 2                            │  • t2 (P10) ──► EVICTED
       title: "Multi-Tenant Dominant Resource Fairness (DRF)",
       difficulty: "Hard",
       tagline: "Implement DRF across multiple tenants. Allocate to the tenant with the lowest dominant share.",
+      whatAreYouBuilding: `In this level, you build: Multi-Tenant Dominant Resource Fairness (DRF).
+
+Implement DRF across multiple tenants. Allocate to the tenant with the lowest dominant share.
+
+You are creating a reliable component of Multi-Resource Task Scheduler. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• SUBMIT_USER <user> <task_id> <cpu> <ram> -> Submits task under a tenant/user account. Returns 'QUEUED'.
+• SCHEDULE_DRF -> Schedules next task for tenant with lowest dominant share. Returns 'DRF_SCHEDULED <user> <task_id> -> <node_id>' or 'WAITING'.
+• USER_SHARE <user> -> Returns 'SHARE <user> <pct>%' where pct is dominant share percentage rounded to 1 decimal place.`,
+      technicalTerms: [
+        {
+                "term": "Dominant share = max(allocated_cpu / total_cpu, allocated_ram / total_ram)",
+                "definition": ""
+        },
+        {
+                "term": "Selecting tenant with minimum dominant share for next allocation",
+                "definition": ""
+        },
+        {
+                "term": "Multi",
+                "definition": "tenant fairness in shared computing clusters."
+        }
+],
       description: `In Level 6 (Multi-Tenant Dominant Resource Fairness (DRF)), you engineer the core mechanisms for Multi-Resource Task Scheduler.
 
 Implement DRF across multiple tenants. Allocate to the tenant with the lowest dominant share.

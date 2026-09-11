@@ -96,6 +96,35 @@ export const rateLimiterChallenge: ChallengeData = {
       title: "Fixed-Window Epoch Rate Limiter",
       difficulty: "Easy",
       tagline: "Track request counts per fixed time window. Allow requests under capacity and reject those exceeding the threshold.",
+      whatAreYouBuilding: `In this level, you build: Fixed-Window Epoch Rate Limiter.
+
+Track request counts per fixed time window. Allow requests under capacity and reject those exceeding the threshold.
+
+You are creating a reliable component of Concurrent Rate Limiter & Traffic Shaper. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• CONFIG <limit> <window_sec> -> Sets global limit and window in seconds. Returns 'OK'.
+• REQUEST <client_id> <timestamp_ms> -> Evaluates request. Returns 'ALLOWED <remaining>' or 'REJECTED <retry_after_ms>'.
+• RESET <client_id> -> Resets client's counter. Returns 'OK'.`,
+      technicalTerms: [
+        {
+                "term": "Computing window epoch = floor(timestamp_ms / (window_sec * 1000))",
+                "definition": ""
+        },
+        {
+                "term": "Resetting counter when client enters a new epoch",
+                "definition": ""
+        },
+        {
+                "term": "Calculating precise retry_after_ms to inform throttled clients",
+                "definition": ""
+        }
+],
       description: `In Level 1 (Fixed-Window Epoch Rate Limiter), you engineer the core mechanisms for Concurrent Rate Limiter & Traffic Shaper.
 
 Track request counts per fixed time window. Allow requests under capacity and reject those exceeding the threshold.
@@ -197,6 +226,34 @@ ALLOWED 1`,
       title: "Sliding Window Timestamp Log",
       difficulty: "Medium",
       tagline: "Prevent 2x edge bursts. Store timestamps in a sliding window log and evict timestamps outside the active window.",
+      whatAreYouBuilding: `In this level, you build: Sliding Window Timestamp Log.
+
+Prevent 2x edge bursts. Store timestamps in a sliding window log and evict timestamps outside the active window.
+
+You are creating a reliable component of Concurrent Rate Limiter & Traffic Shaper. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• CONFIG_SLIDING <limit> <window_sec> -> Configures sliding window log. Returns 'OK'.
+• REQUEST_SLIDING <client_id> <timestamp_ms> -> Evaluates request using sliding window. Returns 'ALLOWED <remaining>' or 'REJECTED <retry_after_ms>'.`,
+      technicalTerms: [
+        {
+                "term": "Sliding window",
+                "definition": "Rolling interval [timestamp . window_ms, timestamp]."
+        },
+        {
+                "term": "Evicting timestamps older than the sliding threshold",
+                "definition": ""
+        },
+        {
+                "term": "Computing accurate retry_after based on the earliest timestamp in the log",
+                "definition": ""
+        }
+],
       description: `In Level 2 (Sliding Window Timestamp Log), you engineer the core mechanisms for Concurrent Rate Limiter & Traffic Shaper.
 
 Prevent 2x edge bursts. Store timestamps in a sliding window log and evict timestamps outside the active window.
@@ -279,6 +336,34 @@ REQUEST_SLIDING c1 9100  ──► Evict < 4100 ──► [t=4500, t=9100]      
       title: "Continuous Refill Token Bucket",
       difficulty: "Medium",
       tagline: "Refill tokens lazily based on elapsed time. Allow short bursts up to bucket capacity while enforcing average rate.",
+      whatAreYouBuilding: `In this level, you build: Continuous Refill Token Bucket.
+
+Refill tokens lazily based on elapsed time. Allow short bursts up to bucket capacity while enforcing average rate.
+
+You are creating a reliable component of Concurrent Rate Limiter & Traffic Shaper. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• CONFIG_BUCKET <client_id> <capacity> <refill_rate_per_sec> -> Initializes token bucket (starts full). Returns 'OK'.
+• ACQUIRE <client_id> <tokens> <timestamp_ms> -> Attempts to consume tokens. Returns 'ALLOWED <tokens_remaining>' or 'REJECTED'.`,
+      technicalTerms: [
+        {
+                "term": "Lazy refill",
+                "definition": "tokens = min(capacity, current_tokens + elapsed_sec * rate)."
+        },
+        {
+                "term": "Deducting acquired tokens atomically",
+                "definition": ""
+        },
+        {
+                "term": "Burst capability",
+                "definition": "allowing spikes up to capacity when bucket is full."
+        }
+],
       description: `In Level 3 (Continuous Refill Token Bucket), you engineer the core mechanisms for Concurrent Rate Limiter & Traffic Shaper.
 
 Refill tokens lazily based on elapsed time. Allow short bursts up to bucket capacity while enforcing average rate.
@@ -362,6 +447,35 @@ ACQUIRE c1 1 2000        ──► Deduct 1    │ Tokens: [●]         (1/5)  
       title: "Smooth Outbound Traffic Shaping",
       difficulty: "Medium",
       tagline: "Smooth bursty inbound spikes into a constant outbound flow. Buffer requests up to queue capacity and drop overflows.",
+      whatAreYouBuilding: `In this level, you build: Smooth Outbound Traffic Shaping.
+
+Smooth bursty inbound spikes into a constant outbound flow. Buffer requests up to queue capacity and drop overflows.
+
+You are creating a reliable component of Concurrent Rate Limiter & Traffic Shaper. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• CONFIG_LEAKY <capacity> <leak_rate_per_sec> -> Sets leaky queue capacity and leak rate. Returns 'OK'.
+• ENQUEUE <request_id> <timestamp_ms> -> Enqueues request. Returns 'QUEUED <queue_len>' or 'DROPPED'.
+• LEAK <timestamp_ms> -> Drains processed requests up to timestamp. Returns 'PROCESSED <ids...>' or 'IDLE'.`,
+      technicalTerms: [
+        {
+                "term": "Queuing inbound requests in a bounded buffer",
+                "definition": ""
+        },
+        {
+                "term": "Leaking items at a constant rate = elapsed_sec * leak_rate",
+                "definition": ""
+        },
+        {
+                "term": "Dropping requests immediately when buffer exceeds maximum capacity",
+                "definition": ""
+        }
+],
       description: `In Level 4 (Smooth Outbound Traffic Shaping), you engineer the core mechanisms for Concurrent Rate Limiter & Traffic Shaper.
 
 Smooth bursty inbound spikes into a constant outbound flow. Buffer requests up to queue capacity and drop overflows.
@@ -447,6 +561,35 @@ LEAK 2000 ───────────────────────�
       title: "Multi-Tenant Tiered Quotas & SLA Enforcement",
       difficulty: "Hard",
       tagline: "Assign clients to subscription tiers (FREE, PRO, ENTERPRISE) with independent quotas and burst allowances.",
+      whatAreYouBuilding: `In this level, you build: Multi-Tenant Tiered Quotas & SLA Enforcement.
+
+Assign clients to subscription tiers (FREE, PRO, ENTERPRISE) with independent quotas and burst allowances.
+
+You are creating a reliable component of Concurrent Rate Limiter & Traffic Shaper. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• ADD_TIER <tier> <limit> <window_sec> -> Registers tier policy. Returns 'OK'.
+• ASSIGN_TIER <client_id> <tier> -> Assigns client to tier. Returns 'OK' or 'NOT_FOUND'.
+• REQUEST_TIER <client_id> <timestamp_ms> -> Evaluates request under client's tier. Returns 'ALLOWED <tier> <remaining>' or 'REJECTED <tier>'.`,
+      technicalTerms: [
+        {
+                "term": "Dynamic tier configuration (rate limits per time window)",
+                "definition": ""
+        },
+        {
+                "term": "Mapping client identity to tier policies with default fallbacks",
+                "definition": ""
+        },
+        {
+                "term": "Independent tenant quota state tracking",
+                "definition": ""
+        }
+],
       description: `In Level 5 (Multi-Tenant Tiered Quotas & SLA Enforcement), you engineer the core mechanisms for Concurrent Rate Limiter & Traffic Shaper.
 
 Assign clients to subscription tiers (FREE, PRO, ENTERPRISE) with independent quotas and burst allowances.
@@ -534,6 +677,34 @@ REQUEST_TIER bob 2000                     │ Current usage: 2/5          │ �
       title: "Rate Limiting Telemetry & State Tracking",
       difficulty: "Hard",
       tagline: "Track rate limiter telemetry and state without overshooting limits. (Note: this is sequential state tracking in standard I/O, not a multi-threaded system).",
+      whatAreYouBuilding: `In this level, you build: Rate Limiting Telemetry & State Tracking.
+
+Track rate limiter telemetry and state without overshooting limits. (Note: this is sequential state tracking in standard I/O, not a multi-threaded system).
+
+You are creating a reliable component of Concurrent Rate Limiter & Traffic Shaper. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• ATOMIC_ACQUIRE <client_id> <tokens> <timestamp_ms> -> Executes atomic acquire. Returns 'ALLOWED <remaining>' or 'RATE_LIMITED'.
+• CLIENT_STATS <client_id> -> Returns 'STATS <client_id> ALLOWED <n> REJECTED <n> TOKENS <n>'.`,
+      technicalTerms: [
+        {
+                "term": "Tracking complete state per client",
+                "definition": ""
+        },
+        {
+                "term": "Zero",
+                "definition": "overshoot guarantees."
+        },
+        {
+                "term": "Client rate telemetry",
+                "definition": "Total allowed, total rejected, current tokens."
+        }
+],
       description: `In Level 6 (Rate Limiting Telemetry & State Tracking), you engineer the core mechanisms for Concurrent Rate Limiter & Traffic Shaper.
 
 Track rate limiter telemetry and state without overshooting limits. (Note: this is sequential state tracking in standard I/O, not a multi-threaded system).

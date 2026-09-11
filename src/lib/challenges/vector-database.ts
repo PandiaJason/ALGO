@@ -96,6 +96,35 @@ export const vectorDatabaseChallenge: ChallengeData = {
       title: "Exact Nearest Neighbors (Brute Force)",
       difficulty: "Easy",
       tagline: "Insert multi-dimensional vectors and find exact nearest neighbors using cosine similarity.",
+      whatAreYouBuilding: `In this level, you build: Exact Nearest Neighbors (Brute Force).
+
+Insert multi-dimensional vectors and find exact nearest neighbors using cosine similarity.
+
+You are creating a reliable component of Vector Database (HNSW Index). When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• insert-vector <id> <dim1,dim2,...> -> Inserts a vector embedding into storage.
+• query-knn <dim1,dim2,...> <k> -> Performs brute-force scan returning top-K nearest IDs as TOP_N: id1, id2, ...
+• query-l2 <dim1,dim2,...> <k> -> Performs brute-force scan using Euclidean L2 distance.`,
+      technicalTerms: [
+        {
+                "term": "Cosine similarity formula",
+                "definition": "dot(A, B) / (norm(A) * norm(B))."
+        },
+        {
+                "term": "Linear O(N) scan",
+                "definition": "comparing a query vector against all N stored vectors."
+        },
+        {
+                "term": "Bounded priority queue (min",
+                "definition": "heap) to track the top.K highest similarity candidates."
+        }
+],
       description: `In Level 1 (Exact Nearest Neighbors (Brute Force)), you engineer the core mechanisms for Vector Database (HNSW Index).
 
 Insert multi-dimensional vectors and find exact nearest neighbors using cosine similarity.
@@ -171,6 +200,39 @@ You implement exact ground-truth nearest-neighbor retrieval.`,
       title: "Hierarchical Navigable Small World (HNSW)",
       difficulty: "Hard",
       tagline: "Build a multi-layer skip-graph and search in O(log N) time.",
+      whatAreYouBuilding: `In this level, you build: Hierarchical Navigable Small World (HNSW).
+
+Build a multi-layer skip-graph and search in O(log N) time.
+
+You are creating a reliable component of Vector Database (HNSW Index). When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• hnsw-insert <id> <vector> -> Inserts vector into multi-layer HNSW graph structure.
+• hnsw-search <vector> <k> <efSearch> -> Searches HNSW index using beam search parameter.
+• inspect-hnsw-layers -> Checks if multi-layer graph routing is populated.`,
+      technicalTerms: [
+        {
+                "term": "Probabilistic layer assignment (similar to skip",
+                "definition": "lists)."
+        },
+        {
+                "term": "Greedy routing on upper layers (jumping large geometric distances)",
+                "definition": ""
+        },
+        {
+                "term": "Beam search with candidate set (efSearch) on Layer 0",
+                "definition": ""
+        },
+        {
+                "term": "Heuristic neighbor pruning",
+                "definition": "connecting to diverse nearest nodes (M max connections)."
+        }
+],
       description: `In Level 2 (Hierarchical Navigable Small World (HNSW)), you engineer the core mechanisms for Vector Database (HNSW Index).
 
 Build a multi-layer skip-graph and search in O(log N) time.
@@ -247,6 +309,35 @@ You master the gold-standard algorithm for high-dimensional vector search.`,
       title: "Dynamic Deletions & Disconnected Components",
       difficulty: "Hard",
       tagline: "Delete nodes without leaving disconnected graph islands.",
+      whatAreYouBuilding: `In this level, you build: Dynamic Deletions & Disconnected Components.
+
+Delete nodes without leaving disconnected graph islands.
+
+You are creating a reliable component of Vector Database (HNSW Index). When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• hnsw-delete <id> -> Deletes or tombstones vector, re-wiring adjacent edges.
+• compact-graph -> Purges tombstones and rebalances layer connectivity.
+• delete-entry-point -> Deletes the topmost entry point to test migration.`,
+      technicalTerms: [
+        {
+                "term": "Tombstoning",
+                "definition": "marking nodes as deleted to exclude from search without immediate re.wiring."
+        },
+        {
+                "term": "Neighbor edge healing",
+                "definition": "connecting a deleted node's neighbors to each other."
+        },
+        {
+                "term": "Entry point relocation if the top",
+                "definition": "layer entry node is deleted."
+        }
+],
       description: `In Level 3 (Dynamic Deletions & Disconnected Components), you engineer the core mechanisms for Vector Database (HNSW Index).
 
 Delete nodes without leaving disconnected graph islands.
@@ -320,6 +411,35 @@ You protect vector graph integrity against structural degradation over continuou
       title: "Concurrent Graph Updates & Multi-Index Sharding",
       difficulty: "Hard",
       tagline: "Shard vectors across 4 independent partitions and search in parallel.",
+      whatAreYouBuilding: `In this level, you build: Concurrent Graph Updates & Multi-Index Sharding.
+
+Shard vectors across 4 independent partitions and search in parallel.
+
+You are creating a reliable component of Vector Database (HNSW Index). When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• create-shards <count> -> Initializes N partitioned vector index shards.
+• sharded-query <vector> <k> -> Queries all shards in parallel and aggregates top-K.
+• verify-top-k-sort -> Verifies the consolidated heap returns strictly descending scores.`,
+      technicalTerms: [
+        {
+                "term": "Vector collection sharding",
+                "definition": "hash or centroid partitioning."
+        },
+        {
+                "term": "Scatter",
+                "definition": "gather query execution across sharded worker threads."
+        },
+        {
+                "term": "Heap",
+                "definition": "based top.K merger to consolidate sorted results from all shards."
+        }
+],
       description: `In Level 4 (Concurrent Graph Updates & Multi-Index Sharding), you engineer the core mechanisms for Vector Database (HNSW Index).
 
 Shard vectors across 4 independent partitions and search in parallel.
@@ -397,6 +517,35 @@ You scale vector search horizontally across multi-core and multi-partition worke
       title: "Recall vs. QPS Tradeoff Profiling",
       difficulty: "Hard",
       tagline: "Plot the Pareto frontier of Recall@10 against QPS.",
+      whatAreYouBuilding: `In this level, you build: Recall vs. QPS Tradeoff Profiling.
+
+Plot the Pareto frontier of Recall@10 against QPS.
+
+You are creating a reliable component of Vector Database (HNSW Index). When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• measure-recall <k> <efSearch> -> Calculates Recall@K against brute-force baseline for given efSearch.
+• bench-qps <threads> -> Measures queries per second under multi-threaded load.
+• measure-p99-latency -> Measures p99 tail latency for queries.`,
+      technicalTerms: [
+        {
+                "term": "Recall@K metric",
+                "definition": "|Exact_TopK ∩ Approx_TopK| / K."
+        },
+        {
+                "term": "The fundamental trade",
+                "definition": "off. higher efSearch increases recall but linearly increases distance evaluations."
+        },
+        {
+                "term": "Building an empirical Pareto efficiency frontier",
+                "definition": ""
+        }
+],
       description: `In Level 5 (Recall vs. QPS Tradeoff Profiling), you engineer the core mechanisms for Vector Database (HNSW Index).
 
 Plot the Pareto frontier of Recall@10 against QPS.
@@ -467,6 +616,35 @@ You measure empirical vector retrieval accuracy and tune latency/quality trade-o
       title: "Scalar Quantization & SIMD Dot-Product",
       difficulty: "Expert",
       tagline: "Compress vectors 4x via int8 quantization and evaluate with AVX2 dot-products.",
+      whatAreYouBuilding: `In this level, you build: Scalar Quantization & SIMD Dot-Product.
+
+Compress vectors 4x via int8 quantization and evaluate with AVX2 dot-products.
+
+You are creating a reliable component of Vector Database (HNSW Index). When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• enable-quantization -> Quantizes 32-bit float vectors into int8 representations.
+• bench-simd-search -> Compares float32 vs quantized int8 SIMD query throughput.
+• check-quant-recall -> Checks that quantization does not drop recall by more than 2%.`,
+      technicalTerms: [
+        {
+                "term": "Scalar Quantization (SQ8)",
+                "definition": "mapping 32.bit float [.1.0, 1.0] to 8.bit signed int [.128, 127]."
+        },
+        {
+                "term": "SIMD dot product instructions (_mm256_maddubs_epi16 / vdotq_s32)",
+                "definition": ""
+        },
+        {
+                "term": "Cache footprint reduction",
+                "definition": "fitting 4x more vectors directly into CPU L3 cache."
+        }
+],
       description: `In Level 6 (Scalar Quantization & SIMD Dot-Product), you engineer the core mechanisms for Vector Database (HNSW Index).
 
 Compress vectors 4x via int8 quantization and evaluate with AVX2 dot-products.

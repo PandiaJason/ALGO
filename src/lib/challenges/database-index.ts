@@ -89,6 +89,34 @@ export const databaseIndexChallenge: ChallengeData = {
       title: "Sequential Table Scanning",
       difficulty: "Easy",
       tagline: "Implement INSERT and sequential SCAN. Measure O(N) lookup degradation.",
+      whatAreYouBuilding: `In this level, you build: Sequential Table Scanning.
+
+Implement INSERT and sequential SCAN. Measure O(N) lookup degradation.
+
+You are creating a reliable component of B+ Tree Database Index Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• INSERT <id> <value> -> Appends row to table. Returns 'OK'.
+• SCAN <id> -> Sequentially scans rows for matching id. Returns '<value>' or 'NOT_FOUND'.`,
+      technicalTerms: [
+        {
+                "term": "Linear scan semantics",
+                "definition": "Iterating through an unindexed array/file."
+        },
+        {
+                "term": "Insert cost O(1) vs Lookup cost O(N)",
+                "definition": ""
+        },
+        {
+                "term": "Establishing the empirical performance baseline before indexing",
+                "definition": ""
+        }
+],
       description: `In Level 1 (Sequential Table Scanning), you engineer the core mechanisms for B+ Tree Database Index Engine.
 
 Implement INSERT and sequential SCAN. Measure O(N) lookup degradation.
@@ -160,6 +188,34 @@ NOT_FOUND`,
       title: "Sorted Primary Key Array",
       difficulty: "Medium",
       tagline: "Sort primary key pointers to reduce lookup cost from O(N) to O(log N) using binary search.",
+      whatAreYouBuilding: `In this level, you build: Sorted Primary Key Array.
+
+Sort primary key pointers to reduce lookup cost from O(N) to O(log N) using binary search.
+
+You are creating a reliable component of B+ Tree Database Index Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• INSERT <id> <value> -> Appends row to table. Returns 'OK'.
+• INDEX_GET <id> -> Performs binary search over sorted index. Returns '<value>' or 'NOT_FOUND'.`,
+      technicalTerms: [
+        {
+                "term": "Binary search over sorted key arrays",
+                "definition": ""
+        },
+        {
+                "term": "The trade",
+                "definition": "off. O(log N) search vs O(N) sorted insert shift."
+        },
+        {
+                "term": "Why databases need tree structures rather than flat sorted arrays",
+                "definition": ""
+        }
+],
       description: `In Level 2 (Sorted Primary Key Array), you engineer the core mechanisms for B+ Tree Database Index Engine.
 
 Sort primary key pointers to reduce lookup cost from O(N) to O(log N) using binary search.
@@ -224,6 +280,34 @@ Heap: [A]    [B]    [C]    [D]    [E]`,
       title: "Self-Balancing M-Way B-Tree",
       difficulty: "Hard",
       tagline: "Implement B-Tree node splitting. Keep maximum node size bounded to M keys without O(N) array shifts.",
+      whatAreYouBuilding: `In this level, you build: Self-Balancing M-Way B-Tree.
+
+Implement B-Tree node splitting. Keep maximum node size bounded to M keys without O(N) array shifts.
+
+You are creating a reliable component of B+ Tree Database Index Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• BTREE_INSERT <id> <val> -> Inserts into B-Tree with node capacity M=3. Splits on 4th key. Returns 'OK'.
+• BTREE_GET <id> -> Traverses B-Tree nodes to retrieve value. Returns '<val>' or 'NOT_FOUND'.`,
+      technicalTerms: [
+        {
+                "term": "B",
+                "definition": "Tree node capacity (M keys per node)."
+        },
+        {
+                "term": "Node splitting",
+                "definition": "Pushing median key to parent and creating two child nodes."
+        },
+        {
+                "term": "Root splitting",
+                "definition": "Increasing tree height by 1 when root overflows."
+        }
+],
       description: `In Level 3 (Self-Balancing M-Way B-Tree), you engineer the core mechanisms for B+ Tree Database Index Engine.
 
 Implement B-Tree node splitting. Keep maximum node size bounded to M keys without O(N) array shifts.
@@ -290,6 +374,34 @@ Before Split (Overflow):
       title: "B+ Tree Leaf Chaining",
       difficulty: "Hard",
       tagline: "Link leaf nodes sequentially. Execute high-speed range scans (WHERE id BETWEEN min AND max) in O(K) time.",
+      whatAreYouBuilding: `In this level, you build: B+ Tree Leaf Chaining.
+
+Link leaf nodes sequentially. Execute high-speed range scans (WHERE id BETWEEN min AND max) in O(K) time.
+
+You are creating a reliable component of B+ Tree Database Index Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• BTREE_INSERT <id> <val> -> Inserts into B-Tree with node capacity M=3. Splits on 4th key. Returns 'OK'.
+• RANGE <min_id> <max_id> -> Returns space-separated values for keys in range [min_id, max_id].`,
+      technicalTerms: [
+        {
+                "term": "B+ Tree distinction",
+                "definition": "Internal nodes store only keys/routers; leaves store actual data."
+        },
+        {
+                "term": "Doubly",
+                "definition": "linked leaf pointers (prev/next)."
+        },
+        {
+                "term": "Range scan algorithm",
+                "definition": "Seek to min_id, then iterate leaf list until key > max_id."
+        }
+],
       description: `In Level 4 (B+ Tree Leaf Chaining), you engineer the core mechanisms for B+ Tree Database Index Engine.
 
 Link leaf nodes sequentially. Execute high-speed range scans (WHERE id BETWEEN min AND max) in O(K) time.
@@ -357,6 +469,34 @@ B+ Tree Leaf Chain Topology:
       title: "4KB Slotted Disk Page Layout",
       difficulty: "Hard",
       tagline: "Format leaf data into realistic 4096-byte slotted pages with page headers and item pointer arrays.",
+      whatAreYouBuilding: `In this level, you build: 4KB Slotted Disk Page Layout.
+
+Format leaf data into realistic 4096-byte slotted pages with page headers and item pointer arrays.
+
+You are creating a reliable component of B+ Tree Database Index Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• BTREE_INSERT <id> <val> -> Inserts into B-Tree with node capacity M=3. Splits on 4th key. Returns 'OK'.
+• PAGE_STATS <page_id> -> Returns slotted page metadata: FREE_BYTES: <f> ITEMS: <n>.`,
+      technicalTerms: [
+        {
+                "term": "Slotted page layout",
+                "definition": "Header at top growing down, tuples at bottom growing up."
+        },
+        {
+                "term": "Page ItemId offsets and lengths",
+                "definition": ""
+        },
+        {
+                "term": "Detecting page overflow when free_space < record_size",
+                "definition": ""
+        }
+],
       description: `In Level 5 (4KB Slotted Disk Page Layout), you engineer the core mechanisms for B+ Tree Database Index Engine.
 
 Format leaf data into realistic 4096-byte slotted pages with page headers and item pointer arrays.
@@ -423,6 +563,35 @@ PAGE_STATS 0           ──► Tuple Data grows UP (End of Page) ──► FRE
       title: "Buffer Pool Caching & Clock Sweeper",
       difficulty: "Hard",
       tagline: "Implement a bounded memory buffer pool cache. Maximize hit rate using the Clock sweep replacement algorithm.",
+      whatAreYouBuilding: `In this level, you build: Buffer Pool Caching & Clock Sweeper.
+
+Implement a bounded memory buffer pool cache. Maximize hit rate using the Clock sweep replacement algorithm.
+
+You are creating a reliable component of B+ Tree Database Index Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• BTREE_INSERT <id> <val> -> Inserts into B-Tree with node capacity M=3. Splits on 4th key. Returns 'OK'.
+• BTREE_GET <id> -> Traverses B-Tree nodes to retrieve value. Returns '<val>' or 'NOT_FOUND'.
+• BUFFER_STATS -> Returns buffer pool metrics: CAPACITY: <c> HITS: <h> MISSES: <m> HIT_RATIO: <r>.`,
+      technicalTerms: [
+        {
+                "term": "Buffer frame table",
+                "definition": "Page ID .> Memory Frame mapping."
+        },
+        {
+                "term": "Clock eviction algorithm (second",
+                "definition": "chance page replacement)."
+        },
+        {
+                "term": "Tracking buffer hit rates (HITS / TOTAL)",
+                "definition": ""
+        }
+],
       description: `In Level 6 (Buffer Pool Caching & Clock Sweeper), you engineer the core mechanisms for B+ Tree Database Index Engine.
 
 Implement a bounded memory buffer pool cache. Maximize hit rate using the Clock sweep replacement algorithm.

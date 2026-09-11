@@ -100,6 +100,35 @@ export const llmInferenceChallenge: ChallengeData = {
       title: "Autoregressive Decoder Forward Pass",
       difficulty: "Easy",
       tagline: "Implement token generation loop with greedy sampling and stop token detection.",
+      whatAreYouBuilding: `In this level, you build: Autoregressive Decoder Forward Pass.
+
+Implement token generation loop with greedy sampling and stop token detection.
+
+You are creating a reliable component of LLM Inference Engine & KV Cache. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• decode-step <prompt> <max_tokens> -> Runs autoregressive loop using fixed/deterministic simulation rules until max_tokens or EOS token.
+• sample-token <logits> <temp> -> Applies temperature scaling and selects next token.
+• validate-logits <logits> -> Validates that logit probabilities sum to one.`,
+      technicalTerms: [
+        {
+                "term": "Autoregressive generation",
+                "definition": "each new token is conditioned on all previous tokens."
+        },
+        {
+                "term": "Logits to probabilities",
+                "definition": "Softmax(logits / temperature)."
+        },
+        {
+                "term": "Greedy sampling vs temperature sampling and detecting end",
+                "definition": "of.sequence (<EOS>) tokens."
+        }
+],
       description: `In Level 1 (Autoregressive Decoder Forward Pass), you engineer the core mechanisms for LLM Inference Engine & KV Cache.
 
 Implement token generation loop with greedy sampling and stop token detection.
@@ -177,6 +206,35 @@ Prompt: "The capital of France is"
       title: "Key-Value (KV) Cache Manager",
       difficulty: "Medium",
       tagline: "Cache Key and Value tensors to eliminate redundant O(N^2) attention math.",
+      whatAreYouBuilding: `In this level, you build: Key-Value (KV) Cache Manager.
+
+Cache Key and Value tensors to eliminate redundant O(N^2) attention math.
+
+You are creating a reliable component of LLM Inference Engine & KV Cache. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• enable-kv-cache -> Activates KV cache tensor allocation.
+• inspect-kv-size -> Reports number of cached token vectors and memory footprint.
+• decode-with-cache <prompt> <max_tokens> -> Generates tokens utilizing the KV cache to skip redundant matrix math.`,
+      technicalTerms: [
+        {
+                "term": "Self",
+                "definition": "attention mechanism. Q * K^T * V."
+        },
+        {
+                "term": "Past token keys and values never change during generation",
+                "definition": ""
+        },
+        {
+                "term": "By caching past K and V tensors, we only compute Q for the single newly emitted token",
+                "definition": ""
+        }
+],
       description: `In Level 2 (Key-Value (KV) Cache Manager), you engineer the core mechanisms for LLM Inference Engine & KV Cache.
 
 Cache Key and Value tensors to eliminate redundant O(N^2) attention math.
@@ -250,6 +308,35 @@ Token 3 ──► ONLY Compute Q3!
       title: "Context Window Overflow & OOM Eviction",
       difficulty: "Hard",
       tagline: "Prevent GPU OOM crashes via sliding-window cache eviction.",
+      whatAreYouBuilding: `In this level, you build: Context Window Overflow & OOM Eviction.
+
+Prevent GPU OOM crashes via sliding-window cache eviction.
+
+You are creating a reliable component of LLM Inference Engine & KV Cache. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• set-max-context <tokens> -> Sets hard memory boundary on context tokens.
+• sliding-window-evict <window> -> Evicts middle tokens when context overflows (Note: indirectly tested via feed-tokens).
+• feed-tokens <count> -> Feeds tokens to trigger sliding window eviction on overflow.`,
+      technicalTerms: [
+        {
+                "term": "Sliding window attention",
+                "definition": "keeping the first N tokens (system prompt) and the most recent M tokens."
+        },
+        {
+                "term": "Dynamic context truncation",
+                "definition": "discarding intermediate tokens when memory exceeds limit."
+        },
+        {
+                "term": "Preventing hard SIGKILL / Out",
+                "definition": "Of.Memory segmentation faults on host."
+        }
+],
       description: `In Level 3 (Context Window Overflow & OOM Eviction), you engineer the core mechanisms for LLM Inference Engine & KV Cache.
 
 Prevent GPU OOM crashes via sliding-window cache eviction.
@@ -322,6 +409,35 @@ You harden the inference runtime against memory exhaustion and context window ov
       title: "PagedAttention & Continuous Batching",
       difficulty: "Expert",
       tagline: "Implement non-contiguous block tables and iteration-level batching.",
+      whatAreYouBuilding: `In this level, you build: PagedAttention & Continuous Batching.
+
+Implement non-contiguous block tables and iteration-level batching.
+
+You are creating a reliable component of LLM Inference Engine & KV Cache. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• init-paged-attention --block-size <tokens> -> Initializes physical block table memory manager.
+• schedule-continuous-batch -> Steps scheduler, admitting waiting requests and retiring finished ones.
+• inspect-block-table <req_id> -> Inspects logical to physical block mappings for a request.`,
+      technicalTerms: [
+        {
+                "term": "Continuous batching (iteration",
+                "definition": "level scheduling). inserting new requests on every decode step."
+        },
+        {
+                "term": "PagedAttention",
+                "definition": "dividing KV cache into fixed physical blocks (e.g. 16 tokens/block)."
+        },
+        {
+                "term": "Block tables",
+                "definition": "mapping logical token positions to non.contiguous physical memory pages."
+        }
+],
       description: `In Level 4 (PagedAttention & Continuous Batching), you engineer the core mechanisms for LLM Inference Engine & KV Cache.
 
 Implement non-contiguous block tables and iteration-level batching.
@@ -397,6 +513,35 @@ You build the industry-standard memory paging and continuous scheduling engine.`
       title: "TTFT & Inter-Token Latency (ITL)",
       difficulty: "Hard",
       tagline: "Measure prefill Time-to-First-Token vs decode Inter-Token Latency.",
+      whatAreYouBuilding: `In this level, you build: TTFT & Inter-Token Latency (ITL).
+
+Measure prefill Time-to-First-Token vs decode Inter-Token Latency.
+
+You are creating a reliable component of LLM Inference Engine & KV Cache. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• bench-serving --prompts <count> --tokens <len> -> Runs end-to-end benchmark reporting TTFT and ITL.
+• profile-bandwidth -> Measures memory bus saturation during token decoding.
+• measure-ttft -> Measures Time-To-First-Token prefill throughput.`,
+      technicalTerms: [
+        {
+                "term": "TTFT (Time",
+                "definition": "to.First.Token). prompt prefill throughput (parallel matrix multiplication)."
+        },
+        {
+                "term": "ITL (Inter",
+                "definition": "Token Latency). autoregressive decode time per token (moving KV weights from memory to compute cores)."
+        },
+        {
+                "term": "Arithmetic intensity",
+                "definition": "FLOPs per byte of memory transfer."
+        }
+],
       description: `In Level 5 (TTFT & Inter-Token Latency (ITL)), you engineer the core mechanisms for LLM Inference Engine & KV Cache.
 
 Measure prefill Time-to-First-Token vs decode Inter-Token Latency.
@@ -474,6 +619,35 @@ Request Arrives (t = 0ms)
       title: "FlashAttention Kernel & Weight Quantization",
       difficulty: "Expert",
       tagline: "Fuse attention online without materializing N×N matrices and unpack 4-bit weights.",
+      whatAreYouBuilding: `In this level, you build: FlashAttention Kernel & Weight Quantization.
+
+Fuse attention online without materializing N×N matrices and unpack 4-bit weights.
+
+You are creating a reliable component of LLM Inference Engine & KV Cache. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• enable-flash-attention -> Replaces standard attention with tiled fused SRAM kernel.
+• load-quant-weights --int4 -> Loads 4-bit packed weights for high-bandwidth generation.
+• bench-long-ctx <len> -> Tests memory usage for long sequences with FlashAttention.`,
+      technicalTerms: [
+        {
+                "term": "FlashAttention tiling",
+                "definition": "dividing Q, K, V into SRAM blocks and computing Softmax incrementally."
+        },
+        {
+                "term": "Avoiding writing the massive N×N intermediate attention matrix to slow DRAM",
+                "definition": ""
+        },
+        {
+                "term": "Weight",
+                "definition": "only 4.bit quantization (AWQ/GPTQ) to double effective memory bandwidth."
+        }
+],
       description: `In Level 6 (FlashAttention Kernel & Weight Quantization), you engineer the core mechanisms for LLM Inference Engine & KV Cache.
 
 Fuse attention online without materializing N×N matrices and unpack 4-bit weights.

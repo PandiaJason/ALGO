@@ -579,36 +579,81 @@ export function WorkspaceClient({
                   </div>
                 </div>
 
-                {/* 1.5. Deep Dive Concept & System Architecture */}
-                {currentLevelInfo.description && (
-                  <div className="rounded-xl bg-slate-50/80 border border-slate-200 p-3.5 space-y-2 text-xs leading-relaxed text-slate-800 shadow-2xs">
+                {/* TIER 1: What Are You Building (Simple Explanation First) */}
+                {currentLevelInfo.whatAreYouBuilding && (
+                  <div className="rounded-xl bg-white border border-slate-200 p-4 space-y-2 text-xs shadow-2xs">
                     <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#099BE9] flex items-center gap-1.5">
-                      <BookOpen className="w-3.5 h-3.5 text-[#099BE9]" />
-                      <span>Level Deep Dive &amp; Architecture</span>
+                      <Compass className="w-3.5 h-3.5 text-[#099BE9]" />
+                      <span>What are you building?</span>
                     </div>
-                    <div className="text-slate-800 font-normal leading-relaxed whitespace-pre-line text-xs">
-                      {currentLevelInfo.description}
+                    <div className="text-slate-800 leading-relaxed font-normal whitespace-pre-line">
+                      {currentLevelInfo.whatAreYouBuilding}
                     </div>
                   </div>
                 )}
 
-                {/* 1.6. Step-by-Step Implementation Guide */}
+                {/* TIER 1.5: How It Works (Mental Model & Examples) */}
+                {currentLevelInfo.howItWorks && (
+                  <div className="rounded-xl bg-amber-500/5 border border-amber-200/80 p-4 space-y-2 text-xs shadow-2xs">
+                    <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+                      <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
+                      <span>How it works</span>
+                    </div>
+                    <div className="text-slate-800 leading-relaxed font-normal whitespace-pre-line font-mono text-[11px]">
+                      {currentLevelInfo.howItWorks}
+                    </div>
+                  </div>
+                )}
+
+                {/* TIER 2: Technical Terms Made Simple (Engineering Terminology Second) */}
+                {Array.isArray(currentLevelInfo.technicalTerms) && currentLevelInfo.technicalTerms.length > 0 && (
+                  <div className="rounded-xl bg-[#141416] text-white p-4 space-y-2.5 shadow-sm border border-slate-800">
+                    <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                      <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Technical terms made simple</span>
+                    </div>
+                    <div className="divide-y divide-slate-800/80 pt-1">
+                      {currentLevelInfo.technicalTerms.map((t: any, idx: number) => (
+                        <div key={idx} className="py-2 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-baseline gap-1.5 text-xs">
+                          <code className="font-mono font-bold text-amber-300 text-[11px] shrink-0">{t.term}</code>
+                          <span className="text-slate-500 hidden sm:inline">—</span>
+                          <span className="text-slate-300 font-normal leading-relaxed">{t.definition}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* TIER 2.5: Step-by-Step Implementation Guide */}
                 {Array.isArray(currentLevelInfo.implementationGuide) && currentLevelInfo.implementationGuide.length > 0 && (
-                  <div className="rounded-xl border border-indigo-200/90 bg-indigo-50/50 p-3.5 space-y-2.5 shadow-2xs">
+                  <div className="rounded-xl border border-indigo-200/90 bg-indigo-50/50 p-4 space-y-2.5 shadow-2xs">
                     <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase text-indigo-950">
                       <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
-                      <span>Implementation Steps</span>
+                      <span>Step-by-Step Implementation Guide</span>
                     </div>
-                    <ol className="space-y-1.5 text-xs text-slate-800 font-medium list-none">
+                    <ol className="space-y-2 text-xs text-slate-800 font-medium list-none">
                       {currentLevelInfo.implementationGuide.map((step: string, idx: number) => (
-                        <li key={idx} className="flex items-start gap-2">
-                          <span className="flex items-center justify-center w-4 h-4 rounded-full bg-indigo-200/80 text-indigo-900 text-[10px] font-mono font-bold shrink-0 mt-0.5">
+                        <li key={idx} className="flex items-start gap-2.5">
+                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-200 text-indigo-950 text-[11px] font-mono font-bold shrink-0 mt-0.5">
                             {idx + 1}
                           </span>
-                          <span className="leading-relaxed text-slate-800">{step}</span>
+                          <span className="leading-relaxed text-slate-800 font-normal">{step}</span>
                         </li>
                       ))}
                     </ol>
+                  </div>
+                )}
+
+                {/* TIER 3: Deep Dive Concept & System Architecture (Deep Details Third) */}
+                {currentLevelInfo.description && (
+                  <div className="rounded-xl bg-slate-50/80 border border-slate-200 p-3.5 space-y-2 text-xs leading-relaxed text-slate-800 shadow-2xs">
+                    <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                      <Terminal className="w-3.5 h-3.5 text-[#099BE9]" />
+                      <span>Technical Deep Dive &amp; Architecture</span>
+                    </div>
+                    <div className="text-slate-700 font-normal leading-relaxed whitespace-pre-line text-xs">
+                      {currentLevelInfo.description}
+                    </div>
                   </div>
                 )}
 

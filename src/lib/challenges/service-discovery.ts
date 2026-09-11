@@ -98,6 +98,35 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       title: "Service Registry & TTL Heartbeat Monitor",
       difficulty: "Easy",
       tagline: "Register services with IP:port, refresh heartbeats, and evict expired nodes.",
+      whatAreYouBuilding: `In this level, you build: Service Registry & TTL Heartbeat Monitor.
+
+Register services with IP:port, refresh heartbeats, and evict expired nodes.
+
+You are creating a reliable component of Service Discovery & DNS Registry. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• register <service> <id> <ip> <port> <ttl_ms> -> Registers an instance with heartbeat lease.
+• heartbeat <id> -> Refreshes TTL lease for instance.
+• lookup <service> -> Returns list of healthy IP:port endpoints.`,
+      technicalTerms: [
+        {
+                "term": "TTL (Time",
+                "definition": "To.Live) leases. nodes must send periodic heartbeat pings."
+        },
+        {
+                "term": "Background reaper loops",
+                "definition": "evicting instances that miss their TTL deadline."
+        },
+        {
+                "term": "Multi",
+                "definition": "instance lookup. returning all healthy endpoints for a given service name."
+        }
+],
       description: `In Level 1 (Service Registry & TTL Heartbeat Monitor), you engineer the core mechanisms for Service Discovery & DNS Registry.
 
 Register services with IP:port, refresh heartbeats, and evict expired nodes.
@@ -170,6 +199,35 @@ You implement the core service catalog with automatic lease expiration.`,
       title: "RFC 1035 UDP DNS Server",
       difficulty: "Medium",
       tagline: "Parse raw UDP DNS wire packets and return binary A & SRV records.",
+      whatAreYouBuilding: `In this level, you build: RFC 1035 UDP DNS Server.
+
+Parse raw UDP DNS wire packets and return binary A & SRV records.
+
+You are creating a reliable component of Service Discovery & DNS Registry. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• dns-query <name> <type> -> Simulates DNS query for A or SRV records. Default built-in entries like web.service.algo or multi.service.algo may be queried without prior registration.
+• inspect-dns-packet <hex> -> Parses binary DNS query payload.
+• test-dns-compression -> Validates that DNS compression pointers are handled correctly.`,
+      technicalTerms: [
+        {
+                "term": "RFC 1035 DNS packet layout",
+                "definition": "Header (12 bytes), Question, Answer, Authority, Additional."
+        },
+        {
+                "term": "Domain name label encoding ('3www4algo2io0')",
+                "definition": ""
+        },
+        {
+                "term": "Binary serialization of type A (IPv4) and SRV (priority, weight, port, target) records",
+                "definition": ""
+        }
+],
       description: `In Level 2 (RFC 1035 UDP DNS Server), you engineer the core mechanisms for Service Discovery & DNS Registry.
 
 Parse raw UDP DNS wire packets and return binary A & SRV records.
@@ -243,6 +301,35 @@ You build an authoritative RFC 1035 DNS server resolving services directly over 
       title: "Flapping Node Damping & Split-Horizon DNS",
       difficulty: "Hard",
       tagline: "Suppress flapping nodes oscillating between up and down.",
+      whatAreYouBuilding: `In this level, you build: Flapping Node Damping & Split-Horizon DNS.
+
+Suppress flapping nodes oscillating between up and down.
+
+You are creating a reliable component of Service Discovery & DNS Registry. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• flap-instance <id> <times> -> Rapidly toggles instance between healthy and dead.
+• check-suppression <id> -> Reports whether instance is suppressed by flap damper.
+• tick-quiet-period <ms> -> Advances time to allow penalty decay for suppressed instances.`,
+      technicalTerms: [
+        {
+                "term": "Flap damping with hysteresis",
+                "definition": "accumulating penalty points on state changes."
+        },
+        {
+                "term": "Suppress threshold",
+                "definition": "withholding flapping nodes from DNS responses until stable."
+        },
+        {
+                "term": "Exponential decay of penalty points over quiet periods",
+                "definition": ""
+        }
+],
       description: `In Level 3 (Flapping Node Damping & Split-Horizon DNS), you engineer the core mechanisms for Service Discovery & DNS Registry.
 
 Suppress flapping nodes oscillating between up and down.
@@ -315,6 +402,35 @@ You protect downstream microservices from routing thrashing and cascading failur
       title: "SWIM Gossip Protocol Node Membership",
       difficulty: "Hard",
       tagline: "Implement decentralized failure detection across a 50-node cluster.",
+      whatAreYouBuilding: `In this level, you build: SWIM Gossip Protocol Node Membership.
+
+Implement decentralized failure detection across a 50-node cluster.
+
+You are creating a reliable component of Service Discovery & DNS Registry. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• join-cluster <nodeId> -> Adds node to SWIM gossip mesh.
+• init-gossip-mesh <size> -> Initializes a gossip mesh of the specified size.
+• gossip-tick -> Runs one round of randomized ping and ping-req protocol.`,
+      technicalTerms: [
+        {
+                "term": "SWIM failure detector",
+                "definition": "randomized ping to member every T interval."
+        },
+        {
+                "term": "Indirect ping (ping",
+                "definition": "req) via k random peers if direct ping times out."
+        },
+        {
+                "term": "Suspicion mechanism",
+                "definition": "placing unconfirmed nodes in SUSPECT state before declaring DEAD."
+        }
+],
       description: `In Level 4 (SWIM Gossip Protocol Node Membership), you engineer the core mechanisms for Service Discovery & DNS Registry.
 
 Implement decentralized failure detection across a 50-node cluster.
@@ -394,6 +510,35 @@ You master decentralized, weakly-consistent cluster membership protocols.`,
       title: "Convergence Time & DNS Latency Profiling",
       difficulty: "Hard",
       tagline: "Measure cluster gossip convergence time and DNS QPS.",
+      whatAreYouBuilding: `In this level, you build: Convergence Time & DNS Latency Profiling.
+
+Measure cluster gossip convergence time and DNS QPS.
+
+You are creating a reliable component of Service Discovery & DNS Registry. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• bench-dns-qps <threads> -> Measures DNS queries resolved per second.
+• measure-convergence <nodes> -> Measures rounds required for full cluster convergence.
+• measure-dns-tail-latency -> Measures the p99 tail latency for DNS queries.`,
+      technicalTerms: [
+        {
+                "term": "Epidemic gossip dissemination mathematics (O(log N) rounds to complete convergence)",
+                "definition": ""
+        },
+        {
+                "term": "DNS query latency percentiles (p50, p95, p99)",
+                "definition": ""
+        },
+        {
+                "term": "Measuring UDP packet drop rates under high socket buffer saturation",
+                "definition": ""
+        }
+],
       description: `In Level 5 (Convergence Time & DNS Latency Profiling), you engineer the core mechanisms for Service Discovery & DNS Registry.
 
 Measure cluster gossip convergence time and DNS QPS.
@@ -464,6 +609,35 @@ You quantify distributed failure detection speed and benchmark DNS throughput.`,
       title: "Lock-Free Routing Tables & UDP Zero-Copy",
       difficulty: "Hard",
       tagline: "Eliminate mutex contention using RCU atomic pointer swaps for route tables.",
+      whatAreYouBuilding: `In this level, you build: Lock-Free Routing Tables & UDP Zero-Copy.
+
+Eliminate mutex contention using RCU atomic pointer swaps for route tables.
+
+You are creating a reliable component of Service Discovery & DNS Registry. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• enable-rcu-tables -> Switches catalog to atomic snapshot RCU tables.
+• bench-concurrent-dns <workers> -> Tests DNS throughput under concurrent writes and reads.
+• test-atomic-swap -> Verifies the safety of lock-free RCU table swaps.`,
+      technicalTerms: [
+        {
+                "term": "Read",
+                "definition": "Copy.Update (RCU) architecture. atomic pointer swap for updates, lock.free reads."
+        },
+        {
+                "term": "Zero",
+                "definition": "allocation UDP response formatting."
+        },
+        {
+                "term": "Batching UDP packet reads using Linux recvmmsg/sendmmsg syscalls",
+                "definition": ""
+        }
+],
       description: `In Level 6 (Lock-Free Routing Tables & UDP Zero-Copy), you engineer the core mechanisms for Service Discovery & DNS Registry.
 
 Eliminate mutex contention using RCU atomic pointer swaps for route tables.

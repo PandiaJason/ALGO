@@ -99,6 +99,35 @@ export const containerRuntimeChallenge: ChallengeData = {
       title: "Process Isolation with Linux Namespaces",
       difficulty: "Medium",
       tagline: "Spawn a child process with isolated PID and hostname namespaces.",
+      whatAreYouBuilding: `In this level, you build: Process Isolation with Linux Namespaces.
+
+Spawn a child process with isolated PID and hostname namespaces.
+
+You are creating a reliable component of Container Runtime / Sandbox. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• spawn-ns <hostname> <command> -> Spawns command in new PID and UTS namespace.
+• get-container-pid -> Returns the internal PID (must be 1) and external host PID.
+• exit -> Exits the current command sequence.`,
+      technicalTerms: [
+        {
+                "term": "Syscall flags",
+                "definition": "CLONE_NEWPID, CLONE_NEWUTS, CLONE_NEWIPC."
+        },
+        {
+                "term": "PID 1 responsibilities",
+                "definition": "reaping child processes and handling default signal behavior."
+        },
+        {
+                "term": "Hostname isolation",
+                "definition": "changing container hostname without affecting host."
+        }
+],
       description: `In Level 1 (Process Isolation with Linux Namespaces), you engineer the core mechanisms for Container Runtime / Sandbox.
 
 Spawn a child process with isolated PID and hostname namespaces.
@@ -168,6 +197,35 @@ CONTAINER INTERNAL VIEW:
       title: "Filesystem Isolation & Pivot Root",
       difficulty: "Hard",
       tagline: "Securely jail container processes using pivot_root into a fresh rootfs.",
+      whatAreYouBuilding: `In this level, you build: Filesystem Isolation & Pivot Root.
+
+Securely jail container processes using pivot_root into a fresh rootfs.
+
+You are creating a reliable component of Container Runtime / Sandbox. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• mount-rootfs <dir> -> Prepares mount points and executes pivot_root into container rootfs.
+• ls-container-root -> Lists root directory inside the container.
+• test-chroot-escape -> Attempts to breakout to the host root.`,
+      technicalTerms: [
+        {
+                "term": "Mount namespaces (CLONE_NEWNS) and mount propagation flags (MS_REC | MS_PRIVATE)",
+                "definition": ""
+        },
+        {
+                "term": "pivot_root(new_root, put_old) mechanics",
+                "definition": ""
+        },
+        {
+                "term": "Unmounting old host root (umount2 with MNT_DETACH) to completely jail the container",
+                "definition": ""
+        }
+],
       description: `In Level 2 (Filesystem Isolation & Pivot Root), you engineer the core mechanisms for Container Runtime / Sandbox.
 
 Securely jail container processes using pivot_root into a fresh rootfs.
@@ -244,6 +302,39 @@ You eliminate filesystem breakout risks and jail container processes inside isol
       title: "Cgroups V2 Resource Constraints",
       difficulty: "Hard",
       tagline: "Enforce memory limits, CPU quotas, and fork-bomb protection.",
+      whatAreYouBuilding: `In this level, you build: Cgroups V2 Resource Constraints.
+
+Enforce memory limits, CPU quotas, and fork-bomb protection.
+
+You are creating a reliable component of Container Runtime / Sandbox. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• set-limits --mem <bytes> --pids <num> [--cpu <quota> <period>] -> Configures cgroups v2 resource limits for container.
+• run-with-limits <cmd> -> Executes workload. Available commands: alloc-16M, alloc-32M, fork-bomb, burn-cpu.
+• cleanup-cgroups -> Cleans up cgroup directories.`,
+      technicalTerms: [
+        {
+                "term": "cgroups v2 unified hierarchy",
+                "definition": "/sys/fs/cgroup/<group>/."
+        },
+        {
+                "term": "memory",
+                "definition": "max and memory.oom.group policies."
+        },
+        {
+                "term": "pids",
+                "definition": "max for fork.bomb mitigation."
+        },
+        {
+                "term": "cpu",
+                "definition": "max bandwidth throttling (quota and period)."
+        }
+],
       description: `In Level 3 (Cgroups V2 Resource Constraints), you engineer the core mechanisms for Container Runtime / Sandbox.
 
 Enforce memory limits, CPU quotas, and fork-bomb protection.
@@ -319,6 +410,35 @@ You protect host servers from resource starvation and fork bombs.`,
       title: "Multi-Tenant Parallel Sandbox Spawning",
       difficulty: "Hard",
       tagline: "Concurrently spawn 50 isolated sandboxes with veth bridge networking.",
+      whatAreYouBuilding: `In this level, you build: Multi-Tenant Parallel Sandbox Spawning.
+
+Concurrently spawn 50 isolated sandboxes with veth bridge networking.
+
+You are creating a reliable component of Container Runtime / Sandbox. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• spawn-pool <count> -> Spawns N concurrent sandboxes and reports active container IDs.
+• exec-sandbox <id> <command> -> Executes command inside designated sandbox.
+• exec-parallel <cmd> -> Executes a command across all sandboxes in parallel.`,
+      technicalTerms: [
+        {
+                "term": "Ephemeral sandbox lifecycles",
+                "definition": "create, execute, capture stdout/stderr, destroy."
+        },
+        {
+                "term": "Virtual ethernet pairs (veth) and container network namespaces (CLONE_NEWNET)",
+                "definition": ""
+        },
+        {
+                "term": "Automated file descriptor and cgroup cleanup upon container termination",
+                "definition": ""
+        }
+],
       description: `In Level 4 (Multi-Tenant Parallel Sandbox Spawning), you engineer the core mechanisms for Container Runtime / Sandbox.
 
 Concurrently spawn 50 isolated sandboxes with veth bridge networking.
@@ -397,6 +517,35 @@ You master scalable multi-tenant execution architectures.`,
       title: "Startup Latency & Cold-Start Microbenchmarks",
       difficulty: "Hard",
       tagline: "Profile container cold-start down to the microsecond.",
+      whatAreYouBuilding: `In this level, you build: Startup Latency & Cold-Start Microbenchmarks.
+
+Profile container cold-start down to the microsecond.
+
+You are creating a reliable component of Container Runtime / Sandbox. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• profile-boot -> Runs single container boot and reports microsecond timeline.
+• bench-spawn-rate <count> -> Measures container creations per second.
+• measure-footprint -> Measures container memory overhead.`,
+      technicalTerms: [
+        {
+                "term": "Microsecond latency breakdown of container bootstrap",
+                "definition": ""
+        },
+        {
+                "term": "Rootfs copy vs bind",
+                "definition": "mount startup latency."
+        },
+        {
+                "term": "Measuring process context switch overhead under cgroup constraints",
+                "definition": ""
+        }
+],
       description: `In Level 5 (Startup Latency & Cold-Start Microbenchmarks), you engineer the core mechanisms for Container Runtime / Sandbox.
 
 Profile container cold-start down to the microsecond.
@@ -467,6 +616,35 @@ Time: 0 μs             +1,200 μs            +3,300 μs        +4,100 μs
       title: "Pre-Forked Worker Pools & Fast Clone",
       difficulty: "Expert",
       tagline: "Achieve sub-3ms cold starts via pre-initialized standby worker pools.",
+      whatAreYouBuilding: `In this level, you build: Pre-Forked Worker Pools & Fast Clone.
+
+Achieve sub-3ms cold starts via pre-initialized standby worker pools.
+
+You are creating a reliable component of Container Runtime / Sandbox. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• init-hot-pool <size> -> Pre-forks and pauses hot standby containers in isolated namespaces.
+• fast-exec <command> -> Wakes hot container and executes command with sub-3ms latency. Accepts 'check-clean'.
+• audit-engine -> Audits the entire execution engine.`,
+      technicalTerms: [
+        {
+                "term": "Pre",
+                "definition": "forking. pre.allocating idle container processes paused at clone()."
+        },
+        {
+                "term": "Snapshotting and Copy",
+                "definition": "on.Write (CoW) rootfs overlays."
+        },
+        {
+                "term": "Waking pre",
+                "definition": "forked workers on demand via Unix domain sockets."
+        }
+],
       description: `In Level 6 (Pre-Forked Worker Pools & Fast Clone), you engineer the core mechanisms for Container Runtime / Sandbox.
 
 Achieve sub-3ms cold starts via pre-initialized standby worker pools.

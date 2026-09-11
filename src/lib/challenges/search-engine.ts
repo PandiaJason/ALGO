@@ -94,6 +94,35 @@ export const searchEngineChallenge: ChallengeData = {
       title: "Tokenizer & Inverted Index Postings",
       difficulty: "Easy",
       tagline: "Tokenize input text into lowercase terms. Build an inverted index mapping each term to sorted document IDs.",
+      whatAreYouBuilding: `In this level, you build: Tokenizer & Inverted Index Postings.
+
+Tokenize input text into lowercase terms. Build an inverted index mapping each term to sorted document IDs.
+
+You are creating a reliable component of Inverted-Index Search Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• INDEX <doc_id> <words...> -> Tokenizes words into lowercase terms and indexes document. Returns 'INDEXED <doc_id> <term_count>'.
+• DOC_COUNT -> Returns 'DOCS <count>'.
+• POSTINGS <term> -> Returns 'POSTINGS <term> <doc_id1> <doc_id2>...' or 'NOT_FOUND'.`,
+      technicalTerms: [
+        {
+                "term": "Tokenizing strings into lowercase alphanumeric tokens",
+                "definition": ""
+        },
+        {
+                "term": "Building inverted postings",
+                "definition": "term .> set of doc_ids."
+        },
+        {
+                "term": "Sorting posting lists ascending by document ID for efficient set operations",
+                "definition": ""
+        }
+],
       description: `In Level 1 (Tokenizer & Inverted Index Postings), you engineer the core mechanisms for Inverted-Index Search Engine.
 
 Tokenize input text into lowercase terms. Build an inverted index mapping each term to sorted document IDs.
@@ -194,6 +223,34 @@ POSTINGS world d1`,
       title: "Boolean Query Evaluator",
       difficulty: "Medium",
       tagline: "Execute multi-term boolean queries. Implement sorted postings intersection (AND) and union (OR).",
+      whatAreYouBuilding: `In this level, you build: Boolean Query Evaluator.
+
+Execute multi-term boolean queries. Implement sorted postings intersection (AND) and union (OR).
+
+You are creating a reliable component of Inverted-Index Search Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• SEARCH_AND <t1> <t2>... -> Intersects postings for all terms. Returns 'MATCHES <doc1> <doc2>...' or 'NO_MATCH'.
+• SEARCH_OR <t1> <t2>... -> Unions postings for all terms. Returns 'MATCHES <doc1> <doc2>...' or 'NO_MATCH'.`,
+      technicalTerms: [
+        {
+                "term": "Two",
+                "definition": "pointer sorted list intersection for AND queries."
+        },
+        {
+                "term": "Sorted list union for OR queries",
+                "definition": ""
+        },
+        {
+                "term": "Short",
+                "definition": "circuiting. If any term in an AND query has 0 postings, the query returns immediately."
+        }
+],
       description: `In Level 2 (Boolean Query Evaluator), you engineer the core mechanisms for Inverted-Index Search Engine.
 
 Execute multi-term boolean queries. Implement sorted postings intersection (AND) and union (OR).
@@ -279,6 +336,33 @@ MATCHES d1 d3`,
       title: "TF-IDF Vector Relevance Ranking",
       difficulty: "Medium",
       tagline: "Score and rank documents by term relevance using Term Frequency and Inverse Document Frequency.",
+      whatAreYouBuilding: `In this level, you build: TF-IDF Vector Relevance Ranking.
+
+Score and rank documents by term relevance using Term Frequency and Inverse Document Frequency.
+
+You are creating a reliable component of Inverted-Index Search Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• TFIDF <term> -> Ranks matching documents by TF * IDF score. Returns 'RANKED <doc_id>:<score>...' rounded to 2 decimals or 'NO_MATCH'.`,
+      technicalTerms: [
+        {
+                "term": "Term Frequency",
+                "definition": "TF(t, d) = count(t in d)."
+        },
+        {
+                "term": "Inverse Document Frequency",
+                "definition": "IDF(t) = log(total_docs / doc_freq(t)) + 1.0."
+        },
+        {
+                "term": "Score = TF * IDF",
+                "definition": "Ranking documents by score descending, tie.breaking by doc_id ascending."
+        }
+],
       description: `In Level 3 (TF-IDF Vector Relevance Ranking), you engineer the core mechanisms for Inverted-Index Search Engine.
 
 Score and rank documents by term relevance using Term Frequency and Inverse Document Frequency.
@@ -361,6 +445,33 @@ Calculate: TF(t,d) * IDF                  ├───────────�
       title: "Okapi BM25 Probabilistic Ranking",
       difficulty: "Hard",
       tagline: "Implement Okapi BM25 ranking. Apply term frequency saturation (k1=1.2) and document length normalization (b=0.75).",
+      whatAreYouBuilding: `In this level, you build: Okapi BM25 Probabilistic Ranking.
+
+Implement Okapi BM25 ranking. Apply term frequency saturation (k1=1.2) and document length normalization (b=0.75).
+
+You are creating a reliable component of Inverted-Index Search Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• BM25 <term> -> Ranks matching documents using BM25 (k1=1.2, b=0.75). Returns 'BM25 <doc_id>:<score>...' rounded to 2 decimals or 'NO_MATCH'.`,
+      technicalTerms: [
+        {
+                "term": "BM25 IDF",
+                "definition": "ln((N . n + 0.5) / (n + 0.5) + 1.0)."
+        },
+        {
+                "term": "Length normalization",
+                "definition": "len_norm = 1.0 . b + b * (doc_len / avg_doc_len)."
+        },
+        {
+                "term": "BM25 term score",
+                "definition": "IDF * (tf * (k1 + 1)) / (tf + k1 * len_norm)."
+        }
+],
       description: `In Level 4 (Okapi BM25 Probabilistic Ranking), you engineer the core mechanisms for Inverted-Index Search Engine.
 
 Implement Okapi BM25 ranking. Apply term frequency saturation (k1=1.2) and document length normalization (b=0.75).
@@ -444,6 +555,33 @@ IDF * (TF*(k1+1)) / (TF + k1*len_norm)    │ d2: "kafka kafka kafka"      │ �
       title: "Positional Postings & Exact Phrase Search",
       difficulty: "Hard",
       tagline: "Record token position offsets to match exact multi-word phrases (e.g. 'quick brown fox').",
+      whatAreYouBuilding: `In this level, you build: Positional Postings & Exact Phrase Search.
+
+Record token position offsets to match exact multi-word phrases (e.g. 'quick brown fox').
+
+You are creating a reliable component of Inverted-Index Search Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• PHRASE <w1> <w2>... -> Matches exact sequential phrase. Returns 'PHRASE_MATCH <doc1> <doc2>...' or 'NO_MATCH'.`,
+      technicalTerms: [
+        {
+                "term": "Positional postings",
+                "definition": "term .> doc_id .> [position_0, position_1, ...]."
+        },
+        {
+                "term": "Sliding phrase matcher",
+                "definition": "Verify word_(i+1).pos == word_i.pos + 1 in the same document."
+        },
+        {
+                "term": "Preserving document token order",
+                "definition": ""
+        }
+],
       description: `In Level 5 (Positional Postings & Exact Phrase Search), you engineer the core mechanisms for Inverted-Index Search Engine.
 
 Record token position offsets to match exact multi-word phrases (e.g. 'quick brown fox').
@@ -527,6 +665,35 @@ Check: pos(w_i+1) == pos(w_i) + 1         │  • brown: pos 2 (1 + 1 = 2 ✓) 
       title: "Immutable Segment Commits & Compaction",
       difficulty: "Hard",
       tagline: "Write incoming documents to immutable segments. Commit and merge segments into a single consolidated index.",
+      whatAreYouBuilding: `In this level, you build: Immutable Segment Commits & Compaction.
+
+Write incoming documents to immutable segments. Commit and merge segments into a single consolidated index.
+
+You are creating a reliable component of Inverted-Index Search Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• COMMIT_SEGMENT -> Freezes current buffer into an immutable segment. Returns 'COMMITTED <segment_id>'.
+• MERGE_SEGMENTS -> Merges all segments into 1 consolidated segment. Returns 'MERGED <old_count> -> 1'.
+• SEGMENT_STATS -> Returns 'SEGMENTS <count> TOTAL_DOCS <count>'.`,
+      technicalTerms: [
+        {
+                "term": "Segment architecture",
+                "definition": "Each commit freezes the current memory index as an immutable segment."
+        },
+        {
+                "term": "Searching across all active segments seamlessly",
+                "definition": ""
+        },
+        {
+                "term": "Compacting / merging multiple segments into one consolidated segment",
+                "definition": ""
+        }
+],
       description: `In Level 6 (Immutable Segment Commits & Compaction), you engineer the core mechanisms for Inverted-Index Search Engine.
 
 Write incoming documents to immutable segments. Commit and merge segments into a single consolidated index.

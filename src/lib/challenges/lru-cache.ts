@@ -89,6 +89,35 @@ export const lruCacheChallenge: ChallengeData = {
       title: "Basic LRU Eviction & O(1) Linked List",
       difficulty: "Easy",
       tagline: "Build a fixed-capacity LRU cache. When capacity is exceeded, evict the least recently inserted key.",
+      whatAreYouBuilding: `In this level, you build: Basic LRU Eviction & O(1) Linked List.
+
+Build a fixed-capacity LRU cache. When capacity is exceeded, evict the least recently inserted key.
+
+You are creating a reliable component of Cache & Eviction Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• CAPACITY <n> -> Initializes cache capacity to n items. Returns 'OK'.
+• PUT <key> <val> -> Inserts or updates key. Evicts LRU if at capacity. Returns 'OK'.
+• GET <key> -> Retrieves value. Returns '<val>' or 'NULL'.`,
+      technicalTerms: [
+        {
+                "term": "Hash Map (for O(1) node address lookup) + Doubly",
+                "definition": "Linked List (for O(1) eviction)."
+        },
+        {
+                "term": "Evicting the tail node when count > capacity",
+                "definition": ""
+        },
+        {
+                "term": "Overwriting existing keys without leaking capacity",
+                "definition": ""
+        }
+],
       description: `An LRU (Least Recently Used) cache discards the least recently accessed items first when its capacity limit is reached. In Level 1, you build a fixed-capacity LRU cache.
 
 To achieve strict O(1) operational complexity, a production cache pairs a Hash Map (for instant O(1) key-to-node pointer lookups) with a Doubly-Linked List (for instant O(1) node addition, removal, and splicing).`,
@@ -159,6 +188,33 @@ GET b
       title: "Touch on Read & Pointer Re-linking",
       difficulty: "Medium",
       tagline: "A GET request must 'touch' the accessed key, promoting it to Most Recently Used (MRU) head.",
+      whatAreYouBuilding: `In this level, you build: Touch on Read & Pointer Re-linking.
+
+A GET request must 'touch' the accessed key, promoting it to Most Recently Used (MRU) head.
+
+You are creating a reliable component of Cache & Eviction Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• GET <key> -> Returns value and promotes key to MRU head position.`,
+      technicalTerms: [
+        {
+                "term": "Unlinking node from current position and re",
+                "definition": "inserting at MRU head."
+        },
+        {
+                "term": "Preventing hot",
+                "definition": "key eviction during high read traffic."
+        },
+        {
+                "term": "Handling edge cases",
+                "definition": "Touching head node vs touching tail node."
+        }
+],
       description: `In a true LRU cache, reads (GET) are not read-only operations—they mutate cache state!
 
 Whenever an existing key is accessed via 'GET <key>', it becomes the Most Recently Used item. You must splice the node out from its current position in the doubly-linked list and re-insert it directly after the dummy head, all in O(1) pointer operations without modifying the hash map.`,
@@ -210,6 +266,34 @@ After GET(a):   [HEAD] <──► [ a ] <──► [ b ] <──► [TAIL]`,
       title: "Least Frequently Used (LFU) Mode",
       difficulty: "Hard",
       tagline: "Implement LFU mode. Track access frequency counts and evict the least frequently queried key.",
+      whatAreYouBuilding: `In this level, you build: Least Frequently Used (LFU) Mode.
+
+Implement LFU mode. Track access frequency counts and evict the least frequently queried key.
+
+You are creating a reliable component of Cache & Eviction Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• MODE LFU -> Switches eviction policy to Least Frequently Used. Returns 'OK'.
+• FREQ <key> -> Returns access count of key.`,
+      technicalTerms: [
+        {
+                "term": "LFU frequency tracking",
+                "definition": "Each key maintains an access counter."
+        },
+        {
+                "term": "Tie",
+                "definition": "breaking. If two keys have equal frequency, evict the least recently used among them."
+        },
+        {
+                "term": "MODE LFU vs MODE LRU dynamic switching",
+                "definition": ""
+        }
+],
       description: `LRU caches can be polluted by sequential scans. In Level 3, you implement LFU (Least Frequently Used) eviction.
 
 In LFU mode, each key tracks an access frequency counter. When capacity is reached, the key with the lowest frequency is evicted. If multiple keys share the same lowest frequency, LRU recency is used as a tie-breaker.`,
@@ -260,6 +344,34 @@ Freq 3: [ a ] (Protected by high query volume)`,
       title: "TTL & Key Expiration",
       difficulty: "Hard",
       tagline: "Implement SETEX for millisecond key expiration. Expired keys must never be returned or count against capacity.",
+      whatAreYouBuilding: `In this level, you build: TTL & Key Expiration.
+
+Implement SETEX for millisecond key expiration. Expired keys must never be returned or count against capacity.
+
+You are creating a reliable component of Cache & Eviction Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• SETEX <key> <ttl_ms> <val> -> Sets key with millisecond expiration. Returns 'OK'.
+• TTL <key> -> Returns remaining lifetime in ms (-1 permanent, -2 absent).`,
+      technicalTerms: [
+        {
+                "term": "SETEX <key> <ttl_ms> <val> command contract",
+                "definition": ""
+        },
+        {
+                "term": "Passive expiration check",
+                "definition": "If current_time >= expire_at, purge immediately."
+        },
+        {
+                "term": "TTL <key> returning ms remaining,",
+                "definition": "1 (permanent), or .2 (absent)."
+        }
+],
       description: `Cached entries often have a limited lifespan after which their data becomes stale. In Level 4, you implement Time-To-Live (TTL) key expiration.
 
 Each cached item can be assigned an expiration timestamp (e.g. 'SETEX <key> <ttl_seconds> <value>'). When 'GET <key>' is invoked, the cache checks if the current time exceeds the expiration threshold. If expired, the key is immediately purged and returns NULL.`,
@@ -308,6 +420,34 @@ Read Access (GET / TTL) ──► Is expired? ──► YES ──► Delete & R
       title: "Byte-Accurate Memory Caps",
       difficulty: "Hard",
       tagline: "Evict based on payload byte weight (MAXMEMORY <bytes>) rather than fixed item count.",
+      whatAreYouBuilding: `In this level, you build: Byte-Accurate Memory Caps.
+
+Evict based on payload byte weight (MAXMEMORY <bytes>) rather than fixed item count.
+
+You are creating a reliable component of Cache & Eviction Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• MAXMEMORY <bytes> -> Sets hard memory limit in bytes. Returns 'OK'.
+• MEMORY_USED -> Returns currently allocated payload bytes.`,
+      technicalTerms: [
+        {
+                "term": "Tracking payload byte size",
+                "definition": "len(key) + len(val)."
+        },
+        {
+                "term": "MAXMEMORY budget",
+                "definition": "Evicting items until total_bytes <= MAXMEMORY."
+        },
+        {
+                "term": "Single oversized item rejection if item > MAXMEMORY",
+                "definition": ""
+        }
+],
       description: `Real caches (such as Redis maxmemory) enforce memory limits based on total byte consumption rather than simple item counts.
 
 In Level 5, you implement byte-level memory budgeting. Every key and value calculates its serialized byte size. When total memory exceeds 'MAXMEMORY <bytes>', items are evicted until usage drops below the threshold.`,
@@ -358,6 +498,34 @@ Total = 12 Bytes > 10 Bytes Limit ──► Evict Tail until used <= 10B`,
       title: "Hit-Rate Telemetry & Workload Benchmarking",
       difficulty: "Hard",
       tagline: "Track cache hits, misses, and eviction metrics under heavy 1,000,000 request simulation workloads.",
+      whatAreYouBuilding: `In this level, you build: Hit-Rate Telemetry & Workload Benchmarking.
+
+Track cache hits, misses, and eviction metrics under heavy 1,000,000 request simulation workloads.
+
+You are creating a reliable component of Cache & Eviction Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• STATS -> Returns 'HITS: <h> MISSES: <m> RATIO: <r> EVICTIONS: <e>'.
+• FLUSHALL -> Clears all cached entries and resets stats. Returns 'OK'.`,
+      technicalTerms: [
+        {
+                "term": "Hit Rate Formula",
+                "definition": "HITS / (HITS + MISSES)."
+        },
+        {
+                "term": "Tracking eviction counts across workload phases",
+                "definition": ""
+        },
+        {
+                "term": "Balancing capacity vs hit rate trade",
+                "definition": "offs."
+        }
+],
       description: `Production caching systems require deep telemetry to determine cache efficiency, sizing, and hit ratios under high-concurrency workloads.
 
 In Level 6, you build internal telemetry tracking hit counts, miss counts, eviction counts, and total hit ratio percentages.`,

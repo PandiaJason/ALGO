@@ -97,6 +97,35 @@ export const gitChallenge: ChallengeData = {
       title: "Blob Storage & SHA-1 Hashing",
       difficulty: "Easy",
       tagline: "Compute SHA-1 object headers ('blob <size>\\0<data>') and store objects.",
+      whatAreYouBuilding: `In this level, you build: Blob Storage & SHA-1 Hashing.
+
+Compute SHA-1 object headers ('blob <size>\0<data>') and store objects.
+
+You are creating a reliable component of Git Version Control Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• hash-object <content> -> Computes and returns a deterministic content hash string for 'blob <len>\0<content>'. Hashing the same content multiple times must return the same string.
+• cat-file -p <hash> -> Prints the raw content of the stored object by its hash.
+• cat-file -s <hash> -> Returns the size in bytes of the object.`,
+      technicalTerms: [
+        {
+                "term": "Content",
+                "definition": "addressed storage. object path derived from payload hash."
+        },
+        {
+                "term": "Standard Git header framing",
+                "definition": "'blob <byte_count>\\0'."
+        },
+        {
+                "term": "Hexadecimal digest calculation and loose object layout",
+                "definition": ""
+        }
+],
       description: `In Level 1 (Blob Storage & SHA-1 Hashing), you engineer the core mechanisms for Git Version Control Engine.
 
 Compute SHA-1 object headers ('blob <size>\0<data>') and store objects.
@@ -174,6 +203,35 @@ OUTPUT: 95d09f2b10159347eece71399a7e2e907ea3df4f`,
       title: "Tree Hierarchy & Commit DAG",
       difficulty: "Medium",
       tagline: "Assemble directory trees and link commits into an immutable DAG.",
+      whatAreYouBuilding: `In this level, you build: Tree Hierarchy & Commit DAG.
+
+Assemble directory trees and link commits into an immutable DAG.
+
+You are creating a reliable component of Git Version Control Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• write-tree <entries...> -> Serializes directory entries into a tree object. Returns 'TREE_OK', or 'SORTED_OK' if entries were sorted.
+• commit-tree <tree_hash> [-p <parent>] -m <msg> -> Creates a commit object pointing to a tree and optional parent. Returns 'COMMIT_OK' (or 'COMMIT_CHILD_OK' if parent provided).
+• log <commit_hash> -> Traverses commit parent pointers back to root.`,
+      technicalTerms: [
+        {
+                "term": "Tree object structure",
+                "definition": "sorted entries of <mode> <name>\\0<hash>."
+        },
+        {
+                "term": "Commit object format",
+                "definition": "tree hash, parent commit hash(es), author metadata, and message."
+        },
+        {
+                "term": "Directed Acyclic Graph (DAG) construction through immutable parent hashes",
+                "definition": ""
+        }
+],
       description: `In Level 2 (Tree Hierarchy & Commit DAG), you engineer the core mechanisms for Git Version Control Engine.
 
 Assemble directory trees and link commits into an immutable DAG.
@@ -251,6 +309,35 @@ You understand Merkle trees, directory serialization, and lineage graphs.`,
       title: "Object Integrity & Corruption Recovery",
       difficulty: "Medium",
       tagline: "Detect bit rot, dangling objects, and cyclic history.",
+      whatAreYouBuilding: `In this level, you build: Object Integrity & Corruption Recovery.
+
+Detect bit rot, dangling objects, and cyclic history.
+
+You are creating a reliable component of Git Version Control Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• fsck -> Verifies hash integrity of all objects and reports corruptions or dangling pointers.
+• corrupt <hash> <byte_offset> -> Simulates bit rot by flipping a byte in an object.
+• add-dangling-blob -> Adds an unreachable blob to test dangling object detection.`,
+      technicalTerms: [
+        {
+                "term": "Cryptographic hash verification",
+                "definition": "recomputing SHA.1 over stored bytes."
+        },
+        {
+                "term": "Dangling object identification (unreachable blobs or trees not linked to any ref)",
+                "definition": ""
+        },
+        {
+                "term": "Cycle detection in directed commit graphs",
+                "definition": ""
+        }
+],
       description: `In Level 3 (Object Integrity & Corruption Recovery), you engineer the core mechanisms for Git Version Control Engine.
 
 Detect bit rot, dangling objects, and cyclic history.
@@ -326,6 +413,35 @@ Match stored id?     Mismatch!          Reachable?             Orphaned?
       title: "Fast Tree Diffing & Branching",
       difficulty: "Hard",
       tagline: "Compare large directory trees in O(differences) time.",
+      whatAreYouBuilding: `In this level, you build: Fast Tree Diffing & Branching.
+
+Compare large directory trees in O(differences) time.
+
+You are creating a reliable component of Git Version Control Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• diff-tree <tree1> <tree2> -> Compares two trees and outputs added, modified, or deleted files.
+• branch <name> <commit_hash> -> Creates or updates a branch ref pointer.
+• get-ref <name> -> Retrieves the commit hash for a branch ref.`,
+      technicalTerms: [
+        {
+                "term": "Merkle tree skip optimization",
+                "definition": "if two tree hashes match, their entire subtrees are identical."
+        },
+        {
+                "term": "Two",
+                "definition": "pointer sorted tree traversal."
+        },
+        {
+                "term": "Branch reference resolution (",
+                "definition": "git/refs/heads/main)."
+        }
+],
       description: `In Level 4 (Fast Tree Diffing & Branching), you engineer the core mechanisms for Git Version Control Engine.
 
 Compare large directory trees in O(differences) time.
@@ -396,6 +512,35 @@ You master high-speed tree diffing and lightweight branch references.`,
       title: "Repository Footprint & Graph Traversal",
       difficulty: "Hard",
       tagline: "Measure loose object fragmentation and commit traversal speed.",
+      whatAreYouBuilding: `In this level, you build: Repository Footprint & Graph Traversal.
+
+Measure loose object fragmentation and commit traversal speed.
+
+You are creating a reliable component of Git Version Control Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• count-objects -> Reports number of loose objects and total disk bytes.
+• bench-traversal <depth> -> Measures microseconds required to walk N commit generations.
+• reachability-check <head> <target> -> Checks if target is reachable from head.`,
+      technicalTerms: [
+        {
+                "term": "Inode table pressure from tens of thousands of individual loose files",
+                "definition": ""
+        },
+        {
+                "term": "Commit graph traversal depth benchmarks",
+                "definition": ""
+        },
+        {
+                "term": "Measuring repository disk amplification compared to working tree size",
+                "definition": ""
+        }
+],
       description: `In Level 5 (Repository Footprint & Graph Traversal), you engineer the core mechanisms for Git Version Control Engine.
 
 Measure loose object fragmentation and commit traversal speed.
@@ -467,6 +612,35 @@ You measure empirical repository metrics and diagnose filesystem performance deg
       title: "Delta Compression & Packfile Format",
       difficulty: "Hard",
       tagline: "Compress loose objects into a binary packfile with sliding-window deltas.",
+      whatAreYouBuilding: `In this level, you build: Delta Compression & Packfile Format.
+
+Compress loose objects into a binary packfile with sliding-window deltas.
+
+You are creating a reliable component of Git Version Control Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• repack -> Packs all loose objects into a single delta-compressed packfile.
+• verify-pack <packfile> -> Verifies packfile integrity and reports compression ratio.
+• read-packed <hash> -> Reads an object directly from a packfile.`,
+      technicalTerms: [
+        {
+                "term": "Sliding",
+                "definition": "window delta compression. finding similar files by size and path."
+        },
+        {
+                "term": "Delta representation",
+                "definition": "COPY (offset, length) and INSERT (data) opcodes."
+        },
+        {
+                "term": "Binary packfile (",
+                "definition": "pack) and indexed table of contents (.idx) layout."
+        }
+],
       description: `In Level 6 (Delta Compression & Packfile Format), you engineer the core mechanisms for Git Version Control Engine.
 
 Compress loose objects into a binary packfile with sliding-window deltas.

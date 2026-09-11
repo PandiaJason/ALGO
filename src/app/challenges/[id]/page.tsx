@@ -425,6 +425,9 @@ export default async function ChallengeDetailPage({ params }: Props) {
           shortTitle: l.shortTitle || (l.title ? (l.title.length > 25 ? l.title.slice(0, 25) + "..." : l.title) : (codeLevel?.shortTitle || `Level ${lvlNum}`)),
           difficulty: l.difficulty || codeLevel?.difficulty || "Medium",
           tagline: l.tagline || codeLevel?.tagline || l.description || "",
+          whatAreYouBuilding: l.whatAreYouBuilding || codeLevel?.whatAreYouBuilding || undefined,
+          howItWorks: l.howItWorks || codeLevel?.howItWorks || undefined,
+          technicalTerms: l.technicalTerms || codeLevel?.technicalTerms || undefined,
           description: l.description || codeLevel?.description || undefined,
           implementationGuide: l.implementationGuide || codeLevel?.implementationGuide || undefined,
           diagram: l.diagram || codeLevel?.diagram || undefined,
@@ -706,6 +709,48 @@ export default async function ChallengeDetailPage({ params }: Props) {
                               {lvl.tagline || lvl.description}
                             </p>
                           </div>
+
+                          {/* 1. What Are You Building */}
+                          {lvl.whatAreYouBuilding && (
+                            <div className="p-4 rounded-xl bg-white border border-slate-200 text-xs space-y-1.5 shadow-2xs">
+                              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#099BE9] block">
+                                What You Are Building
+                              </span>
+                              <p className="text-slate-700 leading-relaxed whitespace-pre-line font-normal">
+                                {lvl.whatAreYouBuilding}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* 1.5. How It Works */}
+                          {lvl.howItWorks && (
+                            <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-200/80 text-xs space-y-1.5 shadow-2xs">
+                              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-900 block">
+                                How It Works
+                              </span>
+                              <div className="text-slate-800 leading-relaxed whitespace-pre-line font-mono text-[11px]">
+                                {lvl.howItWorks}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* 2. Technical Terms Made Simple */}
+                          {Array.isArray(lvl.technicalTerms) && lvl.technicalTerms.length > 0 && (
+                            <div className="p-4 rounded-xl bg-slate-950 text-white text-xs space-y-2 shadow-sm border border-slate-800">
+                              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400 block">
+                                Technical terms made simple
+                              </span>
+                              <div className="divide-y divide-slate-800/80 pt-1">
+                                {lvl.technicalTerms.map((t: any, tIdx: number) => (
+                                  <div key={tIdx} className="py-1.5 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-baseline gap-1 text-[11px]">
+                                    <code className="font-mono font-bold text-amber-300 shrink-0">{t.term}</code>
+                                    <span className="text-slate-500 hidden sm:inline">—</span>
+                                    <span className="text-slate-300 font-normal">{t.definition}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
 
                           {/* Level Deep Dive / Mechanism */}
                           {lvl.description && (

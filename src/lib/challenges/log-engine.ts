@@ -94,6 +94,34 @@ export const logEngineChallenge: ChallengeData = {
       title: "Basic Structured Log Line Ingestion",
       difficulty: "Easy",
       tagline: "Parse structured log lines (timestamp, status, latency_ms, endpoint) and track total line count.",
+      whatAreYouBuilding: `In this level, you build: Basic Structured Log Line Ingestion.
+
+Parse structured log lines (timestamp, status, latency_ms, endpoint) and track total line count.
+
+You are creating a reliable component of Streaming Log Analytics Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• INGEST <status> <latency_ms> <endpoint> -> Ingests single log line. Returns 'OK'.
+• COUNT -> Returns total number of ingested log lines.`,
+      technicalTerms: [
+        {
+                "term": "Delimited log line format",
+                "definition": "INGEST <STATUS> <LATENCY_MS> <ENDPOINT>."
+        },
+        {
+                "term": "Extracting tokens without intermediate allocations",
+                "definition": ""
+        },
+        {
+                "term": "Tracking total ingested lines in O(1) time",
+                "definition": ""
+        }
+],
       description: `In Level 1 (Basic Structured Log Line Ingestion), you engineer the core mechanisms for Streaming Log Analytics Engine.
 
 Parse structured log lines (timestamp, status, latency_ms, endpoint) and track total line count.
@@ -163,6 +191,35 @@ COUNT
       title: "Status Code Breakdown",
       difficulty: "Medium",
       tagline: "Categorize log lines into status families (2xx, 3xx, 4xx, 5xx) and track exact status code counts.",
+      whatAreYouBuilding: `In this level, you build: Status Code Breakdown.
+
+Categorize log lines into status families (2xx, 3xx, 4xx, 5xx) and track exact status code counts.
+
+You are creating a reliable component of Streaming Log Analytics Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• INGEST <status> <latency_ms> <endpoint> -> Ingests single log line. Returns 'OK'.
+• STATUS_COUNT <status_code> -> Returns count of lines matching exact status code.
+• FAMILY_COUNT <family> -> Returns count for family: 2XX, 4XX, 5XX.`,
+      technicalTerms: [
+        {
+                "term": "Categorizing status codes (2xx Success, 4xx Client Error, 5xx Server Error)",
+                "definition": ""
+        },
+        {
+                "term": "O(1) array/hash counting by HTTP status code",
+                "definition": ""
+        },
+        {
+                "term": "METRICS STATUS <code_or_family> query contracts",
+                "definition": ""
+        }
+],
       description: `In Level 2 (Status Code Breakdown), you engineer the core mechanisms for Streaming Log Analytics Engine.
 
 Categorize log lines into status families (2xx, 3xx, 4xx, 5xx) and track exact status code counts.
@@ -230,6 +287,34 @@ Status Code Histogram:
       title: "Real-Time Error Rate Calculation",
       difficulty: "Hard",
       tagline: "Calculate real-time error percentage: (5XX errors / Total requests) with 2 decimal places.",
+      whatAreYouBuilding: `In this level, you build: Real-Time Error Rate Calculation.
+
+Calculate real-time error percentage: (5XX errors / Total requests) with 2 decimal places.
+
+You are creating a reliable component of Streaming Log Analytics Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• INGEST <status> <latency_ms> <endpoint> -> Ingests single log line. Returns 'OK'.
+• ERROR_RATE -> Returns 5XX error percentage formatted to 2 decimals (e.g. '0.00%' or '25.00%').`,
+      technicalTerms: [
+        {
+                "term": "Error rate formula",
+                "definition": "(Count(5xx) / Total) * 100."
+        },
+        {
+                "term": "Preventing division by zero on cold starts",
+                "definition": ""
+        },
+        {
+                "term": "Floating",
+                "definition": "point formatting with exact 2 decimal precision."
+        }
+],
       description: `In Level 3 (Real-Time Error Rate Calculation), you engineer the core mechanisms for Streaming Log Analytics Engine.
 
 Calculate real-time error percentage: (5XX errors / Total requests) with 2 decimal places.
@@ -291,6 +376,34 @@ Calculation: (1 / 4) * 100 = 25.00%`,
       title: "Top-K Frequent Endpoints",
       difficulty: "Hard",
       tagline: "Track the top K most frequently requested endpoints in bounded memory.",
+      whatAreYouBuilding: `In this level, you build: Top-K Frequent Endpoints.
+
+Track the top K most frequently requested endpoints in bounded memory.
+
+You are creating a reliable component of Streaming Log Analytics Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• INGEST <status> <latency_ms> <endpoint> -> Ingests single log line. Returns 'OK'.
+• TOP_ENDPOINTS <k> -> Returns space-separated top K endpoints sorted by frequency descending.`,
+      technicalTerms: [
+        {
+                "term": "Tracking endpoint request frequencies",
+                "definition": ""
+        },
+        {
+                "term": "Sorting and extracting top K elements",
+                "definition": ""
+        },
+        {
+                "term": "Handling ties deterministically by lexicographical order",
+                "definition": ""
+        }
+],
       description: `In Level 4 (Top-K Frequent Endpoints), you engineer the core mechanisms for Streaming Log Analytics Engine.
 
 Track the top K most frequently requested endpoints in bounded memory.
@@ -351,6 +464,34 @@ Rank 3: /about  [Count: 0]`,
       title: "Latency Percentiles (p50 & p99)",
       difficulty: "Hard",
       tagline: "Calculate p50 (median) and p99 (tail latency) across all ingested request durations.",
+      whatAreYouBuilding: `In this level, you build: Latency Percentiles (p50 & p99).
+
+Calculate p50 (median) and p99 (tail latency) across all ingested request durations.
+
+You are creating a reliable component of Streaming Log Analytics Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• INGEST <status> <latency_ms> <endpoint> -> Ingests single log line. Returns 'OK'.
+• LATENCY <P50|P95|P99> -> Returns the requested percentile latency in milliseconds.`,
+      technicalTerms: [
+        {
+                "term": "Why percentiles are the gold standard of systems engineering",
+                "definition": ""
+        },
+        {
+                "term": "Sorting and rank selection",
+                "definition": "index = ceil(p * N) . 1."
+        },
+        {
+                "term": "Handling small sample sizes vs large streaming datasets",
+                "definition": ""
+        }
+],
       description: `In Level 5 (Latency Percentiles (p50 & p99)), you engineer the core mechanisms for Streaming Log Analytics Engine.
 
 Calculate p50 (median) and p99 (tail latency) across all ingested request durations.
@@ -413,6 +554,35 @@ Sorted: [ 10ms , 20ms , 30ms ]
       title: "Batch Ingestion & System Telemetry",
       difficulty: "Hard",
       tagline: "Sustain 100,000+ lines/sec. Report comprehensive engine telemetry under continuous ingestion.",
+      whatAreYouBuilding: `In this level, you build: Batch Ingestion & System Telemetry.
+
+Sustain 100,000+ lines/sec. Report comprehensive engine telemetry under continuous ingestion.
+
+You are creating a reliable component of Streaming Log Analytics Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
+      howItWorks: `Core steps your code performs:
+1. Read input command lines from standard input.
+2. Parse the command name and extract arguments.
+3. Update the internal state or data structure.
+4. Format and print the exact result to standard output.
+
+Supported Operations:
+• INGEST <status> <latency_ms> <endpoint> -> Ingests single log line. Returns 'OK'.
+• COUNT -> Returns total number of ingested log lines.
+• STATS -> Returns 'TOTAL: <n> ERRORS: <e> P99: <p> STATUS: HEALTHY'.`,
+      technicalTerms: [
+        {
+                "term": "Batch processing semantics and memory footprint stabilization",
+                "definition": ""
+        },
+        {
+                "term": "RESET command contract for multi",
+                "definition": "stage benchmarks."
+        },
+        {
+                "term": "Comprehensive engine health instrumentation",
+                "definition": ""
+        }
+],
       description: `In Level 6 (Batch Ingestion & System Telemetry), you engineer the core mechanisms for Streaming Log Analytics Engine.
 
 Sustain 100,000+ lines/sec. Report comprehensive engine telemetry under continuous ingestion.
