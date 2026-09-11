@@ -94,54 +94,45 @@ export const loadBalancerChallenge: ChallengeData = {
       title: "Basic Round-Robin Dispatcher",
       difficulty: "Easy",
       tagline: "Distribute incoming requests uniformly across registered backends in cyclical order.",
-      whatAreYouBuilding: `In this level, you build: Basic Round-Robin Dispatcher.
+      whatAreYouBuilding: `You are going to build a basic round-robin load balancer. Think of it as a receptionist at a doctor's office directing patients to available doctors by simply taking turns: Patient 1 goes to Doctor A, Patient 2 goes to Doctor B, Patient 3 goes to Doctor A.
 
-Distribute incoming requests uniformly across registered backends in cyclical order.
+For example:
+ADD_BACKEND web-1
+ADD_BACKEND web-2
+ROUTE req-1
 
-You are creating a reliable component of Dynamic Layer-7 Load Balancer. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• ADD_BACKEND <server_id> -> Registers an active backend. Returns 'OK'.
-• ROUTE <req_id> -> Routes request to next backend. Returns 'FORWARD -> <server_id>' or 'NO_BACKENDS'.
-• LIST_BACKENDS -> Returns 'BACKENDS <id1> <id2>...' in registration order.`,
+Your load balancer will select the next server in line and print:
+FORWARD -> web-1`,
+      howItWorks: `When a request arrives:
+1. Check if there are any registered backend servers.
+2. Pick the server at the current 'index'.
+3. Increment the index by 1 so the next request goes to the next server.
+4. If the index reaches the end of the server list, wrap it back around to 0.
+5. Forward the request to the selected server.`,
       technicalTerms: [
         {
-                "term": "Tracking registered server list",
-                "definition": ""
+          "term": "Load Balancing",
+          "definition": "Distributing incoming network traffic across multiple servers to ensure no single server bears too much demand."
         },
         {
-                "term": "Cyclic pointer increment",
-                "definition": "index = (index + 1) % N."
+          "term": "Round-Robin",
+          "definition": "A simple algorithm that selects items in a cyclical sequence, taking turns one by one."
         },
         {
-                "term": "Handling empty backend pools gracefully",
-                "definition": ""
+          "term": "Modulo Arithmetic",
+          "definition": "Using the remainder of division (e.g., index % size) to keep a counter continuously wrapping around within a fixed range."
         }
 ],
-      description: `In Level 1 (Basic Round-Robin Dispatcher), you engineer the core mechanisms for Dynamic Layer-7 Load Balancer.
+      description: `Directing all users to a single server is a recipe for disaster; if that server crashes, the entire application goes offline. The foundational solution is the Round-Robin Load Balancer, which spreads the load horizontally across a pool of worker nodes.
 
-Distribute incoming requests uniformly across registered backends in cyclical order.
-
-Core Engineering Problem: Direct client-to-server connections overwhelm single nodes. Round-robin spreads load across horizontal workers.
-
-Key Mechanisms Implemented:
-• Tracking registered server list.
-• Cyclic pointer increment: index = (index + 1) % N.
-• Handling empty backend pools gracefully.
-
-You implement cyclical dispatch and backend pool management.`,
+While round-robin guarantees that every server receives an equal number of requests over time, it assumes all servers have the exact same hardware capacity and that all requests take the same amount of time to process—assumptions we will challenge in the coming levels.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'ADD_BACKEND <server_id>': Registers an active backend. Returns 'OK'.",
-        "Implement 'ROUTE <req_id>': Routes request to next backend. Returns 'FORWARD -> <server_id>' or 'NO_BACKENDS'.",
-        "Implement 'LIST_BACKENDS': Returns 'BACKENDS <id1> <id2>...' in registration order.",
-        "Enforce system constraints: Server IDs and Request IDs are alphanumeric strings.",
-        "Format output according to the specification and flush standard output."
+        "Maintain a list (array) of registered backend server IDs and an integer tracking the current index.",
+        "On 'ADD_BACKEND <server_id>', append the server to the list and print 'OK'.",
+        "On 'LIST_BACKENDS', print 'BACKENDS ' followed by the server IDs joined by spaces.",
+        "On 'ROUTE <req_id>', if the list is empty, print 'NO_BACKENDS'.",
+        "Otherwise, select the server at current_index. Print 'FORWARD -> <server_id>'.",
+        "Update current_index to (current_index + 1) % length of the server list."
 ],
       diagram: `CLIENT REQUEST                            LOAD BALANCER                   ROUTED TARGET
 ADD_BACKEND s1                ──► register server in pool  ──► OK
@@ -224,52 +215,46 @@ FORWARD -> web-1`,
       title: "Smooth Weighted Round-Robin (Nginx Algorithm)",
       difficulty: "Medium",
       tagline: "Interleave requests smoothly according to server weights using Nginx's current_weight algorithm.",
-      whatAreYouBuilding: `In this level, you build: Smooth Weighted Round-Robin (Nginx Algorithm).
+      whatAreYouBuilding: `You are going to build a smooth weighted round-robin load balancer. Think of the receptionist directing patients again, but Doctor A is an experienced senior doctor (weight 4) and Doctor B is an intern (weight 1). The receptionist sends more patients to the senior doctor, but interleaves them smoothly so the senior doctor isn't overwhelmed with a giant burst all at once.
 
-Interleave requests smoothly according to server weights using Nginx's current_weight algorithm.
+For example:
+ADD_WEIGHTED doc-a 4
+ADD_WEIGHTED doc-b 1
+ROUTE_WEIGHTED req-1
 
-You are creating a reliable component of Dynamic Layer-7 Load Balancer. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• ADD_WEIGHTED <server_id> <weight> -> Registers backend with integer weight. Returns 'OK'.
-• ROUTE_WEIGHTED <req_id> -> Dispatches request using smooth weighted algorithm. Returns 'FORWARD -> <server_id>'.`,
+Your load balancer will select based on weights and print:
+FORWARD -> doc-a`,
+      howItWorks: `When a request arrives:
+1. For every server, add its 'effective weight' to its 'current weight'.
+2. Look at all the servers and pick the one that now has the highest 'current weight'.
+3. Take that winning server and subtract the total weight of ALL servers from its 'current weight'.
+4. Forward the request to the winning server.
+5. This exact mathematical process (used by Nginx) guarantees a perfectly smooth interleaved sequence.`,
       technicalTerms: [
         {
-                "term": "For each route",
-                "definition": "For all servers. current_weight += effective_weight."
+          "term": "Weighted Load Balancing",
+          "definition": "Assigning a capacity score (weight) to servers so more powerful machines receive a proportionally higher amount of traffic."
         },
         {
-                "term": "Select server with highest current_weight",
-                "definition": ""
+          "term": "Smooth Interleaving",
+          "definition": "Spreading out the requests mathematically so you don't send 10 in a row to Server A and then 1 to Server B."
         },
         {
-                "term": "Subtract total_weight from the selected server's current_weight",
-                "definition": ""
+          "term": "Total Weight",
+          "definition": "The sum of the effective weights of all currently available servers."
         }
 ],
-      description: `In Level 2 (Smooth Weighted Round-Robin (Nginx Algorithm)), you engineer the core mechanisms for Dynamic Layer-7 Load Balancer.
+      description: `If you upgrade your database, you might have one massive 32-core server and one older 8-core server. Standard round-robin would crush the small server by giving it 50% of the traffic. 
 
-Interleave requests smoothly according to server weights using Nginx's current_weight algorithm.
-
-Core Engineering Problem: Naive weighted round-robin sends 10 consecutive requests to server A (weight 10) then 1 to B (weight 1). This causes CPU spikes on A. Smooth weighted distributes them evenly: A, A, A, B, A, A...
-
-Key Mechanisms Implemented:
-• For each route: For all servers: current_weight += effective_weight.
-• Select server with highest current_weight.
-• Subtract total_weight from the selected server's current_weight.
-
-You implement smooth interleaved weighted balancing.`,
+Assigning weights solves this, but a naive implementation (A, A, A, A, B) creates sudden bursts of traffic that can temporarily overwhelm even a large server. Nginx's elegant 'current_weight' algorithm solves this by mathematically interleaving the distribution (A, A, B, A, A), ensuring traffic flows smoothly regardless of the weight ratios.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'ADD_WEIGHTED <server_id> <weight>': Registers backend with integer weight. Returns 'OK'.",
-        "Implement 'ROUTE_WEIGHTED <req_id>': Dispatches request using smooth weighted algorithm. Returns 'FORWARD -> <server_id>'.",
-        "Enforce system constraints: Weights are positive integers; When a backend is added via ADD_WEIGHTED, its current_weight is initialized to 0..",
-        "Format output according to the specification and flush standard output."
+        "Maintain a list of server objects tracking {id, weight, current_weight}.",
+        "On 'ADD_WEIGHTED', add the server with its given weight and initialize current_weight to 0. Print 'OK'.",
+        "On 'ROUTE_WEIGHTED', if no servers exist, print 'NO_BACKENDS'.",
+        "Loop through all servers and add their static weight to their current_weight.",
+        "Find the server with the maximum current_weight. This is your selected server.",
+        "Subtract the total sum of all servers' weights from the selected server's current_weight.",
+        "Print 'FORWARD -> <selected_server_id>'."
 ],
       diagram: `INCOMING REQUEST                          NGINX SMOOTH WEIGHT ENGINE             SELECTED UPSTREAM
 ROUTE_WEIGHTED 1 ──┐                      ┌──────────────────────────────┐
@@ -334,54 +319,43 @@ Sequence: a -> b -> a -> a -> c -> b -> a (Smooth interleaving without burst clu
       title: "Dynamic Least-Connections Routing",
       difficulty: "Medium",
       tagline: "Track active in-flight requests. Route new requests to the backend with the fewest active connections.",
-      whatAreYouBuilding: `In this level, you build: Dynamic Least-Connections Routing.
+      whatAreYouBuilding: `You are going to build a least-connections load balancer. Think of the receptionist looking into the waiting rooms. Doctor A has 5 patients waiting, Doctor B has 0. Even if Doctor A is usually faster, the receptionist will send the next patient to Doctor B because their room is empty.
 
-Track active in-flight requests. Route new requests to the backend with the fewest active connections.
+For example:
+ROUTE_LEAST_CONN r1
 
-You are creating a reliable component of Dynamic Layer-7 Load Balancer. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• TRACK_START <server_id> <req_id> -> Increments active connection count. Returns 'OK'.
-• TRACK_END <server_id> <req_id> -> Decrements active connection count. Returns 'OK'.
-• ROUTE_LEAST_CONN <req_id> -> Routes to backend with fewest active conns, increments its count. Returns 'FORWARD -> <server_id>'.`,
+Your load balancer checks which server has the fewest active (in-flight) requests and prints:
+FORWARD -> s2`,
+      howItWorks: `When a request arrives:
+1. Check the number of active requests currently being processed by each server.
+2. Select the server with the absolute lowest number of active requests.
+3. If there is a tie, break it by selecting the server whose ID comes first alphabetically.
+4. Increment that server's active request count and forward the request.
+5. When a request finishes, decrement the active count for that server so it can receive new requests again.`,
       technicalTerms: [
         {
-                "term": "Tracking in",
-                "definition": "flight request counter per backend."
+          "term": "Least Connections",
+          "definition": "A dynamic routing algorithm that sends traffic to the server currently handling the fewest active requests."
         },
         {
-                "term": "Selecting backend with minimum active connections",
-                "definition": ""
+          "term": "In-Flight Request",
+          "definition": "A request that has been sent to a backend server but has not yet finished or returned a response."
         },
         {
-                "term": "Tie",
-                "definition": "breaking backends alphabetically by server_id."
+          "term": "Tie-Breaking",
+          "definition": "A deterministic rule (like alphabetical order) used to pick a winner when multiple servers have the exact same score."
         }
 ],
-      description: `In Level 3 (Dynamic Least-Connections Routing), you engineer the core mechanisms for Dynamic Layer-7 Load Balancer.
+      description: `Round-robin algorithms (even weighted ones) are 'static'—they don't know what's actually happening on the servers. If a specific API request requires compiling a heavy report that takes 10 seconds, the server handling it will get bogged down, but round-robin will blindly keep sending it more traffic.
 
-Track active in-flight requests. Route new requests to the backend with the fewest active connections.
-
-Core Engineering Problem: Round-robin fails when some requests take 10 seconds while others take 10ms. Least connections adapts dynamically to slow servers.
-
-Key Mechanisms Implemented:
-• Tracking in-flight request counter per backend.
-• Selecting backend with minimum active connections.
-• Tie-breaking backends alphabetically by server_id.
-
-You implement dynamic connection-aware traffic routing.`,
+The Least-Connections algorithm is 'dynamic'. By tracking exactly how many requests are currently in-flight on each node, it acts as a self-healing system: if a server slows down, its active connection count rises, and the load balancer automatically routes traffic to faster, idle nodes instead.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'TRACK_START <server_id> <req_id>': Increments active connection count. Returns 'OK'.",
-        "Implement 'TRACK_END <server_id> <req_id>': Decrements active connection count. Returns 'OK'.",
-        "Implement 'ROUTE_LEAST_CONN <req_id>': Routes to backend with fewest active conns, increments its count. Returns 'FORWARD -> <server_id>'.",
-        "Enforce system constraints: Active connection count cannot drop below 0.",
-        "Format output according to the specification and flush standard output."
+        "Maintain a list of server objects tracking {id, active_conns}.",
+        "On 'ROUTE_LEAST_CONN', find the server with the lowest active_conns. On a tie, choose the one with the alphabetically smallest id.",
+        "Increment the selected server's active_conns by 1 and print 'FORWARD -> <server_id>'.",
+        "On 'TRACK_START <server_id> <req_id>', simply increment that server's active_conns by 1 and print 'OK'.",
+        "On 'TRACK_END <server_id> <req_id>', decrement that server's active_conns by 1 (don't let it go below 0) and print 'OK'.",
+        "On 'ACTIVE_CONNS', print 'CONNS ' followed by 'id:count' for all servers in alphabetical order."
 ],
       diagram: `INCOMING REQUEST                          ACTIVE CONNECTION TRACKER              ROUTING DECISION
 ROUTE_LEAST_CONN r1 ──┐                   ┌──────────────────────────────┐
@@ -449,59 +423,46 @@ ROUTE_LEAST_CONN r4 ────────────────────
       title: "Passive Health Checks & Failover",
       difficulty: "Hard",
       tagline: "Track consecutive backend errors. Trip unhealthy nodes to DOWN after exceeding threshold, rerouting traffic.",
-      whatAreYouBuilding: `In this level, you build: Passive Health Checks & Failover.
+      whatAreYouBuilding: `You are going to build a circuit breaker for your load balancer. Think of the receptionist noticing that Doctor A went home sick (the server crashed). The receptionist will immediately stop sending patients to Doctor A, but will occasionally check if they have returned (probing).
 
-Track consecutive backend errors. Trip unhealthy nodes to DOWN after exceeding threshold, rerouting traffic.
+For example:
+FAIL s1
 
-You are creating a reliable component of Dynamic Layer-7 Load Balancer. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+When a server fails too many times, the load balancer marks it as DOWN and routes traffic elsewhere:
+STATUS s1 DOWN
+FORWARD -> s2`,
+      howItWorks: `When a request fails on a server:
+1. Increment that server's consecutive failure counter.
+2. If the counter reaches the threshold, mark the server's status as DOWN.
+3. Exclude all DOWN servers from any routing decisions (round-robin, weighted, least-conn).
 
-Supported Operations:
-• SET_FAIL_THRESHOLD <count> -> Sets max consecutive fails before marking DOWN (default 3). Returns 'OK'.
-• FAIL <server_id> -> Records failure. Returns 'STATUS <server_id> <UP|DOWN>'.
-• SUCCESS <server_id> -> Records success. Resets fail count to 0, marks UP. Returns 'STATUS <server_id> UP'.`,
+When a request succeeds on a server:
+1. Reset the server's failure counter to 0.
+2. Mark the server's status as UP, bringing it back into the active rotation pool.`,
       technicalTerms: [
         {
-                "term": "Tracking consecutive failures per backend",
-                "definition": ""
+          "term": "Passive Health Check",
+          "definition": "Monitoring real user traffic for errors to determine server health, rather than sending separate ping requests."
         },
         {
-                "term": "Tripping server status from UP to DOWN after failure threshold",
-                "definition": ""
+          "term": "Circuit Breaker",
+          "definition": "A pattern that temporarily halts traffic to a failing system to prevent cascading failures and allow it to recover."
         },
         {
-                "term": "Excluding DOWN servers from all routing algorithms",
-                "definition": ""
-        },
-        {
-                "term": "Probing and restoring server status to UP upon success",
-                "definition": ""
+          "term": "Failover",
+          "definition": "Automatically switching traffic from a failed component to a working backup component."
         }
 ],
-      description: `In Level 4 (Passive Health Checks & Failover), you engineer the core mechanisms for Dynamic Layer-7 Load Balancer.
+      description: `In distributed systems, hardware fails constantly. If your load balancer keeps sending 25% of your users to a dead server, 25% of your users will see 502 Bad Gateway errors. 
 
-Track consecutive backend errors. Trip unhealthy nodes to DOWN after exceeding threshold, rerouting traffic.
-
-Core Engineering Problem: Routing traffic to dead backends creates cascading 500/502 errors. Passive health checks circuit-break failing nodes automatically.
-
-Key Mechanisms Implemented:
-• Tracking consecutive failures per backend.
-• Tripping server status from UP to DOWN after failure threshold.
-• Excluding DOWN servers from all routing algorithms.
-• Probing and restoring server status to UP upon success.
-
-You implement circuit-breaking and fault-tolerant failover.`,
+A Circuit Breaker monitors the success and failure of real traffic. When a node crosses a consecutive failure threshold, the breaker 'trips', marking the node as DOWN and instantly removing it from the routing pool. This ensures user traffic is only sent to healthy nodes while the dead node is investigated or rebooted.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'SET_FAIL_THRESHOLD <count>': Sets max consecutive fails before marking DOWN (default 3). Returns 'OK'.",
-        "Implement 'FAIL <server_id>': Records failure. Returns 'STATUS <server_id> <UP|DOWN>'.",
-        "Implement 'SUCCESS <server_id>': Records success. Resets fail count to 0, marks UP. Returns 'STATUS <server_id> UP'.",
-        "Enforce system constraints: If all backends are DOWN, ROUTE returns 'NO_BACKENDS'; ALL routing strategies (ROUTE, ROUTE_WEIGHTED, ROUTE_LEAST_CONN) must exclude servers in DOWN or DRAINING state..",
-        "Format output according to the specification and flush standard output."
+        "Extend the server object to track {status: 'UP', failures: 0}.",
+        "On 'SET_FAIL_THRESHOLD <count>', store the global threshold and print 'OK'.",
+        "On 'FAIL <server_id>', increment its failures. If failures >= threshold, set status to 'DOWN'. Print 'STATUS <server_id> <UP|DOWN>'.",
+        "On 'SUCCESS <server_id>', reset failures to 0, set status to 'UP', and print 'STATUS <server_id> UP'.",
+        "Update ALL routing commands (ROUTE, ROUTE_WEIGHTED, ROUTE_LEAST_CONN) to strictly filter out any servers where status is 'DOWN'.",
+        "If filtering leaves zero eligible servers, print 'NO_BACKENDS'."
 ],
       diagram: `SERVER PROBING / TRAFFIC                  CIRCUIT BREAKER STATE (Thresh=2)       TRAFFIC ROUTING
 FAIL s1 (count=1)    ──► s1: UP (1/2)     ┌──────────────────────────────┐
@@ -568,52 +529,46 @@ SUCCESS s1 (Probe)   ──► s1: UP (0/2)     ──► Restored to Pool      
       title: "Ketama Consistent Hashing Ring",
       difficulty: "Hard",
       tagline: "Implement a circular hash ring with virtual nodes for sticky session affinity and minimal cache relocation.",
-      whatAreYouBuilding: `In this level, you build: Ketama Consistent Hashing Ring.
+      whatAreYouBuilding: `You are going to build a consistent hashing ring. Think of a scenario where patients want to see the same doctor every time for continuity of care. You mathematically map the patient's ID to a specific doctor on a 'ring', so they always get the same one.
 
-Implement a circular hash ring with virtual nodes for sticky session affinity and minimal cache relocation.
+For example:
+ROUTE_KEY user:100
 
-You are creating a reliable component of Dynamic Layer-7 Load Balancer. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+Your load balancer hashes the key and finds the nearest server on the ring:
+HASH_FORWARD -> cache-1`,
+      howItWorks: `When a server is added:
+1. Create multiple 'virtual nodes' for it (e.g., c1#0, c1#1, c1#2).
+2. Hash the name of each virtual node to get a 32-bit number.
+3. Place these numbers on a sorted ring.
 
-Supported Operations:
-• ADD_RING_NODE <server_id> <vnodes> -> Adds server with virtual nodes to the hash ring. Returns 'OK'.
-• ROUTE_KEY <cache_key> -> Routes key to nearest clockwise server. Returns 'HASH_FORWARD -> <server_id>' or 'NO_BACKENDS'.`,
+When a request arrives:
+1. Hash the cache key (e.g., 'user:100') to get a 32-bit number.
+2. Search clockwise around the ring for the first virtual node that has a hash greater than or equal to the key's hash.
+3. Route the request to the server that owns that virtual node.`,
       technicalTerms: [
         {
-                "term": "Hashing keys to 32",
-                "definition": "bit integer space [0, 2^32 . 1] using FNV.1a."
+          "term": "Consistent Hashing",
+          "definition": "A distribution scheme that minimizes the number of keys that must be remapped when a server is added or removed."
         },
         {
-                "term": "Placing virtual nodes",
-                "definition": "hash(server_id + '#' + vnode_idx)."
+          "term": "Hash Ring",
+          "definition": "A circular numerical space (e.g., 0 to 2^32-1) where both servers and data keys are assigned positions."
         },
         {
-                "term": "Finding first virtual node clockwise on ring whose hash >= hash(key)",
-                "definition": ""
+          "term": "Virtual Node",
+          "definition": "Assigning multiple positions on the ring to a single physical server to ensure more even data distribution."
         }
 ],
-      description: `In Level 5 (Ketama Consistent Hashing Ring), you engineer the core mechanisms for Dynamic Layer-7 Load Balancer.
+      description: `When routing traffic to a caching layer (like Memcached or Redis), round-robin is terrible because it scatters requests for the same user across all servers, leading to zero cache hits. You need 'session affinity'—always sending the same key to the same server.
 
-Implement a circular hash ring with virtual nodes for sticky session affinity and minimal cache relocation.
-
-Core Engineering Problem: Modulo routing hash(key) % N invalidates almost all cache keys when a server is added or removed. Consistent hashing remaps only K/N keys.
-
-Key Mechanisms Implemented:
-• Hashing keys to 32-bit integer space [0, 2^32 - 1] using FNV-1a.
-• Placing virtual nodes: hash(server_id + '#' + vnode_idx).
-• Finding first virtual node clockwise on ring whose hash >= hash(key).
-
-You implement virtual-node consistent hashing for session and cache affinity.`,
+Standard modulo hashing ('hash(key) % N') works until a server crashes, changing N and shuffling 99% of your keys to different servers, causing a massive cache miss storm. Consistent hashing solves this by placing servers on a circular ring. When a node dies, only its specific slice of the ring is remapped to the next neighbor, keeping the rest of the cluster's cache perfectly intact.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'ADD_RING_NODE <server_id> <vnodes>': Adds server with virtual nodes to the hash ring. Returns 'OK'.",
-        "Implement 'ROUTE_KEY <cache_key>': Routes key to nearest clockwise server. Returns 'HASH_FORWARD -> <server_id>' or 'NO_BACKENDS'.",
-        "Enforce system constraints: Use FNV-1a 32-bit hash algorithm: offset_basis=2166136261, prime=16777619.",
-        "Format output according to the specification and flush standard output."
+        "Maintain a sorted array (the ring) of objects tracking {hash_value, server_id}.",
+        "On 'ADD_RING_NODE <id> <vnodes>', loop i from 0 to vnodes-1. Hash the string '<id>#<i>' using the 32-bit FNV-1a algorithm.",
+        "Insert these virtual node hashes into the sorted ring array and print 'OK'.",
+        "On 'ROUTE_KEY <key>', if the ring is empty, print 'NO_BACKENDS'.",
+        "Otherwise, hash the key using FNV-1a. Find the first virtual node in the sorted ring where node.hash >= key.hash (clockwise search).",
+        "If no node hash is greater, wrap around and pick the first node in the array (index 0). Print 'HASH_FORWARD -> <server_id>'."
 ],
       diagram: `CACHE KEY REQUEST                         32-BIT CIRCULAR HASH RING              TARGET NODE
 ROUTE_KEY user:100                        ┌──────────────────────────────┐
@@ -679,52 +634,44 @@ ROUTE_KEY user:200 ────────────────────�
       title: "Zero-Downtime Connection Draining",
       difficulty: "Hard",
       tagline: "Drain servers gracefully during rolling deploys: accept 0 new requests, wait for active connections to finish, then remove.",
-      whatAreYouBuilding: `In this level, you build: Zero-Downtime Connection Draining.
+      whatAreYouBuilding: `You are going to build a graceful connection drainer. Think of the receptionist telling Doctor A to go home, but letting them finish with their current patient first. The receptionist stops sending new patients, but waits for the room to empty before officially clocking the doctor out.
 
-Drain servers gracefully during rolling deploys: accept 0 new requests, wait for active connections to finish, then remove.
+For example:
+DRAIN s1
 
-You are creating a reliable component of Dynamic Layer-7 Load Balancer. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• DRAIN <server_id> -> Transitions server to DRAINING state. Returns 'DRAINING <server_id> ACTIVE <conns>' or 'REMOVED <server_id>'.
-• SERVER_STATUS <server_id> -> Returns 'STATE <UP|DOWN|DRAINING|REMOVED> ACTIVE <conns>' or 'NOT_FOUND'.`,
+Your load balancer stops routing to s1 but keeps tracking its active requests until they hit zero:
+DRAINING s1 ACTIVE 1
+STATE REMOVED ACTIVE 0`,
+      howItWorks: `When a drain is requested:
+1. Change the server's status to DRAINING.
+2. Immediately exclude it from all new routing decisions.
+3. Wait and monitor as its active in-flight requests slowly complete and decrement.
+4. Once the active request count reaches 0, officially transition the server to REMOVED.
+5. If the server already had 0 active requests when the drain started, mark it REMOVED instantly.`,
       technicalTerms: [
         {
-                "term": "State lifecycle",
-                "definition": "UP .> DRAINING .> REMOVED."
+          "term": "Connection Draining",
+          "definition": "The process of refusing new connections to a server while allowing existing, in-flight connections to complete naturally."
         },
         {
-                "term": "DRAINING servers are immediately excluded from new ROUTE calls",
-                "definition": ""
+          "term": "Graceful Shutdown",
+          "definition": "Terminating a software process safely without instantly severing active user transactions."
         },
         {
-                "term": "When active connections reach 0 on a DRAINING server, state transitions to REMOVED",
-                "definition": ""
+          "term": "Rolling Deployment",
+          "definition": "Updating a cluster of servers one by one, draining and replacing them sequentially to avoid downtime."
         }
 ],
-      description: `In Level 6 (Zero-Downtime Connection Draining), you engineer the core mechanisms for Dynamic Layer-7 Load Balancer.
+      description: `When you need to deploy a new version of your application, you cannot just kill the running servers—any users mid-checkout will see a broken error page. 
 
-Drain servers gracefully during rolling deploys: accept 0 new requests, wait for active connections to finish, then remove.
-
-Core Engineering Problem: Immediately killing an upstream node aborts users mid-checkout. Connection draining waits for in-flight requests to complete before terminating.
-
-Key Mechanisms Implemented:
-• State lifecycle: UP -> DRAINING -> REMOVED.
-• DRAINING servers are immediately excluded from new ROUTE calls.
-• When active connections reach 0 on a DRAINING server, state transitions to REMOVED.
-
-You master zero-downtime rolling maintenance and connection lifecycle management.`,
+Connection draining (or graceful shutdown) solves this. The load balancer marks the node as DRAINING, cutting off new traffic, but keeps the connection open for existing requests to finish processing. Once the node's active connection count naturally hits zero, it is safe to terminate. This enables true zero-downtime rolling deployments in production.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'DRAIN <server_id>': Transitions server to DRAINING state. Returns 'DRAINING <server_id> ACTIVE <conns>' or 'REMOVED <server_id>'.",
-        "Implement 'SERVER_STATUS <server_id>': Returns 'STATE <UP|DOWN|DRAINING|REMOVED> ACTIVE <conns>' or 'NOT_FOUND'.",
-        "Enforce system constraints: Draining an idle server (active=0) transitions immediately to REMOVED.",
-        "Format output according to the specification and flush standard output."
+        "Extend your server status tracking to include 'DRAINING' and 'REMOVED'.",
+        "On 'DRAIN <server_id>', check its active_conns. If active_conns > 0, set status to 'DRAINING' and print 'DRAINING <server_id> ACTIVE <conns>'.",
+        "If active_conns == 0, set status to 'REMOVED' and print 'REMOVED <server_id>'.",
+        "Update 'TRACK_END' logic: if a server is in 'DRAINING' status and its active_conns reaches 0 after the decrement, automatically change its status to 'REMOVED'.",
+        "Ensure your routing logic from all previous levels strictly ignores servers that are 'DRAINING' or 'REMOVED'.",
+        "On 'SERVER_STATUS <server_id>', print 'STATE <status> ACTIVE <conns>' or 'NOT_FOUND'."
 ],
       diagram: `MAINTENANCE SIGNAL                        SERVER DRAIN LIFECYCLE                 NEW TRAFFIC ROUTING
 DRAIN s1 (active=1)  ──► State: DRAINING  ┌──────────────────────────────┐

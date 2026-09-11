@@ -99,55 +99,32 @@ export const containerRuntimeChallenge: ChallengeData = {
       title: "Process Isolation with Linux Namespaces",
       difficulty: "Medium",
       tagline: "Spawn a child process with isolated PID and hostname namespaces.",
-      whatAreYouBuilding: `In this level, you build: Process Isolation with Linux Namespaces.
+      whatAreYouBuilding: `Imagine checking into a hotel where all the room numbers have been changed to "Room 1". You think you are the only person in the hotel, even though there are hundreds of other guests.
 
-Spawn a child process with isolated PID and hostname namespaces.
+You are going to build a simulator that isolates a process using Linux Namespaces. When you spawn a container, it will believe it is process ID (PID) 1 and have its own fake hostname.
 
-You are creating a reliable component of Container Runtime / Sandbox. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+spawn-ns container-alpha echo hello
+get-container-pid
 
-Supported Operations:
-• spawn-ns <hostname> <command> -> Spawns command in new PID and UTS namespace.
-• get-container-pid -> Returns the internal PID (must be 1) and external host PID.
-• exit -> Exits the current command sequence.`,
+The host sees the process as PID 1042, but the container firmly believes it is PID 1.`,
+      howItWorks: `When you create a namespace:
+1. The Linux Kernel sets up a 'shadow reality' for the new process.
+2. The PID Namespace ensures the first process inside thinks it is PID 1.
+3. The UTS Namespace allows the container to change its hostname without affecting the host computer's name.
+4. The container is completely unaware of any other processes on the host.`,
       technicalTerms: [
-        {
-                "term": "Syscall flags",
-                "definition": "CLONE_NEWPID, CLONE_NEWUTS, CLONE_NEWIPC."
-        },
-        {
-                "term": "PID 1 responsibilities",
-                "definition": "reaping child processes and handling default signal behavior."
-        },
-        {
-                "term": "Hostname isolation",
-                "definition": "changing container hostname without affecting host."
-        }
-],
-      description: `In Level 1 (Process Isolation with Linux Namespaces), you engineer the core mechanisms for Container Runtime / Sandbox.
-
-Spawn a child process with isolated PID and hostname namespaces.
-
-Core Engineering Problem: How does a process think its PID is 1 when the host OS sees it as PID 48219?
-
-Key Mechanisms Implemented:
-• Syscall flags: CLONE_NEWPID, CLONE_NEWUTS, CLONE_NEWIPC.
-• PID 1 responsibilities: reaping child processes and handling default signal behavior.
-• Hostname isolation: changing container hostname without affecting host.
-
-You create an isolated process boundary where the child sees itself as PID 1.`,
+        { term: "Linux Namespaces", definition: "Kernel features that partition resources so a set of processes sees a private set of resources." },
+        { term: "PID 1", definition: "The very first process started by an OS, responsible for managing everything else." },
+        { term: "UTS Namespace", definition: "The namespace that isolates the system hostname and domain name." }
+      ],
+      description: `A container is not a virtual machine; it is just a regular Linux process wearing a blindfold. The Linux kernel uses namespaces to restrict what a process can see. By passing the CLONE_NEWPID flag to the clone() syscall, the child process gets an entirely new PID tree starting at 1. In this level, you build a state-machine simulating this behavior, isolating the hostname and PID view.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'spawn-ns <hostname> <command>': Spawns command in new PID and UTS namespace.",
-        "Implement 'get-container-pid': Returns the internal PID (must be 1) and external host PID.",
-        "Implement 'exit': Exits the current command sequence.",
-        "Enforce system constraints: Internal PID must report 1; Container hostname change must not leak to host.",
-        "Format output according to the specification and flush standard output."
-],
+        "Create a dictionary to represent the state of the active container.",
+        "Implement 'spawn-ns <hostname> <command>' by saving the hostname and setting the internal PID to 1.",
+        "Simulate the host PID as a random or fixed number (e.g., 1042).",
+        "Implement 'get-container-pid' to return 'INTERNAL_PID: 1 HOST_PID: 1042'."
+      ],
       diagram: `LINUX NAMESPACE DUAL-PERSPECTIVE MAPPING:
 
 HOST OS VIEW (Global Kernel Table):
@@ -197,55 +174,32 @@ CONTAINER INTERNAL VIEW:
       title: "Filesystem Isolation & Pivot Root",
       difficulty: "Hard",
       tagline: "Securely jail container processes using pivot_root into a fresh rootfs.",
-      whatAreYouBuilding: `In this level, you build: Filesystem Isolation & Pivot Root.
+      whatAreYouBuilding: `Your hotel guest still has access to the master key for the whole building! You need to lock them in their room so they can't wander the hallways.
 
-Securely jail container processes using pivot_root into a fresh rootfs.
+You will simulate a Filesystem Jail using pivot_root. This completely replaces the root folder (/) of the container, making the host system physically unreachable.
 
-You are creating a reliable component of Container Runtime / Sandbox. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+mount-rootfs /alpine-root
+test-chroot-escape
 
-Supported Operations:
-• mount-rootfs <dir> -> Prepares mount points and executes pivot_root into container rootfs.
-• ls-container-root -> Lists root directory inside the container.
-• test-chroot-escape -> Attempts to breakout to the host root.`,
+The container will try to break out, but will fail with a PERMISSION_DENIED error because the host filesystem literally no longer exists in its reality.`,
+      howItWorks: `To create a perfect jail:
+1. Create a Mount Namespace so mount changes don't affect the host.
+2. Use pivot_root to swap the old host root directory with the new container root directory.
+3. Unmount the old host root entirely and detach it.
+4. Now, if the process asks for "/", it gets the container root. Asking for "../../" just keeps returning the container root!`,
       technicalTerms: [
-        {
-                "term": "Mount namespaces (CLONE_NEWNS) and mount propagation flags (MS_REC | MS_PRIVATE)",
-                "definition": ""
-        },
-        {
-                "term": "pivot_root(new_root, put_old) mechanics",
-                "definition": ""
-        },
-        {
-                "term": "Unmounting old host root (umount2 with MNT_DETACH) to completely jail the container",
-                "definition": ""
-        }
-],
-      description: `In Level 2 (Filesystem Isolation & Pivot Root), you engineer the core mechanisms for Container Runtime / Sandbox.
-
-Securely jail container processes using pivot_root into a fresh rootfs.
-
-Core Engineering Problem: Why is chroot insecure (vulnerable to breakout via '..'), and how does pivot_root solve this?
-
-Key Mechanisms Implemented:
-• Mount namespaces (CLONE_NEWNS) and mount propagation flags (MS_REC | MS_PRIVATE).
-• pivot_root(new_root, put_old) mechanics.
-• Unmounting old host root (umount2 with MNT_DETACH) to completely jail the container.
-
-You eliminate filesystem breakout risks and jail container processes inside isolated root directories.`,
+        { term: "pivot_root", definition: "A system call that changes the root mount in the mount namespace, completely jailing the process." },
+        { term: "Mount Namespace", definition: "Isolates the list of mount points seen by the processes in the namespace." },
+        { term: "chroot escape", definition: "A security vulnerability where a process breaks out of a simple chroot jail by moving up directories." }
+      ],
+      description: `Historically, systems used 'chroot' to restrict file access, but malicious processes could easily escape it using simple directory traversal ('../../'). Modern runtimes like Docker use 'pivot_root' inside a new mount namespace to physically swap the root filesystem and cleanly unmount the host. This guarantees that the host's files are mathematically impossible to reach.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'mount-rootfs <dir>': Prepares mount points and executes pivot_root into container rootfs.",
-        "Implement 'ls-container-root': Lists root directory inside the container.",
-        "Implement 'test-chroot-escape': Attempts to breakout to the host root.",
-        "Enforce system constraints: Host filesystem must be completely unreachable; Must unmount host root completely.",
-        "Format output according to the specification and flush standard output."
-],
+        "Add a 'filesystem' state to your simulator.",
+        "Implement 'mount-rootfs' to set the state to jailed, indicating the pivot_root was successful.",
+        "Implement 'ls-container-root' to return a simulated list of basic linux folders (bin, etc, usr, var).",
+        "Implement 'test-chroot-escape' which should check the jail state and return 'ESCAPE_ATTEMPT_FAILED: PERMISSION_DENIED'."
+      ],
       diagram: `PIVOT_ROOT JAIL MECHANICS:
 
   Host Mount Hierarchy:
@@ -302,60 +256,32 @@ You eliminate filesystem breakout risks and jail container processes inside isol
       title: "Cgroups V2 Resource Constraints",
       difficulty: "Hard",
       tagline: "Enforce memory limits, CPU quotas, and fork-bomb protection.",
-      whatAreYouBuilding: `In this level, you build: Cgroups V2 Resource Constraints.
+      whatAreYouBuilding: `What if your isolated hotel guest decides to turn on all the faucets and flood the building? 
 
-Enforce memory limits, CPU quotas, and fork-bomb protection.
+You will implement Cgroups V2 to set hard resource guardrails. You will enforce strict memory limits and prevent fork-bombs (processes infinitely duplicating themselves).
 
-You are creating a reliable component of Container Runtime / Sandbox. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+set-limits --mem 16M --pids 10
+run-with-limits alloc-32M
 
-Supported Operations:
-• set-limits --mem <bytes> --pids <num> [--cpu <quota> <period>] -> Configures cgroups v2 resource limits for container.
-• run-with-limits <cmd> -> Executes workload. Available commands: alloc-16M, alloc-32M, fork-bomb, burn-cpu.
-• cleanup-cgroups -> Cleans up cgroup directories.`,
+The container tries to use 32MB of RAM, but the kernel's OOM Killer instantly terminates it.`,
+      howItWorks: `Control Groups (Cgroups) act as hardware accountants:
+1. The kernel tracks every byte of RAM and every CPU cycle used by a namespace.
+2. If the process tries to exceed its memory.max limit, the kernel sends a SIGKILL.
+3. If it tries to create more processes than pids.max, the kernel rejects the fork.
+4. This ensures one noisy container cannot crash the entire host server.`,
       technicalTerms: [
-        {
-                "term": "cgroups v2 unified hierarchy",
-                "definition": "/sys/fs/cgroup/<group>/."
-        },
-        {
-                "term": "memory",
-                "definition": "max and memory.oom.group policies."
-        },
-        {
-                "term": "pids",
-                "definition": "max for fork.bomb mitigation."
-        },
-        {
-                "term": "cpu",
-                "definition": "max bandwidth throttling (quota and period)."
-        }
-],
-      description: `In Level 3 (Cgroups V2 Resource Constraints), you engineer the core mechanisms for Container Runtime / Sandbox.
-
-Enforce memory limits, CPU quotas, and fork-bomb protection.
-
-Core Engineering Problem: What stops a buggy or malicious student script from allocating 64GB RAM or running ':(){ :|:& };:' (fork bomb)?
-
-Key Mechanisms Implemented:
-• cgroups v2 unified hierarchy: /sys/fs/cgroup/<group>/.
-• memory.max and memory.oom.group policies.
-• pids.max for fork-bomb mitigation.
-• cpu.max bandwidth throttling (quota and period).
-
-You protect host servers from resource starvation and fork bombs.`,
+        { term: "Cgroups V2", definition: "A Linux kernel feature that limits, accounts for, and isolates resource usage of process groups." },
+        { term: "OOM Killer", definition: "Out Of Memory Killer; a kernel process that terminates tasks consuming too much RAM." },
+        { term: "Fork Bomb", definition: "A denial-of-service attack where a process continually replicates itself to deplete system resources." }
+      ],
+      description: `Namespaces control what a process can *see*, but Cgroups control what a process can *use*. Without cgroups, a student submitting a malicious while-loop or allocating giant arrays would crash the entire scoring server. By mapping the container PID to a cgroup v2 controller, we simulate hardware enforcement, terminating memory overloads and blocking excessive process forks via pids.max.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'set-limits --mem <bytes> --pids <num> [--cpu <quota> <period>]': Configures cgroups v2 resource limits for container.",
-        "Implement 'run-with-limits <cmd>': Executes workload. Available commands: alloc-16M, alloc-32M, fork-bomb, burn-cpu.",
-        "Implement 'cleanup-cgroups': Cleans up cgroup directories.",
-        "Enforce system constraints: Strict 0 byte overshoot above memory.max; Instantly reject forks exceeding pids.max.",
-        "Format output according to the specification and flush standard output."
-],
+        "Add a resource limits dictionary to your simulator state.",
+        "Implement 'set-limits' to parse and store the mem, pids, and cpu boundaries.",
+        "Implement 'run-with-limits'. Check the requested command against your stored limits.",
+        "If 'alloc-32M' is called and mem limit is 16M, return 'OOM_KILLED'. If 'fork-bomb' is called, return 'FORK_REJECTED: EAGAIN (pids.max reached)'."
+      ],
       diagram: `CGROUPS V2 UNIFIED CONTROLLERS:
 
   /sys/fs/cgroup/algo_sandbox_42/
@@ -410,55 +336,32 @@ You protect host servers from resource starvation and fork bombs.`,
       title: "Multi-Tenant Parallel Sandbox Spawning",
       difficulty: "Hard",
       tagline: "Concurrently spawn 50 isolated sandboxes with veth bridge networking.",
-      whatAreYouBuilding: `In this level, you build: Multi-Tenant Parallel Sandbox Spawning.
+      whatAreYouBuilding: `Running one hotel room is easy. Running a 50-room hotel where nobody can hear each other requires serious orchestration.
 
-Concurrently spawn 50 isolated sandboxes with veth bridge networking.
+You will simulate a Multi-Tenant Sandbox Pool. You will concurrently spawn multiple isolated containers, ensuring they have zero network crosstalk.
 
-You are creating a reliable component of Container Runtime / Sandbox. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+spawn-pool 5
+exec-parallel echo fast
 
-Supported Operations:
-• spawn-pool <count> -> Spawns N concurrent sandboxes and reports active container IDs.
-• exec-sandbox <id> <command> -> Executes command inside designated sandbox.
-• exec-parallel <cmd> -> Executes a command across all sandboxes in parallel.`,
+Your engine orchestrates 5 separate sandboxes in parallel and reports that all executed cleanly without interfering with each other.`,
+      howItWorks: `To run at scale safely:
+1. A master dispatcher receives tasks.
+2. It allocates dedicated sandboxes from the pool.
+3. Each sandbox gets its own isolated network interface (veth pair).
+4. The dispatcher executes the code, captures the output, and tears down the sandbox, guaranteeing no state leaks between runs.`,
       technicalTerms: [
-        {
-                "term": "Ephemeral sandbox lifecycles",
-                "definition": "create, execute, capture stdout/stderr, destroy."
-        },
-        {
-                "term": "Virtual ethernet pairs (veth) and container network namespaces (CLONE_NEWNET)",
-                "definition": ""
-        },
-        {
-                "term": "Automated file descriptor and cgroup cleanup upon container termination",
-                "definition": ""
-        }
-],
-      description: `In Level 4 (Multi-Tenant Parallel Sandbox Spawning), you engineer the core mechanisms for Container Runtime / Sandbox.
-
-Concurrently spawn 50 isolated sandboxes with veth bridge networking.
-
-Core Engineering Problem: How do platforms like LeetCode or ALGO run thousands of untrusted student submissions simultaneously?
-
-Key Mechanisms Implemented:
-• Ephemeral sandbox lifecycles: create, execute, capture stdout/stderr, destroy.
-• Virtual ethernet pairs (veth) and container network namespaces (CLONE_NEWNET).
-• Automated file descriptor and cgroup cleanup upon container termination.
-
-You master scalable multi-tenant execution architectures.`,
+        { term: "Multi-Tenant", definition: "An architecture where a single instance of software serves multiple, completely isolated customers or workloads." },
+        { term: "Veth Pair", definition: "Virtual Ethernet devices that act as a tunnel between the host network and the container's isolated network namespace." },
+        { term: "Orchestration", definition: "The automated configuration, management, and coordination of computer systems and software." }
+      ],
+      description: `Platforms like LeetCode and AWS Lambda don't just run one container; they run thousands concurrently. This requires an orchestration layer that manages ephemeral lifecycles: create, execute, capture stdout, and destroy. A critical requirement is network isolation—containers must not be able to scan or attack each other via the local bridge. This level simulates a secure multi-tenant execution pool.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'spawn-pool <count>': Spawns N concurrent sandboxes and reports active container IDs.",
-        "Implement 'exec-sandbox <id> <command>': Executes command inside designated sandbox.",
-        "Implement 'exec-parallel <cmd>': Executes a command across all sandboxes in parallel.",
-        "Enforce system constraints: Sandboxes must be 100% mutually isolated; Zero network traffic between sandboxes.",
-        "Format output according to the specification and flush standard output."
-],
+        "Track a 'pool_size' integer in your simulator.",
+        "Implement 'spawn-pool <count>' to set the pool size and return 'POOL_READY'.",
+        "Implement 'exec-sandbox <id> <cmd>' to simulate running a command in a specific container.",
+        "Implement 'test-cross-sandbox-access' which always returns 'CROSS_ACCESS: BLOCKED'."
+      ],
       diagram: `MULTI-TENANT ISOLATED EXECUTION POOL:
 
        Host Supervisor / Dispatcher
@@ -517,55 +420,31 @@ You master scalable multi-tenant execution architectures.`,
       title: "Startup Latency & Cold-Start Microbenchmarks",
       difficulty: "Hard",
       tagline: "Profile container cold-start down to the microsecond.",
-      whatAreYouBuilding: `In this level, you build: Startup Latency & Cold-Start Microbenchmarks.
+      whatAreYouBuilding: `When a user clicks "Run Code", waiting 2 seconds for a container to boot is unacceptable. We need to measure exactly where the time is going.
 
-Profile container cold-start down to the microsecond.
+You will build a Profiler to measure cold-boot latency down to the microsecond, breaking down the exact cost of cloning, mounting, and cgroups.
 
-You are creating a reliable component of Container Runtime / Sandbox. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+profile-boot
 
-Supported Operations:
-• profile-boot -> Runs single container boot and reports microsecond timeline.
-• bench-spawn-rate <count> -> Measures container creations per second.
-• measure-footprint -> Measures container memory overhead.`,
+Your engine will output a timeline showing exactly how many milliseconds were spent configuring namespaces versus mounting the root filesystem.`,
+      howItWorks: `Profiling a container boot sequence:
+1. Start a high-resolution timer.
+2. Measure the time to execute clone() (Namespaces).
+3. Measure the time to execute pivot_root() (Filesystem).
+4. Measure the time to write to /sys/fs/cgroup (Resources).
+5. Output the granular timeline to identify which step is the bottleneck.`,
       technicalTerms: [
-        {
-                "term": "Microsecond latency breakdown of container bootstrap",
-                "definition": ""
-        },
-        {
-                "term": "Rootfs copy vs bind",
-                "definition": "mount startup latency."
-        },
-        {
-                "term": "Measuring process context switch overhead under cgroup constraints",
-                "definition": ""
-        }
-],
-      description: `In Level 5 (Startup Latency & Cold-Start Microbenchmarks), you engineer the core mechanisms for Container Runtime / Sandbox.
-
-Profile container cold-start down to the microsecond.
-
-Core Engineering Problem: Where does container startup time actually go: clone(), pivot_root(), cgroup setup, or rootfs mount?
-
-Key Mechanisms Implemented:
-• Microsecond latency breakdown of container bootstrap.
-• Rootfs copy vs bind-mount startup latency.
-• Measuring process context switch overhead under cgroup constraints.
-
-You capture granular latency profiles and isolate virtualization bottlenecks.`,
+        { term: "Cold-Boot Latency", definition: "The total time it takes to start a completely new container from scratch." },
+        { term: "Microbenchmark", definition: "A tiny, highly focused test designed to measure the performance of a specific, small piece of code." },
+        { term: "Context Switch", definition: "The overhead time the CPU takes to stop running one process and start running another." }
+      ],
+      description: `In serverless infrastructure, 'cold starts' are the enemy. If starting a container takes 500ms, the user experience feels sluggish. By employing eBPF or strace profiling, systems engineers break down the startup timeline into microsecond chunks. Usually, they discover that copying the root filesystem is the bottleneck, paving the way for optimization.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'profile-boot': Runs single container boot and reports microsecond timeline.",
-        "Implement 'bench-spawn-rate <count>': Measures container creations per second.",
-        "Implement 'measure-footprint': Measures container memory overhead.",
-        "Enforce system constraints: Total cold boot under 15ms; Microsecond timeline precision.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement 'profile-boot' to output a hardcoded or simulated realistic timeline string (e.g., 'CLONE: 1.2ms PIVOT_ROOT: 2.1ms CGROUP: 0.8ms TOTAL_BOOT: 4.1ms').",
+        "Implement 'bench-spawn-rate' to output a simulated metric like 'SPAWN_RATE: > 50 /sec'.",
+        "Ensure tests expecting specific latency numbers or formats pass perfectly."
+      ],
       diagram: `CONTAINER COLD-BOOT TIMELINE (Microsecond Precision):
 
 Time: 0 μs             +1,200 μs            +3,300 μs        +4,100 μs
@@ -616,55 +495,32 @@ Time: 0 μs             +1,200 μs            +3,300 μs        +4,100 μs
       title: "Pre-Forked Worker Pools & Fast Clone",
       difficulty: "Expert",
       tagline: "Achieve sub-3ms cold starts via pre-initialized standby worker pools.",
-      whatAreYouBuilding: `In this level, you build: Pre-Forked Worker Pools & Fast Clone.
+      whatAreYouBuilding: `What if the hotel room was already fully prepared, unlocked, and waiting with the lights on before the guest even arrived?
 
-Achieve sub-3ms cold starts via pre-initialized standby worker pools.
+You will simulate a Pre-Forked Worker Pool. Instead of doing the heavy lifting when a request arrives, you keep a pool of containers already booted and paused. When code arrives, it executes instantly!
 
-You are creating a reliable component of Container Runtime / Sandbox. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+init-hot-pool 5
+fast-exec echo instantaneous
 
-Supported Operations:
-• init-hot-pool <size> -> Pre-forks and pauses hot standby containers in isolated namespaces.
-• fast-exec <command> -> Wakes hot container and executes command with sub-3ms latency. Accepts 'check-clean'.
-• audit-engine -> Audits the entire execution engine.`,
+Your engine will achieve sub-3ms latency because the container was already waiting in a hot standby state.`,
+      howItWorks: `The Fast-Clone technique:
+1. During idle time, the runtime boots containers up to the point right before executing code.
+2. The runtime pauses them.
+3. When a user requests execution, the dispatcher sends the code to a waiting container via an IPC socket.
+4. The container wakes up, runs the code instantly, and is then destroyed and replaced in the background.`,
       technicalTerms: [
-        {
-                "term": "Pre",
-                "definition": "forking. pre.allocating idle container processes paused at clone()."
-        },
-        {
-                "term": "Snapshotting and Copy",
-                "definition": "on.Write (CoW) rootfs overlays."
-        },
-        {
-                "term": "Waking pre",
-                "definition": "forked workers on demand via Unix domain sockets."
-        }
-],
-      description: `In Level 6 (Pre-Forked Worker Pools & Fast Clone), you engineer the core mechanisms for Container Runtime / Sandbox.
-
-Achieve sub-3ms cold starts via pre-initialized standby worker pools.
-
-Core Engineering Problem: How does Cloudflare Workers or AWS Lambda achieve near-instant execution without waiting for cold boots?
-
-Key Mechanisms Implemented:
-• Pre-forking: pre-allocating idle container processes paused at clone().
-• Snapshotting and Copy-on-Write (CoW) rootfs overlays.
-• Waking pre-forked workers on demand via Unix domain sockets.
-
-You engineer near-instant container execution with pre-forked worker pools.`,
+        { term: "Pre-Forking", definition: "Booting and initializing a process ahead of time so it is immediately ready to handle work." },
+        { term: "Hot Standby", definition: "A fully prepared instance waiting idly for a request." },
+        { term: "IPC Socket", definition: "Inter-Process Communication; a way for the host to send the payload to the paused container." }
+      ],
+      description: `To achieve the magic of 'instant' serverless execution, modern platforms (like AWS Firecracker or Cloudflare Workers) cheat: they don't boot containers on demand. They pre-fork a pool of 'hot standby' workers. All namespaces, cgroups, and mounts are already configured. When a request hits, the payload is simply piped into the waiting process, dropping latency from 15ms down to 1ms.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'init-hot-pool <size>': Pre-forks and pauses hot standby containers in isolated namespaces.",
-        "Implement 'fast-exec <command>': Wakes hot container and executes command with sub-3ms latency. Accepts 'check-clean'.",
-        "Implement 'audit-engine': Audits the entire execution engine.",
-        "Enforce system constraints: Sub-3ms execution dispatch; Re-seed security state between runs.",
-        "Format output according to the specification and flush standard output."
-],
+        "Add a 'hot_pool' state to your simulator.",
+        "Implement 'init-hot-pool <size>' to set the state to ready.",
+        "Implement 'fast-exec <command>' to simulate instantaneous execution, outputting the command result followed by 'DISPATCH_TIME: < 3ms'.",
+        "Implement 'audit-engine' to output the final validation string 'STAGE: OPTIMIZED AUDIT: PASSED'."
+      ],
       diagram: `PRE-FORKED HOT STANDBY DISPATCH:
 
   Idle Pre-Forked Pool (Paused at Unix Domain Socket recv):

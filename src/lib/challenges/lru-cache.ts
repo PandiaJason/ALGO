@@ -89,46 +89,35 @@ export const lruCacheChallenge: ChallengeData = {
       title: "Basic LRU Eviction & O(1) Linked List",
       difficulty: "Easy",
       tagline: "Build a fixed-capacity LRU cache. When capacity is exceeded, evict the least recently inserted key.",
-      whatAreYouBuilding: `In this level, you build: Basic LRU Eviction & O(1) Linked List.
+      whatAreYouBuilding: `Imagine a tiny desk that can only hold 3 books. When you need a 4th book, you must put away the one you haven't touched in the longest time.
 
-Build a fixed-capacity LRU cache. When capacity is exceeded, evict the least recently inserted key.
+You are going to build a cache that acts just like this desk. When it reaches its capacity, it evicts the Least Recently Used (LRU) item to make room for new ones.
 
-You are creating a reliable component of Cache & Eviction Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+CAPACITY 2
+PUT a 1
+PUT b 2
+PUT c 3
 
-Supported Operations:
-• CAPACITY <n> -> Initializes cache capacity to n items. Returns 'OK'.
-• PUT <key> <val> -> Inserts or updates key. Evicts LRU if at capacity. Returns 'OK'.
-• GET <key> -> Retrieves value. Returns '<val>' or 'NULL'.`,
+Your cache should evict 'a' because it is the oldest, keeping 'b' and 'c'.`,
+      howItWorks: `To make this extremely fast, we pair two data structures together:
+1. A Dictionary (Hash Map) to instantly find where a key is.
+2. A Doubly-Linked List to keep track of the order of items from newest to oldest.
+
+When you add a new item, you put it at the "head" (newest) of the list. If the list is too long, you chop off the "tail" (oldest) and remove it from the dictionary.`,
       technicalTerms: [
-        {
-                "term": "Hash Map (for O(1) node address lookup) + Doubly",
-                "definition": "Linked List (for O(1) eviction)."
-        },
-        {
-                "term": "Evicting the tail node when count > capacity",
-                "definition": ""
-        },
-        {
-                "term": "Overwriting existing keys without leaking capacity",
-                "definition": ""
-        }
-],
-      description: `An LRU (Least Recently Used) cache discards the least recently accessed items first when its capacity limit is reached. In Level 1, you build a fixed-capacity LRU cache.
-
-To achieve strict O(1) operational complexity, a production cache pairs a Hash Map (for instant O(1) key-to-node pointer lookups) with a Doubly-Linked List (for instant O(1) node addition, removal, and splicing).`,
+        { term: "Hash Map", definition: "A data structure providing instant O(1) lookups using keys." },
+        { term: "Doubly-Linked List", definition: "A sequence of nodes where each node points to both its previous and next neighbor." },
+        { term: "Eviction", definition: "The process of removing an item from the cache to make room for a new one." }
+      ],
+      description: `A naive cache might use a simple array, but when it fills up, removing the oldest item requires shifting all other items down—a slow O(N) operation. By combining a Hash Map for fast lookups and a Doubly-Linked List for fast removals, we achieve strict O(1) performance for every operation. In this level, you build this foundation, handling capacity limits and dropping the tail node when full.`,
       implementationGuide: [
-        "Initialize a Doubly-Linked List with sentinel dummy head and dummy tail nodes to eliminate null-pointer checks.",
-        "Initialize a hash map storing key -> node pointer references.",
-        "Implement 'CAPACITY <n>': configure maximum cache capacity.",
-        "Implement 'PUT <key> <val>': if key exists, update value. If key is new, add node at the head (MRU).",
-        "If count exceeds capacity after insertion, evict the node right before dummy tail (LRU), and delete from hash map.",
-        "Implement 'GET <key>': return value if found, or 'NULL' if missing."
-],
+        "Create a Node class with key, value, prev, and next pointers.",
+        "Initialize a dictionary to map keys to Node objects.",
+        "Maintain dummy 'head' and 'tail' pointers to track the Most Recently Used and Least Recently Used nodes.",
+        "On PUT, if the key is new and capacity is reached, remove the node before the dummy tail and delete its key from the dictionary.",
+        "Add new nodes right after the dummy head."
+      ],
       diagram: `INPUT (Capacity=2)            CACHE STATE (MRU ──► LRU)      OUTPUT
 PUT k1 v1              ──────► [k1:v1]                   ──► OK
 PUT k2 v2              ──────► [k2:v2] ──► [k1:v1]       ──► OK
@@ -188,42 +177,32 @@ GET b
       title: "Touch on Read & Pointer Re-linking",
       difficulty: "Medium",
       tagline: "A GET request must 'touch' the accessed key, promoting it to Most Recently Used (MRU) head.",
-      whatAreYouBuilding: `In this level, you build: Touch on Read & Pointer Re-linking.
+      whatAreYouBuilding: `Our desk needs an update. If someone asks for a book that is already on the desk, you don't just leave it there—you move it to the very top of the pile so it won't be put away soon.
 
-A GET request must 'touch' the accessed key, promoting it to Most Recently Used (MRU) head.
+In your cache, whenever an item is read using a GET command, it must be promoted to the Most Recently Used (MRU) position.
 
-You are creating a reliable component of Cache & Eviction Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+GET a
 
-Supported Operations:
-• GET <key> -> Returns value and promotes key to MRU head position.`,
+Your cache should instantly move 'a' to the front of the line.`,
+      howItWorks: `When an item is accessed:
+1. Find the item in the dictionary instantly.
+2. Unlink its node from its current position in the doubly-linked list.
+3. Re-link the node at the head of the list.
+
+This ensures that frequently accessed items stay near the head, while ignored items drift toward the tail where they will eventually be evicted.`,
       technicalTerms: [
-        {
-                "term": "Unlinking node from current position and re",
-                "definition": "inserting at MRU head."
-        },
-        {
-                "term": "Preventing hot",
-                "definition": "key eviction during high read traffic."
-        },
-        {
-                "term": "Handling edge cases",
-                "definition": "Touching head node vs touching tail node."
-        }
-],
-      description: `In a true LRU cache, reads (GET) are not read-only operations—they mutate cache state!
-
-Whenever an existing key is accessed via 'GET <key>', it becomes the Most Recently Used item. You must splice the node out from its current position in the doubly-linked list and re-insert it directly after the dummy head, all in O(1) pointer operations without modifying the hash map.`,
+        { term: "MRU Promotion", definition: "Moving an accessed item to the front (Most Recently Used position) to protect it from eviction." },
+        { term: "Pointer Splicing", definition: "Updating the 'prev' and 'next' pointers of nodes to safely remove and insert a node." },
+        { term: "Cache Hit", definition: "Successfully finding a requested key in the cache." }
+      ],
+      description: `In a true LRU cache, reads are not read-only operations—they mutate the internal state! Whenever an existing key is accessed, it becomes the most recently used item. If we didn't promote it, a heavily used key would eventually drift to the tail and get evicted simply because it was inserted a long time ago. By splicing pointers in O(1) time, we keep the cache blazing fast while preserving the working set.`,
       implementationGuide: [
-        "In 'GET <key>': if the key is found, unlink the node from its current position.",
-        "Splice the unlinked node to the front of the list directly following the dummy head.",
-        "Ensure overwriting an existing key in 'PUT <key> <val>' also promotes the node to the head of the list.",
-        "Verify that evicted keys are always the ones that have gone the longest without either a GET or PUT."
-],
+        "In your GET method, if the key exists, isolate the node by linking its 'prev' and 'next' neighbors together.",
+        "Move the isolated node to the front, placing it right after the dummy head.",
+        "Update the dictionary if necessary (though the reference to the node remains the same).",
+        "Make sure to also promote the node when an existing key is overwritten via PUT."
+      ],
       diagram: `GET QUERY                     POINTER SPLICING (MRU PROMOTION)       CACHE ORDER
 State: [a] <-> [b]     ──► GET a touches node "a"             ──► [a] promoted to HEAD
 PUT c 3                ──► Capacity=2: Evicts tail "b"!       ──► Cache: [c] <-> [a]
@@ -266,43 +245,34 @@ After GET(a):   [HEAD] <──► [ a ] <──► [ b ] <──► [TAIL]`,
       title: "Least Frequently Used (LFU) Mode",
       difficulty: "Hard",
       tagline: "Implement LFU mode. Track access frequency counts and evict the least frequently queried key.",
-      whatAreYouBuilding: `In this level, you build: Least Frequently Used (LFU) Mode.
+      whatAreYouBuilding: `Sometimes the book on the bottom of the pile is actually a dictionary you use every day, while the new book on top was just a one-time read. 
 
-Implement LFU mode. Track access frequency counts and evict the least frequently queried key.
+You will implement a Least Frequently Used (LFU) mode. Instead of evicting the oldest item, you will evict the item that has been accessed the fewest number of times.
 
-You are creating a reliable component of Cache & Eviction Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• MODE LFU -> Switches eviction policy to Least Frequently Used. Returns 'OK'.
-• FREQ <key> -> Returns access count of key.`,
+For example:
+MODE LFU
+PUT a 1 (accessed 1 time)
+GET a (accessed 2 times)
+PUT b 2 (accessed 1 time)
+PUT c 3 (evicts 'b' because it has the lowest frequency)
+`,
+      howItWorks: `When in LFU mode:
+1. Every node starts with a frequency count of 1.
+2. Every GET or PUT increments that count.
+3. When the cache is full, find the node with the lowest frequency and evict it.
+4. If there's a tie (multiple nodes have the same lowest frequency), use LRU as a tie-breaker (evict the oldest one).`,
       technicalTerms: [
-        {
-                "term": "LFU frequency tracking",
-                "definition": "Each key maintains an access counter."
-        },
-        {
-                "term": "Tie",
-                "definition": "breaking. If two keys have equal frequency, evict the least recently used among them."
-        },
-        {
-                "term": "MODE LFU vs MODE LRU dynamic switching",
-                "definition": ""
-        }
-],
-      description: `LRU caches can be polluted by sequential scans. In Level 3, you implement LFU (Least Frequently Used) eviction.
-
-In LFU mode, each key tracks an access frequency counter. When capacity is reached, the key with the lowest frequency is evicted. If multiple keys share the same lowest frequency, LRU recency is used as a tie-breaker.`,
+        { term: "LFU Eviction", definition: "Least Frequently Used eviction removes the item with the lowest access count." },
+        { term: "Tie-breaking", definition: "Using a secondary rule (like LRU) to decide which item to evict when primary rules match." },
+        { term: "Cache Pollution", definition: "When a flood of one-time data pushes out valuable, frequently accessed data." }
+      ],
+      description: `LRU caches are vulnerable to 'cache pollution.' If a user sequentially scans a massive dataset once, they will fill the cache with new data, pushing out all the hot keys. LFU solves this by tracking the access frequency. High-frequency keys become anchored in the cache, immune to one-time sequential scans. This level introduces policy switching and frequency tracking to make the cache workload-adaptive.`,
       implementationGuide: [
-        "Implement 'MODE LFU': switch the eviction policy to frequency-based eviction.",
-        "Track an integer access frequency counter on each cache node (initialized to 1 on insert, incremented on every GET/PUT).",
-        "Implement 'FREQ <key>': return the current access count of the given key.",
-        "When evicting under LFU mode, locate the node with the minimum frequency. Tie-break using recency."
-],
+        "Add a 'freq' integer property to your Node class, starting at 1.",
+        "Increment the 'freq' property every time the node is accessed via GET or updated via PUT.",
+        "If 'MODE LFU' is active and an eviction is needed, iterate to find the minimum frequency.",
+        "To handle ties naturally without complex buckets for now, rely on your existing linked list order to break ties (evict the first minimum frequency node starting from the tail)."
+      ],
       diagram: `ACCESS WORKLOAD               FREQUENCY BUCKET TRACKING              EVICTION DECISION
 MODE LFU               ──► Switch policy to LFU               ──► OK
 PUT a 1, GET a, GET a  ──► freq["a"] = 3                      ──► 1
@@ -344,42 +314,30 @@ Freq 3: [ a ] (Protected by high query volume)`,
       title: "TTL & Key Expiration",
       difficulty: "Hard",
       tagline: "Implement SETEX for millisecond key expiration. Expired keys must never be returned or count against capacity.",
-      whatAreYouBuilding: `In this level, you build: TTL & Key Expiration.
+      whatAreYouBuilding: `Books eventually go out of date. If a book has been on the desk for more than a day, it should be thrown away, even if there's plenty of space.
 
-Implement SETEX for millisecond key expiration. Expired keys must never be returned or count against capacity.
+You will implement Time-To-Live (TTL). Keys will have an expiration timer, and once they expire, they must vanish from the cache.
 
-You are creating a reliable component of Cache & Eviction Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+SETEX token 5000 abc
 
-Supported Operations:
-• SETEX <key> <ttl_ms> <val> -> Sets key with millisecond expiration. Returns 'OK'.
-• TTL <key> -> Returns remaining lifetime in ms (-1 permanent, -2 absent).`,
+This sets a key 'token' that will expire in 5000 milliseconds. After that time, asking for it should return nothing.`,
+      howItWorks: `We use a 'lazy expiration' strategy:
+1. When a key is inserted with a TTL, calculate its exact expiration timestamp (current time + TTL).
+2. We don't constantly check a clock in the background. 
+3. Instead, when the user asks for a key (GET), we check the current time. If the current time is past the expiration timestamp, we delete the key right then and return NULL.`,
       technicalTerms: [
-        {
-                "term": "SETEX <key> <ttl_ms> <val> command contract",
-                "definition": ""
-        },
-        {
-                "term": "Passive expiration check",
-                "definition": "If current_time >= expire_at, purge immediately."
-        },
-        {
-                "term": "TTL <key> returning ms remaining,",
-                "definition": "1 (permanent), or .2 (absent)."
-        }
-],
-      description: `Cached entries often have a limited lifespan after which their data becomes stale. In Level 4, you implement Time-To-Live (TTL) key expiration.
-
-Each cached item can be assigned an expiration timestamp (e.g. 'SETEX <key> <ttl_seconds> <value>'). When 'GET <key>' is invoked, the cache checks if the current time exceeds the expiration threshold. If expired, the key is immediately purged and returns NULL.`,
+        { term: "Time-To-Live (TTL)", definition: "The amount of time an item is allowed to remain in the cache before becoming invalid." },
+        { term: "Passive Expiration", definition: "Checking if an item is expired only when it is accessed, rather than using a background timer." },
+        { term: "Monotonic Clock", definition: "A clock that only moves forward, ensuring timers aren't affected by system time changes." }
+      ],
+      description: `Cached data often represents temporary state like user sessions or API responses that grow stale. A robust cache must enforce Time-To-Live (TTL). Instead of running an expensive background thread to sweep for expired keys, we use passive expiration: we record the absolute expiration time on insert, and lazily evaluate it on read. If the time has passed, the cache silently drops it.`,
       implementationGuide: [
-        "Implement 'SETEX <key> <ttl> <val>': store the value along with its expiration timestamp (now + ttl).",
-        "Implement 'TTL <key>': return the remaining seconds before expiration, or -1 if no TTL, or -2 if missing.",
-        "In 'GET <key>': check if expiration timestamp has passed. If expired, delete the key, unlink node, and return 'NULL'."
-],
+        "Implement SETEX to store the value and calculate an expiration timestamp (e.g., using time.time() + ttl).",
+        "Store expiration timestamps in a dictionary or directly on the Node.",
+        "In your GET method, check if the key has an expiration timestamp. If the current time exceeds it, remove the node, delete from the dictionary, and return 'NULL'.",
+        "Implement the TTL command to calculate and return the remaining milliseconds."
+      ],
       diagram: `TEMPORAL OPERATION            TTL LIFECYCLE EVALUATION               RETURN VALUE
 SETEX token 5000 abc   ──► Store val="abc", expire_at=T+5000 ──► OK
 TTL token              ──► Check remaining monotonic ms      ──► 4998 ms
@@ -420,43 +378,33 @@ Read Access (GET / TTL) ──► Is expired? ──► YES ──► Delete & R
       title: "Byte-Accurate Memory Caps",
       difficulty: "Hard",
       tagline: "Evict based on payload byte weight (MAXMEMORY <bytes>) rather than fixed item count.",
-      whatAreYouBuilding: `In this level, you build: Byte-Accurate Memory Caps.
+      whatAreYouBuilding: `Imagine your tiny desk can hold a maximum of 10 pounds, rather than exactly 3 books. A massive encyclopedia might take up 8 pounds by itself!
 
-Evict based on payload byte weight (MAXMEMORY <bytes>) rather than fixed item count.
+You will implement byte-accurate memory budgeting. Instead of a fixed item count, the cache will evict items based on the actual byte size of the keys and values.
 
-You are creating a reliable component of Cache & Eviction Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+MAXMEMORY 10
+PUT a 12345 (Total 6 bytes)
+PUT b 12345 (Total 6 bytes)
 
-Supported Operations:
-• MAXMEMORY <bytes> -> Sets hard memory limit in bytes. Returns 'OK'.
-• MEMORY_USED -> Returns currently allocated payload bytes.`,
+The second PUT pushes the total to 12 bytes, exceeding the 10-byte limit, so 'a' must be evicted!`,
+      howItWorks: `When memory limits are active:
+1. Calculate the size of an item: length of key + length of value.
+2. Keep a running total of the bytes used.
+3. When adding a new item, if the new total exceeds the limit, keep evicting the oldest items until the total drops below the limit.
+4. Sometimes, one huge item might force multiple smaller items to be evicted!`,
       technicalTerms: [
-        {
-                "term": "Tracking payload byte size",
-                "definition": "len(key) + len(val)."
-        },
-        {
-                "term": "MAXMEMORY budget",
-                "definition": "Evicting items until total_bytes <= MAXMEMORY."
-        },
-        {
-                "term": "Single oversized item rejection if item > MAXMEMORY",
-                "definition": ""
-        }
-],
-      description: `Real caches (such as Redis maxmemory) enforce memory limits based on total byte consumption rather than simple item counts.
-
-In Level 5, you implement byte-level memory budgeting. Every key and value calculates its serialized byte size. When total memory exceeds 'MAXMEMORY <bytes>', items are evicted until usage drops below the threshold.`,
+        { term: "Byte Budget", definition: "A hard limit on the total physical memory the cache can consume." },
+        { term: "Payload Size", definition: "The actual size of the data being stored (key length + value length)." },
+        { term: "Memory Bounded Eviction", definition: "Evicting one or more items dynamically until the memory usage is back under the limit." }
+      ],
+      description: `In production, item-count limits are dangerous. Ten tiny strings might consume 100 bytes, but ten large JSON blobs might consume 100 Megabytes, causing the server to crash from an Out-Of-Memory (OOM) error. Real caches (like Redis) enforce limits based on physical byte consumption. When a large payload arrives, the cache must aggressively evict as many tail nodes as necessary to make room.`,
       implementationGuide: [
-        "Implement 'MAXMEMORY <bytes>': configure the byte budget threshold for the cache.",
-        "Track total memory usage: calculate key.length + value.length on insertion.",
-        "When inserting, loop and evict LRU items from the tail until total memory usage <= maxmemory.",
-        "Implement 'MEMORY_USED': output current total byte usage."
-],
+        "Implement MAXMEMORY to set a total byte limit.",
+        "Track memory usage by adding len(key) + len(value) on every insertion.",
+        "Subtract len(key) + len(value) on every eviction or overwrite.",
+        "Change the eviction loop in PUT: while the total memory exceeds MAXMEMORY, repeatedly evict the LRU (or LFU) node."
+      ],
       diagram: `BYTE BUDGET                   HEAP CONSUMPTION TRACKER              EVICTION LOOP
 MAXMEMORY 10           ──► Set hard ceiling = 10 bytes        ──► OK
 PUT a 12345 (6 bytes)  ──► Used: 6B <= 10B                   ──► OK
@@ -498,42 +446,34 @@ Total = 12 Bytes > 10 Bytes Limit ──► Evict Tail until used <= 10B`,
       title: "Hit-Rate Telemetry & Workload Benchmarking",
       difficulty: "Hard",
       tagline: "Track cache hits, misses, and eviction metrics under heavy 1,000,000 request simulation workloads.",
-      whatAreYouBuilding: `In this level, you build: Hit-Rate Telemetry & Workload Benchmarking.
+      whatAreYouBuilding: `How do you know if your desk is actually useful? If you keep asking for books that aren't on the desk, the desk isn't helping much.
 
-Track cache hits, misses, and eviction metrics under heavy 1,000,000 request simulation workloads.
+You will build a telemetry system to track how effective your cache is. You will monitor Cache Hits (finding the item) and Cache Misses (not finding it).
 
-You are creating a reliable component of Cache & Eviction Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+GET a (Found it! Hit!)
+GET b (Not there! Miss!)
+STATS
 
-Supported Operations:
-• STATS -> Returns 'HITS: <h> MISSES: <m> RATIO: <r> EVICTIONS: <e>'.
-• FLUSHALL -> Clears all cached entries and resets stats. Returns 'OK'.`,
+Your system will report that you have a 50% hit ratio.`,
+      howItWorks: `You simply need to maintain counters:
+1. Every time a GET finds a valid, unexpired key, increment the Hits counter.
+2. Every time a GET fails to find a key (or it was expired), increment the Misses counter.
+3. Every time an item is forced out due to capacity, increment the Evictions counter.
+4. Calculate the hit ratio as: HITS / (HITS + MISSES).`,
       technicalTerms: [
-        {
-                "term": "Hit Rate Formula",
-                "definition": "HITS / (HITS + MISSES)."
-        },
-        {
-                "term": "Tracking eviction counts across workload phases",
-                "definition": ""
-        },
-        {
-                "term": "Balancing capacity vs hit rate trade",
-                "definition": "offs."
-        }
-],
-      description: `Production caching systems require deep telemetry to determine cache efficiency, sizing, and hit ratios under high-concurrency workloads.
-
-In Level 6, you build internal telemetry tracking hit counts, miss counts, eviction counts, and total hit ratio percentages.`,
+        { term: "Hit Rate", definition: "The percentage of requests successfully served by the cache (Hits / (Hits + Misses))." },
+        { term: "Telemetry", definition: "Automated data collection used to monitor the performance of a system." },
+        { term: "Eviction Rate", definition: "How often the cache is forced to remove items, indicating if the cache is too small." }
+      ],
+      description: `Operating a cache without telemetry is flying blind. Engineers need to know the Hit Ratio to determine if the cache is actually absorbing database load or just wasting memory. If the hit ratio is 10%, the cache is thrashing and the capacity needs to be increased or the eviction policy changed. In this final level, you build the instrumentation needed to benchmark cache efficiency under a barrage of simulated requests.`,
       implementationGuide: [
-        "Track metrics: total_requests, hits, misses, and evictions.",
-        "Implement 'STATS': output formatted cache metrics including 'HITS: <n>', 'MISSES: <n>', 'HIT_RATIO: <pct>%'.",
-        "Implement 'FLUSHALL': cleanly purge all keys, reset memory usage to 0, and restore sentinel pointers."
-],
+        "Initialize counters for hits, misses, and evictions to 0.",
+        "In GET, increment 'hits' if the key is found and valid, otherwise increment 'misses'.",
+        "In your eviction logic, increment 'evictions'.",
+        "Implement the STATS command to format these counters and calculate the ratio.",
+        "Implement FLUSHALL to clear the dictionary, linked list, and reset all counters back to 0."
+      ],
       diagram: `CACHE WORKLOAD                TELEMETRY COUNTERS                     STATS OUTPUT
 GET a (Found in cache) ──► Hits++ (Hits = 1)                 ──► 1
 GET b (Not in cache)   ──► Misses++ (Misses = 1)             ──► NULL

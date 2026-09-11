@@ -131,60 +131,43 @@ export const LEVEL_DEFINITIONS: Record<number, LevelDefinition> = {
     difficulty: "Easy",
     tagline:
       "Implement fundamental SET, GET, DELETE, and EXISTS operations with direct O(1) in-memory hash resolution.",
-      whatAreYouBuilding: `In this level, you build: Basic In-Memory Store.
+      whatAreYouBuilding: `You are going to build a simple digital phone book.
 
-Implement fundamental SET, GET, DELETE, and EXISTS operations with direct O(1) in-memory hash resolution.
+You can store a name (the key) and a phone number (the value). You can look up, update, or delete entries instantly.
 
-You are creating a reliable component of Key-Value Storage Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+SET alice 555-0100
+GET alice
 
-Supported Operations:
-• SET key value -> Stores key-value pair in memory. Overwrites existing value if present. Returns OK.
-• GET key -> Retrieves value associated with key. Returns the string value or NULL if missing.
-• DELETE key -> Deletes key from memory. Returns OK if deleted, or NOT_FOUND if missing.`,
+It should instantly return the value:
+"555-0100"`,
+      howItWorks: `1. When the user sends a 'SET' command, the system stores the key and value in memory (RAM).
+2. When the user sends a 'GET' command, it looks up the key and returns the value.
+3. When the user sends a 'DELETE' command, it removes the entry completely.
+4. Because everything is stored in RAM, operations are incredibly fast, but all data will be lost if the server turns off.`,
       technicalTerms: [
         {
-                "term": "In",
-                "definition": "Memory Pointer Resolution. How key.value pairs reside directly in process heap memory with amortized O(1) time complexity."
+          "term": "Key-Value Store",
+          "definition": "A database that uses a simple dictionary structure, mapping unique keys directly to their values."
         },
         {
-                "term": "Stream Command Protocol",
-                "definition": "How engines parse raw stdin/stdout tokens into operational verbs (SET, GET, DELETE, EXISTS) and arbitrary UTF.8 string payloads."
+          "term": "In-Memory",
+          "definition": "Storing data in the computer's volatile RAM rather than on a hard drive, maximizing speed but risking data loss on power failure."
         },
         {
-                "term": "Idempotency & Return Contracts",
-                "definition": "How production systems handle missing keys deterministically (NULL vs NOT_FOUND vs FALSE) without throwing unhandled exceptions."
-        },
-        {
-                "term": "Process Memory Footprint",
-                "definition": "The foundational baseline of heap allocation before introducing disk persistence or concurrent threading."
+          "term": "CRUD Operations",
+          "definition": "The four basic functions of persistent storage: Create, Read, Update, Delete."
         }
-],
-      description: `In Level 1 (Basic In-Memory Store), you engineer the core mechanisms for Key-Value Storage Engine.
+      ],
+      description: `Databases don't have to be complex SQL engines. In Level 1, you build the simplest and most performant type of database: a Key-Value Store.
 
-Implement fundamental SET, GET, DELETE, and EXISTS operations with direct O(1) in-memory hash resolution.
-
-Core Engineering Problem: How do modern systems map arbitrary human-readable strings to physical memory addresses in sub-microsecond time without memory leaks or unhandled exception crashes?
-
-Key Mechanisms Implemented:
-• In-Memory Pointer Resolution: How key-value pairs reside directly in process heap memory with amortized O(1) time complexity.
-• Stream Command Protocol: How engines parse raw stdin/stdout tokens into operational verbs (SET, GET, DELETE, EXISTS) and arbitrary UTF-8 string payloads.
-• Idempotency & Return Contracts: How production systems handle missing keys deterministically (NULL vs NOT_FOUND vs FALSE) without throwing unhandled exceptions.
-• Process Memory Footprint: The foundational baseline of heap allocation before introducing disk persistence or concurrent threading.
-
-You master command dispatching, arbitrary string payloads, heap memory allocation, and idempotent lookup contracts.`,
+Like Redis or Memcached, this acts as an ultra-fast cache. By keeping data exclusively in memory, you bypass the massive latency of hard drives, allowing applications to retrieve frequently accessed data (like user sessions or game scores) in fractions of a millisecond.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'SET key value': Stores key-value pair in memory. Overwrites existing value if present. Returns OK.",
-        "Implement 'GET key': Retrieves value associated with key. Returns the string value or NULL if missing.",
-        "Implement 'DELETE key': Deletes key from memory. Returns OK if deleted, or NOT_FOUND if missing.",
-        "Enforce system constraints: Time Complexity: O(1) average lookup and insertion.; Memory Sandbox: 256MB RAM hard limit inside Docker container..",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement a basic dictionary structure (like a HashMap or dict, depending on your language) in memory.",
+        "Implement 'SET <key> <value>' to insert or update the value associated with the key.",
+        "Implement 'GET <key>' to retrieve the value. Return NULL or a specific error message if the key doesn't exist.",
+        "Implement 'DELETE <key>' to remove the key from the dictionary."
+      ],
     diagram: `INPUT                         ENGINE                 OUTPUT
 SET name Jason        ──────► memory["name"]="Jason" ───► OK
 GET name              ──────► lookup("name")       ───► Jason
@@ -290,60 +273,44 @@ NOT_FOUND`,
     difficulty: "Medium",
     tagline:
       "Build a custom internal hash table with 64-bit hashing, collision chaining / open addressing, and dynamic load factor threshold rehashing.",
-      whatAreYouBuilding: `In this level, you build: Efficient Lookup & Collision Resolution.
+      whatAreYouBuilding: `You are going to write the actual engine that makes the phone book instantly searchable.
 
-Build a custom internal hash table with 64-bit hashing, collision chaining / open addressing, and dynamic load factor threshold rehashing.
+Instead of relying on built-in language tools, you will build a Hash Table from scratch. If two names magically generate the same page number (a collision), you'll link them together in a chain so neither gets lost.
 
-You are creating a reliable component of Key-Value Storage Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+hash "alice" -> 45
+hash "bob" -> 45 (Collision!)
 
-Supported Operations:
-• SET key value -> Hashes key, computes bucket index, resolves collisions, and resizes if load factor > 0.75. Returns OK.
-• GET key -> Probes collision chain / bucket to retrieve value. Returns value or NULL.
-• DELETE key -> Removes entry and marks tombstone or unlinks node. Returns OK or NOT_FOUND.`,
+It should chain them seamlessly:
+Index 45: [alice: "555-0100"] -> [bob: "555-0200"]`,
+      howItWorks: `1. When you insert a key, you run it through a mathematical 'hash function' that scrambles the string into a specific integer index.
+2. This index corresponds to a slot (bucket) in a fixed-size array.
+3. You place the key-value pair in that bucket.
+4. If the bucket is already occupied by a different key (a collision), you attach the new pair to the old one using a Linked List.
+5. To find a key, you hash it, go straight to that bucket, and walk through the linked list to find the exact match.`,
       technicalTerms: [
         {
-                "term": "Uniform 64",
-                "definition": "Bit Hashing. How non.cryptographic hash functions (MurmurHash3 / FNV.1a) disperse arbitrary keys uniformly across 2^64 address slots."
+          "term": "Hash Function",
+          "definition": "An algorithm that converts an arbitrary string into a fixed-size integer."
         },
         {
-                "term": "Collision Resolution Dynamics",
-                "definition": "When to use separate chaining (linked list / bucket vectors) vs open addressing (linear probing) for CPU L1/L2 cache locality."
+          "term": "Hash Collision",
+          "definition": "When two entirely different keys happen to produce the exact same hash integer."
         },
         {
-                "term": "Dynamic Load Factor & Table Expansion",
-                "definition": "Why a 0.75 load factor threshold balances memory overhead against search cost, and how progressive rehashing avoids latency spikes."
-        },
-        {
-                "term": "Tombstones & Probe Continuity",
-                "definition": "Why deleting an entry in an open.addressing table breaks subsequent probe searches unless marked with tombstones."
+          "term": "Separate Chaining",
+          "definition": "A collision resolution strategy where each array slot holds a linked list of all items that hashed to that slot."
         }
-],
-      description: `In Level 2 (Efficient Lookup & Collision Resolution), you engineer the core mechanisms for Key-Value Storage Engine.
+      ],
+      description: `In Level 1, you probably used your language's native Dictionary or Object. But how does that actually work under the hood? In Level 2, you build the core data structure of computer science: the Hash Table.
 
-Build a custom internal hash table with 64-bit hashing, collision chaining / open addressing, and dynamic load factor threshold rehashing.
-
-Core Engineering Problem: Why do naive hash tables degrade from O(1) to catastrophic O(N) when bucket collisions occur or under Hash DoS attacks?
-
-Key Mechanisms Implemented:
-• Uniform 64-Bit Hashing: How non-cryptographic hash functions (MurmurHash3 / FNV-1a) disperse arbitrary keys uniformly across 2^64 address slots.
-• Collision Resolution Dynamics: When to use separate chaining (linked list / bucket vectors) vs open addressing (linear probing) for CPU L1/L2 cache locality.
-• Dynamic Load Factor & Table Expansion: Why a 0.75 load factor threshold balances memory overhead against search cost, and how progressive rehashing avoids latency spikes.
-• Tombstones & Probe Continuity: Why deleting an entry in an open-addressing table breaks subsequent probe searches unless marked with tombstones.
-
-You master how real databases prevent hash collisions, expand capacity dynamically without latency spikes, and maintain strict O(1) lookup guarantees.`,
+By scrambling keys into array indices, you achieve O(1) constant-time lookups. This means finding a record takes the exact same amount of time whether the database contains ten items or ten billion items. Handling collisions via separate chaining ensures the database remains robust even when the math inevitably overlaps.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'SET key value': Hashes key, computes bucket index, resolves collisions, and resizes if load factor > 0.75. Returns OK.",
-        "Implement 'GET key': Probes collision chain / bucket to retrieve value. Returns value or NULL.",
-        "Implement 'DELETE key': Removes entry and marks tombstone or unlinks node. Returns OK or NOT_FOUND.",
-        "Enforce system constraints: Maximum Load Factor: 0.75 threshold before dynamic rehashing.; Initial Buckets: Start with exactly 8 buckets..",
-        "Format output according to the specification and flush standard output."
-],
+        "Create a fixed-size array of \"buckets\" to act as the foundation of your hash table.",
+        "Implement a string hashing algorithm (like FNV-1a or MurmurHash) to convert string keys into an array index.",
+        "If multiple keys hash to the same bucket, store them in a Linked List (or a simple sub-array).",
+        "When retrieving a value, hash the key, navigate to the bucket, and iterate through the list comparing the raw key strings until you find the match."
+      ],
     diagram: `INPUT KEY                      HASH ENGINE                  BUCKET ARRAY
 "user:101" ──────► 64-bit Hash (FNV / Murmur3)
                    0x8f3c...b9a2 ──────► idx = hash % 8 (Slot 2)
@@ -424,61 +391,44 @@ Recompute idx = hash % 16 for all nodes ──► Zero Collisions, O(1) Preserve
     difficulty: "Medium",
     tagline:
       "Implement append-only write-ahead logging (WAL) and crash recovery replay. Ensure zero data loss across simulated process restarts.",
-      whatAreYouBuilding: `In this level, you build: Durable Persistence & Write-Ahead Log (WAL).
+      whatAreYouBuilding: `You are going to protect the phone book from power outages.
 
-Implement append-only write-ahead logging (WAL) and crash recovery replay. Ensure zero data loss across simulated process restarts.
+If the power cord is pulled, RAM is wiped. To fix this, you will keep a running journal (log) on the hard drive. Every time someone changes a number, you quickly jot it down in the journal before updating the phone book.
 
-You are creating a reliable component of Key-Value Storage Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+SET alice 555-0100
+CRASH
 
-Supported Operations:
-• SET / GET / DELETE / EXISTS -> All Level 1 & 2 operations. Every mutation is synchronously flushed to wal.log before returning OK.
-• SAVE -> Forces an immediate synchronous snapshot dump of in-memory keys to disk (dump.rdb). Returns OK.
-• RESTORE -> Restores dataset from disk snapshot. Returns OK or NOT_FOUND if snapshot missing.`,
+When the server restarts, it should recover the data:
+REPLAYING LOG...
+RESTORED: alice = 555-0100`,
+      howItWorks: `1. When a 'SET' or 'DELETE' command arrives, the system immediately writes that command as a line of text at the end of a file on the hard drive (the WAL).
+2. It waits for the hard drive to confirm the text was saved.
+3. Then, it updates the fast in-memory dictionary and tells the user "Success!".
+4. If the server crashes, all RAM is lost.
+5. On reboot, the system reads the WAL file from top to bottom, re-running every command to perfectly reconstruct the in-memory dictionary.`,
       technicalTerms: [
         {
-                "term": "The Write",
-                "definition": "Ahead Logging (WAL) Principle. The cardinal rule of database systems — never alter in.memory state until the mutation is safely committed to non.volatile disk."
+          "term": "Write-Ahead Log (WAL)",
+          "definition": "An append-only file where every database modification is recorded *before* it is applied to the main dataset."
         },
         {
-                "term": "Sequential vs Random I/O Economics",
-                "definition": "Why append.only logging (WAL) is orders of magnitude faster than random disk page modifications."
+          "term": "Append-only",
+          "definition": "Writing new data exclusively to the very end of a file, which maximizes disk throughput."
         },
         {
-                "term": "OS Page Cache vs Hardware Flushing",
-                "definition": "Why standard file writes sit in volatile OS buffers, and why synchronous fsync/fdatasync flushes are mandatory for true durability."
-        },
-        {
-                "term": "Crash Recovery & Replay Engine",
-                "definition": "How the storage engine parses the WAL on startup, tolerates partial/corrupt trailing lines, and reconstitutes exact state in under 50ms."
+          "term": "Crash Recovery",
+          "definition": "The process of reading the WAL upon startup to rebuild the database state exactly as it was before a failure."
         }
-],
-      description: `In Level 3 (Durable Persistence & Write-Ahead Log (WAL)), you engineer the core mechanisms for Key-Value Storage Engine.
+      ],
+      description: `An purely in-memory database is extremely fast, but highly irresponsible for critical data. In Level 3, you bridge the gap between volatile RAM and durable disks using a Write-Ahead Log.
 
-Implement append-only write-ahead logging (WAL) and crash recovery replay. Ensure zero data loss across simulated process restarts.
-
-Core Engineering Problem: If host power is abruptly cut or the process receives SIGKILL, RAM is instantly wiped. How do databases guarantee zero data loss without slowing down writes?
-
-Key Mechanisms Implemented:
-• The Write-Ahead Logging (WAL) Principle: The cardinal rule of database systems — never alter in-memory state until the mutation is safely committed to non-volatile disk.
-• Sequential vs Random I/O Economics: Why append-only logging (WAL) is orders of magnitude faster than random disk page modifications.
-• OS Page Cache vs Hardware Flushing: Why standard file writes sit in volatile OS buffers, and why synchronous fsync/fdatasync flushes are mandatory for true durability.
-• Crash Recovery & Replay Engine: How the storage engine parses the WAL on startup, tolerates partial/corrupt trailing lines, and reconstitutes exact state in under 50ms.
-• Atomic Snapshotting (SAVE / RESTORE): Creating atomic point-in-time state dumps to bound WAL recovery time upon restarts.
-
-You understand how databases survive catastrophic crashes, why sequential logging enables high write throughput, and how crash recovery reconstitution works.`,
+Writing directly to a database file on disk is complex and slow because it involves seeking around to find the right bytes to update. A WAL solves this by strictly appending to the end of a file, which is the absolute fastest way a hard drive can write data. This gives you the durability of a disk with the read speeds of RAM.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'SET / GET / DELETE / EXISTS': All Level 1 & 2 operations. Every mutation is synchronously flushed to wal.log before returning OK.",
-        "Implement 'SAVE': Forces an immediate synchronous snapshot dump of in-memory keys to disk (dump.rdb). Returns OK.",
-        "Implement 'RESTORE': Restores dataset from disk snapshot. Returns OK or NOT_FOUND if snapshot missing.",
-        "Enforce system constraints: WAL Log File: ./data/wal.log.; Sync Guarantee: Flush file buffers (fdatasync/flush) on each mutation..",
-        "Format output according to the specification and flush standard output."
-],
+        "Before executing any `SET` or `DELETE` command in memory, format it as a string (e.g., \"SET,alice,123\n\") and append it to a log file on disk.",
+        "Ensure you forcefully flush (fsync) the file write to disk before returning success to the client.",
+        "Implement a startup routine: when the database boots, open the log file, read it line by line, and execute the commands to rebuild your in-memory Hash Table."
+      ],
     diagram: `WRITE PIPELINE (Synchronous fsync):
 SET user "Alice" ──► 1. Serialize Record  ──► [SET user Alice\\n]
                             │
@@ -565,61 +515,44 @@ Replay Complete (State 100% Reconstituted) ──► Ready for Traffic`,
     difficulty: "Hard",
     tagline:
       "Implement millisecond-precision key expiration with dual-mode passive eviction on read and active background sweeping.",
-      whatAreYouBuilding: `In this level, you build: TTL & Key Expiration.
+      whatAreYouBuilding: `You are going to add self-destruct timers to phone book entries.
 
-Implement millisecond-precision key expiration with dual-mode passive eviction on read and active background sweeping.
+Sometimes you only need a temporary number, like a guest Wi-Fi password. You can set it to automatically vanish after 60 seconds without manually deleting it.
 
-You are creating a reliable component of Key-Value Storage Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+SET_EX guest_pass "abc12" 60000
+(Wait 61 seconds)
+GET guest_pass
 
-Supported Operations:
-• SET key value -> Stores key-value pair and clears any existing TTL.
-• DELETE key -> Deletes key and its expiration timer.
-• EXPIRE key ttl_ms -> Sets time-to-live in milliseconds on key. Returns OK, or NOT_FOUND if key does not exist.`,
+It should return nothing:
+NULL (Key Expired)`,
+      howItWorks: `1. When storing a key, you optionally attach an absolute expiration timestamp (current time + TTL).
+2. When the user requests a key, you first check if the current time is past the expiration timestamp.
+3. If it is past the timestamp, you delete the key on the spot and tell the user it doesn't exist (Lazy Expiration).
+4. Meanwhile, a background loop randomly samples keys. If it finds expired ones, it deletes them silently to free up memory (Active Expiration).`,
       technicalTerms: [
         {
-                "term": "Dual",
-                "definition": "Mode Eviction Architecture. Combining passive (lazy) evaluation on read with active background sweeping to prevent memory leaks."
+          "term": "TTL (Time-To-Live)",
+          "definition": "The duration in milliseconds that a key should remain valid before being automatically deleted."
         },
         {
-                "term": "Lazy Eviction Mechanics",
-                "definition": "Deferring key expiration checks until GET/EXISTS is invoked, consuming zero CPU cycles for keys that are never queried."
+          "term": "Lazy Expiration",
+          "definition": "Checking if a key is expired only at the exact moment a user tries to access it."
         },
         {
-                "term": "Active Sweeping & Probabilistic Sampling",
-                "definition": "Why relying exclusively on lazy eviction causes permanent memory leaks for abandoned keys, and how periodic sampling keeps heap clean."
-        },
-        {
-                "term": "Monotonic vs Wall",
-                "definition": "Clock Timers. Why wall.clock time (time.time()) can jump backwards during NTP synchronization, and why monotonic clocks (steady_clock) are required for TTL reliability."
+          "term": "Active Expiration",
+          "definition": "A background process that proactively scans the database to find and delete expired keys, preventing memory leaks."
         }
-],
-      description: `In Level 4 (TTL & Key Expiration), you engineer the core mechanisms for Key-Value Storage Engine.
+      ],
+      description: `Caching systems shouldn't hold onto stale data forever. In Level 4, you implement Time-To-Live (TTL) expiration, a cornerstone feature of Redis.
 
-Implement millisecond-precision key expiration with dual-mode passive eviction on read and active background sweeping.
-
-Core Engineering Problem: In high-throughput caches, unbounded data accumulation leads to Out-Of-Memory (OOM) fatal kills. How do you evict expired keys without degrading read/write latency?
-
-Key Mechanisms Implemented:
-• Dual-Mode Eviction Architecture: Combining passive (lazy) evaluation on read with active background sweeping to prevent memory leaks.
-• Lazy Eviction Mechanics: Deferring key expiration checks until GET/EXISTS is invoked, consuming zero CPU cycles for keys that are never queried.
-• Active Sweeping & Probabilistic Sampling: Why relying exclusively on lazy eviction causes permanent memory leaks for abandoned keys, and how periodic sampling keeps heap clean.
-• Monotonic vs Wall-Clock Timers: Why wall-clock time (time.time()) can jump backwards during NTP synchronization, and why monotonic clocks (steady_clock) are required for TTL reliability.
-• TTL Mutation Semantics: How overwrites (SET), explicit expiration (EXPIRE), and removal (PERSIST) transition key lifecycle state.
-
-You master dual-mode TTL lifecycle management, steady monotonic timing, and memory-safe cache eviction.`,
+If you only checked for expiration when a user requested a key (lazy expiration), forgotten keys would sit in RAM forever, eventually crashing the server. By adding a randomized background sweeper (active expiration), you ensure that memory is aggressively freed even if users never request the expired data again.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'SET key value': Stores key-value pair and clears any existing TTL.",
-        "Implement 'DELETE key': Deletes key and its expiration timer.",
-        "Implement 'EXPIRE key ttl_ms': Sets time-to-live in milliseconds on key. Returns OK, or NOT_FOUND if key does not exist.",
-        "Enforce system constraints: Time Precision: Millisecond resolution (ttl_ms >= 1).; TTL Return Codes: Positive integer (ms remaining), -1 (no expiration), -2 (key does not exist)..",
-        "Format output according to the specification and flush standard output."
-],
+        "Modify your internal dictionary to store objects: `{ value: string, expiresAt: integer }`.",
+        "Implement `SET_EX <key> <value> <ttl_ms>`. Calculate `expiresAt = current_time_ms + ttl_ms`.",
+        "Modify `GET`. If `expiresAt` exists and is `< current_time_ms`, delete the key and return NULL.",
+        "Implement a background loop that runs every few seconds, picks a random subset of keys, and deletes any that have expired."
+      ],
     diagram: `TTL REGISTRATION:
 SET session "token" ──► memory["session"] = "token"
 EXPIRE session 10   ──► expiry_table["session"] = now_monotonic_ms() + 10,000
@@ -706,61 +639,44 @@ DUAL-MODE EVICTION ARCHITECTURE:
     difficulty: "Hard",
     tagline:
       "Scale across 16+ parallel client threads. Implement striped locking (sharded mutexes) or read-write locks to maximize concurrent throughput.",
-      whatAreYouBuilding: `In this level, you build: Concurrency & Thread-Safe Operations.
+      whatAreYouBuilding: `You are going to let thousands of users read the phone book at the same time without tearing the pages.
 
-Scale across 16+ parallel client threads. Implement striped locking (sharded mutexes) or read-write locks to maximize concurrent throughput.
+If two people try to update Alice's phone number at the exact same millisecond, you must safely queue them up so the dictionary doesn't get corrupted.
 
-You are creating a reliable component of Key-Value Storage Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+(Thread 1) INCR page_views
+(Thread 2) INCR page_views
 
-Supported Operations:
-• All Level 1-4 Operations -> Fully thread-safe under concurrent multi-threaded execution without data races.
-• PING [msg] -> Server health check. Returns PONG or echoed string.
-• MGET key1 key2 ... -> Atomically retrieves multiple keys in a single consistent snapshot. Returns space-separated values.`,
+It should safely handle simultaneous access:
+page_views: 2`,
+      howItWorks: `1. Multiple network requests arrive at the database simultaneously.
+2. If multiple threads try to write to the same bucket in the Hash Table at the same time, they will overwrite each other's memory pointers, corrupting the Linked List.
+3. To prevent this, you implement a 'lock' (mutex).
+4. When a thread wants to write, it grabs the lock. Other threads must wait their turn.
+5. To keep things fast, instead of locking the *entire* database, you only lock the specific bucket being modified (Lock Striping), letting other threads modify different buckets simultaneously.`,
       technicalTerms: [
         {
-                "term": "Lock Contention & Amdahl's Law",
-                "definition": "How fine.grained locking prevents concurrent workers from stalling each other under high load."
+          "term": "Mutex Lock (Mutual Exclusion)",
+          "definition": "A mechanism that ensures only one thread can access a specific piece of data at a time."
         },
         {
-                "term": "Striped Locking (Sharded Mutexes)",
-                "definition": "Partitioning the keyspace into 32 or 64 independent mutex shards so threads modifying different keys execute in true parallel."
+          "term": "Race Condition",
+          "definition": "A dangerous bug where the outcome depends on the unpredictable timing of when different threads execute."
         },
         {
-                "term": "Reader",
-                "definition": "Writer Parallelism. Allowing unlimited simultaneous concurrent readers (GET) while acquiring exclusive write locks only during mutations."
-        },
-        {
-                "term": "Deadlock Prevention in Multi",
-                "definition": "Key Transactions. Why atomic operations on multiple keys (MGET, MSET) cause cyclic deadlocks if locks are acquired arbitrarily, and how sorting shard indices guarantees deadlock freedom."
+          "term": "Lock Striping (Fine-grained locking)",
+          "definition": "Using multiple locks for different sections of the data (like different buckets) instead of one giant lock for everything."
         }
-],
-      description: `In Level 5 (Concurrency & Thread-Safe Operations), you engineer the core mechanisms for Key-Value Storage Engine.
+      ],
+      description: `Production databases process millions of requests per second by utilizing all available CPU cores. In Level 5, you tackle the most notoriously difficult problem in computer science: Concurrency.
 
-Scale across 16+ parallel client threads. Implement striped locking (sharded mutexes) or read-write locks to maximize concurrent throughput.
-
-Core Engineering Problem: A single global mutex (like Python's GIL or a monolithic lock) serializes all incoming requests, reducing a 32-core server to the speed of a single core. How do you scale across parallel threads?
-
-Key Mechanisms Implemented:
-• Lock Contention & Amdahl's Law: How fine-grained locking prevents concurrent workers from stalling each other under high load.
-• Striped Locking (Sharded Mutexes): Partitioning the keyspace into 32 or 64 independent mutex shards so threads modifying different keys execute in true parallel.
-• Reader-Writer Parallelism: Allowing unlimited simultaneous concurrent readers (GET) while acquiring exclusive write locks only during mutations.
-• Deadlock Prevention in Multi-Key Transactions: Why atomic operations on multiple keys (MGET, MSET) cause cyclic deadlocks if locks are acquired arbitrarily, and how sorting shard indices guarantees deadlock freedom.
-• ThreadSanitizer & Race Condition Safety: Detecting data races and memory corruption under concurrent 16-thread pressure.
-
-You understand how multi-core storage engines eliminate lock contention through striped sharding while guaranteeing mathematical deadlock freedom.`,
+If you simply wrap your entire database in a single mutex lock, your multi-core server will bottleneck instantly, processing requests one by one. By implementing fine-grained locking (like locking individual buckets or partitions), you allow readers and writers to operate in parallel, maximizing hardware utilization while guaranteeing data safety.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'All Level 1-4 Operations': Fully thread-safe under concurrent multi-threaded execution without data races.",
-        "Implement 'PING [msg]': Server health check. Returns PONG or echoed string.",
-        "Implement 'MGET key1 key2 ...': Atomically retrieves multiple keys in a single consistent snapshot. Returns space-separated values.",
-        "Enforce system constraints: Parallel Clients: Support 16+ concurrent threads without race conditions.; Lock Striping Factor: At least 16 independent mutex partitions..",
-        "Format output according to the specification and flush standard output."
-],
+        "Spawn multiple worker threads/routines to handle incoming database commands simultaneously.",
+        "Identify the critical sections where your Hash Table's linked lists are modified.",
+        "Implement an array of Mutexes (e.g., 16 locks). When modifying a bucket, use `hash(key) % 16` to determine which lock to acquire.",
+        "Ensure locks are always released, even if an error occurs during the operation, to prevent permanent deadlocks."
+      ],
     diagram: `CONCURRENT REQUEST INGRESS:
 Client Thread 1 (SET "user:1")    Client Thread 2 (GET "order:99")
         │                                  │
@@ -842,60 +758,47 @@ Client Thread 1 (SET "user:1")    Client Thread 2 (GET "order:99")
     difficulty: "Hard",
     tagline:
       "Push hardware limits. Exceed 100,000 ops/sec with sub-0.20ms p99 latency under a strict 256MB memory cap using custom memory pooling and WAL compaction.",
-      whatAreYouBuilding: `In this level, you build: Extreme Optimization & Memory Compaction.
+      whatAreYouBuilding: `You are going to shrink the journal so the hard drive doesn't fill up.
 
-Push hardware limits. Exceed 100,000 ops/sec with sub-0.20ms p99 latency under a strict 256MB memory cap using custom memory pooling and WAL compaction.
+If someone updates Alice's number 10,000 times, the journal (WAL) will have 10,000 lines, taking up huge disk space. You will compress it into a single line showing only her *final* number.
 
-You are creating a reliable component of Key-Value Storage Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+SET x 1
+SET x 2
+SET x 3
+COMPACT_WAL
 
-Supported Operations:
-• All Prior Operations -> Executed with zero-copy I/O parsing, SIMD string comparisons, and cache-line aligned layouts.
-• COMPACT -> Rewrites Write-Ahead Log by discarding superseded mutations and defragmenting memory. Returns OK.
-• MEMSTATS -> Returns detailed memory metrics. For exact test cases, expects specific format like 'ALLOCATED_BYTES: 1024 PEAK_BYTES: 1024 FRAGMENTATION_RATIO: 1.00'.`,
+It should rewrite the log to remove redundant entries:
+WAL_SIZE_BEFORE: 300 bytes
+WAL_SIZE_AFTER: 100 bytes (Only contains 'SET x 3')`,
+      howItWorks: `1. Over time, the WAL grows infinitely large, filled with outdated commands (like SET x 1, which was overwritten by SET x 2).
+2. When the WAL reaches a size limit (e.g., 100MB), the background compaction process triggers.
+3. The process looks at the current, perfectly updated in-memory dictionary.
+4. It writes a brand new, optimized WAL file containing only the active, final state of the database.
+5. Once the new file is fully written and saved to disk, it deletes the massive old WAL file and seamlessly switches to the new one.`,
       technicalTerms: [
         {
-                "term": "Online WAL Compaction",
-                "definition": "How to defragment an append.only log on the fly, condensing thousands of intermediate mutations into final states to reclaim disk space."
+          "term": "Log Compaction",
+          "definition": "The process of discarding obsolete entries from an append-only log to save space."
         },
         {
-                "term": "Slab Allocation & Memory Arenas",
-                "definition": "Why frequent malloc/free calls fragment the heap until the OS cgroup kills the container, and how fixed.size memory pools maintain 1.0 fragmentation ratio."
+          "term": "Point-in-time Snapshot",
+          "definition": "Capturing the exact state of the in-memory database at a specific millisecond to write to disk."
         },
         {
-                "term": "CPU Cache Locality & 64",
-                "definition": "Byte Alignment. Structuring memory to match hardware L1/L2 cache lines (64 bytes), avoiding multi.cycle CPU cache misses."
-        },
-        {
-                "term": "Zero",
-                "definition": "Copy Serialization. Parsing network and stream buffers directly in place without intermediate string memory allocations."
+          "term": "Atomic File Rename",
+          "definition": "A filesystem operation that swaps a temporary file with a live file instantaneously, ensuring the database is never left without a valid log if the power fails during compaction."
         }
-],
-      description: `In Level 6 (Extreme Optimization & Memory Compaction), you engineer the core mechanisms for Key-Value Storage Engine.
+      ],
+      description: `Append-only logs are incredibly fast, but they trade disk space for speed. In Level 6, you build the critical maintenance process that keeps the database running forever: Compaction.
 
-Push hardware limits. Exceed 100,000 ops/sec with sub-0.20ms p99 latency under a strict 256MB memory cap using custom memory pooling and WAL compaction.
-
-Core Engineering Problem: Pushing beyond 100,000 ops/sec with sub-0.20ms latency requires eliminating operating system malloc fragmentation, CPU cache misses, and unbounded log file growth.
-
-Key Mechanisms Implemented:
-• Online WAL Compaction: How to defragment an append-only log on the fly, condensing thousands of intermediate mutations into final states to reclaim disk space.
-• Slab Allocation & Memory Arenas: Why frequent malloc/free calls fragment the heap until the OS cgroup kills the container, and how fixed-size memory pools maintain 1.0 fragmentation ratio.
-• CPU Cache Locality & 64-Byte Alignment: Structuring memory to match hardware L1/L2 cache lines (64 bytes), avoiding multi-cycle CPU cache misses.
-• Zero-Copy Serialization: Parsing network and stream buffers directly in place without intermediate string memory allocations.
-
-You master the apex of systems engineering: sub-millisecond p99 latency, zero-copy memory layouts, and hardware-aligned resource efficiency.`,
+Without compaction, a database server running for months would eventually consume the entire hard drive, and rebooting would take hours as it replayed millions of obsolete commands. By periodically taking a snapshot of memory and rewriting the log, you bound disk usage and guarantee instant crash recovery times, a technique universally used by systems from Redis to PostgreSQL.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'All Prior Operations': Executed with zero-copy I/O parsing, SIMD string comparisons, and cache-line aligned layouts.",
-        "Implement 'COMPACT': Rewrites Write-Ahead Log by discarding superseded mutations and defragmenting memory. Returns OK.",
-        "Implement 'MEMSTATS': Returns detailed memory metrics. For exact test cases, expects specific format like 'ALLOCATED_BYTES: 1024 PEAK_BYTES: 1024 FRAGMENTATION_RATIO: 1.00'.",
-        "Enforce system constraints: Throughput Benchmark: > 100,000 ops/sec sustained.; p99 Latency Cap: < 0.20 ms under heavy load..",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement a background loop that monitors the size of your WAL file on disk.",
+        "When it exceeds a threshold, initiate compaction: create a new temporary file (e.g., `wal.tmp`).",
+        "Iterate over every valid key-value pair currently in your Hash Table and write it as a `SET` command to the temporary file.",
+        "Perform an atomic file rename (e.g., `mv wal.tmp wal.log`) to safely replace the bloated file with the optimized one."
+      ],
     diagram: `LOG COMPACTION PIPELINE (Disk Space Reclamation):
 Original WAL (Uncompacted - 100,000 Mutations, 50MB):
 ┌────────────────────────────────────────────────────────────┐

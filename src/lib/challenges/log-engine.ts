@@ -94,53 +94,38 @@ export const logEngineChallenge: ChallengeData = {
       title: "Basic Structured Log Line Ingestion",
       difficulty: "Easy",
       tagline: "Parse structured log lines (timestamp, status, latency_ms, endpoint) and track total line count.",
-      whatAreYouBuilding: `In this level, you build: Basic Structured Log Line Ingestion.
+      whatAreYouBuilding: `You are going to build an automated front desk logbook for a busy hospital. Every time a patient is seen, the desk records the outcome code (status), how many minutes they waited (latency), and which department they visited (endpoint).
 
-Parse structured log lines (timestamp, status, latency_ms, endpoint) and track total line count.
+For example:
+INGEST 200 15 /api/health
 
-You are creating a reliable component of Streaming Log Analytics Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• INGEST <status> <latency_ms> <endpoint> -> Ingests single log line. Returns 'OK'.
-• COUNT -> Returns total number of ingested log lines.`,
+records a successful visit (200) that took 15ms in the health department. Your program should say 'OK'.
+When asked COUNT, it tells you exactly how many patients have been logged so far.`,
+      howItWorks: `When a new log entry comes in:
+1. You read the line and chop it into pieces based on the spaces.
+2. The pieces are the command (INGEST), the status (200), the latency (15), and the endpoint (/api/health).
+3. You increase a running tally of total logs seen.
+4. If asked to 'COUNT', you just return that tally. You don't need to save the actual log line yet!`,
       technicalTerms: [
         {
-                "term": "Delimited log line format",
-                "definition": "INGEST <STATUS> <LATENCY_MS> <ENDPOINT>."
+          "term": "Zero-copy Tokenization",
+          "definition": "Extracting information from a line of text without creating new chunks of memory for each piece."
         },
         {
-                "term": "Extracting tokens without intermediate allocations",
-                "definition": ""
+          "term": "O(1) Time Complexity",
+          "definition": "An operation that takes the same amount of time to run regardless of how much data you have (like reading a single counter)."
         },
         {
-                "term": "Tracking total ingested lines in O(1) time",
-                "definition": ""
+          "term": "Delimiter Scanning",
+          "definition": "Reading through a string and splitting it wherever a specific character (like a space) appears."
         }
-],
-      description: `In Level 1 (Basic Structured Log Line Ingestion), you engineer the core mechanisms for Streaming Log Analytics Engine.
-
-Parse structured log lines (timestamp, status, latency_ms, endpoint) and track total line count.
-
-Core Engineering Problem: Regex matching on millions of log lines consumes massive CPU cycles. Single-pass delimiter scanning is orders of magnitude faster.
-
-Key Mechanisms Implemented:
-• Delimited log line format: INGEST <STATUS> <LATENCY_MS> <ENDPOINT>.
-• Extracting tokens without intermediate allocations.
-• Tracking total ingested lines in O(1) time.
-
-You implement single-pass stream ingestion and fast token extraction.`,
+      ],
+      description: `In observability pipelines, speed is everything. Regex matching on millions of log lines consumes massive CPU cycles and causes memory allocation spikes. By scanning for spaces (delimiters) in a single forward pass, you can process logs incredibly fast. This level teaches you the foundation of high-performance text parsing without relying on heavy regular expressions.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'INGEST <status> <latency_ms> <endpoint>': Ingests single log line. Returns 'OK'.",
-        "Implement 'COUNT': Returns total number of ingested log lines.",
-        "Enforce system constraints: Strict forward stream ingestion; Count increments on each INGEST.",
-        "Format output according to the specification and flush standard output."
-],
+        "Create an integer variable to keep track of the total number of ingested lines, starting at 0.",
+        "Implement 'INGEST <status> <latency_ms> <endpoint>': For now, you don't even need to save the data. Just increment your total count and return 'OK'.",
+        "Implement 'COUNT': Return the current value of your total count variable."
+      ],
       diagram: `RAW LOG INPUT                                  INGESTION ENGINE        OUTPUT
 INGEST 200 12 /api/v1/checkout                ──► parse line tokens ──► OK
 INGEST 500 45 /api/v1/payment                 ──► parse line tokens ──► OK
@@ -191,55 +176,40 @@ COUNT
       title: "Status Code Breakdown",
       difficulty: "Medium",
       tagline: "Categorize log lines into status families (2xx, 3xx, 4xx, 5xx) and track exact status code counts.",
-      whatAreYouBuilding: `In this level, you build: Status Code Breakdown.
+      whatAreYouBuilding: `Now the hospital wants to categorize patient outcomes. 2xx codes mean treated normally, 4xx means the patient went to the wrong department, and 5xx means a critical emergency. 
 
-Categorize log lines into status families (2xx, 3xx, 4xx, 5xx) and track exact status code counts.
+For example:
+INGEST 500 80 /c
 
-You are creating a reliable component of Streaming Log Analytics Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• INGEST <status> <latency_ms> <endpoint> -> Ingests single log line. Returns 'OK'.
-• STATUS_COUNT <status_code> -> Returns count of lines matching exact status code.
-• FAMILY_COUNT <family> -> Returns count for family: 2XX, 4XX, 5XX.`,
+records an emergency. If someone asks STATUS_COUNT 500, you return the exact count of 500s. If they ask FAMILY_COUNT 5XX, you return the total of all 500-level codes combined.`,
+      howItWorks: `When a new log entry comes in:
+1. Extract the status code (like 503).
+2. Increment a specific counter just for that exact code (503).
+3. Determine its "family" by looking at the first digit (503 starts with 5, so it's in the 5XX family).
+4. Increment a separate counter for that family.
+5. When asked for counts, just look up the numbers in your counters.`,
       technicalTerms: [
         {
-                "term": "Categorizing status codes (2xx Success, 4xx Client Error, 5xx Server Error)",
-                "definition": ""
+          "term": "Histogram",
+          "definition": "A way to group data into different buckets (like 2XX, 4XX) to see the distribution of events."
         },
         {
-                "term": "O(1) array/hash counting by HTTP status code",
-                "definition": ""
+          "term": "Direct Array Indexing",
+          "definition": "Using a number (like a status code) directly as the location in an array to find its count instantly."
         },
         {
-                "term": "METRICS STATUS <code_or_family> query contracts",
-                "definition": ""
+          "term": "HTTP Status Codes",
+          "definition": "Standard numbers indicating the outcome of a request (e.g., 200 OK, 404 Not Found, 500 Server Error)."
         }
-],
-      description: `In Level 2 (Status Code Breakdown), you engineer the core mechanisms for Streaming Log Analytics Engine.
-
-Categorize log lines into status families (2xx, 3xx, 4xx, 5xx) and track exact status code counts.
-
-Core Engineering Problem: Production monitors must alert when 5xx errors spike. Status code counters must resolve in O(1) time.
-
-Key Mechanisms Implemented:
-• Categorizing status codes (2xx Success, 4xx Client Error, 5xx Server Error).
-• O(1) array/hash counting by HTTP status code.
-• METRICS STATUS <code_or_family> query contracts.
-
-You maintain status code histograms and report exact error counts.`,
+      ],
+      description: `Production monitors must alert engineers immediately when 5xx (Server Errors) spike. If you had to scan through millions of saved log lines to count errors, the system would freeze. By updating categorized counters (histograms) at the exact moment the log arrives, queries for error counts resolve instantly in O(1) time.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'INGEST <status> <latency_ms> <endpoint>': Ingests single log line. Returns 'OK'.",
-        "Implement 'STATUS_COUNT <status_code>': Returns count of lines matching exact status code.",
-        "Implement 'FAMILY_COUNT <family>': Returns count for family: 2XX, 4XX, 5XX.",
-        "Enforce system constraints: Exact integer match on status code; Case-insensitive family: 2XX, 4XX, 5XX.",
-        "Format output according to the specification and flush standard output."
-],
+        "Create two new dictionaries (or arrays): one to track exact status codes, and one to track families ('2XX', '3XX', '4XX', '5XX').",
+        "Inside your INGEST logic, after extracting the status code, increment its count in the exact-status dictionary.",
+        "Calculate the family string (e.g., divide by 100, then append 'XX') and increment that family's count.",
+        "Implement 'STATUS_COUNT <status_code>': Return the exact count for that code, or 0 if it hasn't been seen.",
+        "Implement 'FAMILY_COUNT <family>': Return the total for that family string, or 0."
+      ],
       diagram: `STREAM INGESTION              STATUS HISTOGRAM BUCKETS              OUTPUT
 INGEST 200 10 /a       ──► status[200]++, family["2XX"]++    ──► OK
 INGEST 500 80 /c       ──► status[500]++, family["5XX"]++    ──► OK
@@ -287,53 +257,36 @@ Status Code Histogram:
       title: "Real-Time Error Rate Calculation",
       difficulty: "Hard",
       tagline: "Calculate real-time error percentage: (5XX errors / Total requests) with 2 decimal places.",
-      whatAreYouBuilding: `In this level, you build: Real-Time Error Rate Calculation.
+      whatAreYouBuilding: `The hospital wants a live "emergency rate" dashboard showing what percentage of total patients today are critical emergencies (5xx codes). 
 
-Calculate real-time error percentage: (5XX errors / Total requests) with 2 decimal places.
-
-You are creating a reliable component of Streaming Log Analytics Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• INGEST <status> <latency_ms> <endpoint> -> Ingests single log line. Returns 'OK'.
-• ERROR_RATE -> Returns 5XX error percentage formatted to 2 decimals (e.g. '0.00%' or '25.00%').`,
+For example:
+If you've seen 4 patients total, and 1 of them was a 500-level emergency, then ERROR_RATE should return '25.00%'.`,
+      howItWorks: `1. You already have a counter for total patients (total).
+2. You already have a counter for 5XX emergencies.
+3. When 'ERROR_RATE' is called, you divide the 5XX count by the total count.
+4. Multiply by 100 to get a percentage, and format it exactly to two decimal places.
+5. If no patients have been seen yet (total is 0), you must return '0.00%' instead of crashing the program by dividing by zero.`,
       technicalTerms: [
         {
-                "term": "Error rate formula",
-                "definition": "(Count(5xx) / Total) * 100."
+          "term": "Error Rate",
+          "definition": "The percentage of total events that resulted in a failure or error (Count of Errors / Total Count * 100)."
         },
         {
-                "term": "Preventing division by zero on cold starts",
-                "definition": ""
+          "term": "Division by Zero",
+          "definition": "A mathematical error that crashes programs when they try to divide a number by 0. Always check if the total is 0 first!"
         },
         {
-                "term": "Floating",
-                "definition": "point formatting with exact 2 decimal precision."
+          "term": "Floating-point Formatting",
+          "definition": "Converting a decimal number into a string with a specific number of digits after the decimal point."
         }
-],
-      description: `In Level 3 (Real-Time Error Rate Calculation), you engineer the core mechanisms for Streaming Log Analytics Engine.
-
-Calculate real-time error percentage: (5XX errors / Total requests) with 2 decimal places.
-
-Core Engineering Problem: Service Level Objectives (SLOs) require calculating error ratios dynamically without scanning historical data.
-
-Key Mechanisms Implemented:
-• Error rate formula: (Count(5xx) / Total) * 100.
-• Preventing division by zero on cold starts.
-• Floating-point formatting with exact 2 decimal precision.
-
-You calculate real-time error percentages and detect outage thresholds.`,
+      ],
+      description: `Service Level Objectives (SLOs) are critical in production systems. Engineers need to know the exact percentage of failing requests in real-time. Calculating error ratios dynamically from running counters is much more efficient than querying a database. You must handle edge cases like cold starts (zero requests) safely.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'INGEST <status> <latency_ms> <endpoint>': Ingests single log line. Returns 'OK'.",
-        "Implement 'ERROR_RATE': Returns 5XX error percentage formatted to 2 decimals (e.g. '0.00%' or '25.00%').",
-        "Enforce system constraints: Format exactly 'X.XX%'; Return 0.00% if no logs ingested.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement 'ERROR_RATE'. First, check if your total ingested count is 0. If it is, return '0.00%'.",
+        "If total > 0, calculate: (family_counts['5XX'] / total) * 100.0.",
+        "Format the resulting float to exactly 2 decimal places and append a '%' sign.",
+        "In Python, you can use an f-string: f'{rate:.2f}%'."
+      ],
       diagram: `STREAM INGESTION              SLO ERROR RATE CALCULATOR             OUTPUT
 INGEST 200 ... x3      ──► total=3, 5xx=0                    ──► OK
 INGEST 500 ... x1      ──► total=4, 5xx=1                    ──► OK
@@ -376,53 +329,40 @@ Calculation: (1 / 4) * 100 = 25.00%`,
       title: "Top-K Frequent Endpoints",
       difficulty: "Hard",
       tagline: "Track the top K most frequently requested endpoints in bounded memory.",
-      whatAreYouBuilding: `In this level, you build: Top-K Frequent Endpoints.
+      whatAreYouBuilding: `The hospital administrators want to know which departments are the busiest. They ask you to produce a list of the top K most visited departments, sorted from most to least busy.
+      
+For example:
+TOP_ENDPOINTS 2
 
-Track the top K most frequently requested endpoints in bounded memory.
-
-You are creating a reliable component of Streaming Log Analytics Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• INGEST <status> <latency_ms> <endpoint> -> Ingests single log line. Returns 'OK'.
-• TOP_ENDPOINTS <k> -> Returns space-separated top K endpoints sorted by frequency descending.`,
+might return: /emergency /xray.
+If two departments have the exact same number of visits, sort them alphabetically.`,
+      howItWorks: `1. You need a dictionary to track the visit count for every unique endpoint (department).
+2. When 'INGEST' is called, extract the endpoint and increment its count in the dictionary.
+3. When 'TOP_ENDPOINTS <k>' is called, gather all the endpoints and their counts.
+4. Sort them first by the count (highest first). If counts are equal, sort alphabetically (A to Z).
+5. Extract just the names of the top K endpoints, join them with spaces, and return the string. If there are no endpoints, return 'EMPTY'.`,
       technicalTerms: [
         {
-                "term": "Tracking endpoint request frequencies",
-                "definition": ""
+          "term": "Heavy Hitters",
+          "definition": "The most frequent items in a dataset (like the most visited URLs in a web server log)."
         },
         {
-                "term": "Sorting and extracting top K elements",
-                "definition": ""
+          "term": "Lexicographical Order",
+          "definition": "Sorting text alphabetically (like in a dictionary) to break ties deterministically."
         },
         {
-                "term": "Handling ties deterministically by lexicographical order",
-                "definition": ""
+          "term": "Bounded Memory",
+          "definition": "Keeping the memory usage of a program within strict limits, even if the input stream is infinite."
         }
-],
-      description: `In Level 4 (Top-K Frequent Endpoints), you engineer the core mechanisms for Streaming Log Analytics Engine.
-
-Track the top K most frequently requested endpoints in bounded memory.
-
-Core Engineering Problem: Storing every unique URL in a hash map causes memory explosion under random URL fuzzing attacks. Heavy-hitter algorithms bound memory.
-
-Key Mechanisms Implemented:
-• Tracking endpoint request frequencies.
-• Sorting and extracting top K elements.
-• Handling ties deterministically by lexicographical order.
-
-You identify heavy-hitter endpoints and protect memory bounds.`,
+      ],
+      description: `Tracking the most requested endpoints is essential for detecting abuse, DDoS attacks, or just identifying which services need scaling. In a real system handling billions of logs, storing every unique URL would cause a memory explosion, so specialized algorithms (like Count-Min Sketch or HeavyKeeper) are used to approximate this in bounded memory. For this level, we use a hash map and a custom sort.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'INGEST <status> <latency_ms> <endpoint>': Ingests single log line. Returns 'OK'.",
-        "Implement 'TOP_ENDPOINTS <k>': Returns space-separated top K endpoints sorted by frequency descending.",
-        "Enforce system constraints: Sort by count desc, then path asc; Return empty string if no endpoints.",
-        "Format output according to the specification and flush standard output."
-],
+        "Create a dictionary to map endpoint strings to their integer counts.",
+        "Update this dictionary in your INGEST method.",
+        "Implement 'TOP_ENDPOINTS <k>': First, if the dictionary is empty, return 'EMPTY'.",
+        "Extract the items and sort them. Sort primarily by count (descending), and secondarily by endpoint name (ascending/alphabetical).",
+        "Take the first K endpoint names from the sorted list, join them with a single space, and return them."
+      ],
       diagram: `ENDPOINT INGESTION            FREQUENCY MAP & HEAVY HITTERS         TOP-K EXTRACTION
 INGEST ... /users (x2) ──► endpoints["/users"] = 2           ──► OK
 INGEST ... /home  (x1) ──► endpoints["/home"]  = 1           ──► OK
@@ -464,53 +404,39 @@ Rank 3: /about  [Count: 0]`,
       title: "Latency Percentiles (p50 & p99)",
       difficulty: "Hard",
       tagline: "Calculate p50 (median) and p99 (tail latency) across all ingested request durations.",
-      whatAreYouBuilding: `In this level, you build: Latency Percentiles (p50 & p99).
+      whatAreYouBuilding: `The hospital wants to measure patient wait times. But the "average" wait time is misleading if most wait 5 minutes, but one person waits 5 hours. Instead, they want to know the median (p50) and the worst-case tail latency (p99).
+      
+For example:
+LATENCY P99
 
-Calculate p50 (median) and p99 (tail latency) across all ingested request durations.
-
-You are creating a reliable component of Streaming Log Analytics Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• INGEST <status> <latency_ms> <endpoint> -> Ingests single log line. Returns 'OK'.
-• LATENCY <P50|P95|P99> -> Returns the requested percentile latency in milliseconds.`,
+tells you that 99% of patients waited less than this amount of time.`,
+      howItWorks: `1. Store every latency number you see during 'INGEST' in a list.
+2. When 'LATENCY <P50|P95|P99>' is called, sort that list of latencies from smallest to largest.
+3. To find the percentile (e.g., 0.99 for P99), multiply 0.99 by the total number of items to get an index.
+4. Go to that exact index in the sorted list and return the number you find there.
+5. If the list is empty, return '0ms'.`,
       technicalTerms: [
         {
-                "term": "Why percentiles are the gold standard of systems engineering",
-                "definition": ""
+          "term": "Percentile",
+          "definition": "A measure indicating the value below which a given percentage of observations fall (e.g., p99 means 99% of requests are faster than this)."
         },
         {
-                "term": "Sorting and rank selection",
-                "definition": "index = ceil(p * N) . 1."
+          "term": "Tail Latency",
+          "definition": "The response time of the absolute slowest requests (like p99 or p99.9), often revealing hidden system bottlenecks."
         },
         {
-                "term": "Handling small sample sizes vs large streaming datasets",
-                "definition": ""
+          "term": "Median (p50)",
+          "definition": "The exact middle value in a sorted list. Half the items are faster, half are slower."
         }
-],
-      description: `In Level 5 (Latency Percentiles (p50 & p99)), you engineer the core mechanisms for Streaming Log Analytics Engine.
-
-Calculate p50 (median) and p99 (tail latency) across all ingested request durations.
-
-Core Engineering Problem: Averages hide severe latency spikes. If 1 in 100 requests takes 5000ms, average latency is fine but p99 is catastrophic.
-
-Key Mechanisms Implemented:
-• Why percentiles are the gold standard of systems engineering.
-• Sorting and rank selection: index = ceil(p * N) - 1.
-• Handling small sample sizes vs large streaming datasets.
-
-You compute p50, p95, and p99 latency to capture tail performance.`,
+      ],
+      description: `Averages hide severe latency spikes. If 99 requests take 1ms and 1 request takes 5000ms, the average is ~50ms, which looks fine! But that one user had a terrible 5-second delay. By tracking p50, p95, and p99, systems engineers can detect these tail latency spikes and ensure every user gets a fast response.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'INGEST <status> <latency_ms> <endpoint>': Ingests single log line. Returns 'OK'.",
-        "Implement 'LATENCY <P50|P95|P99>': Returns the requested percentile latency in milliseconds.",
-        "Enforce system constraints: Return '<val>ms'; Return '0ms' if no logs ingested.",
-        "Format output according to the specification and flush standard output."
-],
+        "Create a list (array) to store every latency integer you see in 'INGEST'.",
+        "Implement 'LATENCY <P50|P95|P99>'. Check if the list is empty; if so, return '0ms'.",
+        "Sort the list from smallest to largest (or copy it and sort the copy).",
+        "Calculate the index: max(0, ceil(percentile * length) - 1), where percentile is 0.50, 0.95, or 0.99.",
+        "Return the latency at that index, formatted as '<val>ms'."
+      ],
       diagram: `REQUEST DURATIONS             ORDERED LATENCY BUFFER                PERCENTILE RANK
 Durations: [10ms, 20ms, 30ms] ──► sorted = [10, 20, 30]
 LATENCY P50                   ──► index = ceil(0.50 * 3) - 1 = 1    ──► 20ms
@@ -554,55 +480,38 @@ Sorted: [ 10ms , 20ms , 30ms ]
       title: "Batch Ingestion & System Telemetry",
       difficulty: "Hard",
       tagline: "Sustain 100,000+ lines/sec. Report comprehensive engine telemetry under continuous ingestion.",
-      whatAreYouBuilding: `In this level, you build: Batch Ingestion & System Telemetry.
+      whatAreYouBuilding: `The hospital wants a master control screen that summarizes all the vital stats at a glance: total patients, total emergencies, and the worst-case wait time. 
+And at midnight, they want a way to wipe the slate clean for the next day without restarting the computer.
 
-Sustain 100,000+ lines/sec. Report comprehensive engine telemetry under continuous ingestion.
+For example:
+STATS
 
-You are creating a reliable component of Streaming Log Analytics Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• INGEST <status> <latency_ms> <endpoint> -> Ingests single log line. Returns 'OK'.
-• COUNT -> Returns total number of ingested log lines.
-• STATS -> Returns 'TOTAL: <n> ERRORS: <e> P99: <p> STATUS: HEALTHY'.`,
+Returns: TOTAL: 100 ERRORS: 2 P99: 45ms STATUS: HEALTHY
+And RESET clears all memory.`,
+      howItWorks: `1. For 'STATS', you just gather the metrics you've already built: the total count, the count of 5XX family errors, and the P99 latency.
+2. Format them all into one exact string.
+3. For 'RESET', you must clear all your dictionaries, arrays, and set your counters back to 0, exactly as if the program just started.`,
       technicalTerms: [
         {
-                "term": "Batch processing semantics and memory footprint stabilization",
-                "definition": ""
+          "term": "Telemetry",
+          "definition": "The automated collection and transmission of data from remote sources (like your log engine) to a centralized monitoring system."
         },
         {
-                "term": "RESET command contract for multi",
-                "definition": "stage benchmarks."
+          "term": "Memory Footprint",
+          "definition": "The amount of main memory (RAM) that a program uses or references while running."
         },
         {
-                "term": "Comprehensive engine health instrumentation",
-                "definition": ""
+          "term": "Health Check",
+          "definition": "A quick summary endpoint used by load balancers and orchestrators to verify a service is running properly."
         }
-],
-      description: `In Level 6 (Batch Ingestion & System Telemetry), you engineer the core mechanisms for Streaming Log Analytics Engine.
-
-Sustain 100,000+ lines/sec. Report comprehensive engine telemetry under continuous ingestion.
-
-Core Engineering Problem: Streaming millions of lines causes CPU cache thrashing. Batching and pre-allocated buffers maintain peak throughput.
-
-Key Mechanisms Implemented:
-• Batch processing semantics and memory footprint stabilization.
-• RESET command contract for multi-stage benchmarks.
-• Comprehensive engine health instrumentation.
-
-You master high-speed stream aggregation with zero memory growth.`,
+      ],
+      description: `In a production environment, logging systems must process hundreds of thousands of lines per second endlessly. If your system leaks memory or slows down over time, it will crash the server it's meant to monitor. By exposing a comprehensive telemetry endpoint and a clean reset mechanism, you prove your engine can sustain high throughput while keeping its memory footprint stable.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'INGEST <status> <latency_ms> <endpoint>': Ingests single log line. Returns 'OK'.",
-        "Implement 'COUNT': Returns total number of ingested log lines.",
-        "Implement 'STATS': Returns 'TOTAL: <n> ERRORS: <e> P99: <p> STATUS: HEALTHY'.",
-        "Enforce system constraints: Sub-millisecond STATS latency; RESET completely restores fresh state.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement 'STATS': Get the current total count. Get the count of '5XX' from your family counts. Get the P99 latency using your Level 5 logic.",
+        "Format and return the string: 'TOTAL: <n> ERRORS: <e> P99: <p> STATUS: HEALTHY'.",
+        "Implement 'RESET': Re-initialize your total counter to 0. Clear or replace your status dictionary, family dictionary, endpoints dictionary, and latency array with empty ones.",
+        "Return 'OK' for RESET."
+      ],
       diagram: `CONTINUOUS INGEST STREAM      TELEMETRY AGGREGATOR ENGINE           DASHBOARD STATS
 INGEST 200 10 /ok      ──► Single-pass counter update        ──► OK
 STATS                  ──► Real-time metric snapshot         ──► TOTAL: 1 ERRORS: 0

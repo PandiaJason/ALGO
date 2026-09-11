@@ -100,55 +100,48 @@ export const distributedConsensusChallenge: ChallengeData = {
       title: "Leader Election & Heartbeat Protocol",
       difficulty: "Medium",
       tagline: "Elect a stable cluster leader using randomized timeouts and RequestVote RPCs.",
-      whatAreYouBuilding: `In this level, you build: Leader Election & Heartbeat Protocol.
+      whatAreYouBuilding: `You are going to build the leader election mechanism for a cluster of nodes.
 
-Elect a stable cluster leader using randomized timeouts and RequestVote RPCs.
+Think of it like a classroom electing a class president. If nobody speaks up for a while, someone volunteers. They need more than half the class to agree. The president keeps sending 'I\'m still here' notes to prevent new elections.
 
-You are creating a reliable component of Distributed Consensus Engine (Raft). When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example, if you advance the timer on a node:
+tick node_1
+status
 
-Supported Operations:
-• tick <nodeId> -> Advances node timer, triggering election if timeout expires.
-• request-vote <candidate> <term> -> Dispatches RequestVote RPC to all cluster nodes.
-• status -> Reports current cluster roles (Leader, Candidate, Follower) and terms.`,
+It should become a candidate, win the election, and become leader:
+NODE node_1 BECAME CANDIDATE TERM 1
+node_1: LEADER (term 1)`,
+      howItWorks: `When a cluster starts:
+1. All nodes start as followers with a randomized timer.
+2. The first node whose timer expires becomes a candidate.
+3. It votes for itself and asks others for votes.
+4. If it gets votes from a majority, it becomes the leader.
+5. The leader sends periodic heartbeats so others know it is alive.
+
+If the leader crashes, heartbeats stop, and a new election begins.`,
       technicalTerms: [
         {
-                "term": "Randomized election timeouts (e",
-                "definition": "g. 150ms.300ms) to stagger candidate campaigns."
+          "term": "Election timeout",
+          "definition": "A randomized countdown timer. When it expires, the node starts an election."
         },
         {
-                "term": "RequestVote RPC parameters",
-                "definition": "term, candidateId, lastLogIndex, lastLogTerm."
+          "term": "RequestVote RPC",
+          "definition": "A message sent by a candidate asking other nodes to vote for them."
         },
         {
-                "term": "Periodic empty AppendEntries heartbeats from leader to suppress new elections",
-                "definition": ""
+          "term": "Heartbeat",
+          "definition": "An empty message sent periodically by the leader to tell others it is still alive and prevent new elections."
         }
-],
-      description: `In Level 1 (Leader Election & Heartbeat Protocol), you engineer the core mechanisms for Distributed Consensus Engine (Raft).
+      ],
+      description: `Every consensus system needs a single coordinator to prevent chaos. In Level 1, you build the foundation of Raft: electing a single leader.
 
-Elect a stable cluster leader using randomized timeouts and RequestVote RPCs.
-
-Core Engineering Problem: What prevents two nodes from voting for themselves simultaneously and causing an endless split vote tie?
-
-Key Mechanisms Implemented:
-• Randomized election timeouts (e.g. 150ms-300ms) to stagger candidate campaigns.
-• RequestVote RPC parameters: term, candidateId, lastLogIndex, lastLogTerm.
-• Periodic empty AppendEntries heartbeats from leader to suppress new elections.
-
-You build the fundamental election safety loop that guarantees a single leader per term.`,
+By using randomized election timeouts, you prevent split-vote scenarios where multiple nodes campaign at the exact same time. Once a leader is elected, it must constantly send heartbeats. If it stops, the followers assume it died and trigger a new election. This ensures the cluster is always available even if the current leader fails.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'tick <nodeId>': Advances node timer, triggering election if timeout expires.",
-        "Implement 'request-vote <candidate> <term>': Dispatches RequestVote RPC to all cluster nodes.",
-        "Implement 'status': Reports current cluster roles (Leader, Candidate, Follower) and terms.",
-        "Enforce system constraints: Exactly 1 vote per node per term; Leaders must maintain regular heartbeats.",
-        "Format output according to the specification and flush standard output."
-],
+        "Initialize the state of each node as a Follower with a randomized election timeout.",
+        "Implement 'tick <nodeId>' to advance the timer. If it expires, change state to Candidate, increment the term, and vote for self.",
+        "Implement 'request-vote <candidate> <term>' to send vote requests to all other nodes. Ensure each node only votes once per term.",
+        "Implement 'heartbeat <nodeId>' to send empty AppendEntries messages from the leader, resetting follower timers."
+      ],
       diagram: `RAFT LEADER ELECTION STATE MACHINE:
 
   [Follower] ──(Election Timeout Expires)──► [Candidate]
@@ -206,55 +199,47 @@ You build the fundamental election safety loop that guarantees a single leader p
       title: "Log Replication & State Machine Commit",
       difficulty: "Hard",
       tagline: "Replicate log entries across a majority quorum and advance commitIndex.",
-      whatAreYouBuilding: `In this level, you build: Log Replication & State Machine Commit.
+      whatAreYouBuilding: `You are going to build the replication engine that copies data to all nodes.
 
-Replicate log entries across a majority quorum and advance commitIndex.
+Continuing the classroom analogy, when the class president makes a decision (like a new rule), they write it down and pass copies to everyone. Once more than half the class has copied it into their notebooks, the rule becomes official.
 
-You are creating a reliable component of Distributed Consensus Engine (Raft). When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+client-write 'SET x=10'
+replicate
 
-Supported Operations:
-• client-write <cmd> -> Submits state mutation to current cluster leader.
-• replicate -> Leader sends AppendEntries RPC to followers.
-• get-state -> Queries committed state across all nodes.`,
+Your cluster should successfully replicate and commit the entry:
+COMMITTED index 1
+STATE: x=10`,
+      howItWorks: `When a client sends a command:
+1. The leader receives the command and adds it to its own log.
+2. The leader sends the log entry to all followers.
+3. Followers verify the entry matches their history and add it to their logs.
+4. Followers reply with a success message.
+5. Once a majority of nodes (including the leader) have the entry, the leader marks it as 'committed'.
+6. The leader applies the command to its state machine and replies to the client.`,
       technicalTerms: [
         {
-                "term": "AppendEntries RPC framing",
-                "definition": "prevLogIndex, prevLogTerm, entries[], leaderCommit."
+          "term": "AppendEntries RPC",
+          "definition": "A message used by the leader to send log entries to followers and perform consistency checks."
         },
         {
-                "term": "Follower log consistency check",
-                "definition": "rejecting entries if previous index/term mismatch."
+          "term": "Log consistency check",
+          "definition": "A safety mechanism where followers reject new entries if they are missing previous entries."
         },
         {
-                "term": "Advancing commitIndex only when entry is replicated to a strict majority (> N/2)",
-                "definition": ""
+          "term": "Commit Index",
+          "definition": "The highest log entry number that has been safely replicated to a majority of nodes."
         }
-],
-      description: `In Level 2 (Log Replication & State Machine Commit), you engineer the core mechanisms for Distributed Consensus Engine (Raft).
+      ],
+      description: `Once a leader is elected, it must keep everyone's data synchronized. In Level 2, you implement log replication.
 
-Replicate log entries across a majority quorum and advance commitIndex.
-
-Core Engineering Problem: How does a leader know an entry is safely committed and cannot be lost even if the leader crashes immediately?
-
-Key Mechanisms Implemented:
-• AppendEntries RPC framing: prevLogIndex, prevLogTerm, entries[], leaderCommit.
-• Follower log consistency check: rejecting entries if previous index/term mismatch.
-• Advancing commitIndex only when entry is replicated to a strict majority (> N/2).
-
-You master quorum replication and linearizable state machine application.`,
+This is where the magic of consensus happens. The leader doesn't just broadcast messages; it ensures they are safely stored on a majority of nodes before confirming success. This guarantees that even if the leader crashes immediately after committing an entry, the new leader will definitely have that entry in its log, preventing data loss.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'client-write <cmd>': Submits state mutation to current cluster leader.",
-        "Implement 'replicate': Leader sends AppendEntries RPC to followers.",
-        "Implement 'get-state': Queries committed state across all nodes.",
-        "Enforce system constraints: Strict majority required for commit; Followers must match leader log prefix exactly.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement 'client-write <cmd>' to append the command to the leader's log.",
+        "Implement 'replicate' to send AppendEntries RPCs to all followers, including the previous log index and term for consistency checks.",
+        "On the follower, verify the previous log index and term. If they match, append the entry; otherwise, reject it.",
+        "On the leader, track the match index for each follower. When an entry is replicated to a strict majority, advance the commit index."
+      ],
       diagram: `QUORUM LOG REPLICATION PIPELINE:
 
   Client ──► Leader (Node 1)
@@ -310,55 +295,45 @@ You master quorum replication and linearizable state machine application.`,
       title: "Network Partitions & Split-Brain Mitigation",
       difficulty: "Hard",
       tagline: "Prevent split-brain writes during asymmetric network splits.",
-      whatAreYouBuilding: `In this level, you build: Network Partitions & Split-Brain Mitigation.
+      whatAreYouBuilding: `You are going to make your cluster survive network partitions without corrupting data.
 
-Prevent split-brain writes during asymmetric network splits.
+Imagine a wall suddenly drops in the middle of the classroom. The president is on one side with 1 student, and 3 students are on the other side. The side with 3 students can elect a new president and make rules. The isolated president cannot make official rules because they don't have a majority.
 
-You are creating a reliable component of Distributed Consensus Engine (Raft). When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+partition n1,n2 | n3,n4,n5
+write-minority n1 'SET x=bad'
 
-Supported Operations:
-• partition <groupA> | <groupB> -> Partitions cluster nodes into isolated network groups.
-• heal-partition -> Restores full network connectivity between all nodes.
-• write-minority <nodeId> <cmd> -> Attempts to write to the leader of a minority partition.`,
+The minority leader should fail to commit:
+UNCOMMITTED_NO_QUORUM`,
+      howItWorks: `When the network splits:
+1. The cluster divides into a minority group and a majority group.
+2. The minority leader keeps trying to replicate writes, but can never get a majority of votes, so writes remain uncommitted.
+3. The majority group elects a new leader and continues committing writes successfully.
+4. When the network heals, the old minority leader sees the new leader has a higher term.
+5. The old leader steps down, throws away its uncommitted writes, and catches up with the majority.`,
       technicalTerms: [
         {
-                "term": "Split",
-                "definition": "brain hazard. two nodes believing they are both legitimate leaders."
+          "term": "Split-brain",
+          "definition": "A dangerous scenario where a network partition causes two nodes to believe they are both the legitimate leader."
         },
         {
-                "term": "Majority quorum constraint",
-                "definition": "minority partition cannot commit (lacks > N/2 votes)."
+          "term": "Majority quorum",
+          "definition": "A strict requirement that more than half the nodes must participate to make decisions or commit data."
         },
         {
-                "term": "Partition healing",
-                "definition": "higher term from majority partition forces stale minority leader to step down and overwrite uncommitted entries."
+          "term": "Partition healing",
+          "definition": "The process of restoring network connectivity, allowing isolated nodes to discover the current leader and synchronize their logs."
         }
-],
-      description: `In Level 3 (Network Partitions & Split-Brain Mitigation), you engineer the core mechanisms for Distributed Consensus Engine (Raft).
+      ],
+      description: `Networks are unreliable; cables get cut and switches fail. Level 3 tests your system's resilience to the ultimate network failure: the split-brain partition.
 
-Prevent split-brain writes during asymmetric network splits.
-
-Core Engineering Problem: What happens when a 5-node cluster splits into 2 nodes (minority) and 3 nodes (majority)? Can the minority commit writes?
-
-Key Mechanisms Implemented:
-• Split-brain hazard: two nodes believing they are both legitimate leaders.
-• Majority quorum constraint: minority partition cannot commit (lacks > N/2 votes).
-• Partition healing: higher term from majority partition forces stale minority leader to step down and overwrite uncommitted entries.
-
-You prove that your consensus engine preserves safety and serializability under severe partitions.`,
+Raft prevents split-brain by mathematically ensuring that only one partition can ever contain a majority of nodes. The minority partition pauses, preserving safety over availability, while the majority continues operating. When the network heals, Raft automatically resolves the conflict by adopting the longest, most up-to-date log, elegantly recovering from the disaster.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'partition <groupA> | <groupB>': Partitions cluster nodes into isolated network groups.",
-        "Implement 'heal-partition': Restores full network connectivity between all nodes.",
-        "Implement 'write-minority <nodeId> <cmd>': Attempts to write to the leader of a minority partition.",
-        "Enforce system constraints: Zero split-brain committed values; Overwritten uncommitted entries must be cleanly discarded.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement 'partition <groupA> | <groupB>' to simulate a network split. Nodes can only communicate within their group.",
+        "Implement 'write-minority <nodeId> <cmd>'. The isolated leader should accept the write but fail to advance the commit index.",
+        "Implement 'write-majority <nodeId> <cmd>'. The majority leader should successfully commit the write.",
+        "Implement 'heal-partition'. When the old leader receives a message from the new leader with a higher term, it must step down to follower and overwrite its uncommitted log entries."
+      ],
       diagram: `5-NODE CLUSTER ASYMMETRIC PARTITION:
 
   Minority Partition (2 nodes):
@@ -420,55 +395,42 @@ You prove that your consensus engine preserves safety and serializability under 
       title: "Cluster Membership Changes & Log Compaction",
       difficulty: "Expert",
       tagline: "Add/remove nodes dynamically and compact infinite logs with snapshots.",
-      whatAreYouBuilding: `In this level, you build: Cluster Membership Changes & Log Compaction.
+      whatAreYouBuilding: `You are going to add new nodes dynamically and compress the transaction log into snapshots.
 
-Add/remove nodes dynamically and compact infinite logs with snapshots.
+Think of a rapidly growing classroom. When new students join, they don't need to read every single rule passed since the beginning of the year. Instead, they just get a summary (snapshot) of all the current rules, and then start participating.
 
-You are creating a reliable component of Distributed Consensus Engine (Raft). When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+take-snapshot
 
-Supported Operations:
-• add-node <nodeId> -> Initiates joint consensus configuration to add node to cluster.
-• take-snapshot -> Compacts committed log entries into a state machine snapshot.
-• install-snapshot <nodeId> -> Sends a snapshot to a lagging node to catch it up.`,
+Your cluster should compact the log:
+SNAPSHOT_CREATED index 100`,
+      howItWorks: `When adding nodes or compacting logs:
+1. To shrink the log, a node takes a snapshot of its current state and discards all historical log entries up to that point.
+2. If a new node joins or a follower falls too far behind, the leader sends it the latest snapshot instead of thousands of individual log entries.
+3. The new node loads the snapshot to instantly catch up to the cluster's current state.
+4. Adding or removing nodes uses a two-phase 'joint consensus' approach to safely transition without causing a split-brain during the change.`,
       technicalTerms: [
         {
-                "term": "Joint consensus configuration",
-                "definition": "transitioning from C_old to C_new without split.brain."
+          "term": "Log compaction",
+          "definition": "The process of discarding old log entries and replacing them with a single snapshot of the current state to save memory."
         },
         {
-                "term": "State machine snapshots",
-                "definition": "serializing applied state and discarding historic log entries up to snapshotIndex."
+          "term": "InstallSnapshot RPC",
+          "definition": "A message used by the leader to send a full state snapshot to a follower that is too far behind to catch up via normal log replication."
         },
         {
-                "term": "InstallSnapshot RPC",
-                "definition": "streaming compressed point.in.time images to lagging followers."
+          "term": "Joint consensus",
+          "definition": "A safe, two-phase process for adding or removing nodes that prevents the cluster from accidentally forming two majorities."
         }
-],
-      description: `In Level 4 (Cluster Membership Changes & Log Compaction), you engineer the core mechanisms for Distributed Consensus Engine (Raft).
+      ],
+      description: `A real-world database cannot keep an infinite log of every transaction forever; it would run out of disk space. In Level 4, you implement snapshots to bound memory usage.
 
-Add/remove nodes dynamically and compact infinite logs with snapshots.
-
-Core Engineering Problem: If a cluster runs for 3 years, the log would grow to billions of entries. How does a new node join without replaying 3 years of logs?
-
-Key Mechanisms Implemented:
-• Joint consensus configuration: transitioning from C_old to C_new without split-brain.
-• State machine snapshots: serializing applied state and discarding historic log entries up to snapshotIndex.
-• InstallSnapshot RPC: streaming compressed point-in-time images to lagging followers.
-
-You enable zero-downtime cluster scaling and bound disk memory usage.`,
+Furthermore, clusters are not static. Hardware fails and needs replacement. By implementing joint consensus, you allow the cluster to dynamically scale up or down without taking the system offline. This provides the zero-downtime elasticity required in modern cloud infrastructure.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'add-node <nodeId>': Initiates joint consensus configuration to add node to cluster.",
-        "Implement 'take-snapshot': Compacts committed log entries into a state machine snapshot.",
-        "Implement 'install-snapshot <nodeId>': Sends a snapshot to a lagging node to catch it up.",
-        "Enforce system constraints: Snapshots must include lastIncludedIndex and lastIncludedTerm; Joint consensus during config change.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement 'take-snapshot' to serialize the current state machine, record the lastIncludedIndex and lastIncludedTerm, and truncate the old log entries.",
+        "Implement 'install-snapshot <nodeId>' for the leader to stream the snapshot to a lagging follower.",
+        "Implement 'add-node <nodeId>' and 'remove-node <nodeId>' using joint consensus, where the cluster temporarily requires majorities from both the old and new configurations before committing the change."
+      ],
       diagram: `LOG COMPACTION & POINT-IN-TIME SNAPSHOTTING:
 
   Historical Log:
@@ -523,55 +485,43 @@ You enable zero-downtime cluster scaling and bound disk memory usage.`,
       title: "Election Convergence & Replication Lag",
       difficulty: "Hard",
       tagline: "Measure failover election latency and replication lag.",
-      whatAreYouBuilding: `In this level, you build: Election Convergence & Replication Lag.
+      whatAreYouBuilding: `You are going to measure how fast your cluster reacts to failures and how quickly it replicates data.
 
-Measure failover election latency and replication lag.
+Like timing how fast the classroom notices the president left and elects a new one. You want this to happen in a fraction of a second, so no time is wasted.
 
-You are creating a reliable component of Distributed Consensus Engine (Raft). When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+kill-leader
 
-Supported Operations:
-• kill-leader -> Terminates current leader and benchmarks election recovery time.
-• measure-lag -> Returns replication lag across all active followers.
-• bench-commits <count> -> Saturates the cluster with writes to measure commit throughput.`,
+Your cluster should elect a new leader extremely fast:
+FAILOVER_TIME: < 150ms`,
+      howItWorks: `When profiling performance:
+1. You measure the exact milliseconds between a leader crashing and a new leader being elected (failover latency).
+2. You track how many log entries followers are behind the leader (replication lag).
+3. You simulate network jitter (delays) and packet drops to see how they impact election speed and commit throughput.
+4. You verify that the cluster still guarantees safety and consistency even when running at maximum speed under poor network conditions.`,
       technicalTerms: [
         {
-                "term": "Leader failover latency percentiles (p50, p95, p99)",
-                "definition": ""
+          "term": "Failover latency",
+          "definition": "The time it takes for a cluster to detect a leader failure and successfully elect a replacement."
         },
         {
-                "term": "Follower replication lag (difference between leader commitIndex and follower matchIndex)",
-                "definition": ""
+          "term": "Replication lag",
+          "definition": "The difference between the leader's commit index and a follower's match index, indicating how far behind the follower is."
         },
         {
-                "term": "Impact of packet drops and RPC retransmissions on quorum commits",
-                "definition": ""
+          "term": "Network jitter",
+          "definition": "Variations in network delay and packet delivery times that can trigger false elections if timeouts are too short."
         }
-],
-      description: `In Level 5 (Election Convergence & Replication Lag), you engineer the core mechanisms for Distributed Consensus Engine (Raft).
+      ],
+      description: `Correctness is essential, but performance is what makes a database usable in production. In Level 5, you shift from building features to optimizing system dynamics.
 
-Measure failover election latency and replication lag.
-
-Core Engineering Problem: What is the true upper bound on downtime when the leader crashes, and how does network jitter affect it?
-
-Key Mechanisms Implemented:
-• Leader failover latency percentiles (p50, p95, p99).
-• Follower replication lag (difference between leader commitIndex and follower matchIndex).
-• Impact of packet drops and RPC retransmissions on quorum commits.
-
-You quantify distributed consensus latency and measure recovery boundaries.`,
+By measuring failover latency and replication lag, you gain visibility into the cluster's health. You will discover that tuning election timeouts is a delicate balance: too long, and failovers cause unacceptable downtime; too short, and normal network jitter causes unnecessary elections and instability.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'kill-leader': Terminates current leader and benchmarks election recovery time.",
-        "Implement 'measure-lag': Returns replication lag across all active followers.",
-        "Implement 'bench-commits <count>': Saturates the cluster with writes to measure commit throughput.",
-        "Enforce system constraints: Election duration under 150ms; Zero divergent commits during failover.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement 'kill-leader' to terminate the current leader, start a timer, and measure the elapsed time until a new leader is established.",
+        "Implement 'measure-lag' to calculate and report the replication lag for all active followers.",
+        "Implement 'bench-commits <count>' to flood the leader with writes and measure the maximum commit throughput.",
+        "Ensure your election timeouts are tuned correctly to achieve failover in under 150ms without causing false elections under normal load."
+      ],
       diagram: `FAILOVER LATENCY TIMELINE & REPLICATION LAG:
 
   Leader Crashes (t = 0 ms)
@@ -627,55 +577,42 @@ You quantify distributed consensus latency and measure recovery boundaries.`,
       title: "Pipelined Log Replication & Batching",
       difficulty: "Expert",
       tagline: "Eliminate synchronous round-trips via pipelined AppendEntries and read-index.",
-      whatAreYouBuilding: `In this level, you build: Pipelined Log Replication & Batching.
+      whatAreYouBuilding: `You are going to optimize the replication engine to process tens of thousands of requests per second.
 
-Eliminate synchronous round-trips via pipelined AppendEntries and read-index.
+Imagine the class president batching up a dozen new rules and handing them out all at once, rather than passing out a separate piece of paper for every single rule.
 
-You are creating a reliable component of Distributed Consensus Engine (Raft). When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+enable-pipelining
+bench-pipeline 5000
 
-Supported Operations:
-• enable-pipelining -> Enables asynchronous streaming AppendEntries pipeline.
-• read-index <key> -> Executes linearizable read without disk write overhead.
-• bench-pipeline <count> -> Benchmarks throughput with pipelining enabled.`,
+Your cluster should stream updates asynchronously:
+PIPELINE_THROUGHPUT: > 20000 ops/s`,
+      howItWorks: `When pipelining and batching are enabled:
+1. The leader does not wait for a follower to acknowledge entry #1 before sending entry #2. It sends multiple entries back-to-back (pipelining).
+2. The leader groups multiple concurrent client writes into a single log entry (batching).
+3. When a client requests to read data, the leader skips writing a log entry. Instead, it just sends a quick heartbeat to confirm it's still the leader, and then returns the data immediately (ReadIndex).`,
       technicalTerms: [
         {
-                "term": "Asynchronous RPC pipelining",
-                "definition": "streaming multiple AppendEntries requests without waiting for previous responses."
+          "term": "RPC pipelining",
+          "definition": "Sending multiple network requests asynchronously without waiting for the previous ones to finish, drastically increasing throughput."
         },
         {
-                "term": "Batching concurrent client write requests into single log entries",
-                "definition": ""
+          "term": "Write batching",
+          "definition": "Grouping multiple small client commands into a single, larger log entry to reduce network overhead."
         },
         {
-                "term": "ReadIndex optimization",
-                "definition": "serving linearizable read queries without writing entries to the Raft log."
+          "term": "ReadIndex optimization",
+          "definition": "A technique that allows the leader to serve read requests linearly without the heavy cost of writing to the Raft log."
         }
-],
-      description: `In Level 6 (Pipelined Log Replication & Batching), you engineer the core mechanisms for Distributed Consensus Engine (Raft).
+      ],
+      description: `In the final level, you implement the high-performance techniques used by production systems like etcd and TiKV.
 
-Eliminate synchronous round-trips via pipelined AppendEntries and read-index.
-
-Core Engineering Problem: How does etcd achieve 50,000+ writes/sec without blocking the leader waiting for network ACKs on every single entry?
-
-Key Mechanisms Implemented:
-• Asynchronous RPC pipelining: streaming multiple AppendEntries requests without waiting for previous responses.
-• Batching concurrent client write requests into single log entries.
-• ReadIndex optimization: serving linearizable read queries without writing entries to the Raft log.
-
-You achieve state-of-the-art consensus throughput via pipelining and linearizable reads.`,
+Synchronous replication is safe but slow, bound by network round-trip times. By pipelining RPCs and batching writes, you amortize the network overhead, pushing the system's throughput to its absolute limits. The ReadIndex optimization is the crowning achievement, allowing your consensus engine to serve lightning-fast reads while preserving strict linearizability.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'enable-pipelining': Enables asynchronous streaming AppendEntries pipeline.",
-        "Implement 'read-index <key>': Executes linearizable read without disk write overhead.",
-        "Implement 'bench-pipeline <count>': Benchmarks throughput with pipelining enabled.",
-        "Enforce system constraints: Strict linearizability guarantee; Zero lost pipeline entries.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement 'enable-pipelining' to allow the leader to keep multiple AppendEntries RPCs in-flight for each follower, up to a maximum window size.",
+        "Update your client-write logic to batch concurrent commands into a single log entry when under heavy load.",
+        "Implement 'read-index <key>' to perform a linearizable read. The leader must record its commit index, send a round of heartbeats to confirm its leadership, and then return the value once the state machine catches up."
+      ],
       diagram: `SYNCHRONOUS vs PIPELINED REPLICATION:
 
   Synchronous (Sequential Round-trips):

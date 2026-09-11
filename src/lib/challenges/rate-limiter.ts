@@ -96,54 +96,44 @@ export const rateLimiterChallenge: ChallengeData = {
       title: "Fixed-Window Epoch Rate Limiter",
       difficulty: "Easy",
       tagline: "Track request counts per fixed time window. Allow requests under capacity and reject those exceeding the threshold.",
-      whatAreYouBuilding: `In this level, you build: Fixed-Window Epoch Rate Limiter.
+      whatAreYouBuilding: `You are going to build a fixed-window rate limiter. Think of it as a nightclub bouncer who only lets 10 people in every minute. When the minute is up, the count starts fresh.
 
-Track request counts per fixed time window. Allow requests under capacity and reject those exceeding the threshold.
+For example:
+CONFIG 2 10
+REQUEST alice 1000
 
-You are creating a reliable component of Concurrent Rate Limiter & Traffic Shaper. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• CONFIG <limit> <window_sec> -> Sets global limit and window in seconds. Returns 'OK'.
-• REQUEST <client_id> <timestamp_ms> -> Evaluates request. Returns 'ALLOWED <remaining>' or 'REJECTED <retry_after_ms>'.
-• RESET <client_id> -> Resets client's counter. Returns 'OK'.`,
+Your rate limiter should check if Alice has exceeded the limit of 2 requests in the current 10-second window and print:
+ALLOWED 1`,
+      howItWorks: `When a request arrives:
+1. Determine the current "epoch" or time window by dividing the timestamp by the window size.
+2. If this is a new window, reset the client's request counter to 0.
+3. Check if the counter is below the limit.
+4. If it is, increment the counter and allow the request.
+5. If it is not, reject the request and calculate exactly when the next window starts so the client knows when to retry.`,
       technicalTerms: [
         {
-                "term": "Computing window epoch = floor(timestamp_ms / (window_sec * 1000))",
-                "definition": ""
+          "term": "Fixed Window",
+          "definition": "A set period of time (like 10 seconds) during which requests are counted."
         },
         {
-                "term": "Resetting counter when client enters a new epoch",
-                "definition": ""
+          "term": "Epoch",
+          "definition": "A discrete block of time calculated by dividing the current timestamp by the window size."
         },
         {
-                "term": "Calculating precise retry_after_ms to inform throttled clients",
-                "definition": ""
+          "term": "Retry After",
+          "definition": "The exact number of milliseconds a client must wait until the next time window begins."
         }
 ],
-      description: `In Level 1 (Fixed-Window Epoch Rate Limiter), you engineer the core mechanisms for Concurrent Rate Limiter & Traffic Shaper.
+      description: `Every API needs protection from being overwhelmed by too many requests. In Level 1, you build the simplest rate limiting algorithm: the fixed window. It divides time into rigid blocks (like 0-10 seconds, 10-20 seconds) and maintains a counter for each client.
 
-Track request counts per fixed time window. Allow requests under capacity and reject those exceeding the threshold.
-
-Core Engineering Problem: Unbounded API requests can take down application servers. Fixed windows partition time into predictable intervals.
-
-Key Mechanisms Implemented:
-• Computing window epoch = floor(timestamp_ms / (window_sec * 1000)).
-• Resetting counter when client enters a new epoch.
-• Calculating precise retry_after_ms to inform throttled clients.
-
-You implement epoch-based time partitioning and deterministic quota enforcement.`,
+This approach is extremely memory efficient because you only need to store a single integer (the count) and a timestamp (the current epoch) per user. However, as we will see in the next level, it has a fatal flaw at the boundaries of the windows.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'CONFIG <limit> <window_sec>': Sets global limit and window in seconds. Returns 'OK'.",
-        "Implement 'REQUEST <client_id> <timestamp_ms>': Evaluates request. Returns 'ALLOWED <remaining>' or 'REJECTED <retry_after_ms>'.",
-        "Implement 'RESET <client_id>': Resets client's counter. Returns 'OK'.",
-        "Enforce system constraints: window_sec is positive integer; timestamp_ms is positive integer millisecond.",
-        "Format output according to the specification and flush standard output."
+        "Initialize a dictionary to map each client ID to their current epoch and request count.",
+        "On 'CONFIG <limit> <window_sec>', save the global limit and window size (converted to milliseconds).",
+        "On 'REQUEST <client_id> <timestamp_ms>', calculate the epoch using floor(timestamp / window).",
+        "If the epoch is newer than the saved epoch for the client, reset their counter.",
+        "If the counter is below the limit, increment it and print 'ALLOWED <remaining>'.",
+        "If the counter is at the limit, calculate the start time of the next epoch and print 'REJECTED <retry_after_ms>'."
 ],
       diagram: `REQUEST EVALUATION                        RATE LIMIT ENGINE               DECISION
 CONFIG 2 10                   ──► configure global window  ──► OK
@@ -226,52 +216,42 @@ ALLOWED 1`,
       title: "Sliding Window Timestamp Log",
       difficulty: "Medium",
       tagline: "Prevent 2x edge bursts. Store timestamps in a sliding window log and evict timestamps outside the active window.",
-      whatAreYouBuilding: `In this level, you build: Sliding Window Timestamp Log.
+      whatAreYouBuilding: `You are going to build a sliding window rate limiter. Think of it as a bouncer who uses a rolling 60-second count. Instead of resetting at the top of the minute, they look at exactly the last 60 seconds from right now.
 
-Prevent 2x edge bursts. Store timestamps in a sliding window log and evict timestamps outside the active window.
+For example:
+REQUEST_SLIDING c1 5500
 
-You are creating a reliable component of Concurrent Rate Limiter & Traffic Shaper. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• CONFIG_SLIDING <limit> <window_sec> -> Configures sliding window log. Returns 'OK'.
-• REQUEST_SLIDING <client_id> <timestamp_ms> -> Evaluates request using sliding window. Returns 'ALLOWED <remaining>' or 'REJECTED <retry_after_ms>'.`,
+Your rate limiter will look at all requests from c1 between 500ms and 5500ms. If the count exceeds the limit, it prints:
+REJECTED 3500`,
+      howItWorks: `When a request arrives:
+1. Look up the list of timestamps for previous requests from this client.
+2. Remove any timestamps that are older than the current timestamp minus the window size (they have "slid" out of the window).
+3. Count the remaining timestamps.
+4. If the count is below the limit, add the new timestamp and allow the request.
+5. If the count is at the limit, reject the request. The client must wait until the oldest timestamp in the window slides out.`,
       technicalTerms: [
         {
-                "term": "Sliding window",
-                "definition": "Rolling interval [timestamp . window_ms, timestamp]."
+          "term": "Sliding Window",
+          "definition": "A continuously moving time frame that looks backwards from the exact moment a request arrives."
         },
         {
-                "term": "Evicting timestamps older than the sliding threshold",
-                "definition": ""
+          "term": "Timestamp Deque",
+          "definition": "A double-ended queue used to efficiently store and remove request timestamps."
         },
         {
-                "term": "Computing accurate retry_after based on the earliest timestamp in the log",
-                "definition": ""
+          "term": "Eviction",
+          "definition": "The process of removing old request timestamps that fall outside the active window."
         }
 ],
-      description: `In Level 2 (Sliding Window Timestamp Log), you engineer the core mechanisms for Concurrent Rate Limiter & Traffic Shaper.
+      description: `Fixed windows have a 'boundary spike' vulnerability. If a user sends their full quota at 9.9 seconds, the window resets at 10.0 seconds, allowing them to send another full quota at 10.1 seconds—doubling their allowed rate in a fraction of a second.
 
-Prevent 2x edge bursts. Store timestamps in a sliding window log and evict timestamps outside the active window.
-
-Core Engineering Problem: Fixed windows suffer from boundary spikes: sending the full quota at 00:09 and another at 00:10 yields 2x throughput in 1 second.
-
-Key Mechanisms Implemented:
-• Sliding window: Rolling interval [timestamp - window_ms, timestamp].
-• Evicting timestamps older than the sliding threshold.
-• Computing accurate retry_after based on the earliest timestamp in the log.
-
-You eliminate burst edge vulnerabilities using sliding window logs.`,
+The sliding window log fixes this by keeping a precise record of every request timestamp. By dynamically evicting timestamps older than the rolling window, it perfectly enforces the rate limit at all times. The trade-off is higher memory usage, as you must store a list of timestamps per user.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'CONFIG_SLIDING <limit> <window_sec>': Configures sliding window log. Returns 'OK'.",
-        "Implement 'REQUEST_SLIDING <client_id> <timestamp_ms>': Evaluates request using sliding window. Returns 'ALLOWED <remaining>' or 'REJECTED <retry_after_ms>'.",
-        "Enforce system constraints: Timestamps within a client are monotonically non-decreasing.",
-        "Format output according to the specification and flush standard output."
+        "Use a dictionary mapping each client ID to an array (or deque) of request timestamps.",
+        "On 'REQUEST_SLIDING <client_id> <timestamp_ms>', find the client's timestamp array.",
+        "Filter the array to remove any timestamps less than or equal to (timestamp_ms - window_ms).",
+        "If the array length is less than the limit, append the new timestamp and print 'ALLOWED <remaining>'.",
+        "If the array is full, do not append. Calculate retry_after as (oldest_timestamp + window_ms - current_timestamp) and print 'REJECTED <retry_after>'."
 ],
       diagram: `REQUEST STREAM (ROLLING WINDOW)           TIMESTAMP LOG DEQUE (c1)              DECISION
 CONFIG_SLIDING 2 5 (limit=2, win=5s)
@@ -336,52 +316,43 @@ REQUEST_SLIDING c1 9100  ──► Evict < 4100 ──► [t=4500, t=9100]      
       title: "Continuous Refill Token Bucket",
       difficulty: "Medium",
       tagline: "Refill tokens lazily based on elapsed time. Allow short bursts up to bucket capacity while enforcing average rate.",
-      whatAreYouBuilding: `In this level, you build: Continuous Refill Token Bucket.
+      whatAreYouBuilding: `You are going to build a token bucket rate limiter. Think of it like arcade tokens that refill over time. You can spend them all at once (a burst) but then you have to wait for them to slowly refill.
 
-Refill tokens lazily based on elapsed time. Allow short bursts up to bucket capacity while enforcing average rate.
+For example:
+ACQUIRE c1 3 1000
 
-You are creating a reliable component of Concurrent Rate Limiter & Traffic Shaper. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• CONFIG_BUCKET <client_id> <capacity> <refill_rate_per_sec> -> Initializes token bucket (starts full). Returns 'OK'.
-• ACQUIRE <client_id> <tokens> <timestamp_ms> -> Attempts to consume tokens. Returns 'ALLOWED <tokens_remaining>' or 'REJECTED'.`,
+Your rate limiter checks if the bucket has at least 3 tokens. If it does, it removes them and prints:
+ALLOWED 2`,
+      howItWorks: `When a request arrives:
+1. Calculate how much time has passed since the client last acquired tokens.
+2. Refill the bucket based on that elapsed time and the refill rate, capping it at the maximum capacity.
+3. Check if the bucket has enough tokens to satisfy the requested amount.
+4. If it does, subtract the tokens and allow the request.
+5. If it does not, reject the request without deducting any tokens.`,
       technicalTerms: [
         {
-                "term": "Lazy refill",
-                "definition": "tokens = min(capacity, current_tokens + elapsed_sec * rate)."
+          "term": "Token Bucket",
+          "definition": "An algorithm that allows traffic bursts up to a maximum capacity while enforcing a steady long-term rate."
         },
         {
-                "term": "Deducting acquired tokens atomically",
-                "definition": ""
+          "term": "Lazy Refill",
+          "definition": "Calculating and adding new tokens only at the exact moment a request arrives, rather than using a continuous background timer."
         },
         {
-                "term": "Burst capability",
-                "definition": "allowing spikes up to capacity when bucket is full."
+          "term": "Burst Capability",
+          "definition": "The ability to process a sudden spike of requests all at once, limited by the bucket's total capacity."
         }
 ],
-      description: `In Level 3 (Continuous Refill Token Bucket), you engineer the core mechanisms for Concurrent Rate Limiter & Traffic Shaper.
+      description: `Sliding windows use too much memory for high-volume systems because they store every single request timestamp. Token buckets solve this by only tracking two numbers per user: the current token count and the last refill timestamp.
 
-Refill tokens lazily based on elapsed time. Allow short bursts up to bucket capacity while enforcing average rate.
-
-Core Engineering Problem: Sliding window logs consume O(N) memory per client. Token buckets track only two scalar numbers: tokens available and last refill time.
-
-Key Mechanisms Implemented:
-• Lazy refill: tokens = min(capacity, current_tokens + elapsed_sec * rate).
-• Deducting acquired tokens atomically.
-• Burst capability: allowing spikes up to capacity when bucket is full.
-
-You implement the most memory-efficient and burst-tolerant rate limiter in systems engineering.`,
+By refilling tokens lazily (calculating the refill only when a new request arrives based on elapsed time), the token bucket is incredibly fast and memory-efficient. It also allows for 'bursts'—a user who hasn't made requests in a while can spend their accumulated tokens all at once, which is great for modern web applications.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'CONFIG_BUCKET <client_id> <capacity> <refill_rate_per_sec>': Initializes token bucket (starts full). Returns 'OK'.",
-        "Implement 'ACQUIRE <client_id> <tokens> <timestamp_ms>': Attempts to consume tokens. Returns 'ALLOWED <tokens_remaining>' or 'REJECTED'.",
-        "Enforce system constraints: Capacity and refill rate are positive integers; Tokens remaining printed as integer floor.",
-        "Format output according to the specification and flush standard output."
+        "Store the capacity and refill_rate from 'CONFIG_BUCKET'.",
+        "Initialize a dictionary mapping client IDs to an object tracking {tokens, last_refill_ms}.",
+        "On 'ACQUIRE', first calculate elapsed seconds since last_refill_ms: (current_time - last_time) / 1000.",
+        "Refill tokens: current_tokens = min(capacity, current_tokens + (elapsed * refill_rate)). Update last_refill_ms to the current time.",
+        "If current_tokens >= requested_tokens, subtract them and print 'ALLOWED <floor(remaining)>'.",
+        "If not, leave the token count untouched and print 'REJECTED'."
 ],
       diagram: `INCOMING ACQUIRE                          TOKEN BUCKET (c1: cap=5, rate=1/s)     STATUS
 CONFIG_BUCKET c1 5 1                     ┌─────────────────────────────┐
@@ -447,54 +418,47 @@ ACQUIRE c1 1 2000        ──► Deduct 1    │ Tokens: [●]         (1/5)  
       title: "Smooth Outbound Traffic Shaping",
       difficulty: "Medium",
       tagline: "Smooth bursty inbound spikes into a constant outbound flow. Buffer requests up to queue capacity and drop overflows.",
-      whatAreYouBuilding: `In this level, you build: Smooth Outbound Traffic Shaping.
+      whatAreYouBuilding: `You are going to build a leaky bucket traffic shaper. Think of it as a funnel. Water (requests) can pour in at any speed, but it drips out the bottom at a steady, constant rate. If the funnel fills up, water spills over (requests drop).
 
-Smooth bursty inbound spikes into a constant outbound flow. Buffer requests up to queue capacity and drop overflows.
+For example:
+ENQUEUE r1 1000
 
-You are creating a reliable component of Concurrent Rate Limiter & Traffic Shaper. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+Your rate limiter adds the request to the funnel. Later, when you process the queue:
+LEAK 2000
+It prints the requests that steadily dripped out:
+PROCESSED r1`,
+      howItWorks: `When a request is enqueued:
+1. Check if the queue buffer is full. If it is, immediately drop the request.
+2. If there's space, add the request to the back of the queue.
 
-Supported Operations:
-• CONFIG_LEAKY <capacity> <leak_rate_per_sec> -> Sets leaky queue capacity and leak rate. Returns 'OK'.
-• ENQUEUE <request_id> <timestamp_ms> -> Enqueues request. Returns 'QUEUED <queue_len>' or 'DROPPED'.
-• LEAK <timestamp_ms> -> Drains processed requests up to timestamp. Returns 'PROCESSED <ids...>' or 'IDLE'.`,
+When a leak is triggered:
+1. Calculate how much time has passed since the last leak.
+2. Determine how many requests should have 'dripped' out based on the leak rate.
+3. Remove that many requests from the front of the queue and process them.`,
       technicalTerms: [
         {
-                "term": "Queuing inbound requests in a bounded buffer",
-                "definition": ""
+          "term": "Traffic Shaping",
+          "definition": "Controlling the exact outbound flow rate of requests to protect downstream services from spikes."
         },
         {
-                "term": "Leaking items at a constant rate = elapsed_sec * leak_rate",
-                "definition": ""
+          "term": "Leaky Bucket",
+          "definition": "An algorithm that queues bursty inbound traffic and dispatches it at a strict, constant frequency."
         },
         {
-                "term": "Dropping requests immediately when buffer exceeds maximum capacity",
-                "definition": ""
+          "term": "FIFO Queue",
+          "definition": "A First-In-First-Out buffer where requests wait their turn to be processed."
         }
 ],
-      description: `In Level 4 (Smooth Outbound Traffic Shaping), you engineer the core mechanisms for Concurrent Rate Limiter & Traffic Shaper.
+      description: `While token buckets protect your API from individual users, they still allow 'bursts' that can overwhelm backend databases if many users burst simultaneously. 
 
-Smooth bursty inbound spikes into a constant outbound flow. Buffer requests up to queue capacity and drop overflows.
-
-Core Engineering Problem: Token buckets permit burst spikes to hit downstream services. Leaky buckets shape traffic into an exact, steady dispatch frequency.
-
-Key Mechanisms Implemented:
-• Queuing inbound requests in a bounded buffer.
-• Leaking items at a constant rate = elapsed_sec * leak_rate.
-• Dropping requests immediately when buffer exceeds maximum capacity.
-
-You implement traffic smoothing and buffer overflow protection.`,
+The leaky bucket (or traffic shaper) solves this by acting as a shock absorber. It queues inbound spikes in a bounded buffer and trickles them out to the backend at a perfectly constant, safe rate. This guarantees that your downstream services never receive more traffic than they can handle.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'CONFIG_LEAKY <capacity> <leak_rate_per_sec>': Sets leaky queue capacity and leak rate. Returns 'OK'.",
-        "Implement 'ENQUEUE <request_id> <timestamp_ms>': Enqueues request. Returns 'QUEUED <queue_len>' or 'DROPPED'.",
-        "Implement 'LEAK <timestamp_ms>': Drains processed requests up to timestamp. Returns 'PROCESSED <ids...>' or 'IDLE'.",
-        "Enforce system constraints: Capacity is maximum items that can wait in queue; If the queue is empty and last_leak_ms is 0, initialize last_leak_ms to the timestamp of the first ENQUEUE or LEAK..",
-        "Format output according to the specification and flush standard output."
+        "Maintain a global FIFO queue (array) for incoming request IDs and track the last_leak_ms.",
+        "On 'ENQUEUE', if the queue length equals capacity, print 'DROPPED'. Otherwise, push the request and print 'QUEUED <len>'.",
+        "On 'LEAK', calculate elapsed seconds since last_leak_ms.",
+        "Calculate num_to_leak = floor(elapsed_seconds * leak_rate).",
+        "Shift up to num_to_leak items from the front of the queue. Update last_leak_ms by advancing it exactly by (num_to_leak / leak_rate) seconds.",
+        "Print 'PROCESSED <ids...>' or 'IDLE' if nothing was leaked."
 ],
       diagram: `INBOUND BURST (ENQUEUE)                   LEAKY BUCKET BUFFER (cap=3, leak=1/s)  OUTBOUND FLOW
 ENQUEUE r1 1000 ────────┐                 ┌─────────────────────────────┐
@@ -561,54 +525,47 @@ LEAK 2000 ───────────────────────�
       title: "Multi-Tenant Tiered Quotas & SLA Enforcement",
       difficulty: "Hard",
       tagline: "Assign clients to subscription tiers (FREE, PRO, ENTERPRISE) with independent quotas and burst allowances.",
-      whatAreYouBuilding: `In this level, you build: Multi-Tenant Tiered Quotas & SLA Enforcement.
+      whatAreYouBuilding: `You are going to build a multi-tenant rate limiter with VIP lines. Think of it as having different rules for Free, Pro, and Enterprise users. Free users might get 10 requests, while Pro gets 100.
 
-Assign clients to subscription tiers (FREE, PRO, ENTERPRISE) with independent quotas and burst allowances.
+For example:
+ASSIGN_TIER bob PRO
+REQUEST_TIER bob 1000
 
-You are creating a reliable component of Concurrent Rate Limiter & Traffic Shaper. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+Your rate limiter checks Bob's specific Pro tier rules and prints:
+ALLOWED PRO 4`,
+      howItWorks: `When configuring the system:
+1. Register different tiers (like FREE, PRO) with specific limits and window sizes.
+2. Assign specific client IDs to these tiers.
 
-Supported Operations:
-• ADD_TIER <tier> <limit> <window_sec> -> Registers tier policy. Returns 'OK'.
-• ASSIGN_TIER <client_id> <tier> -> Assigns client to tier. Returns 'OK' or 'NOT_FOUND'.
-• REQUEST_TIER <client_id> <timestamp_ms> -> Evaluates request under client's tier. Returns 'ALLOWED <tier> <remaining>' or 'REJECTED <tier>'.`,
+When a request arrives:
+1. Look up the client's assigned tier. If they have none, default to the FREE tier.
+2. Look up the rules (limit and window) for that tier.
+3. Apply standard rate limiting logic using those specific rules.
+4. Track usage completely independently for every client.`,
       technicalTerms: [
         {
-                "term": "Dynamic tier configuration (rate limits per time window)",
-                "definition": ""
+          "term": "Multi-tenant",
+          "definition": "An architecture where a single instance of software serves multiple distinct customer groups."
         },
         {
-                "term": "Mapping client identity to tier policies with default fallbacks",
-                "definition": ""
+          "term": "SLA Enforcement",
+          "definition": "Service Level Agreement. Ensuring paying customers get the higher capacity they paid for."
         },
         {
-                "term": "Independent tenant quota state tracking",
-                "definition": ""
+          "term": "Quota Isolation",
+          "definition": "Ensuring one user exhausting their limit does not affect the limits of other users."
         }
 ],
-      description: `In Level 5 (Multi-Tenant Tiered Quotas & SLA Enforcement), you engineer the core mechanisms for Concurrent Rate Limiter & Traffic Shaper.
+      description: `Hardcoding a single rate limit is fine for internal microservices, but public APIs require monetization strategies. Free trial users cannot be given the same capacity as paying enterprise customers.
 
-Assign clients to subscription tiers (FREE, PRO, ENTERPRISE) with independent quotas and burst allowances.
-
-Core Engineering Problem: Hardcoding one limit treats free trial users and paying enterprise customers identically. Tiered limiting enforces monetization SLAs.
-
-Key Mechanisms Implemented:
-• Dynamic tier configuration (rate limits per time window).
-• Mapping client identity to tier policies with default fallbacks.
-• Independent tenant quota state tracking.
-
-You implement multi-tenant customer tier management and differentiated rate limiting.`,
+In this level, you build a multi-tenant quota manager that maps client identities to specific tier policies dynamically. It requires managing separate state tracking for thousands of independent clients while applying different mathematical thresholds based on their assigned plans.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'ADD_TIER <tier> <limit> <window_sec>': Registers tier policy. Returns 'OK'.",
-        "Implement 'ASSIGN_TIER <client_id> <tier>': Assigns client to tier. Returns 'OK' or 'NOT_FOUND'.",
-        "Implement 'REQUEST_TIER <client_id> <timestamp_ms>': Evaluates request under client's tier. Returns 'ALLOWED <tier> <remaining>' or 'REJECTED <tier>'.",
-        "Enforce system constraints: Unassigned clients default to FREE tier if FREE exists, else rejected.",
-        "Format output according to the specification and flush standard output."
+        "Maintain a dictionary of tier definitions mapping tier names to {limit, window_sec}.",
+        "Maintain a dictionary mapping client IDs to their assigned tier name.",
+        "Maintain a separate dictionary for rate limiting state (e.g., epoch and count) keyed by client ID.",
+        "On 'REQUEST_TIER', resolve the client's tier (defaulting to FREE if unassigned). If FREE doesn't exist, reject.",
+        "Use the resolved tier's limit and window to evaluate the request using the fixed-window logic from Level 1.",
+        "Print 'ALLOWED <tier> <remaining>' or 'REJECTED <tier>'."
 ],
       diagram: `CLIENT REQUESTS                           TIER SLA REGISTRY                      QUOTA ENFORCEMENT
 REQUEST_TIER alice 1000                   ┌─────────────────────────────┐
@@ -677,52 +634,42 @@ REQUEST_TIER bob 2000                     │ Current usage: 2/5          │ �
       title: "Rate Limiting Telemetry & State Tracking",
       difficulty: "Hard",
       tagline: "Track rate limiter telemetry and state without overshooting limits. (Note: this is sequential state tracking in standard I/O, not a multi-threaded system).",
-      whatAreYouBuilding: `In this level, you build: Rate Limiting Telemetry & State Tracking.
+      whatAreYouBuilding: `You are going to build a rate limiter that tracks strict operational telemetry. Think of it as the bouncer keeping a precise ledger of exactly how many people were allowed in, how many were turned away, and how many spots are left, without ever miscounting.
 
-Track rate limiter telemetry and state without overshooting limits. (Note: this is sequential state tracking in standard I/O, not a multi-threaded system).
+For example:
+CLIENT_STATS c1
 
-You are creating a reliable component of Concurrent Rate Limiter & Traffic Shaper. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• ATOMIC_ACQUIRE <client_id> <tokens> <timestamp_ms> -> Executes atomic acquire. Returns 'ALLOWED <remaining>' or 'RATE_LIMITED'.
-• CLIENT_STATS <client_id> -> Returns 'STATS <client_id> ALLOWED <n> REJECTED <n> TOKENS <n>'.`,
+Your system prints out the exact historical record:
+STATS c1 ALLOWED 1 REJECTED 1 TOKENS 2`,
+      howItWorks: `When a request arrives:
+1. Perform the standard token bucket logic to check if tokens are available.
+2. If allowed, deduct the tokens AND increment an 'allowed' telemetry counter for that client.
+3. If rejected, do not deduct tokens, but increment a 'rejected' telemetry counter.
+4. When stats are requested, return the full ledger of these counters along with the current token balance.`,
       technicalTerms: [
         {
-                "term": "Tracking complete state per client",
-                "definition": ""
+          "term": "Telemetry",
+          "definition": "Automated collection of data and metrics (like allow/reject counts) for monitoring system health."
         },
         {
-                "term": "Zero",
-                "definition": "overshoot guarantees."
+          "term": "Atomic Update",
+          "definition": "Ensuring that checking the limit, deducting tokens, and updating metrics happen together safely."
         },
         {
-                "term": "Client rate telemetry",
-                "definition": "Total allowed, total rejected, current tokens."
+          "term": "Zero-overshoot",
+          "definition": "A strict guarantee that the system never allows more requests than the limit permits."
         }
 ],
-      description: `In Level 6 (Rate Limiting Telemetry & State Tracking), you engineer the core mechanisms for Concurrent Rate Limiter & Traffic Shaper.
+      description: `In production, it is not enough to just drop traffic; you must monitor it. If a legitimate customer is being rejected due to a misconfigured limit, engineers need exact metrics (allowed vs rejected counts) to diagnose the issue.
 
-Track rate limiter telemetry and state without overshooting limits. (Note: this is sequential state tracking in standard I/O, not a multi-threaded system).
-
-Core Engineering Problem: In distributed clusters, tracking exact allocations avoids race conditions. Even sequentially, you must ensure strict bounds.
-
-Key Mechanisms Implemented:
-• Tracking complete state per client.
-• Zero-overshoot guarantees.
-• Client rate telemetry: Total allowed, total rejected, current tokens.
-
-You master state tracking and operational telemetry for rate limiters.`,
+This level simulates tracking complete state telemetry atomically alongside the rate limiting decision. In real distributed systems (like Redis), these multi-step operations (check tokens, deduct, increment metrics) are bundled into atomic Lua scripts to prevent race conditions when thousands of requests hit simultaneously.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'ATOMIC_ACQUIRE <client_id> <tokens> <timestamp_ms>': Executes atomic acquire. Returns 'ALLOWED <remaining>' or 'RATE_LIMITED'.",
-        "Implement 'CLIENT_STATS <client_id>': Returns 'STATS <client_id> ALLOWED <n> REJECTED <n> TOKENS <n>'.",
-        "Enforce system constraints: All acquisitions must update client telemetry counters.",
-        "Format output according to the specification and flush standard output."
+        "Extend the client state dictionary to track {tokens, last_refill_ms, allowed_count, rejected_count}.",
+        "On 'ATOMIC_ACQUIRE', run the token bucket refill logic from Level 3.",
+        "If there are enough tokens, deduct them, increment allowed_count, and print 'ALLOWED <remaining>'.",
+        "If not enough tokens, increment rejected_count and print 'RATE_LIMITED'.",
+        "On 'CLIENT_STATS', recalculate the current tokens (lazy refill) to show the most up-to-date balance.",
+        "Print 'STATS <client> ALLOWED <allowed_count> REJECTED <rejected_count> TOKENS <current_tokens>'"
 ],
       diagram: `EVENT STREAM                              TELEMETRY / STATE CORE                 TELEMETRY / METRICS
 Event-1: ATOMIC_ACQUIRE c1 3 ──┐          ┌─────────────────────────────┐

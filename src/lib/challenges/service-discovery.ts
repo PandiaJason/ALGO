@@ -98,55 +98,45 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       title: "Service Registry & TTL Heartbeat Monitor",
       difficulty: "Easy",
       tagline: "Register services with IP:port, refresh heartbeats, and evict expired nodes.",
-      whatAreYouBuilding: `In this level, you build: Service Registry & TTL Heartbeat Monitor.
+      whatAreYouBuilding: `You are going to build a dynamic company phone directory.
 
-Register services with IP:port, refresh heartbeats, and evict expired nodes.
+Employees register their extension number. If they don't check in every 30 seconds, they're removed from the directory. Colleagues look up extensions by department name.
 
-You are creating a reliable component of Service Discovery & DNS Registry. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+register api i1 10.0.0.1 80 5000
+lookup api
 
-Supported Operations:
-• register <service> <id> <ip> <port> <ttl_ms> -> Registers an instance with heartbeat lease.
-• heartbeat <id> -> Refreshes TTL lease for instance.
-• lookup <service> -> Returns list of healthy IP:port endpoints.`,
+It should return the registered endpoints:
+REGISTER_OK
+ENDPOINTS: 10.0.0.1:80`,
+      howItWorks: `1. A service instance starts up and registers its IP and port with the registry.
+2. The registry stores the instance and assigns it a Time-To-Live (TTL) lease.
+3. The instance must send periodic heartbeats before the TTL expires.
+4. A background loop constantly checks for expired TTLs. If an instance hasn't checked in, it is evicted.
+5. When another service asks for the location of 'api', the registry returns all currently healthy endpoints.`,
       technicalTerms: [
         {
-                "term": "TTL (Time",
-                "definition": "To.Live) leases. nodes must send periodic heartbeat pings."
+          "term": "TTL (Time-To-Live) leases",
+          "definition": "A countdown timer. Services must ping the registry before it reaches zero to stay listed."
         },
         {
-                "term": "Background reaper loops",
-                "definition": "evicting instances that miss their TTL deadline."
+          "term": "Background reaper loop",
+          "definition": "A process that constantly sweeps the directory and removes anyone whose lease expired."
         },
         {
-                "term": "Multi",
-                "definition": "instance lookup. returning all healthy endpoints for a given service name."
+          "term": "Multi-instance lookup",
+          "definition": "Returning a list of all healthy endpoints for a given service name, allowing the caller to pick one."
         }
-],
-      description: `In Level 1 (Service Registry & TTL Heartbeat Monitor), you engineer the core mechanisms for Service Discovery & DNS Registry.
+      ],
+      description: `In cloud environments, IP addresses change constantly. A hardcoded configuration file is useless if the server crashes and restarts on a different machine. In Level 1, you build the foundation of dynamic service discovery.
 
-Register services with IP:port, refresh heartbeats, and evict expired nodes.
-
-Core Engineering Problem: How does a registry know when a microservice crashes silently without leaving a deregistration message?
-
-Key Mechanisms Implemented:
-• TTL (Time-To-Live) leases: nodes must send periodic heartbeat pings.
-• Background reaper loops: evicting instances that miss their TTL deadline.
-• Multi-instance lookup: returning all healthy endpoints for a given service name.
-
-You implement the core service catalog with automatic lease expiration.`,
+By forcing services to actively renew their leases via heartbeats, the registry acts as a source of truth for cluster health. If a server loses power and cannot deregister itself gracefully, the TTL ensures it is automatically removed from the catalog, preventing traffic from being routed to a dead machine.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'register <service> <id> <ip> <port> <ttl_ms>': Registers an instance with heartbeat lease.",
-        "Implement 'heartbeat <id>': Refreshes TTL lease for instance.",
-        "Implement 'lookup <service>': Returns list of healthy IP:port endpoints.",
-        "Enforce system constraints: Instantly evict nodes exceeding TTL; Support multiple instances per service.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement 'register <service> <id> <ip> <port> <ttl_ms>' to store the instance details and set its expiration time to current time + TTL.",
+        "Implement 'heartbeat <id>' to find the instance and reset its expiration time.",
+        "Implement 'lookup <service>' to filter and return all instances for that service whose expiration time is still in the future.",
+        "Implement 'tick <ms>' to advance time. When looking up, any instance whose expiration time is past the new current time is considered evicted."
+      ],
       diagram: `TTL HEARTBEAT LEASE ENGINE:
 
   Client Microservice              Registry Catalog Table
@@ -199,55 +189,44 @@ You implement the core service catalog with automatic lease expiration.`,
       title: "RFC 1035 UDP DNS Server",
       difficulty: "Medium",
       tagline: "Parse raw UDP DNS wire packets and return binary A & SRV records.",
-      whatAreYouBuilding: `In this level, you build: RFC 1035 UDP DNS Server.
+      whatAreYouBuilding: `You are going to make your directory accessible via standard DNS.
 
-Parse raw UDP DNS wire packets and return binary A & SRV records.
+Instead of using custom commands, services will just ask their operating system "Where is the API?". The OS sends a standard DNS query, and your directory will answer it using the exact same binary format that powers the internet.
 
-You are creating a reliable component of Service Discovery & DNS Registry. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+dns-query web.service.algo A
 
-Supported Operations:
-• dns-query <name> <type> -> Simulates DNS query for A or SRV records. Default built-in entries like web.service.algo or multi.service.algo may be queried without prior registration.
-• inspect-dns-packet <hex> -> Parses binary DNS query payload.
-• test-dns-compression -> Validates that DNS compression pointers are handled correctly.`,
+It should return the IP address:
+A_RECORD: 10.0.0.1 TTL: 5`,
+      howItWorks: `1. A client application needs to connect to 'auth.service.algo'.
+2. It sends a standard UDP DNS packet to port 53.
+3. Your server parses the binary packet header to understand the question.
+4. It looks up 'auth.service.algo' in its internal registry.
+5. It formats the IP addresses into binary 'A records' (or ports into 'SRV records').
+6. It sends the binary response back to the client.`,
       technicalTerms: [
         {
-                "term": "RFC 1035 DNS packet layout",
-                "definition": "Header (12 bytes), Question, Answer, Authority, Additional."
+          "term": "RFC 1035",
+          "definition": "The standard document that defines the exact byte layout of DNS packets."
         },
         {
-                "term": "Domain name label encoding ('3www4algo2io0')",
-                "definition": ""
+          "term": "A Record",
+          "definition": "A DNS answer that maps a domain name to an IPv4 address."
         },
         {
-                "term": "Binary serialization of type A (IPv4) and SRV (priority, weight, port, target) records",
-                "definition": ""
+          "term": "SRV Record",
+          "definition": "A DNS answer that maps a service to a specific port and hostname, crucial when services run on random ports."
         }
-],
-      description: `In Level 2 (RFC 1035 UDP DNS Server), you engineer the core mechanisms for Service Discovery & DNS Registry.
+      ],
+      description: `Why build a custom API when every operating system already knows how to find things? In Level 2, you implement the universal protocol of the internet: DNS.
 
-Parse raw UDP DNS wire packets and return binary A & SRV records.
-
-Core Engineering Problem: Why do systems use DNS on UDP port 53 for service discovery rather than HTTP REST APIs?
-
-Key Mechanisms Implemented:
-• RFC 1035 DNS packet layout: Header (12 bytes), Question, Answer, Authority, Additional.
-• Domain name label encoding ('3www4algo2io0').
-• Binary serialization of type A (IPv4) and SRV (priority, weight, port, target) records.
-
-You build an authoritative RFC 1035 DNS server resolving services directly over UDP.`,
+By speaking the RFC 1035 wire format over UDP, your service discovery system instantly becomes compatible with millions of existing applications. No custom SDKs are required; applications simply use standard HTTP clients, and the OS transparently queries your registry to find the correct microservices.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'dns-query <name> <type>': Simulates DNS query for A or SRV records. Default built-in entries like web.service.algo or multi.service.algo may be queried without prior registration.",
-        "Implement 'inspect-dns-packet <hex>': Parses binary DNS query payload.",
-        "Implement 'test-dns-compression': Validates that DNS compression pointers are handled correctly.",
-        "Enforce system constraints: Strict RFC 1035 header flags (QR, AA, RCODE); Binary-safe wire encoding.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement 'dns-query <name> <type>' to simulate receiving a DNS packet and looking up the requested name in your catalog.",
+        "If the type is 'A', return the IP address. If the type is 'SRV', return the port and target hostname.",
+        "If the domain does not exist in your catalog, return a standard NXDOMAIN error code.",
+        "If multiple instances exist, return them in a round-robin order to distribute load."
+      ],
       diagram: `RFC 1035 UDP DNS PACKET FLOW:
 
   DNS Client                     ALGO DNS Server (UDP Port 53)
@@ -301,55 +280,45 @@ You build an authoritative RFC 1035 DNS server resolving services directly over 
       title: "Flapping Node Damping & Split-Horizon DNS",
       difficulty: "Hard",
       tagline: "Suppress flapping nodes oscillating between up and down.",
-      whatAreYouBuilding: `In this level, you build: Flapping Node Damping & Split-Horizon DNS.
+      whatAreYouBuilding: `You are going to protect your directory from unreliable services.
 
-Suppress flapping nodes oscillating between up and down.
+Imagine an employee who unplugs and replugs their phone every 2 seconds. The directory would constantly be updating, confusing everyone. You will implement a penalty system that temporarily bans them from the directory until they stabilize.
 
-You are creating a reliable component of Service Discovery & DNS Registry. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+flap-instance i1 5
+check-suppression i1
 
-Supported Operations:
-• flap-instance <id> <times> -> Rapidly toggles instance between healthy and dead.
-• check-suppression <id> -> Reports whether instance is suppressed by flap damper.
-• tick-quiet-period <ms> -> Advances time to allow penalty decay for suppressed instances.`,
+It should suppress the node:
+FLAP_DETECTED penalty=500
+SUPPRESSED: TRUE`,
+      howItWorks: `1. When a service instance changes state (Up -> Down or Down -> Up), it gets penalty points.
+2. If it changes state too rapidly, the penalty points accumulate past a 'suppress threshold'.
+3. Once suppressed, the directory hides the instance from all DNS answers, even if it currently claims to be 'Up'.
+4. Over time, if the instance remains stable, the penalty points exponentially decay.
+5. Once the penalty drops below a 'reuse threshold', the instance is allowed back into the directory.`,
       technicalTerms: [
         {
-                "term": "Flap damping with hysteresis",
-                "definition": "accumulating penalty points on state changes."
+          "term": "Flap damping",
+          "definition": "A mechanism to temporarily ignore components that are rapidly changing state."
         },
         {
-                "term": "Suppress threshold",
-                "definition": "withholding flapping nodes from DNS responses until stable."
+          "term": "Hysteresis",
+          "definition": "Using different thresholds for suppressing and restoring a node to prevent it from flickering on the boundary."
         },
         {
-                "term": "Exponential decay of penalty points over quiet periods",
-                "definition": ""
+          "term": "Exponential decay",
+          "definition": "Gradually reducing penalty points over time so a previously unstable node can eventually be trusted again."
         }
-],
-      description: `In Level 3 (Flapping Node Damping & Split-Horizon DNS), you engineer the core mechanisms for Service Discovery & DNS Registry.
+      ],
+      description: `In large distributed systems, a node flickering between healthy and unhealthy is far more dangerous than a node that just dies. In Level 3, you build flap damping.
 
-Suppress flapping nodes oscillating between up and down.
-
-Core Engineering Problem: What happens when a sick service instance crashes and restarts every 2 seconds, causing millions of DNS cache flushes?
-
-Key Mechanisms Implemented:
-• Flap damping with hysteresis: accumulating penalty points on state changes.
-• Suppress threshold: withholding flapping nodes from DNS responses until stable.
-• Exponential decay of penalty points over quiet periods.
-
-You protect downstream microservices from routing thrashing and cascading failures.`,
+When an instance flaps, it triggers a flood of updates across the cluster, invalidating caches and spiking CPU usage. By applying hysteresis, you quarantine these unstable nodes. This prevents routing thrashing and acts as a circuit breaker, shielding the rest of the infrastructure from cascading failures caused by a single misbehaving component.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'flap-instance <id> <times>': Rapidly toggles instance between healthy and dead.",
-        "Implement 'check-suppression <id>': Reports whether instance is suppressed by flap damper.",
-        "Implement 'tick-quiet-period <ms>': Advances time to allow penalty decay for suppressed instances.",
-        "Enforce system constraints: Automatically suppress node after 3 rapid state changes; Exponential decay of penalty.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement a penalty counter for each instance. Add points every time 'flap-instance' is called.",
+        "Implement 'check-suppression <id>'. If the penalty points exceed a threshold, mark the instance as suppressed.",
+        "When generating DNS responses, completely exclude any instance that is currently suppressed.",
+        "Implement 'tick-quiet-period <ms>' to exponentially reduce the penalty points of suppressed instances based on the elapsed time."
+      ],
       diagram: `FLAP DAMPING HYSTERESIS STATE MACHINE:
 
   Node State Transitions:
@@ -402,55 +371,46 @@ You protect downstream microservices from routing thrashing and cascading failur
       title: "SWIM Gossip Protocol Node Membership",
       difficulty: "Hard",
       tagline: "Implement decentralized failure detection across a 50-node cluster.",
-      whatAreYouBuilding: `In this level, you build: SWIM Gossip Protocol Node Membership.
+      whatAreYouBuilding: `You are going to distribute the directory so it doesn't have a single point of failure.
 
-Implement decentralized failure detection across a 50-node cluster.
+Instead of one central boss checking attendance, the employees constantly gossip with random coworkers. "Hey, is Bob here?" If Bob doesn't answer, they ask Alice, "Hey, can you check on Bob?" The rumor that Bob is missing spreads exponentially fast.
 
-You are creating a reliable component of Service Discovery & DNS Registry. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+kill-node n3
+gossip-tick
+gossip-tick
 
-Supported Operations:
-• join-cluster <nodeId> -> Adds node to SWIM gossip mesh.
-• init-gossip-mesh <size> -> Initializes a gossip mesh of the specified size.
-• gossip-tick -> Runs one round of randomized ping and ping-req protocol.`,
+The cluster should detect the failure cooperatively:
+NODE n3 MARKED SUSPECT
+NODE n3 DECLARED DEAD (Cluster Notified)`,
+      howItWorks: `1. Every few milliseconds, a node picks a random peer and sends a direct 'ping'.
+2. If the peer replies with an 'ack', it is healthy.
+3. If the direct ping fails, the node asks a few other random peers to send an indirect 'ping-req' to the target.
+4. If all indirect pings fail, the node marks the target as 'suspect' and gossips this suspicion to everyone else.
+5. If the target doesn't refute the suspicion within a time limit, it is declared 'dead' and removed from the cluster.`,
       technicalTerms: [
         {
-                "term": "SWIM failure detector",
-                "definition": "randomized ping to member every T interval."
+          "term": "Gossip protocol",
+          "definition": "A decentralized way for nodes to share information by passing messages to random peers, similar to how rumors spread."
         },
         {
-                "term": "Indirect ping (ping",
-                "definition": "req) via k random peers if direct ping times out."
+          "term": "Indirect ping",
+          "definition": "Asking a third party to check on a node when your direct connection fails, helping bypass localized network glitches."
         },
         {
-                "term": "Suspicion mechanism",
-                "definition": "placing unconfirmed nodes in SUSPECT state before declaring DEAD."
+          "term": "Suspicion mechanism",
+          "definition": "Giving a node a grace period to prove it is alive before permanently kicking it out."
         }
-],
-      description: `In Level 4 (SWIM Gossip Protocol Node Membership), you engineer the core mechanisms for Service Discovery & DNS Registry.
+      ],
+      description: `Centralized registries become severe bottlenecks as a cluster grows to tens of thousands of nodes. In Level 4, you implement SWIM, a decentralized membership protocol.
 
-Implement decentralized failure detection across a 50-node cluster.
-
-Core Engineering Problem: Why does centralized heartbeat monitoring fail at 10,000 nodes, and how does SWIM gossip scale linearly?
-
-Key Mechanisms Implemented:
-• SWIM failure detector: randomized ping to member every T interval.
-• Indirect ping (ping-req) via k random peers if direct ping times out.
-• Suspicion mechanism: placing unconfirmed nodes in SUSPECT state before declaring DEAD.
-
-You master decentralized, weakly-consistent cluster membership protocols.`,
+Traditional heartbeating requires O(N) messages per node, causing network congestion. SWIM requires O(1) messages by relying on random probing and epidemic dissemination. The indirect pinging mechanism is particularly brilliant: it elegantly handles asymmetric network partitions where Node A cannot reach Node B, but Node C can reach both.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'join-cluster <nodeId>': Adds node to SWIM gossip mesh.",
-        "Implement 'init-gossip-mesh <size>': Initializes a gossip mesh of the specified size.",
-        "Implement 'gossip-tick': Runs one round of randomized ping and ping-req protocol.",
-        "Enforce system constraints: O(1) message overhead per node per period; Zero false positives on transient network delay.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement 'init-gossip-mesh <size>' to set up a cluster of N nodes.",
+        "Implement 'gossip-tick' to run one protocol round: Node A picks a random Node B and pings it.",
+        "If Node B is killed (via 'kill-node <nodeId>'), the direct ping fails. Node A must attempt an indirect ping via a third Node C.",
+        "If the indirect ping also fails, mark Node B as suspect. After another tick, declare it dead."
+      ],
       diagram: `SWIM GOSSIP FAILURE DETECTION PROTOCOL:
 
   Round t: Node A probes Node B:
@@ -510,55 +470,40 @@ You master decentralized, weakly-consistent cluster membership protocols.`,
       title: "Convergence Time & DNS Latency Profiling",
       difficulty: "Hard",
       tagline: "Measure cluster gossip convergence time and DNS QPS.",
-      whatAreYouBuilding: `In this level, you build: Convergence Time & DNS Latency Profiling.
+      whatAreYouBuilding: `You are going to measure how fast rumors spread and how much traffic the directory can handle.
 
-Measure cluster gossip convergence time and DNS QPS.
+You will measure exactly how many seconds it takes for a rumor to reach all 50 employees, and benchmark how many phone book lookups the system can process per second.
 
-You are creating a reliable component of Service Discovery & DNS Registry. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+measure-convergence 50
 
-Supported Operations:
-• bench-dns-qps <threads> -> Measures DNS queries resolved per second.
-• measure-convergence <nodes> -> Measures rounds required for full cluster convergence.
-• measure-dns-tail-latency -> Measures the p99 tail latency for DNS queries.`,
+The cluster should converge logarithmically:
+ROUNDS: < 10`,
+      howItWorks: `1. You run a benchmark simulating 50 nodes gossiping. You measure how many protocol rounds it takes for a single failure event to be known by 100% of the nodes (convergence time).
+2. You run a DNS throughput benchmark, flooding the server with queries to measure Queries Per Second (QPS).
+3. You measure the tail latency (p99), ensuring that 99% of queries are answered in under a fraction of a millisecond.`,
       technicalTerms: [
         {
-                "term": "Epidemic gossip dissemination mathematics (O(log N) rounds to complete convergence)",
-                "definition": ""
+          "term": "Convergence time",
+          "definition": "The time required for all nodes in a cluster to reach an identical understanding of the cluster's state."
         },
         {
-                "term": "DNS query latency percentiles (p50, p95, p99)",
-                "definition": ""
+          "term": "O(log N) dissemination",
+          "definition": "Because gossip spreads exponentially, the time to reach everyone grows very slowly even as the cluster gets huge."
         },
         {
-                "term": "Measuring UDP packet drop rates under high socket buffer saturation",
-                "definition": ""
+          "term": "p99 tail latency",
+          "definition": "The maximum time taken by the fastest 99% of requests. A critical metric for guaranteeing consistent performance."
         }
-],
-      description: `In Level 5 (Convergence Time & DNS Latency Profiling), you engineer the core mechanisms for Service Discovery & DNS Registry.
+      ],
+      description: `A distributed system is only as good as its measurable Service Level Agreements (SLAs). In Level 5, you profile the mathematical properties of your architecture.
 
-Measure cluster gossip convergence time and DNS QPS.
-
-Core Engineering Problem: How many seconds does it take for 50 nodes to learn that a node died, and what is DNS query latency under load?
-
-Key Mechanisms Implemented:
-• Epidemic gossip dissemination mathematics (O(log N) rounds to complete convergence).
-• DNS query latency percentiles (p50, p95, p99).
-• Measuring UDP packet drop rates under high socket buffer saturation.
-
-You quantify distributed failure detection speed and benchmark DNS throughput.`,
+You will prove experimentally that gossip protocols spread information in O(log N) time, demonstrating how epidemic algorithms scale effortlessly. By benchmarking DNS latency, you ensure your service discovery layer is essentially invisible, adding zero measurable overhead to inter-service communication.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'bench-dns-qps <threads>': Measures DNS queries resolved per second.",
-        "Implement 'measure-convergence <nodes>': Measures rounds required for full cluster convergence.",
-        "Implement 'measure-dns-tail-latency': Measures the p99 tail latency for DNS queries.",
-        "Enforce system constraints: DNS latency p99 under 0.5ms; Gossip convergence within O(log N) rounds.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement 'measure-convergence <nodes>' to simulate gossip rounds until all nodes share the same state, ensuring it stays under 10 rounds for 50 nodes.",
+        "Implement 'bench-dns-qps <threads>' to measure how many lookups your catalog can handle per second.",
+        "Implement 'measure-dns-tail-latency' to record the response times and calculate the 99th percentile latency."
+      ],
       diagram: `EPIDEMIC GOSSIP DISSEMINATION vs DNS QPS:
 
   Epidemic Spread Timeline (50 nodes):
@@ -609,55 +554,43 @@ You quantify distributed failure detection speed and benchmark DNS throughput.`,
       title: "Lock-Free Routing Tables & UDP Zero-Copy",
       difficulty: "Hard",
       tagline: "Eliminate mutex contention using RCU atomic pointer swaps for route tables.",
-      whatAreYouBuilding: `In this level, you build: Lock-Free Routing Tables & UDP Zero-Copy.
+      whatAreYouBuilding: `You are going to optimize the directory so it can handle 100,000 lookups per second without freezing.
 
-Eliminate mutex contention using RCU atomic pointer swaps for route tables.
+Imagine handing out a read-only photocopy of the phonebook to everyone. When the directory updates, you don't snatch the books away. You print a brand new master copy, and then swap out the old ones instantly. No one has to wait in line to read the book.
 
-You are creating a reliable component of Service Discovery & DNS Registry. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+enable-rcu-tables
+bench-concurrent-dns 16
 
-Supported Operations:
-• enable-rcu-tables -> Switches catalog to atomic snapshot RCU tables.
-• bench-concurrent-dns <workers> -> Tests DNS throughput under concurrent writes and reads.
-• test-atomic-swap -> Verifies the safety of lock-free RCU table swaps.`,
+It should perform lock-free resolution:
+THROUGHPUT: 125,000 QPS (Zero lock contention)`,
+      howItWorks: `1. Standard systems use "locks" (mutexes) to prevent reading the catalog while it is being updated, which slows down all DNS queries.
+2. Instead, you create a system where the active catalog is entirely read-only.
+3. When gossip detects a failure, the background writer makes a private copy of the catalog, updates the copy, and then atomically swaps a single pointer to make the new copy active.
+4. Readers never wait for writers. They always read a consistent, lock-free snapshot.`,
       technicalTerms: [
         {
-                "term": "Read",
-                "definition": "Copy.Update (RCU) architecture. atomic pointer swap for updates, lock.free reads."
+          "term": "Read-Copy-Update (RCU)",
+          "definition": "An optimization strategy that avoids locks by allowing reads to proceed concurrently with updates, swapping pointers atomically."
         },
         {
-                "term": "Zero",
-                "definition": "allocation UDP response formatting."
+          "term": "Mutex contention",
+          "definition": "When thousands of threads are blocked waiting their turn to read a locked data structure."
         },
         {
-                "term": "Batching UDP packet reads using Linux recvmmsg/sendmmsg syscalls",
-                "definition": ""
+          "term": "Atomic pointer swap",
+          "definition": "An indivisible CPU instruction that changes a memory address without any possibility of interruption."
         }
-],
-      description: `In Level 6 (Lock-Free Routing Tables & UDP Zero-Copy), you engineer the core mechanisms for Service Discovery & DNS Registry.
+      ],
+      description: `In high-throughput infrastructure, traditional mutex locks cause catastrophic CPU cache invalidations and thread blocking. In Level 6, you implement lock-free concurrency.
 
-Eliminate mutex contention using RCU atomic pointer swaps for route tables.
-
-Core Engineering Problem: Why do read-write locks (std::shared_mutex) cause severe cache line bouncing under 100,000 DNS queries/sec?
-
-Key Mechanisms Implemented:
-• Read-Copy-Update (RCU) architecture: atomic pointer swap for updates, lock-free reads.
-• Zero-allocation UDP response formatting.
-• Batching UDP packet reads using Linux recvmmsg/sendmmsg syscalls.
-
-You achieve lock-free routing resolution and maximize UDP network packet processing.`,
+By adopting the Read-Copy-Update (RCU) pattern used heavily in the Linux kernel, you completely decouple the read path (DNS resolution) from the write path (Gossip updates). This guarantees that a storm of network failures will never impact the latency of DNS lookups, achieving the ultimate goal of constant-time performance under extreme duress.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'enable-rcu-tables': Switches catalog to atomic snapshot RCU tables.",
-        "Implement 'bench-concurrent-dns <workers>': Tests DNS throughput under concurrent writes and reads.",
-        "Implement 'test-atomic-swap': Verifies the safety of lock-free RCU table swaps.",
-        "Enforce system constraints: Zero lock contention on read queries; Atomic route table swap.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement 'enable-rcu-tables' to switch the catalog data structure.",
+        "Create a global pointer to the active catalog snapshot.",
+        "For updates, deep-copy the catalog, apply changes, and use an atomic operation to swap the global pointer to the new copy.",
+        "Implement 'bench-concurrent-dns <workers>' to verify that throughput drastically increases when read locks are eliminated."
+      ],
       diagram: `READ-COPY-UPDATE (RCU) LOCK-FREE CATALOG:
 
   Active Routing Pointer:

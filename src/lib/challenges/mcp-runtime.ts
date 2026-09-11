@@ -98,53 +98,42 @@ export const mcpRuntimeChallenge: ChallengeData = {
       title: "JSON-RPC 2.0 Stdio Transport & Tool Discovery",
       difficulty: "Easy",
       tagline: "Handle JSON-RPC 2.0 initialize, tools/list, and tools/call over stdin/stdout.",
-      whatAreYouBuilding: `In this level, you build: JSON-RPC 2.0 Stdio Transport & Tool Discovery.
+      whatAreYouBuilding: `You are going to build the communication system that lets an AI talk to external tools.
 
-Handle JSON-RPC 2.0 initialize, tools/list, and tools/call over stdin/stdout.
+Think of it like a universal TV remote that can control any device. Tools are the buttons on the remote, JSON-RPC is the infrared signal format, and the runtime routes button presses to the right device.
 
-You are creating a reliable component of Model Context Protocol (MCP) Runtime. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+send-rpc {"jsonrpc": "2.0", "method": "ping", "id": 1}
 
-Supported Operations:
-• send-rpc <json> -> Sends a raw JSON-RPC string over stdin. For notifications (no 'id' field), prints NOTIFICATION_ACK.
-• register-tool <name> <description> -> Registers an executable tool into the runtime.`,
+It should return a properly formatted response:
+{"jsonrpc": "2.0", "id": 1, "result": "pong"}`,
+      howItWorks: `1. The AI decides it wants to do something (like check the weather) and formats a message in JSON.
+2. The runtime reads the JSON string and validates that it has the correct 'jsonrpc', 'method', and 'id' fields.
+3. If the message is valid, it processes the request and sends back a JSON response with the same 'id'.
+4. If the message is malformed, it sends back a standard JSON-RPC error code (like -32700 for Parse Error).`,
       technicalTerms: [
         {
-                "term": "JSON",
-                "definition": "RPC 2.0 message specification. jsonrpc, id, method, params."
+          "term": "JSON-RPC 2.0",
+          "definition": "A standard specification for sending commands and receiving answers using JSON over any transport layer."
         },
         {
-                "term": "MCP capability negotiation during the 'initialize' handshake",
-                "definition": ""
+          "term": "RPC Request",
+          "definition": "A message containing a 'method' name and optional 'params', along with an 'id' to track the response."
         },
         {
-                "term": "Listing available tools and executing a basic 'echo' tool",
-                "definition": ""
+          "term": "Parse Error (-32700)",
+          "definition": "A standard error code returned when the incoming string is not valid JSON."
         }
-],
-      description: `In Level 1 (JSON-RPC 2.0 Stdio Transport & Tool Discovery), you engineer the core mechanisms for Model Context Protocol (MCP) Runtime.
+      ],
+      description: `Large Language Models live in a sandbox; they cannot natively interact with the outside world. In Level 1, you build the foundation of the Model Context Protocol (MCP): the JSON-RPC layer.
 
-Handle JSON-RPC 2.0 initialize, tools/list, and tools/call over stdin/stdout.
-
-Core Engineering Problem: How do processes communicate over stdio pipes without interleaving or corrupting JSON message boundaries?
-
-Key Mechanisms Implemented:
-• JSON-RPC 2.0 message specification: jsonrpc, id, method, params.
-• MCP capability negotiation during the 'initialize' handshake.
-• Listing available tools and executing a basic 'echo' tool.
-
-You implement the foundational transport and capability discovery of MCP.`,
+JSON-RPC 2.0 is a stateless, lightweight remote procedure call protocol. By implementing strict parsing and standard error codes, you ensure that the LLM and the external tools speak exactly the same language, preventing catastrophic formatting errors when the AI tries to execute a command.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'send-rpc <json>': Sends a raw JSON-RPC string over stdin. For notifications (no 'id' field), prints NOTIFICATION_ACK.",
-        "Implement 'register-tool <name> <description>': Registers an executable tool into the runtime.",
-        "Enforce system constraints: Strict JSON-RPC 2.0 compliance; Echo exact request id in response.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement 'send-rpc <json_string>'. Parse the string using a JSON library.",
+        "Validate that the object contains `\"jsonrpc\": \"2.0\"`, a `method` string, and an `id`.",
+        "Implement a 'ping' method that returns `{\"jsonrpc\": \"2.0\", \"id\": <id>, \"result\": \"pong\"}`.",
+        "If parsing fails or fields are missing, return the corresponding standard JSON-RPC error objects."
+      ],
       diagram: `STDIO JSON-RPC 2.0 FRAMING & TOOL DISCOVERY:
 
 Client (AI Agent)                       MCP Host Runtime
@@ -202,55 +191,44 @@ Client (AI Agent)                       MCP Host Runtime
       title: "Resource Templates & Dynamic Context Providers",
       difficulty: "Medium",
       tagline: "Resolve URI resource templates and stream contextual data to agents.",
-      whatAreYouBuilding: `In this level, you build: Resource Templates & Dynamic Context Providers.
+      whatAreYouBuilding: `You are going to let the universal remote learn new buttons.
 
-Resolve URI resource templates and stream contextual data to agents.
+You will build a system where a new device (like a smart bulb) can tell the remote, "Here are the buttons you can press to control me."
 
-You are creating a reliable component of Model Context Protocol (MCP) Runtime. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+register-tool get_weather {"location": "string"}
+call-tool get_weather {"location": "London"}
 
-Supported Operations:
-• register-resource <uriTemplate> <mime> -> Registers a dynamic resource template handler.
-• read-resource <uri> -> Fetches context content for designated URI (tested via send-rpc resources/read).
-• subscribe-resource <uri> -> Subscribes client to resource updates.`,
+It should execute the registered tool:
+TOOL_EXECUTED: get_weather
+RESULT: "Sunny, 20C"`,
+      howItWorks: `1. An external tool registers itself with the runtime, providing its name and a schema describing the arguments it requires.
+2. The runtime stores this tool in an internal dictionary.
+3. When the AI wants to use a tool, it sends a 'call-tool' RPC request with the tool name and arguments.
+4. The runtime looks up the tool in the dictionary, passes the arguments to it, and returns the tool's output back to the AI.`,
       technicalTerms: [
         {
-                "term": "MCP Resources specification",
-                "definition": "resources/list and resources/read."
+          "term": "Dynamic Dispatch",
+          "definition": "Looking up and executing a function at runtime based on a string name rather than hardcoding the function call."
         },
         {
-                "term": "URI template matching (e",
-                "definition": "g. file.///logs/{date}.log or cpp.//scope/{symbol})."
+          "term": "JSON Schema",
+          "definition": "A standard way to describe the required format and data types of JSON objects."
         },
         {
-                "term": "Returning MIME",
-                "definition": "typed text or binary blobs inside resource contents."
+          "term": "Tool Registry",
+          "definition": "An internal dictionary or map that stores all available tools and their metadata."
         }
-],
-      description: `In Level 2 (Resource Templates & Dynamic Context Providers), you engineer the core mechanisms for Model Context Protocol (MCP) Runtime.
+      ],
+      description: `Hardcoding tools into an AI's prompt is unscalable. In Level 2, you implement dynamic tool registration, the core feature of the MCP.
 
-Resolve URI resource templates and stream contextual data to agents.
-
-Core Engineering Problem: How does an agent read file or database schemas without executing heavy shell commands?
-
-Key Mechanisms Implemented:
-• MCP Resources specification: resources/list and resources/read.
-• URI template matching (e.g. file:///logs/{date}.log or cpp://scope/{symbol}).
-• Returning MIME-typed text or binary blobs inside resource contents.
-
-You implement structured resource template resolution for contextual perception.`,
+By allowing tools to register themselves dynamically via JSON Schema, you create a plugin architecture. The AI can now ask "What tools are available?" and adapt its behavior on the fly based on the specific capabilities of the environment it is currently running in, whether that's a code editor, a database, or a web browser.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'register-resource <uriTemplate> <mime>': Registers a dynamic resource template handler.",
-        "Implement 'read-resource <uri>': Fetches context content for designated URI (tested via send-rpc resources/read).",
-        "Implement 'subscribe-resource <uri>': Subscribes client to resource updates.",
-        "Enforce system constraints: Handle parameterized URI patterns; Return 404 resource not found on invalid URI.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement 'register-tool <name> <schema_json>' to store the tool metadata and an execution callback in a dictionary.",
+        "Implement 'list-tools' to return an array of all registered tools and their schemas.",
+        "Implement 'call-tool <name> <args_json>'. Look up the tool in the dictionary. If it doesn't exist, return a Method Not Found (-32601) error.",
+        "If it exists, execute the callback with the arguments and return the result."
+      ],
       diagram: `URI RESOURCE TEMPLATE MATCHING & CONTEXT RESOLUTION:
 
 Client (Context Resolver)                    Resource Router Engine
@@ -315,55 +293,43 @@ Client (Context Resolver)                    Resource Router Engine
       title: "Schema Validation & Zombie Subprocess Reaping",
       difficulty: "Hard",
       tagline: "Enforce strict JSON Schema and terminate runaway tools.",
-      whatAreYouBuilding: `In this level, you build: Schema Validation & Zombie Subprocess Reaping.
+      whatAreYouBuilding: `You are going to build a safety guard that stops the AI from pressing the wrong buttons.
 
-Enforce strict JSON Schema and terminate runaway tools.
+If a tool expects a number for "brightness", but the AI accidentally sends the word "very bright", the guard will reject it and tell the AI to fix its mistake.
 
-You are creating a reliable component of Model Context Protocol (MCP) Runtime. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+register-tool set_light {"brightness": "number"}
+call-tool set_light {"brightness": "high"}
 
-Supported Operations:
-• set-tool-timeout <ms> -> Configures hard execution timeout for all tool subprocesses.
-• execute-tool-sandboxed <name> <args> -> Executes tool under strict timeout and schema verification.
-• check-tool-zombies -> Verifies no zombie processes are left on host.`,
+It should reject the invalid argument:
+INVALID_PARAMS: "brightness" expected number, got string`,
+      howItWorks: `1. The AI attempts to call a tool with a set of arguments.
+2. Before running the tool, the runtime compares the provided arguments against the tool's registered JSON Schema.
+3. It checks if all required fields are present and if the data types match (e.g., number vs string).
+4. If the arguments are invalid, it blocks the execution and returns a descriptive error to the AI so the AI can correct itself.`,
       technicalTerms: [
         {
-                "term": "JSON Schema validation",
-                "definition": "verifying required properties, types, and ranges before execution."
+          "term": "Schema Validation",
+          "definition": "The process of verifying that a JSON object perfectly matches a set of predefined rules."
         },
         {
-                "term": "Subprocess timeout deadlines (e",
-                "definition": "g. 50ms max execution)."
+          "term": "Type Coercion",
+          "definition": "Attempting to automatically convert one data type to another (e.g., converting the string '5' into the integer 5)."
         },
         {
-                "term": "Sending SIGKILL and reaping child process zombie descriptors when tools exceed time budgets",
-                "definition": ""
+          "term": "Hallucination",
+          "definition": "When an AI confidently generates incorrect or imaginary information, such as inventing non-existent tool arguments."
         }
-],
-      description: `In Level 3 (Schema Validation & Zombie Subprocess Reaping), you engineer the core mechanisms for Model Context Protocol (MCP) Runtime.
+      ],
+      description: `LLMs are probabilistic text generators; they frequently hallucinate incorrect JSON structures or make up non-existent arguments. In Level 3, you implement strict schema validation.
 
-Enforce strict JSON Schema and terminate runaway tools.
-
-Core Engineering Problem: What stops a tool from getting stuck in an infinite while loop and freezing the entire AI agent forever?
-
-Key Mechanisms Implemented:
-• JSON Schema validation: verifying required properties, types, and ranges before execution.
-• Subprocess timeout deadlines (e.g. 50ms max execution).
-• Sending SIGKILL and reaping child process zombie descriptors when tools exceed time budgets.
-
-You protect agents against malformed parameters and runaway zombie subprocesses.`,
+You cannot trust the AI's output. By enforcing rigorous type checking before executing a tool, you protect backend systems from crashing. Providing detailed error messages back to the LLM is crucial, as modern models are capable of reading the error, realizing their mistake, and automatically retrying with the correct types.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'set-tool-timeout <ms>': Configures hard execution timeout for all tool subprocesses.",
-        "Implement 'execute-tool-sandboxed <name> <args>': Executes tool under strict timeout and schema verification.",
-        "Implement 'check-tool-zombies': Verifies no zombie processes are left on host.",
-        "Enforce system constraints: Strict 50ms execution deadline; Zero zombie processes left on host.",
-        "Format output according to the specification and flush standard output."
-],
+        "Integrate a JSON Schema validator into your 'call-tool' flow.",
+        "When arguments are received, validate them against the schema stored during 'register-tool'.",
+        "Check for missing required properties, incorrect types, and unexpected additional properties.",
+        "If validation fails, return an Invalid Params (-32602) error containing a string explaining exactly which field failed."
+      ],
       diagram: `SCHEMA VALIDATION & SUBPROCESS TIMEOUT ISOLATION:
 
 Incoming "tools/call"
@@ -425,55 +391,45 @@ Incoming "tools/call"
       title: "Multi-Agent Parallel Tool Orchestration",
       difficulty: "Hard",
       tagline: "Concurrently dispatch 50 tool executions across multiple agents.",
-      whatAreYouBuilding: `In this level, you build: Multi-Agent Parallel Tool Orchestration.
+      whatAreYouBuilding: `You are going to allow the remote to do long tasks without freezing.
 
-Concurrently dispatch 50 tool executions across multiple agents.
+If you press a button to download a movie, the remote shouldn't freeze and ignore all other buttons while it waits for the download to finish.
 
-You are creating a reliable component of Model Context Protocol (MCP) Runtime. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+call-tool-async slow_database_query {"id": 123}
+ping
 
-Supported Operations:
-• dispatch-parallel <count> -> Fires N simultaneous tool requests across worker pool.
-• cancel-request <id> -> Cancels active in-flight tool execution.
-• dispatch-long-job id=<id> -> Dispatches a job that runs long enough to be cancelled.`,
+It should answer the ping while the query is still running:
+PONG (Request 2)
+...
+TOOL_EXECUTED: slow_database_query (Request 1)`,
+      howItWorks: `1. The AI calls a tool that takes a long time (like fetching a webpage).
+2. The runtime starts the tool but immediately returns control to the main loop (using Promises or async/await).
+3. The runtime can process other requests (like 'ping') while the slow tool is still running in the background.
+4. When the slow tool finally finishes, the runtime sends its specific response back to the AI.`,
       technicalTerms: [
         {
-                "term": "Asynchronous task IDs",
-                "definition": "correlating responses to requests via unique JSON.RPC ids."
+          "term": "Asynchronous execution",
+          "definition": "Starting a task and moving on to other work before the task is finished."
         },
         {
-                "term": "Non",
-                "definition": "blocking worker pool. executing independent tools concurrently."
+          "term": "Non-blocking I/O",
+          "definition": "Operations (like reading a file or making a network request) that do not freeze the application while waiting for data."
         },
         {
-                "term": "Request cancellation",
-                "definition": "routing 'notifications/cancelled' to terminate target jobs."
+          "term": "Event loop",
+          "definition": "The core mechanism that monitors asynchronous tasks and triggers callbacks when they complete."
         }
-],
-      description: `In Level 4 (Multi-Agent Parallel Tool Orchestration), you engineer the core mechanisms for Model Context Protocol (MCP) Runtime.
+      ],
+      description: `Real-world tools like database queries or web searches take time. In Level 4, you upgrade the MCP runtime to handle asynchronous operations.
 
-Concurrently dispatch 50 tool executions across multiple agents.
-
-Core Engineering Problem: When 5 subagents call search, git, and compiler tools simultaneously, how do you prevent thread contention?
-
-Key Mechanisms Implemented:
-• Asynchronous task IDs: correlating responses to requests via unique JSON-RPC ids.
-• Non-blocking worker pool: executing independent tools concurrently.
-• Request cancellation: routing 'notifications/cancelled' to terminate target jobs.
-
-You scale tool execution to multi-agent parallel workflows.`,
+If the runtime blocks the main thread while waiting for a tool to finish, the entire system stalls, causing timeouts and broken connections. By leveraging non-blocking I/O and asynchronous event loops, your runtime can handle multiple concurrent tool executions, allowing the AI to dispatch parallel tasks and dramatically speeding up complex workflows.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'dispatch-parallel <count>': Fires N simultaneous tool requests across worker pool.",
-        "Implement 'cancel-request <id>': Cancels active in-flight tool execution.",
-        "Implement 'dispatch-long-job id=<id>': Dispatches a job that runs long enough to be cancelled.",
-        "Enforce system constraints: Correct request ID correlation; Cancel request must immediately free worker.",
-        "Format output according to the specification and flush standard output."
-],
+        "Update your 'call-tool' implementation to support returning Promises (or async/await).",
+        "Ensure that your main message-processing loop does not block while awaiting the Promise.",
+        "Implement a test tool 'sleep <ms>' that uses setTimeout to delay its response.",
+        "Verify that sending a 'sleep' command followed immediately by a 'ping' results in the 'ping' response arriving first."
+      ],
       diagram: `CONCURRENT ASYNC TOOL DISPATCH & CANCELLATION:
 
 Agent 1 (id: 101) ──┐
@@ -534,55 +490,46 @@ Agent 3 (id: 103) ──┘        │
       title: "Protocol Overhead & Dispatch Profiling",
       difficulty: "Hard",
       tagline: "Measure microsecond JSON-RPC framing tax vs tool execution.",
-      whatAreYouBuilding: `In this level, you build: Protocol Overhead & Dispatch Profiling.
+      whatAreYouBuilding: `You are going to replace the single wire with a live, two-way radio.
 
-Measure microsecond JSON-RPC framing tax vs tool execution.
+Instead of the AI asking a question and waiting for a single answer, both the AI and the tools can stream data back and forth continuously over an open connection.
 
-You are creating a reliable component of Model Context Protocol (MCP) Runtime. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+connect-sse
+stream-status
 
-Supported Operations:
-• profile-tool-overhead -> Benchmarks round-trip latency of an empty no-op tool call.
-• bench-dispatch-qps <threads> -> Measures tool dispatches per second under multi-threaded load.
-• measure-p99-dispatch -> Measures the p99 tail latency for tool dispatch.`,
+It should receive real-time updates without polling:
+SSE_CONNECTED
+EVENT: progress 10%
+EVENT: progress 50%
+EVENT: progress 100%`,
+      howItWorks: `1. The client establishes a continuous HTTP connection using Server-Sent Events (SSE).
+2. The server keeps the connection open indefinitely.
+3. When the server wants to send data (like progress updates), it pushes text starting with 'data: ' directly to the client.
+4. The client receives these events instantly without having to constantly ask "Are you done yet?".`,
       technicalTerms: [
         {
-                "term": "JSON",
-                "definition": "RPC protocol tax. serialization, schema parsing, and pipe context switches."
+          "term": "Server-Sent Events (SSE)",
+          "definition": "A web standard allowing servers to push real-time updates to a client over a single HTTP connection."
         },
         {
-                "term": "Measuring p50, p95, p99 dispatch latency",
-                "definition": ""
+          "term": "Streaming",
+          "definition": "Delivering data incrementally as it is generated, rather than waiting for the entire batch to finish."
         },
         {
-                "term": "Quantifying CPU heap allocations during high",
-                "definition": "frequency agent tool calls."
+          "term": "Polling",
+          "definition": "The inefficient practice of a client repeatedly asking a server for updates. SSE eliminates the need for polling."
         }
-],
-      description: `In Level 5 (Protocol Overhead & Dispatch Profiling), you engineer the core mechanisms for Model Context Protocol (MCP) Runtime.
+      ],
+      description: `Standard HTTP is request-response: the client asks, the server answers, and the connection closes. In Level 5, you implement the official MCP transport layer: Server-Sent Events (SSE).
 
-Measure microsecond JSON-RPC framing tax vs tool execution.
-
-Core Engineering Problem: How much latency does JSON string serialization add compared to raw binary IPC?
-
-Key Mechanisms Implemented:
-• JSON-RPC protocol tax: serialization, schema parsing, and pipe context switches.
-• Measuring p50, p95, p99 dispatch latency.
-• Quantifying CPU heap allocations during high-frequency agent tool calls.
-
-You measure empirical tool execution latency and isolate serialization bottlenecks.`,
+SSE provides a lightweight, unidirectional stream from the server to the client, perfectly suited for LLM generation tokens or tool progress updates. Combined with standard HTTP POST requests for client-to-server communication, SSE creates a highly efficient, real-time bidirectional channel that avoids the heavy overhead of WebSockets while easily bypassing corporate firewalls.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'profile-tool-overhead': Benchmarks round-trip latency of an empty no-op tool call.",
-        "Implement 'bench-dispatch-qps <threads>': Measures tool dispatches per second under multi-threaded load.",
-        "Implement 'measure-p99-dispatch': Measures the p99 tail latency for tool dispatch.",
-        "Enforce system constraints: Dispatch overhead under 0.8ms; Microsecond latency accuracy.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement an HTTP endpoint `/sse` that sets the `Content-Type: text/event-stream` header and keeps the connection open.",
+        "Implement a mechanism to push strings formatted as 'data: <json_string>\\n\\n' to the connected client.",
+        "Update your long-running tools to periodically emit progress events to the SSE stream.",
+        "Ensure the connection is safely closed and resources are cleaned up when the client disconnects."
+      ],
       diagram: `DISPATCH LATENCY BREAKDOWN & METRICS PROFILING:
 
 Round-Trip Tool Call Timeline (Total Overhead: 0.75ms):
@@ -641,55 +588,45 @@ Round-Trip Tool Call Timeline (Total Overhead: 0.75ms):
       title: "Zero-Copy JSON Stream Parsing & Fast Dispatch",
       difficulty: "Hard",
       tagline: "Achieve sub-0.1ms tool dispatch using SIMD JSON parsing and buffer recycling.",
-      whatAreYouBuilding: `In this level, you build: Zero-Copy JSON Stream Parsing & Fast Dispatch.
+      whatAreYouBuilding: `You are going to prevent the AI from getting overwhelmed by too much information.
 
-Achieve sub-0.1ms tool dispatch using SIMD JSON parsing and buffer recycling.
+If the AI asks to read a 1,000-page book, the runtime won't throw the whole book at it at once. It will give the AI page 1, and teach the AI how to ask for page 2.
 
-You are creating a reliable component of Model Context Protocol (MCP) Runtime. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+read-resource massive_log_file --limit 100
+read-resource massive_log_file --cursor "page_2"
 
-Supported Operations:
-• enable-simd-parser -> Activates SIMD-accelerated zero-copy JSON tokenizer.
-• bench-fast-dispatch 10000 -> Measures 10,000 tool dispatches through optimized pipeline.
-• verify-zero-allocs -> Checks that no heap allocations occur during hot-path dispatch.`,
+It should return paginated chunks:
+RESOURCE_CHUNK 1: "Log lines 1-100..."
+NEXT_CURSOR: "page_2"`,
+      howItWorks: `1. An external tool wants to return a massive amount of data (like a gigabyte log file).
+2. The runtime intercepts the data and chops it into a small 'page' (e.g., 100 items).
+3. It sends this page to the AI, along with a special 'cursor' (a bookmark).
+4. If the AI wants to read more, it calls the tool again, providing the cursor.
+5. The runtime uses the cursor to fetch the exact next page of data.`,
       technicalTerms: [
         {
-                "term": "SIMD structural indexing",
-                "definition": "finding quotes, colons, and braces in 64.byte chunks with vector intrinsics."
+          "term": "Context Window",
+          "definition": "The maximum number of words (tokens) an AI can hold in its memory at one time."
         },
         {
-                "term": "Zero",
-                "definition": "copy string views directly referencing input stdin buffers."
+          "term": "Cursor-based pagination",
+          "definition": "Using a unique pointer (bookmark) to fetch the next sequential chunk of data, which is faster and safer than offset pagination."
         },
         {
-                "term": "Recycling argument vectors to achieve 0 heap allocations during tool routing",
-                "definition": ""
+          "term": "Payload truncation",
+          "definition": "Automatically cutting off data that exceeds a safe size limit to prevent system crashes."
         }
-],
-      description: `In Level 6 (Zero-Copy JSON Stream Parsing & Fast Dispatch), you engineer the core mechanisms for Model Context Protocol (MCP) Runtime.
+      ],
+      description: `LLMs have strict Context Window limits. If a tool returns a 2-megabyte JSON response, it will instantly crash the model by exceeding its maximum token limit. In Level 6, you implement Resource Pagination.
 
-Achieve sub-0.1ms tool dispatch using SIMD JSON parsing and buffer recycling.
-
-Core Engineering Problem: How does simdjson parse gigabytes of JSON per second, and how can an MCP runtime use it to eliminate serialization bottlenecks?
-
-Key Mechanisms Implemented:
-• SIMD structural indexing: finding quotes, colons, and braces in 64-byte chunks with vector intrinsics.
-• Zero-copy string views directly referencing input stdin buffers.
-• Recycling argument vectors to achieve 0 heap allocations during tool routing.
-
-You achieve lightning-fast tool execution with zero-copy SIMD parsing.`,
+This is a critical safety feature of production MCP runtimes. By enforcing strict limits on payload sizes and implementing cursor-based pagination, you guarantee that the LLM is never overwhelmed. The AI learns to iteratively request more context only when necessary, drastically reducing token costs and preventing context-window overflow errors.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'enable-simd-parser': Activates SIMD-accelerated zero-copy JSON tokenizer.",
-        "Implement 'bench-fast-dispatch 10000': Measures 10,000 tool dispatches through optimized pipeline.",
-        "Implement 'verify-zero-allocs': Checks that no heap allocations occur during hot-path dispatch.",
-        "Enforce system constraints: Sub-0.1ms average dispatch overhead; Zero heap allocations on hot path.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement a simulated 'read-resource' tool that generates an array of 10,000 strings.",
+        "Add a mandatory `limit` parameter to the tool (e.g., max 100 items).",
+        "Generate an opaque `cursor` string (like base64 encoding the last index) and return it alongside the data.",
+        "Update the tool to accept a `cursor` parameter. When provided, decode the cursor and return the *next* 100 items starting from that point."
+      ],
       diagram: `SIMD-ACCELERATED ZERO-COPY DISPATCH PIPELINE:
 
 Raw Stdin Byte Stream (e.g. 4KB chunk):

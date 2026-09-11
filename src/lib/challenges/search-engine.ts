@@ -94,54 +94,47 @@ export const searchEngineChallenge: ChallengeData = {
       title: "Tokenizer & Inverted Index Postings",
       difficulty: "Easy",
       tagline: "Tokenize input text into lowercase terms. Build an inverted index mapping each term to sorted document IDs.",
-      whatAreYouBuilding: `In this level, you build: Tokenizer & Inverted Index Postings.
+      whatAreYouBuilding: `You are going to build an inverted index. Think of it as the index at the back of a cookbook. Instead of reading every single recipe page to find 'chicken', you look up the word 'chicken' in the back and it instantly gives you a list of page numbers.
 
-Tokenize input text into lowercase terms. Build an inverted index mapping each term to sorted document IDs.
+For example:
+INDEX d1 Hello World
+POSTINGS hello
 
-You are creating a reliable component of Inverted-Index Search Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+Your search engine looks up 'hello' and instantly returns the documents containing it:
+POSTINGS hello d1`,
+      howItWorks: `When a document is indexed:
+1. Convert the entire text into lowercase so 'Hello' and 'hello' match.
+2. Split the text into individual words (tokens).
+3. For each word, add the document's ID to a list associated with that specific word.
+4. Ensure that the list of document IDs for each word is sorted alphabetically.
 
-Supported Operations:
-• INDEX <doc_id> <words...> -> Tokenizes words into lowercase terms and indexes document. Returns 'INDEXED <doc_id> <term_count>'.
-• DOC_COUNT -> Returns 'DOCS <count>'.
-• POSTINGS <term> -> Returns 'POSTINGS <term> <doc_id1> <doc_id2>...' or 'NOT_FOUND'.`,
+When a search runs:
+1. Find the exact word in your dictionary.
+2. Return its pre-sorted list of document IDs.`,
       technicalTerms: [
         {
-                "term": "Tokenizing strings into lowercase alphanumeric tokens",
-                "definition": ""
+          "term": "Inverted Index",
+          "definition": "A data structure mapping content (like words) to its locations in a database, exactly like the index of a book."
         },
         {
-                "term": "Building inverted postings",
-                "definition": "term .> set of doc_ids."
+          "term": "Tokenization",
+          "definition": "The process of breaking a raw string of text into smaller, standardized pieces (tokens or words)."
         },
         {
-                "term": "Sorting posting lists ascending by document ID for efficient set operations",
-                "definition": ""
+          "term": "Postings List",
+          "definition": "The sorted array of document IDs that contain a specific term."
         }
 ],
-      description: `In Level 1 (Tokenizer & Inverted Index Postings), you engineer the core mechanisms for Inverted-Index Search Engine.
+      description: `Searching by scanning every document from start to finish is fine for 10 files, but impossible for 10 million files (like the entire internet). It requires O(N) time complexity where N is the total amount of text.
 
-Tokenize input text into lowercase terms. Build an inverted index mapping each term to sorted document IDs.
-
-Core Engineering Problem: Scanning documents sequentially is O(D * L). An inverted index flips the relationship, allowing immediate O(1) lookup of docs containing a word.
-
-Key Mechanisms Implemented:
-• Tokenizing strings into lowercase alphanumeric tokens.
-• Building inverted postings: term -> set of doc_ids.
-• Sorting posting lists ascending by document ID for efficient set operations.
-
-You implement inverted indexing and postings list retrieval.`,
+An Inverted Index flips the relationship. It analyzes documents ahead of time and builds a dictionary mapping every unique word to the documents that contain it. This reduces search time from a massive linear scan down to O(1) instantaneous dictionary lookup, forming the foundation of every major search engine in the world.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'INDEX <doc_id> <words...>': Tokenizes words into lowercase terms and indexes document. Returns 'INDEXED <doc_id> <term_count>'.",
-        "Implement 'DOC_COUNT': Returns 'DOCS <count>'.",
-        "Implement 'POSTINGS <term>': Returns 'POSTINGS <term> <doc_id1> <doc_id2>...' or 'NOT_FOUND'.",
-        "Enforce system constraints: Terms are lowercased and stripped of punctuation; Doc IDs in POSTINGS are sorted alphabetically.",
-        "Format output according to the specification and flush standard output."
+        "Initialize a global dictionary (hash map) where keys are string terms and values are Sets (or Arrays) of string doc_ids.",
+        "On 'INDEX <doc_id> <words...>', convert all words to lowercase.",
+        "For each lowercase word, add the doc_id to that word's list in the dictionary.",
+        "Keep track of the total number of unique documents indexed. Print 'INDEXED <doc_id> <term_count>'.",
+        "On 'DOC_COUNT', print 'DOCS <total_unique_documents>'.",
+        "On 'POSTINGS <term>', look up the term. If it doesn't exist, print 'NOT_FOUND'. Otherwise, sort the doc_ids alphabetically and print 'POSTINGS <term> <doc1> <doc2>...'"
 ],
       diagram: `DOCUMENT INPUT                            INDEXING ENGINE                 INVERTED POSTINGS
 INDEX d1 Hello World          ──► tokenize ["hello", "world"] ──► INDEXED d1 2
@@ -223,52 +216,46 @@ POSTINGS world d1`,
       title: "Boolean Query Evaluator",
       difficulty: "Medium",
       tagline: "Execute multi-term boolean queries. Implement sorted postings intersection (AND) and union (OR).",
-      whatAreYouBuilding: `In this level, you build: Boolean Query Evaluator.
+      whatAreYouBuilding: `You are going to build a Boolean search evaluator. Think of looking at the cookbook index for recipes containing BOTH 'chicken' AND 'garlic'. You find the list of pages for 'chicken', and the list for 'garlic', and you compare them to find the pages that appear in both lists.
 
-Execute multi-term boolean queries. Implement sorted postings intersection (AND) and union (OR).
+For example:
+SEARCH_AND distributed systems
 
-You are creating a reliable component of Inverted-Index Search Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+Your engine will find the intersection of documents containing both terms and print:
+MATCHES d1`,
+      howItWorks: `When an AND search runs:
+1. Retrieve the sorted postings lists for all terms in the query.
+2. If any term has an empty list, immediately stop and return NO_MATCH (short-circuiting).
+3. Compare the sorted lists using a 'two-pointer' technique: step through them side-by-side.
+4. Keep only the document IDs that are present in every single list.
 
-Supported Operations:
-• SEARCH_AND <t1> <t2>... -> Intersects postings for all terms. Returns 'MATCHES <doc1> <doc2>...' or 'NO_MATCH'.
-• SEARCH_OR <t1> <t2>... -> Unions postings for all terms. Returns 'MATCHES <doc1> <doc2>...' or 'NO_MATCH'.`,
+When an OR search runs:
+1. Retrieve all the lists.
+2. Combine them together, ensuring no duplicate document IDs are returned.`,
       technicalTerms: [
         {
-                "term": "Two",
-                "definition": "pointer sorted list intersection for AND queries."
+          "term": "Boolean Query",
+          "definition": "A search using logical operators like AND, OR, and NOT to combine multiple keywords."
         },
         {
-                "term": "Sorted list union for OR queries",
-                "definition": ""
+          "term": "Intersection (AND)",
+          "definition": "A mathematical set operation that returns only the items that exist in all the sets being compared."
         },
         {
-                "term": "Short",
-                "definition": "circuiting. If any term in an AND query has 0 postings, the query returns immediately."
+          "term": "Two-Pointer Merge",
+          "definition": "An efficient algorithm that finds matching items in two sorted lists by marching through them side-by-side in a single pass."
         }
 ],
-      description: `In Level 2 (Boolean Query Evaluator), you engineer the core mechanisms for Inverted-Index Search Engine.
+      description: `Users rarely search for a single word. They type multiple keywords and expect the search engine to find documents containing all of them. 
 
-Execute multi-term boolean queries. Implement sorted postings intersection (AND) and union (OR).
-
-Core Engineering Problem: Naive set intersection takes high memory. Merging two sorted postings lists using two-pointers runs in O(P1 + P2) time.
-
-Key Mechanisms Implemented:
-• Two-pointer sorted list intersection for AND queries.
-• Sorted list union for OR queries.
-• Short-circuiting: If any term in an AND query has 0 postings, the query returns immediately.
-
-You implement high-speed sorted postings merge algorithms for boolean search.`,
+Because we built our postings lists as alphabetically sorted arrays in Level 1, we don't need to load massive amounts of data into memory to intersect them. We can use a highly optimized two-pointer merge algorithm that scans through the sorted lists simultaneously, finding matches in O(A + B) time without ever allocating intermediate memory sets.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'SEARCH_AND <t1> <t2>...': Intersects postings for all terms. Returns 'MATCHES <doc1> <doc2>...' or 'NO_MATCH'.",
-        "Implement 'SEARCH_OR <t1> <t2>...': Unions postings for all terms. Returns 'MATCHES <doc1> <doc2>...' or 'NO_MATCH'.",
-        "Enforce system constraints: Matches returned in sorted alphabetical doc_id order.",
-        "Format output according to the specification and flush standard output."
+        "On 'SEARCH_AND <t1> <t2>...', fetch the postings lists for every term.",
+        "If any term is missing from the dictionary, immediately print 'NO_MATCH'.",
+        "Start with the postings list of the first term as your 'current matches'.",
+        "For each subsequent term's list, perform an intersection: keep only the doc_ids that exist in both your 'current matches' and the new list.",
+        "On 'SEARCH_OR <t1> <t2>...', fetch all postings lists. Combine all doc_ids into a single unique Set.",
+        "For both commands, sort the final matching doc_ids alphabetically. If the final list is empty, print 'NO_MATCH', otherwise print 'MATCHES <doc1> <doc2>...'"
 ],
       diagram: `BOOLEAN QUERY                             INVERTED POSTING LISTS                 SET OPERATION / MATCH
 SEARCH_AND distributed systems            ┌──────────────────────────────┐
@@ -336,50 +323,42 @@ MATCHES d1 d3`,
       title: "TF-IDF Vector Relevance Ranking",
       difficulty: "Medium",
       tagline: "Score and rank documents by term relevance using Term Frequency and Inverse Document Frequency.",
-      whatAreYouBuilding: `In this level, you build: TF-IDF Vector Relevance Ranking.
+      whatAreYouBuilding: `You are going to build a TF-IDF relevance scorer. Think of the cookbook again. If you search for 'chicken', a recipe that mentions 'chicken' 10 times is probably a chicken-focused dish, while a recipe mentioning it once is just a side note. Also, finding a rare word like 'saffron' is more significant than finding a common word like 'salt'.
 
-Score and rank documents by term relevance using Term Frequency and Inverse Document Frequency.
+For example:
+TFIDF redis
 
-You are creating a reliable component of Inverted-Index Search Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• TFIDF <term> -> Ranks matching documents by TF * IDF score. Returns 'RANKED <doc_id>:<score>...' rounded to 2 decimals or 'NO_MATCH'.`,
+Your engine scores matching documents based on frequency and prints them in ranked order:
+RANKED d1:2.81 d2:1.41`,
+      howItWorks: `When calculating a score:
+1. Count how many times the term appears in the specific document (Term Frequency - TF). Higher is better.
+2. Count how many total documents in the entire database contain the term. If it's in a lot of documents, it's a common word, so reduce its value (Inverse Document Frequency - IDF).
+3. Multiply TF by IDF to get the final score.
+4. Sort all matching documents by this score from highest to lowest.`,
       technicalTerms: [
         {
-                "term": "Term Frequency",
-                "definition": "TF(t, d) = count(t in d)."
+          "term": "Term Frequency (TF)",
+          "definition": "The raw count of how many times a specific keyword appears inside a single document."
         },
         {
-                "term": "Inverse Document Frequency",
-                "definition": "IDF(t) = log(total_docs / doc_freq(t)) + 1.0."
+          "term": "Inverse Document Frequency (IDF)",
+          "definition": "A mathematical penalty applied to very common words (like 'the' or 'and') so they don't overpower rare, meaningful keywords."
         },
         {
-                "term": "Score = TF * IDF",
-                "definition": "Ranking documents by score descending, tie.breaking by doc_id ascending."
+          "term": "Relevance Ranking",
+          "definition": "Sorting search results mathematically so the most useful documents appear at the very top of the list."
         }
 ],
-      description: `In Level 3 (TF-IDF Vector Relevance Ranking), you engineer the core mechanisms for Inverted-Index Search Engine.
+      description: `Boolean logic is binary: a document either matches or it doesn't. If a search for 'database' returns 10,000 matches, which one should be shown on page one?
 
-Score and rank documents by term relevance using Term Frequency and Inverse Document Frequency.
-
-Core Engineering Problem: Boolean queries treat all matching documents equally. A document where a term appears 10 times is far more relevant than one where it appears once.
-
-Key Mechanisms Implemented:
-• Term Frequency: TF(t, d) = count(t in d).
-• Inverse Document Frequency: IDF(t) = log(total_docs / doc_freq(t)) + 1.0.
-• Score = TF * IDF. Ranking documents by score descending, tie-breaking by doc_id ascending.
-
-You implement document relevance scoring and rank ordering.`,
+The Vector Space Model solves this using TF-IDF. It assumes that if a term appears frequently in a document (TF), that document is highly relevant. However, to prevent common words from destroying the search results, it mathematically penalizes terms that appear in too many documents across the corpus (IDF). By multiplying these together, highly relevant hits bubble perfectly to the top.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'TFIDF <term>': Ranks matching documents by TF * IDF score. Returns 'RANKED <doc_id>:<score>...' rounded to 2 decimals or 'NO_MATCH'.",
-        "Enforce system constraints: Use natural log for IDF: math.log(N / df) + 1.0; Format score to 2 decimal places.",
-        "Format output according to the specification and flush standard output."
+        "You must now track how many times a term appears in each document. Update your index to store TF (count) per term per document.",
+        "On 'TFIDF <term>', find all documents containing the term. If none, print 'NO_MATCH'.",
+        "Calculate IDF: math.log(total_documents_in_corpus / docs_containing_term) + 1.0.",
+        "For each matching document, calculate its score: TF_for_this_doc * IDF.",
+        "Sort the matching documents by score (descending). If scores are exactly equal, tie-break by sorting doc_id alphabetically (ascending).",
+        "Print 'RANKED ' followed by '<doc_id>:<score>' rounded to exactly 2 decimal places."
 ],
       diagram: `RELEVANCE QUERY (TF-IDF)                  CORPUS TERM FREQUENCIES                RANKED OUTPUT
 TFIDF redis                               ┌──────────────────────────────┐
@@ -445,50 +424,41 @@ Calculate: TF(t,d) * IDF                  ├───────────�
       title: "Okapi BM25 Probabilistic Ranking",
       difficulty: "Hard",
       tagline: "Implement Okapi BM25 ranking. Apply term frequency saturation (k1=1.2) and document length normalization (b=0.75).",
-      whatAreYouBuilding: `In this level, you build: Okapi BM25 Probabilistic Ranking.
+      whatAreYouBuilding: `You are going to build an Okapi BM25 ranking engine. Think of the cookbook's relevance, but smarter. If a recipe says 'chicken' 100 times, it doesn't mean it's 10 times better than a recipe that says it 10 times. BM25 applies a 'diminishing returns' curve. It also penalizes incredibly long recipes where the word 'chicken' might just be a passing mention buried in a huge block of text.
 
-Implement Okapi BM25 ranking. Apply term frequency saturation (k1=1.2) and document length normalization (b=0.75).
+For example:
+BM25 kafka
 
-You are creating a reliable component of Inverted-Index Search Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• BM25 <term> -> Ranks matching documents using BM25 (k1=1.2, b=0.75). Returns 'BM25 <doc_id>:<score>...' rounded to 2 decimals or 'NO_MATCH'.`,
+Your engine uses the BM25 formula to return a highly accurate ranking:
+BM25 d2:0.35 d1:0.25`,
+      howItWorks: `When calculating a BM25 score:
+1. Calculate the BM25-specific IDF (which handles common words even better than standard TF-IDF).
+2. Calculate the 'saturation' curve. As Term Frequency goes up, its value flattens out, controlled by a constant called k1.
+3. Calculate 'length normalization'. Shorter documents get a slight boost, while massive documents get a penalty, controlled by a constant called b.
+4. Combine them into the final BM25 formula and sort the results.`,
       technicalTerms: [
         {
-                "term": "BM25 IDF",
-                "definition": "ln((N . n + 0.5) / (n + 0.5) + 1.0)."
+          "term": "BM25",
+          "definition": "Best Matching 25. A probabilistic search algorithm that is the industry standard for full-text search relevance."
         },
         {
-                "term": "Length normalization",
-                "definition": "len_norm = 1.0 . b + b * (doc_len / avg_doc_len)."
+          "term": "Term Saturation",
+          "definition": "The mathematical concept that the 1st mention of a keyword is highly important, but the 100th mention adds almost no extra value."
         },
         {
-                "term": "BM25 term score",
-                "definition": "IDF * (tf * (k1 + 1)) / (tf + k1 * len_norm)."
+          "term": "Length Normalization",
+          "definition": "Adjusting scores based on document length to prevent massive documents from unfairly winning just by having more total text."
         }
 ],
-      description: `In Level 4 (Okapi BM25 Probabilistic Ranking), you engineer the core mechanisms for Inverted-Index Search Engine.
+      description: `TF-IDF has two fatal flaws. First, it allows 'keyword stuffing': if you repeat a word 1,000 times, your score explodes linearly to the top. Second, it favors long documents, because longer documents simply contain more words.
 
-Implement Okapi BM25 ranking. Apply term frequency saturation (k1=1.2) and document length normalization (b=0.75).
-
-Core Engineering Problem: TF-IDF allows keyword stuffing: repeating 'shoes' 1,000 times inflates score 1,000x. BM25 uses an asymptotic saturation curve so extra mentions yield diminishing returns.
-
-Key Mechanisms Implemented:
-• BM25 IDF: ln((N - n + 0.5) / (n + 0.5) + 1.0).
-• Length normalization: len_norm = 1.0 - b + b * (doc_len / avg_doc_len).
-• BM25 term score: IDF * (tf * (k1 + 1)) / (tf + k1 * len_norm).
-
-You master modern probabilistic information retrieval ranking.`,
+Okapi BM25 is the modern, production default ranking algorithm used by Elasticsearch and Lucene. It solves keyword stuffing via a non-linear asymptotic saturation curve (k1). It solves the length problem by dynamically penalizing documents that are significantly longer than the average document length in the corpus (b).`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'BM25 <term>': Ranks matching documents using BM25 (k1=1.2, b=0.75). Returns 'BM25 <doc_id>:<score>...' rounded to 2 decimals or 'NO_MATCH'.",
-        "Enforce system constraints: k1 = 1.2, b = 0.75; doc_len is total word tokens in document (including duplicates).",
-        "Format output according to the specification and flush standard output."
+        "You must now track the length (total words) of every document you index, and maintain the average document length across the entire corpus.",
+        "On 'BM25 <term>', calculate BM25 IDF: math.log(((N - df + 0.5) / (df + 0.5)) + 1.0) where N is total docs and df is docs containing the term.",
+        "For each matching document, calculate length normalization: len_norm = 1.0 - 0.75 + 0.75 * (doc_length / average_doc_length).",
+        "Calculate final score: IDF * (TF * (1.2 + 1)) / (TF + 1.2 * len_norm).",
+        "Sort by score (descending), tie-break by doc_id (ascending). Print 'BM25 ' followed by '<doc_id>:<score>' rounded to 2 decimal places."
 ],
       diagram: `QUERY (OKAPI BM25)                        SATURATION & LENGTH PENALTY            PROBABILISTIC RANK
 BM25 kafka                                ┌──────────────────────────────┐
@@ -555,50 +525,45 @@ IDF * (TF*(k1+1)) / (TF + k1*len_norm)    │ d2: "kafka kafka kafka"      │ �
       title: "Positional Postings & Exact Phrase Search",
       difficulty: "Hard",
       tagline: "Record token position offsets to match exact multi-word phrases (e.g. 'quick brown fox').",
-      whatAreYouBuilding: `In this level, you build: Positional Postings & Exact Phrase Search.
+      whatAreYouBuilding: `You are going to build a positional phrase matcher. Think of searching the cookbook for 'fried chicken'. You don't just want a page that mentions 'fried' eggs and grilled 'chicken' somewhere in the same recipe. You need those two words to appear exactly next to each other in that exact sequence.
 
-Record token position offsets to match exact multi-word phrases (e.g. 'quick brown fox').
+For example:
+PHRASE quick brown fox
 
-You are creating a reliable component of Inverted-Index Search Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+Your engine checks exactly where the words appear in the document to ensure they form the exact phrase:
+PHRASE_MATCH d1`,
+      howItWorks: `When a document is indexed:
+1. Instead of just noting THAT a word appears, write down the exact numerical position it appears at (e.g., word 1, word 2, word 3).
 
-Supported Operations:
-• PHRASE <w1> <w2>... -> Matches exact sequential phrase. Returns 'PHRASE_MATCH <doc1> <doc2>...' or 'NO_MATCH'.`,
+When a phrase search runs:
+1. Find the documents that contain all the words (Boolean AND).
+2. Look at the exact positions of the first word.
+3. Verify if the second word appears at exactly the position of the first word + 1.
+4. Repeat for all words to ensure a perfect contiguous chain.`,
       technicalTerms: [
         {
-                "term": "Positional postings",
-                "definition": "term .> doc_id .> [position_0, position_1, ...]."
+          "term": "Positional Indexing",
+          "definition": "Storing not just the document ID, but the exact integer offsets of where a keyword appears in the text."
         },
         {
-                "term": "Sliding phrase matcher",
-                "definition": "Verify word_(i+1).pos == word_i.pos + 1 in the same document."
+          "term": "Phrase Search",
+          "definition": "A query demanding that multiple keywords appear adjacently in a specific exact sequence."
         },
         {
-                "term": "Preserving document token order",
-                "definition": ""
+          "term": "Proximity Match",
+          "definition": "Evaluating the physical distance between two words inside a document."
         }
 ],
-      description: `In Level 5 (Positional Postings & Exact Phrase Search), you engineer the core mechanisms for Inverted-Index Search Engine.
+      description: `Standard inverted indices destroy word order. They view documents as a 'bag of words'. A search for 'president lincoln' will happily return a document reading 'lincoln met the president' because it contains both keywords.
 
-Record token position offsets to match exact multi-word phrases (e.g. 'quick brown fox').
-
-Core Engineering Problem: Standard inverted indices lose word sequence. A search for 'president lincoln' matches 'lincoln told the president' without positional postings.
-
-Key Mechanisms Implemented:
-• Positional postings: term -> doc_id -> [position_0, position_1, ...].
-• Sliding phrase matcher: Verify word_(i+1).pos == word_i.pos + 1 in the same document.
-• Preserving document token order.
-
-You implement positional postings and exact phrase verification.`,
+To support exact quote matching, search engines use Positional Postings. By storing the absolute integer offset of every token during ingestion, the query engine can perform sliding-window math to verify that words sit adjacent to each other. This is highly accurate but requires significantly more RAM and disk space.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'PHRASE <w1> <w2>...': Matches exact sequential phrase. Returns 'PHRASE_MATCH <doc1> <doc2>...' or 'NO_MATCH'.",
-        "Enforce system constraints: All words in the phrase must appear consecutively in exact order.",
-        "Format output according to the specification and flush standard output."
+        "Update your indexing logic to store an array of integer positions for every term in every document. (e.g., term -> doc_id -> [pos1, pos2]).",
+        "On 'PHRASE <w1> <w2>...', first perform a standard Boolean AND to get a list of candidate documents.",
+        "For each candidate document, get the position arrays for all words in the phrase.",
+        "Iterate through every position of the first word. Check if the second word exists at first_pos + 1, the third word at first_pos + 2, etc.",
+        "If a perfect contiguous sequence is found, the document is a match.",
+        "Sort matches alphabetically and print 'PHRASE_MATCH <doc1> <doc2>...' or 'NO_MATCH'."
 ],
       diagram: `PHRASE QUERY                              POSITIONAL INDEX (TERM -> OFFSETS)     EXACT PROXIMITY CHECK
 PHRASE quick brown fox                    ┌──────────────────────────────────┐
@@ -665,54 +630,48 @@ Check: pos(w_i+1) == pos(w_i) + 1         │  • brown: pos 2 (1 + 1 = 2 ✓) 
       title: "Immutable Segment Commits & Compaction",
       difficulty: "Hard",
       tagline: "Write incoming documents to immutable segments. Commit and merge segments into a single consolidated index.",
-      whatAreYouBuilding: `In this level, you build: Immutable Segment Commits & Compaction.
+      whatAreYouBuilding: `You are going to build a segment compaction system. Think of writing a new cookbook index. Instead of erasing and re-writing the massive master index every time you add a single new recipe, you write small, temporary 'mini-indexes' (segments) in a notebook. Later, you do a batch job to merge all the mini-indexes into the master index to save lookup time.
 
-Write incoming documents to immutable segments. Commit and merge segments into a single consolidated index.
+For example:
+COMMIT_SEGMENT
+MERGE_SEGMENTS
 
-You are creating a reliable component of Inverted-Index Search Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+Your engine freezes the current index into a segment, and then merges them all together:
+COMMITTED seg-1
+MERGED 2 -> 1`,
+      howItWorks: `When writing data:
+1. Index documents normally in memory.
+2. When a COMMIT occurs, freeze that memory into an immutable 'segment' and start a fresh memory index.
+3. When searching, you must now run the search against EVERY active segment and combine the results.
 
-Supported Operations:
-• COMMIT_SEGMENT -> Freezes current buffer into an immutable segment. Returns 'COMMITTED <segment_id>'.
-• MERGE_SEGMENTS -> Merges all segments into 1 consolidated segment. Returns 'MERGED <old_count> -> 1'.
-• SEGMENT_STATS -> Returns 'SEGMENTS <count> TOTAL_DOCS <count>'.`,
+When merging (compacting):
+1. Take all the multiple immutable segments.
+2. Stitch their postings lists together into one single massive, highly optimized segment.
+3. Delete the old fragmented segments.`,
       technicalTerms: [
         {
-                "term": "Segment architecture",
-                "definition": "Each commit freezes the current memory index as an immutable segment."
+          "term": "Immutable Segment",
+          "definition": "A chunk of the search index that, once written, is never modified or updated again."
         },
         {
-                "term": "Searching across all active segments seamlessly",
-                "definition": ""
+          "term": "LSM Tree",
+          "definition": "Log-Structured Merge-Tree. A database architecture that writes data sequentially to small files, merging them later in the background."
         },
         {
-                "term": "Compacting / merging multiple segments into one consolidated segment",
-                "definition": ""
+          "term": "Compaction",
+          "definition": "The background process of combining multiple small index segments into one large segment to speed up search times."
         }
 ],
-      description: `In Level 6 (Immutable Segment Commits & Compaction), you engineer the core mechanisms for Inverted-Index Search Engine.
+      description: `Updating a live search index in real-time is extremely slow because it requires acquiring locks on massive data structures, blocking incoming read queries. 
 
-Write incoming documents to immutable segments. Commit and merge segments into a single consolidated index.
-
-Core Engineering Problem: Modifying a live inverted index requires locking the entire database. Writing append-only mini-segments and merging in the background gives 100x write throughput.
-
-Key Mechanisms Implemented:
-• Segment architecture: Each commit freezes the current memory index as an immutable segment.
-• Searching across all active segments seamlessly.
-• Compacting / merging multiple segments into one consolidated segment.
-
-You master LSM-style segment architecture and background index compaction.`,
+Modern search engines (like Elasticsearch) use an LSM-style architecture. They write incoming documents to small, append-only, immutable 'segments' in memory. Searches scatter-gather across all segments. Because having thousands of segments slows down searching, a background 'compaction' process merges these mini-segments into massive, highly optimized master segments, enabling blazing fast reads and writes simultaneously.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'COMMIT_SEGMENT': Freezes current buffer into an immutable segment. Returns 'COMMITTED <segment_id>'.",
-        "Implement 'MERGE_SEGMENTS': Merges all segments into 1 consolidated segment. Returns 'MERGED <old_count> -> 1'.",
-        "Implement 'SEGMENT_STATS': Returns 'SEGMENTS <count> TOTAL_DOCS <count>'.",
-        "Enforce system constraints: Segments are numbered sequentially: seg-1, seg-2, etc..",
-        "Format output according to the specification and flush standard output."
+        "Maintain a list of completed 'segments' (dictionaries) and one active memory buffer segment.",
+        "On 'INDEX', write the document only to the active memory buffer.",
+        "On 'COMMIT_SEGMENT', freeze the active memory buffer, append it to your segments list, and give it an ID like 'seg-1'. Create a fresh memory buffer. Print 'COMMITTED <seg_id>'.",
+        "On 'MERGE_SEGMENTS', combine the dictionaries of all frozen segments into a single new segment dictionary. Replace the old list with this single merged segment. Print 'MERGED <old_count> -> 1'.",
+        "Update 'SEARCH_AND' logic so it queries ALL frozen segments plus the active buffer, combining the results seamlessly.",
+        "On 'SEGMENT_STATS', print 'SEGMENTS <frozen_segment_count> TOTAL_DOCS <count_across_all_segments>'"
 ],
       diagram: `INGEST & COMMIT                           LSM SEGMENT ARCHITECTURE               CONSOLIDATED INDEX
 INDEX d1 ... ──► COMMIT_SEGMENT ──► seg-1 ┌──────────────────────────────┐

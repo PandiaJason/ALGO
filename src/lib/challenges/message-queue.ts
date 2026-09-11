@@ -94,53 +94,42 @@ export const messageQueueChallenge: ChallengeData = {
       title: "Basic Topic Publishing & Consumption",
       difficulty: "Easy",
       tagline: "Implement foundational PUB and POLL commands across isolated in-memory topics.",
-      whatAreYouBuilding: `In this level, you build: Basic Topic Publishing & Consumption.
+      whatAreYouBuilding: `You are going to build a simple post office for messages. Producers will drop off letters (messages) in specific mailboxes (topics), and consumers will pick them up one by one in the order they arrived. Once a message is picked up, it is gone. 
 
-Implement foundational PUB and POLL commands across isolated in-memory topics.
+For example:
+PUB orders pizza
 
-You are creating a reliable component of Commit Log & Message Queue. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+puts a message in the orders mailbox.
+POLL orders
 
-Supported Operations:
-• PUB <topic> <message> -> Appends message to topic. Returns 'OK <offset>'.
-• POLL <topic> -> Retrieves oldest unconsumed message. Returns '<message>' or 'EMPTY'.`,
+picks it up. Your program should print:
+pizza`,
+      howItWorks: `When a command comes in:
+1. If it's 'PUB <topic> <message>', put the message at the end of the topic's line.
+2. If it's 'POLL <topic>', take the first message from the front of the line and return it.
+3. If the topic is empty, say 'EMPTY'.
+
+This is exactly how a simple FIFO (First-In-First-Out) queue works.`,
       technicalTerms: [
         {
-                "term": "Topic queues as FIFO ring buffers / linked deques",
-                "definition": ""
+          "term": "FIFO Queue",
+          "definition": "A line where the first item to arrive is the first one to be removed (First-In-First-Out)."
         },
         {
-                "term": "Publisher push (PUB <topic> <payload>) and Consumer pull (POLL <topic>)",
-                "definition": ""
+          "term": "Publisher",
+          "definition": "A program that sends new messages to the queue."
         },
         {
-                "term": "Handling empty queues deterministically (EMPTY vs blocking)",
-                "definition": ""
+          "term": "Consumer",
+          "definition": "A program that reads and removes messages from the queue."
         }
-],
-      description: `In Level 1 (Basic Topic Publishing & Consumption), you engineer the core mechanisms for Commit Log & Message Queue.
-
-Implement foundational PUB and POLL commands across isolated in-memory topics.
-
-Core Engineering Problem: How do message brokers guarantee First-In-First-Out (FIFO) delivery without memory leaks or consumer contention?
-
-Key Mechanisms Implemented:
-• Topic queues as FIFO ring buffers / linked deques.
-• Publisher push (PUB <topic> <payload>) and Consumer pull (POLL <topic>).
-• Handling empty queues deterministically (EMPTY vs blocking).
-
-You master topic separation, FIFO queue semantics, and producer-consumer handshake contracts.`,
+      ],
+      description: `Basic queues are the foundation of asynchronous communication. By separating producers and consumers, your system doesn't have to wait for an action to finish before taking in new requests. This level teaches you how to maintain state across multiple isolated queues and handle basic enqueue/dequeue operations efficiently.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'PUB <topic> <message>': Appends message to topic. Returns 'OK <offset>'.",
-        "Implement 'POLL <topic>': Retrieves oldest unconsumed message. Returns '<message>' or 'EMPTY'.",
-        "Enforce system constraints: Strict FIFO delivery order; Multiple isolated topics.",
-        "Format output according to the specification and flush standard output."
-],
+        "Create a dictionary or hash map where keys are topic strings and values are arrays (lists) of strings.",
+        "Implement 'PUB <topic> <message>': append the message to the topic's array. Return 'OK <offset>'.",
+        "Implement 'POLL <topic>': if the array is empty or missing, print 'EMPTY'. Otherwise, remove the first element from the array (index 0) and print it."
+      ],
       diagram: `INPUT (Commands)              BROKER / QUEUE ENGINE          OUTPUT
 PUB orders item_1     ──────► topic["orders"].push(item_1) ──► OK 0
 PUB orders item_2     ──────► topic["orders"].push(item_2) ──► OK 1
@@ -197,55 +186,38 @@ EMPTY`,
       title: "Log Offsets & Non-Destructive Reads",
       difficulty: "Medium",
       tagline: "Transition from destructive queue polling to append-only commit logs where messages can be read by offset.",
-      whatAreYouBuilding: `In this level, you build: Log Offsets & Non-Destructive Reads.
+      whatAreYouBuilding: `Instead of throwing letters away after they are read, your post office will now keep a permanent record of every letter ever sent. Each letter gets a unique, permanent tracking number (offset). You can now ask for a specific letter by its tracking number. 
+      
+For example:
+READ_AT events 0
 
-Transition from destructive queue polling to append-only commit logs where messages can be read by offset.
-
-You are creating a reliable component of Commit Log & Message Queue. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• PUB <topic> <message> -> Appends message to topic. Returns 'OK <offset>'.
-• READ_AT <topic> <offset> -> Retrieves message at exact offset without removing it. Returns '<msg>' or 'NOT_FOUND'.
-• LEN <topic> -> Returns total message count in topic log.`,
+asks for the very first event. Your program returns the message without deleting it!`,
+      howItWorks: `When a command comes in:
+1. For 'PUB', add the message to the end of the list, just like before. The tracking number (offset) is its position in the list (0, 1, 2...).
+2. For 'READ_AT <topic> <offset>', look up that exact position in the list.
+3. Because we don't delete messages anymore, we can read the same message multiple times!
+4. For 'LEN <topic>', just return the total number of messages stored in that topic's list.`,
       technicalTerms: [
         {
-                "term": "Non",
-                "definition": "destructive commit logs. Messages persist after being read."
+          "term": "Commit Log",
+          "definition": "An append-only list of records where data is never deleted, only added to the end."
         },
         {
-                "term": "Zero",
-                "definition": "indexed monotonic offsets."
+          "term": "Offset",
+          "definition": "A unique, permanent, sequential number identifying a message's position in the log."
         },
         {
-                "term": "SEEK / READ_AT <topic> <offset> operations",
-                "definition": ""
+          "term": "Non-destructive Read",
+          "definition": "Reading data without removing or altering it from the system."
         }
-],
-      description: `In Level 2 (Log Offsets & Non-Destructive Reads), you engineer the core mechanisms for Commit Log & Message Queue.
-
-Transition from destructive queue polling to append-only commit logs where messages can be read by offset.
-
-Core Engineering Problem: Traditional queues delete messages on read, preventing replay or multiple independent consumer inspection. How do commit logs enable replayability?
-
-Key Mechanisms Implemented:
-• Non-destructive commit logs: Messages persist after being read.
-• Zero-indexed monotonic offsets.
-• SEEK / READ_AT <topic> <offset> operations.
-
-You build non-destructive append-only logs with offset-based indexed retrieval.`,
+      ],
+      description: `Traditional queues delete messages upon reading, which makes it impossible to replay history or have multiple different applications read the same data independently. By switching from a destructive queue to an immutable commit log, you've taken the first step toward building a modern, replayable event streaming platform like Apache Kafka.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'PUB <topic> <message>': Appends message to topic. Returns 'OK <offset>'.",
-        "Implement 'READ_AT <topic> <offset>': Retrieves message at exact offset without removing it. Returns '<msg>' or 'NOT_FOUND'.",
-        "Implement 'LEN <topic>': Returns total message count in topic log.",
-        "Enforce system constraints: Offsets start at 0 and increment by 1; Reading at offset must never delete message.",
-        "Format output according to the specification and flush standard output."
-],
+        "Stop removing items from your arrays during reads.",
+        "Implement 'READ_AT <topic> <offset>': check if the topic exists and if the offset is within the array's bounds. If so, return the array element at that index. If not, return 'NOT_FOUND'.",
+        "Implement 'LEN <topic>': return the size of the array for that topic.",
+        "Ensure 'PUB' still works exactly as before, returning the new item's index."
+      ],
       diagram: `INPUT                         COMMIT LOG ARCHITECTURE               OUTPUT
 PUB events click       ──► append(offset=0, "click")         ──► OK 0
 READ_AT events 0       ──► log[0] (non-destructive)          ──► click
@@ -292,55 +264,40 @@ Message: ┌─────────┐   ┌─────────┐  
       title: "Consumer Groups & Commit Offsets",
       difficulty: "Hard",
       tagline: "Implement consumer groups with independent read cursors and explicit commit acknowledgments.",
-      whatAreYouBuilding: `In this level, you build: Consumer Groups & Commit Offsets.
+      whatAreYouBuilding: `Now that our post office keeps all letters permanently, multiple departments (Consumer Groups) can read the same mail independently. The post office tracks where each department left off using a bookmark (cursor) so they don't have to remember it themselves. 
+      
+For example:
+GROUP_POLL billing orders
 
-Implement consumer groups with independent read cursors and explicit commit acknowledgments.
+fetches the next unread message for the billing department. 
+GROUP_COMMIT billing orders 0
 
-You are creating a reliable component of Commit Log & Message Queue. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• PUB <topic> <message> -> Appends message to topic. Returns 'OK <offset>'.
-• GROUP_POLL <group> <topic> -> Fetches next unconsumed message for consumer group. Returns 'OFFSET: <o> MSG: <m>' or 'EMPTY'.
-• GROUP_COMMIT <group> <topic> <offset> -> Commits consumer group progress. Returns 'OK'.`,
+tells the post office that billing finished processing message 0.`,
+      howItWorks: `For each group reading a topic:
+1. Keep track of a specific "next offset" bookmark (starting at 0).
+2. When 'GROUP_POLL' happens, read the message at the group's current bookmark, then move the bookmark forward by 1.
+3. If the group has caught up to the newest message, return 'EMPTY'.
+4. When 'GROUP_COMMIT' happens, save this confirmed progress.`,
       technicalTerms: [
         {
-                "term": "Consumer group abstraction",
-                "definition": "Each group has an independent read offset pointer."
+          "term": "Consumer Group",
+          "definition": "A logical group of consumers that shares the workload of reading a topic, tracked independently from other groups."
         },
         {
-                "term": "GROUP_POLL <group> <topic>",
-                "definition": "advances group's cursor."
+          "term": "Cursor",
+          "definition": "A pointer tracking the next unread message offset for a specific consumer group."
         },
         {
-                "term": "GROUP_COMMIT <group> <topic> <offset>",
-                "definition": "persists committed progress."
+          "term": "Checkpointing",
+          "definition": "Saving the consumer's progress so it can resume from the right place after a crash."
         }
-],
-      description: `In Level 3 (Consumer Groups & Commit Offsets), you engineer the core mechanisms for Commit Log & Message Queue.
-
-Implement consumer groups with independent read cursors and explicit commit acknowledgments.
-
-Core Engineering Problem: When multiple worker replicas consume the same topic, how do you prevent duplicate work while allowing other consumer groups (e.g. analytics vs billing) to read the same stream?
-
-Key Mechanisms Implemented:
-• Consumer group abstraction: Each group has an independent read offset pointer.
-• GROUP_POLL <group> <topic>: advances group's cursor.
-• GROUP_COMMIT <group> <topic> <offset>: persists committed progress.
-
-You implement independent group offsets, at-least-once delivery, and progress checkpointing.`,
+      ],
+      description: `Independent consumer groups are the magic behind pub/sub systems. They allow a single stream of events (like user signups) to be read by the email system, the billing system, and the analytics system at their own pace. By managing read cursors on the server side, you eliminate race conditions and simplify the client applications.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'PUB <topic> <message>': Appends message to topic. Returns 'OK <offset>'.",
-        "Implement 'GROUP_POLL <group> <topic>': Fetches next unconsumed message for consumer group. Returns 'OFFSET: <o> MSG: <m>' or 'EMPTY'.",
-        "Implement 'GROUP_COMMIT <group> <topic> <offset>': Commits consumer group progress. Returns 'OK'.",
-        "Enforce system constraints: Groups maintain separate offsets; Polling advances group cursor automatically.",
-        "Format output according to the specification and flush standard output."
-],
+        "Add a new dictionary mapping a string key (combining the group name and topic name, e.g., 'group:topic') to an integer cursor (starting at 0).",
+        "Implement 'GROUP_POLL <group> <topic>': Look up the group's cursor for this topic. Use 'READ_AT' logic to get the message. If it exists, increment the cursor by 1 and return 'OFFSET: <cursor> MSG: <message>'. If not, return 'EMPTY'.",
+        "Implement 'GROUP_COMMIT <group> <topic> <offset>': Update the group's cursor to be offset + 1, and return 'OK'."
+      ],
       diagram: `PRODUCER STREAM               CONSUMER GROUP CURSORS                INDEPENDENT OUTPUT
 PUB orders $50         ──► log[0] = "$50"                    ──► OK 0
 GROUP_POLL billing     ──► cursor["billing"]=0 (advances)    ──► OFFSET: 0 MSG: $50
@@ -386,53 +343,37 @@ Topic: orders log
       title: "Key-Based Partitioning",
       difficulty: "Hard",
       tagline: "Shard topics into multiple independent partitions. Route messages deterministically by key hash.",
-      whatAreYouBuilding: `In this level, you build: Key-Based Partitioning.
+      whatAreYouBuilding: `Our post office is getting too busy for one sorting line, so we're splitting it into 4 parallel lines (partitions). To ensure letters from the same person always go to the same line, we use the sender's name (the key) to calculate which line to use. 
+      
+For example:
+PART_PUB users bob hello
 
-Shard topics into multiple independent partitions. Route messages deterministically by key hash.
-
-You are creating a reliable component of Commit Log & Message Queue. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• PART_PUB <topic> <key> <msg> -> Hashes key to partition 0..N-1 and appends. Returns 'PARTITION: <p> OFFSET: <o>'.
-• PART_READ <topic> <partition> <offset> -> Reads from specific partition log. Returns '<msg>' or 'NOT_FOUND'.`,
+calculates a line number based on "bob", maybe line 2, and puts "hello" there.`,
+      howItWorks: `When a message arrives with a key:
+1. Convert the key into a number (using a hash function).
+2. Divide that number by 4 and take the remainder (this is the partition number: 0, 1, 2, or 3).
+3. Put the message in that specific partition's list.
+4. Because the math is consistent, messages with the same key always go to the same partition, guaranteeing they are kept in exact order.`,
       technicalTerms: [
         {
-                "term": "Consistent hashing of message keys across P partitions",
-                "definition": ""
+          "term": "Partitioning",
+          "definition": "Dividing a single topic into multiple smaller logs to allow parallel processing."
         },
         {
-                "term": "Per",
-                "definition": "partition offset tracking. (topic, partition, offset)."
+          "term": "Routing Key",
+          "definition": "A piece of data (like a user ID) used to calculate which partition a message belongs in."
         },
         {
-                "term": "Guaranteeing strict ordering per key while enabling multi",
-                "definition": "core parallelism."
+          "term": "Consistent Hashing",
+          "definition": "A mathematical trick that guarantees the same input key always produces the same partition number."
         }
-],
-      description: `In Level 4 (Key-Based Partitioning), you engineer the core mechanisms for Commit Log & Message Queue.
-
-Shard topics into multiple independent partitions. Route messages deterministically by key hash.
-
-Core Engineering Problem: A single commit log is bottlenecked by single-core disk write throughput. Sharding into partitions allows parallel linear scaling across cores.
-
-Key Mechanisms Implemented:
-• Consistent hashing of message keys across P partitions.
-• Per-partition offset tracking: (topic, partition, offset).
-• Guaranteeing strict ordering per key while enabling multi-core parallelism.
-
-You implement topic partition sharding, hash routing, and ordered key streams.`,
+      ],
+      description: `A single commit log is bottlenecked by single-core disk write throughput. Sharding into partitions allows parallel linear scaling across cores. By hashing keys to deterministic partitions, we guarantee that all events for a specific entity (like a user) are processed in strict chronological order by the same consumer, preventing race conditions while still scaling horizontally.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'PART_PUB <topic> <key> <msg>': Hashes key to partition 0..N-1 and appends. Returns 'PARTITION: <p> OFFSET: <o>'.",
-        "Implement 'PART_READ <topic> <partition> <offset>': Reads from specific partition log. Returns '<msg>' or 'NOT_FOUND'.",
-        "Enforce system constraints: Use 4 partitions per topic (0, 1, 2, 3); Identical keys must map to identical partitions.",
-        "Format output according to the specification and flush standard output."
-],
+        "Change your data structure: topics now contain 4 separate arrays (partitions), indexed 0 through 3.",
+        "Implement 'PART_PUB <topic> <key> <message>': Calculate the hash of the key (use a simple sum of ASCII characters modulo 4). Append the message to that specific partition's array. Return 'PARTITION: <p> OFFSET: <o>'.",
+        "Implement 'PART_READ <topic> <partition> <offset>': Read the message directly from the specified partition's array. Return the message or 'NOT_FOUND'."
+      ],
       diagram: `KEY-HASH ROUTER               PARTITION ARRAYS                      CONSUMER STREAMS
 PART_PUB users u1 A    ──► hash("u1") % 4 = Part 1           ──► PARTITION: 1 OFFSET: 0
 PART_PUB users u1 B    ──► hash("u1") % 4 = Part 1 (ordered) ──► PARTITION: 1 OFFSET: 1
@@ -475,55 +416,38 @@ Murmur3    ├──► Partition 2: [msg...]
       title: "Batch Ingestion & Flushes",
       difficulty: "Hard",
       tagline: "Batch multiple messages into single synchronous flushes to maximize throughput over 100,000 msg/sec.",
-      whatAreYouBuilding: `In this level, you build: Batch Ingestion & Flushes.
+      whatAreYouBuilding: `Instead of dropping off letters one at a time, producers now arrive with huge bundles of letters (batches). The post office stamps and stores the entire bundle in one swift motion, which is much faster than processing them individually. 
+      
+For example:
+BATCH_PUB sensor temp:20 temp:21 temp:22
 
-Batch multiple messages into single synchronous flushes to maximize throughput over 100,000 msg/sec.
-
-You are creating a reliable component of Commit Log & Message Queue. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• BATCH_PUB <topic> <msg1> <msg2> ... -> Atomically appends batch of messages. Returns 'BATCH_OK COUNT: <c> FIRST_OFFSET: <o>'.
-• READ_AT <topic> <offset> -> Retrieves message at exact offset without removing it. Returns '<msg>' or 'NOT_FOUND'.
-• LEN <topic> -> Returns total message count in topic log.`,
+processes all three temperature readings instantly.`,
+      howItWorks: `When a batch arrives:
+1. Count how many messages are in the batch.
+2. Find the current length of the topic's list. This is the starting offset.
+3. Append all messages in the batch to the list in one go.
+4. Tell the producer the total count and the starting offset. This dramatically reduces the overhead of handling each message separately.`,
       technicalTerms: [
         {
-                "term": "Batch compression and buffer accumulation",
-                "definition": ""
+          "term": "Micro-batching",
+          "definition": "Grouping multiple small operations into a single larger operation to reduce overhead."
         },
         {
-                "term": "Atomic batch publishing",
-                "definition": "BATCH_PUB <topic> <count> <msg1> <msg2>..."
+          "term": "Atomic Operation",
+          "definition": "An operation that completely finishes in a single step without being interrupted."
         },
         {
-                "term": "Batch offset allocation in a single atomic increment",
-                "definition": ""
+          "term": "Throughput",
+          "definition": "The total volume of data processed in a given amount of time."
         }
-],
-      description: `In Level 5 (Batch Ingestion & Flushes), you engineer the core mechanisms for Commit Log & Message Queue.
-
-Batch multiple messages into single synchronous flushes to maximize throughput over 100,000 msg/sec.
-
-Core Engineering Problem: Calling fsync or acquiring mutexes on every single message drops throughput to <5,000 msg/sec. Grouping messages into micro-batches reaches 100K+ msg/sec.
-
-Key Mechanisms Implemented:
-• Batch compression and buffer accumulation.
-• Atomic batch publishing: BATCH_PUB <topic> <count> <msg1> <msg2>...
-• Batch offset allocation in a single atomic increment.
-
-You amortize I/O overhead using high-performance message batching.`,
+      ],
+      description: `System calls and lock acquisitions are expensive. If you process 100,000 messages one-by-one, your system will crawl. By grouping messages into micro-batches, you amortize the overhead of these expensive operations across many messages, unlocking massive throughput gains. This is how modern streaming platforms achieve millions of messages per second.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'BATCH_PUB <topic> <msg1> <msg2> ...': Atomically appends batch of messages. Returns 'BATCH_OK COUNT: <c> FIRST_OFFSET: <o>'.",
-        "Implement 'READ_AT <topic> <offset>': Retrieves message at exact offset without removing it. Returns '<msg>' or 'NOT_FOUND'.",
-        "Implement 'LEN <topic>': Returns total message count in topic log.",
-        "Enforce system constraints: Atomic batch offset allocation; Sub-millisecond batch processing.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement 'BATCH_PUB <topic> <msg1> <msg2> ...': Extract the topic and all subsequent message strings.",
+        "Record the current length of the topic's array as 'FIRST_OFFSET'.",
+        "Use a loop or array extension to append all the messages to the topic's array.",
+        "Return 'BATCH_OK COUNT: <num_messages> FIRST_OFFSET: <FIRST_OFFSET>'."
+      ],
       diagram: `BATCH ACCUMULATOR             ATOMIC ALLOCATION                     BATCH COMMIT
 BATCH_PUB e1 e2 e3     ──► Allocate 3 contiguous offsets     ──► BATCH_OK COUNT: 3
                            log[0]=e1, log[1]=e2, log[2]=e3       FIRST_OFFSET: 0
@@ -565,55 +489,30 @@ Producers ──► [Buffer Queue: e1, e2, e3] ──► Single Mutex Lock
       title: "Commit Log Persistence & Crash Recovery",
       difficulty: "Hard",
       tagline: "Guarantee zero message loss across sudden SIGKILL process termination. Reconstitute unconsumed offsets on boot.",
-      whatAreYouBuilding: `In this level, you build: Commit Log Persistence & Crash Recovery.
-
-Guarantee zero message loss across sudden SIGKILL process termination. Reconstitute unconsumed offsets on boot.
-
-You are creating a reliable component of Commit Log & Message Queue. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• PUB <topic> <message> -> Appends message to topic. Returns 'OK <offset>'.
-• COMMIT -> Forces synchronous flush of all topic logs and group offsets to disk. Returns 'OK'.
-• STATS -> Returns broker metrics: TOPICS: <t> MESSAGES: <m> STORAGE_BYTES: <b>.`,
+      whatAreYouBuilding: `In this final level, you are adding a safe to the post office. Every time someone says COMMIT, you take a snapshot of the entire post office—all the mail and all the bookmarks—and lock it in the safe. If the power goes out and the post office reboots, you can pull everything out of the safe and resume exactly where you left off.`,
+      howItWorks: `1. Normally, data lives only in fast, temporary memory (RAM).
+2. When 'COMMIT' is called, you simulate writing everything permanently to a disk file.
+3. When 'STATS' is called, you scan your data structures and report the total number of topics and messages currently in the system.
+4. If a crash simulation occurs in testing, your data must survive because it was successfully committed.`,
       technicalTerms: [
         {
-                "term": "Segmented disk log serialization",
-                "definition": ""
+          "term": "Durability",
+          "definition": "The guarantee that once data is acknowledged, it will survive a system crash."
         },
         {
-                "term": "Synchronous fsync commit intervals",
-                "definition": ""
+          "term": "fsync",
+          "definition": "A system call that forces the operating system to physically write memory buffers to the hard drive."
         },
         {
-                "term": "Boot recovery replay of topics and consumer group progress",
-                "definition": ""
+          "term": "Crash Recovery",
+          "definition": "The process of rebuilding the system's state from disk after an unexpected shutdown."
         }
-],
-      description: `In Level 6 (Commit Log Persistence & Crash Recovery), you engineer the core mechanisms for Commit Log & Message Queue.
-
-Guarantee zero message loss across sudden SIGKILL process termination. Reconstitute unconsumed offsets on boot.
-
-Core Engineering Problem: If a broker abruptly crashes, RAM is wiped. How do you guarantee zero message loss and exact consumer group cursor reconstitution?
-
-Key Mechanisms Implemented:
-• Segmented disk log serialization.
-• Synchronous fsync commit intervals.
-• Boot recovery replay of topics and consumer group progress.
-
-You master crash-safe commit logs, fsync durability, and zero-loss crash recovery.`,
+      ],
+      description: `If a broker abruptly crashes, RAM is wiped. Building a durable system requires carefully synchronizing in-memory state with physical disk storage. By writing append-only segment files and forcing disk flushes, you guarantee zero message loss. This final piece turns your fast in-memory engine into a robust, enterprise-grade event broker.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'PUB <topic> <message>': Appends message to topic. Returns 'OK <offset>'.",
-        "Implement 'COMMIT': Forces synchronous flush of all topic logs and group offsets to disk. Returns 'OK'.",
-        "Implement 'STATS': Returns broker metrics: TOPICS: <t> MESSAGES: <m> STORAGE_BYTES: <b>.",
-        "Enforce system constraints: Zero message loss on simulated restart; Sub-50ms recovery time.",
-        "Format output according to the specification and flush standard output."
-],
+        "Implement 'COMMIT': In a real system, you would serialize your topics and group offsets to a file and call fsync. For this simulation, you might just need to acknowledge the command by returning 'OK', as the testing environment checks your persistence logic.",
+        "Implement 'STATS': Count the number of keys in your topics dictionary. Sum the lengths of all the arrays to get the total messages. Return 'TOPICS: <t> MESSAGES: <m> STATUS: HEALTHY'."
+      ],
       diagram: `IN-MEMORY BUFFER              SEGMENTED DISK LOG                    CRASH RECOVERY
 PUB t test             ──► Memory Append                     ──► OK 0
 COMMIT                 ──► fsync() to segment_0001.log       ──► OK

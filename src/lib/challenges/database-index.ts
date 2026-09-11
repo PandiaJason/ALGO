@@ -89,53 +89,35 @@ export const databaseIndexChallenge: ChallengeData = {
       title: "Sequential Table Scanning",
       difficulty: "Easy",
       tagline: "Implement INSERT and sequential SCAN. Measure O(N) lookup degradation.",
-      whatAreYouBuilding: `In this level, you build: Sequential Table Scanning.
+      whatAreYouBuilding: `Imagine looking for a specific person's phone number in a giant, completely randomized phone book. You would have to read every single page from beginning to end to find them.
 
-Implement INSERT and sequential SCAN. Measure O(N) lookup degradation.
+You are going to build a simple database table that acts exactly like this. When data is inserted, it's just appended to a list. When you search, you must scan the entire list.
 
-You are creating a reliable component of B+ Tree Database Index Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+INSERT 42 Alice
+SCAN 42
 
-Supported Operations:
-• INSERT <id> <value> -> Appends row to table. Returns 'OK'.
-• SCAN <id> -> Sequentially scans rows for matching id. Returns '<value>' or 'NOT_FOUND'.`,
+Your engine scans the list one by one until it finds 'Alice'.`,
+      howItWorks: `When adding data:
+1. Append the new row to the end of your storage list (very fast).
+
+When searching for data:
+1. Start at the first row.
+2. Check if the ID matches.
+3. Move to the next row.
+4. Repeat until you find the ID or reach the end (very slow for large tables).`,
       technicalTerms: [
-        {
-                "term": "Linear scan semantics",
-                "definition": "Iterating through an unindexed array/file."
-        },
-        {
-                "term": "Insert cost O(1) vs Lookup cost O(N)",
-                "definition": ""
-        },
-        {
-                "term": "Establishing the empirical performance baseline before indexing",
-                "definition": ""
-        }
-],
-      description: `In Level 1 (Sequential Table Scanning), you engineer the core mechanisms for B+ Tree Database Index Engine.
-
-Implement INSERT and sequential SCAN. Measure O(N) lookup degradation.
-
-Core Engineering Problem: Without an index, querying for a single row requires inspecting every row in the table, resulting in catastrophic O(N) latency.
-
-Key Mechanisms Implemented:
-• Linear scan semantics: Iterating through an unindexed array/file.
-• Insert cost O(1) vs Lookup cost O(N).
-• Establishing the empirical performance baseline before indexing.
-
-You measure raw unindexed query performance and establish baseline metrics.`,
+        { term: "Sequential Scan", definition: "Searching for data by checking every single record from start to finish." },
+        { term: "O(N) Complexity", definition: "Performance that gets linearly slower as the amount of data (N) increases." },
+        { term: "Table Scan", definition: "A database term for reading the entire table to resolve a query." }
+      ],
+      description: `Every database journey begins with a naive table scan. Appending records to a flat file or array is incredibly fast, but querying it is disastrously slow. Finding a single record in a million-row table requires a million checks. In Level 1, you build this baseline to experience the O(N) lookup degradation firsthand, setting the stage for why indices are mandatory in relational databases.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'INSERT <id> <value>': Appends row to table. Returns 'OK'.",
-        "Implement 'SCAN <id>': Sequentially scans rows for matching id. Returns '<value>' or 'NOT_FOUND'.",
-        "Enforce system constraints: Strict sequential scan order; Return NOT_FOUND if ID absent.",
-        "Format output according to the specification and flush standard output."
-],
+        "Create a simple list or array to act as your table.",
+        "Implement 'INSERT <id> <value>' by appending a tuple/object to the list.",
+        "Implement 'SCAN <id>' by using a for-loop to check every item in the list.",
+        "Return the value if found, or 'NOT_FOUND' if the loop finishes without a match."
+      ],
       diagram: `COMMANDS                     STORAGE ENGINE                 OUTPUT
 INSERT 42 "Alice"     ──────► table.push({42, "Alice"})   ──► OK
 SCAN 42               ──────► scan: compare 0..N rows     ──► Alice
@@ -188,53 +170,34 @@ NOT_FOUND`,
       title: "Sorted Primary Key Array",
       difficulty: "Medium",
       tagline: "Sort primary key pointers to reduce lookup cost from O(N) to O(log N) using binary search.",
-      whatAreYouBuilding: `In this level, you build: Sorted Primary Key Array.
+      whatAreYouBuilding: `Now imagine the phone book is perfectly alphabetized. Instead of reading every page, you open to the middle. If the name you want is earlier in the alphabet, you open to the middle of the left half. 
 
-Sort primary key pointers to reduce lookup cost from O(N) to O(log N) using binary search.
+You will build a Sorted Array Index. By keeping the IDs perfectly sorted, you can find records instantly using binary search.
 
-You are creating a reliable component of B+ Tree Database Index Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+INSERT 50 E
+INDEX_GET 20
 
-Supported Operations:
-• INSERT <id> <value> -> Appends row to table. Returns 'OK'.
-• INDEX_GET <id> -> Performs binary search over sorted index. Returns '<value>' or 'NOT_FOUND'.`,
+Your engine will smartly hop through the sorted list, skipping halves of the data at a time.`,
+      howItWorks: `To search quickly using Binary Search:
+1. Look at the middle element of the sorted array.
+2. If it's the ID you want, you're done!
+3. If the ID is smaller, repeat the process on the left half.
+4. If the ID is larger, repeat the process on the right half.
+
+This takes a 1,000,000 row search down to just 20 checks!`,
       technicalTerms: [
-        {
-                "term": "Binary search over sorted key arrays",
-                "definition": ""
-        },
-        {
-                "term": "The trade",
-                "definition": "off. O(log N) search vs O(N) sorted insert shift."
-        },
-        {
-                "term": "Why databases need tree structures rather than flat sorted arrays",
-                "definition": ""
-        }
-],
-      description: `In Level 2 (Sorted Primary Key Array), you engineer the core mechanisms for B+ Tree Database Index Engine.
-
-Sort primary key pointers to reduce lookup cost from O(N) to O(log N) using binary search.
-
-Core Engineering Problem: Linear scans check N items. Keeping an array sorted allows binary search in log2(N) steps, reducing 10,000,000 checks to just 24 checks.
-
-Key Mechanisms Implemented:
-• Binary search over sorted key arrays.
-• The trade-off: O(log N) search vs O(N) sorted insert shift.
-• Why databases need tree structures rather than flat sorted arrays.
-
-You understand the power of logarithmic search and why flat arrays fail on inserts.`,
+        { term: "Binary Search", definition: "A search algorithm that finds an item by repeatedly dividing the search space in half." },
+        { term: "O(log N) Complexity", definition: "Logarithmic performance, meaning it takes very few steps even for massive datasets." },
+        { term: "Primary Key", definition: "A unique identifier for a row, which is used to sort and index the data." }
+      ],
+      description: `Sorting data unlocks the power of Binary Search, plunging search costs from O(N) to O(log N). However, maintaining a flat sorted array introduces a new problem: inserting a new row in the middle of a massive array requires shifting thousands of elements down to make room. This level demonstrates the fundamental trade-off of database indices: significantly faster reads at the cost of slower writes.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'INSERT <id> <value>': Appends row to table. Returns 'OK'.",
-        "Implement 'INDEX_GET <id>': Performs binary search over sorted index. Returns '<value>' or 'NOT_FOUND'.",
-        "Enforce system constraints: Maintain sorted order of keys; Binary search logic.",
-        "Format output according to the specification and flush standard output."
-],
+        "Maintain a separate list of sorted keys, or keep your main table list sorted by ID.",
+        "On INSERT, find the correct position and insert the item so the list remains sorted.",
+        "Implement 'INDEX_GET <id>' using a standard while-loop binary search (low = 0, high = len - 1).",
+        "If the middle element matches, return it. Otherwise adjust low or high appropriately."
+      ],
       diagram: `UNSORTED INSERTS              SORTED PRIMARY KEY ARRAY              BINARY SEARCH
 INSERT 50 E            ──► Keep keys sorted: [20, 50]        ──► OK
 INDEX_GET 20           ──► Binary Search: Low=0, High=1      ──► 20 (Found: "B")
@@ -280,53 +243,32 @@ Heap: [A]    [B]    [C]    [D]    [E]`,
       title: "Self-Balancing M-Way B-Tree",
       difficulty: "Hard",
       tagline: "Implement B-Tree node splitting. Keep maximum node size bounded to M keys without O(N) array shifts.",
-      whatAreYouBuilding: `In this level, you build: Self-Balancing M-Way B-Tree.
+      whatAreYouBuilding: `A flat sorted list is too rigid—inserting a name means rewriting half the phone book! A B-Tree is like a multi-level table of contents.
 
-Implement B-Tree node splitting. Keep maximum node size bounded to M keys without O(N) array shifts.
+You will build a self-balancing B-Tree. Instead of one massive list, data is chunked into small 'nodes' that can hold up to 3 keys. When a node gets too full, it splits in half!
 
-You are creating a reliable component of B+ Tree Database Index Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+BTREE_INSERT 4 D
 
-Supported Operations:
-• BTREE_INSERT <id> <val> -> Inserts into B-Tree with node capacity M=3. Splits on 4th key. Returns 'OK'.
-• BTREE_GET <id> -> Traverses B-Tree nodes to retrieve value. Returns '<val>' or 'NOT_FOUND'.`,
+If the node already has [1, 2, 3], it overflows. It splits into two nodes and pushes the middle number up to act as a signpost.`,
+      howItWorks: `When inserting into a B-Tree node:
+1. Add the key to the node.
+2. If the node has more than M keys (capacity exceeded), it must split.
+3. The node splits into a left node and a right node.
+4. The median (middle) key gets pushed up to the parent node to act as a router.
+5. If the parent overflows, it splits too, growing the tree upwards!`,
       technicalTerms: [
-        {
-                "term": "B",
-                "definition": "Tree node capacity (M keys per node)."
-        },
-        {
-                "term": "Node splitting",
-                "definition": "Pushing median key to parent and creating two child nodes."
-        },
-        {
-                "term": "Root splitting",
-                "definition": "Increasing tree height by 1 when root overflows."
-        }
-],
-      description: `In Level 3 (Self-Balancing M-Way B-Tree), you engineer the core mechanisms for B+ Tree Database Index Engine.
-
-Implement B-Tree node splitting. Keep maximum node size bounded to M keys without O(N) array shifts.
-
-Core Engineering Problem: A flat sorted array requires shifting elements on insertion (O(N)). B-Trees group keys into small bounded nodes (e.g. 4 keys), splitting nodes on overflow.
-
-Key Mechanisms Implemented:
-• B-Tree node capacity (M keys per node).
-• Node splitting: Pushing median key to parent and creating two child nodes.
-• Root splitting: Increasing tree height by 1 when root overflows.
-
-You implement self-balancing node splits and bounded logarithmic tree traversal.`,
+        { term: "B-Tree", definition: "A self-balancing tree data structure that maintains sorted data in bounded nodes." },
+        { term: "Node Splitting", definition: "Dividing a full node into two and pushing the middle key up to the parent." },
+        { term: "Router Key", definition: "Keys in internal nodes that don't hold data, but guide the search left or right." }
+      ],
+      description: `B-Trees solve the insertion penalty of flat arrays. By grouping keys into small bounded nodes, an insert only requires shifting data within a tiny node. When a node overflows, it splits and promotes a median key upwards. This hierarchical structure guarantees that both reads and writes complete in O(log N) time, making it the bedrock of nearly all modern database engines.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'BTREE_INSERT <id> <val>': Inserts into B-Tree with node capacity M=3. Splits on 4th key. Returns 'OK'.",
-        "Implement 'BTREE_GET <id>': Traverses B-Tree nodes to retrieve value. Returns '<val>' or 'NOT_FOUND'.",
-        "Enforce system constraints: Node capacity M=3 keys maximum; Balanced search traversal.",
-        "Format output according to the specification and flush standard output."
-],
+        "For this simplified simulation, you can simulate the split conceptually or implement a basic B-Tree insertion algorithm.",
+        "Set a strict capacity M=3 for nodes.",
+        "Implement BTREE_INSERT to traverse down to a leaf, insert, and if keys > 3, split the leaf and promote the median to the parent.",
+        "Implement BTREE_GET to traverse from the root, comparing the target ID against the router keys to decide which child to follow."
+      ],
       diagram: `KEY INSERTION                 M=3 NODE SPLIT PIPELINE               BALANCED TREE
 BTREE_INSERT 4 D       ──► Node [1, 2, 3] + 4 overflows!     ──► OK
                            Median key (2) promoted to Parent
@@ -374,53 +316,31 @@ Before Split (Overflow):
       title: "B+ Tree Leaf Chaining",
       difficulty: "Hard",
       tagline: "Link leaf nodes sequentially. Execute high-speed range scans (WHERE id BETWEEN min AND max) in O(K) time.",
-      whatAreYouBuilding: `In this level, you build: B+ Tree Leaf Chaining.
+      whatAreYouBuilding: `If you want to read a whole chapter of a book, you don't use the table of contents for every single page. You find the first page, and then just flip forward.
 
-Link leaf nodes sequentially. Execute high-speed range scans (WHERE id BETWEEN min AND max) in O(K) time.
+You will upgrade your tree to a B+ Tree by chaining the bottom nodes (leaves) together. This allows blazing-fast range queries (like finding everyone aged 20 to 30).
 
-You are creating a reliable component of B+ Tree Database Index Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+RANGE 10 25
 
-Supported Operations:
-• BTREE_INSERT <id> <val> -> Inserts into B-Tree with node capacity M=3. Splits on 4th key. Returns 'OK'.
-• RANGE <min_id> <max_id> -> Returns space-separated values for keys in range [min_id, max_id].`,
+Your engine finds 10 using the tree, then just follows a linked chain to instantly grab all values up to 25.`,
+      howItWorks: `To execute a Range Scan:
+1. Traverse down the tree to find the minimum ID (the start of the range).
+2. Once at the leaf node, read the values.
+3. Instead of going back up the tree, use a 'next' pointer to hop directly to the adjacent leaf node.
+4. Keep reading and hopping until you hit an ID that is greater than your maximum ID.`,
       technicalTerms: [
-        {
-                "term": "B+ Tree distinction",
-                "definition": "Internal nodes store only keys/routers; leaves store actual data."
-        },
-        {
-                "term": "Doubly",
-                "definition": "linked leaf pointers (prev/next)."
-        },
-        {
-                "term": "Range scan algorithm",
-                "definition": "Seek to min_id, then iterate leaf list until key > max_id."
-        }
-],
-      description: `In Level 4 (B+ Tree Leaf Chaining), you engineer the core mechanisms for B+ Tree Database Index Engine.
-
-Link leaf nodes sequentially. Execute high-speed range scans (WHERE id BETWEEN min AND max) in O(K) time.
-
-Core Engineering Problem: Standard B-Trees require expensive in-order tree traversals for range queries. B+ Trees link all leaf nodes into a doubly-linked list, allowing fast sequential scanning.
-
-Key Mechanisms Implemented:
-• B+ Tree distinction: Internal nodes store only keys/routers; leaves store actual data.
-• Doubly-linked leaf pointers (prev/next).
-• Range scan algorithm: Seek to min_id, then iterate leaf list until key > max_id.
-
-You implement linked leaf nodes and high-throughput range query scans.`,
+        { term: "B+ Tree", definition: "A variation of a B-Tree where all actual data is stored in the leaf nodes, which are linked together." },
+        { term: "Range Scan", definition: "Retrieving all records that fall within a specific boundary (min and max)." },
+        { term: "Leaf Chaining", definition: "Connecting leaf nodes with pointers so they form a continuous, sorted linked list." }
+      ],
+      description: `Standard B-Trees intermix data and routing keys, making range queries incredibly inefficient as the engine must repeatedly traverse up and down the tree branches. A B+ Tree pushes all data to the leaf level and links those leaves sequentially. This enables O(K) sequential scanning once the starting point is found, powering SQL queries like 'WHERE price BETWEEN 10 AND 50'.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'BTREE_INSERT <id> <val>': Inserts into B-Tree with node capacity M=3. Splits on 4th key. Returns 'OK'.",
-        "Implement 'RANGE <min_id> <max_id>': Returns space-separated values for keys in range [min_id, max_id].",
-        "Enforce system constraints: Inclusive range [min, max]; Return 'EMPTY' if no keys match.",
-        "Format output according to the specification and flush standard output."
-],
+        "Modify your tree so that only leaf nodes contain values, while internal nodes only contain router keys.",
+        "Add a 'next' pointer to your leaf nodes, connecting them left-to-right as a linked list.",
+        "Implement 'RANGE <min> <max>': use BTREE_GET logic to seek to the leaf containing 'min'.",
+        "Iterate through the node's keys, and follow 'next' pointers to subsequent leaves until the key exceeds 'max'."
+      ],
       diagram: `RANGE SEARCH (10 to 25)       SEEK + LEAF TRAVERSAL                 RESULT
 RANGE 10 25            ──► 1. Seek min_key (10) via root    ──► "A B"
                            2. Follow leaf next-pointers
@@ -469,53 +389,32 @@ B+ Tree Leaf Chain Topology:
       title: "4KB Slotted Disk Page Layout",
       difficulty: "Hard",
       tagline: "Format leaf data into realistic 4096-byte slotted pages with page headers and item pointer arrays.",
-      whatAreYouBuilding: `In this level, you build: 4KB Slotted Disk Page Layout.
+      whatAreYouBuilding: `Hard drives don't read data one character at a time; they read data in massive 4096-byte blocks. Think of it as a shipping container—you want to pack it perfectly.
 
-Format leaf data into realistic 4096-byte slotted pages with page headers and item pointer arrays.
+You will format your data into strict 4KB 'Slotted Pages', identical to how PostgreSQL writes to disk. 
 
-You are creating a reliable component of B+ Tree Database Index Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+BTREE_INSERT 100 alpha
+PAGE_STATS 0
 
-Supported Operations:
-• BTREE_INSERT <id> <val> -> Inserts into B-Tree with node capacity M=3. Splits on 4th key. Returns 'OK'.
-• PAGE_STATS <page_id> -> Returns slotted page metadata: FREE_BYTES: <f> ITEMS: <n>.`,
+Your engine calculates exactly how many bytes are used in the 4KB block and reports the free space remaining.`,
+      howItWorks: `Inside a Slotted Page:
+1. The top of the page (Header) contains an array of 'slots' (pointers) that grow downwards.
+2. The bottom of the page contains the actual row data (Tuples) growing upwards.
+3. The space in the middle is the Free Space.
+4. When the slots and tuples meet, the page is full!`,
       technicalTerms: [
-        {
-                "term": "Slotted page layout",
-                "definition": "Header at top growing down, tuples at bottom growing up."
-        },
-        {
-                "term": "Page ItemId offsets and lengths",
-                "definition": ""
-        },
-        {
-                "term": "Detecting page overflow when free_space < record_size",
-                "definition": ""
-        }
-],
-      description: `In Level 5 (4KB Slotted Disk Page Layout), you engineer the core mechanisms for B+ Tree Database Index Engine.
-
-Format leaf data into realistic 4096-byte slotted pages with page headers and item pointer arrays.
-
-Core Engineering Problem: Disks and OS file systems operate on 4096-byte pages. Variable-length records cause page fragmentation unless packed using slotted page architectures.
-
-Key Mechanisms Implemented:
-• Slotted page layout: Header at top growing down, tuples at bottom growing up.
-• Page ItemId offsets and lengths.
-• Detecting page overflow when free_space < record_size.
-
-You serialize data into hardware-aligned 4096-byte slotted disk pages.`,
+        { term: "Slotted Page", definition: "A standard disk block format that packs variable-length records tightly without fragmentation." },
+        { term: "Page Header", definition: "Metadata at the start of a page that tracks where records are located." },
+        { term: "Tuple", definition: "A single row of data inside the database." }
+      ],
+      description: `Software algorithms must eventually map to physical hardware. Disks operate on 4096-byte sectors. If a database doesn't align its nodes to these pages, a single node read might require fetching two physical disk blocks. The slotted page architecture elegantly packs variable-length strings into fixed hardware pages by growing a pointer array from the top down and data from the bottom up, completely eliminating fragmentation.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'BTREE_INSERT <id> <val>': Inserts into B-Tree with node capacity M=3. Splits on 4th key. Returns 'OK'.",
-        "Implement 'PAGE_STATS <page_id>': Returns slotted page metadata: FREE_BYTES: <f> ITEMS: <n>.",
-        "Enforce system constraints: Page size exactly 4096 bytes; Proper free space calculation.",
-        "Format output according to the specification and flush standard output."
-],
+        "Simulate a page of exactly 4096 bytes.",
+        "For PAGE_STATS, calculate the used space. Each record inserted consumes exactly 40 bytes in this simplified model.",
+        "Calculate free bytes as 4096 - (number_of_items * 40).",
+        "Implement the logic to output the exact free bytes and item counts for the requested page ID."
+      ],
       diagram: `COMMAND                       4KB SLOTTED DISK PAGE                 PAGE STATS
 BTREE_INSERT 100 alpha ──► Slot Array grows DOWN (Header)    ──► PAGE: 0
 PAGE_STATS 0           ──► Tuple Data grows UP (End of Page) ──► FREE_BYTES: 4056
@@ -563,55 +462,34 @@ PAGE_STATS 0           ──► Tuple Data grows UP (End of Page) ──► FRE
       title: "Buffer Pool Caching & Clock Sweeper",
       difficulty: "Hard",
       tagline: "Implement a bounded memory buffer pool cache. Maximize hit rate using the Clock sweep replacement algorithm.",
-      whatAreYouBuilding: `In this level, you build: Buffer Pool Caching & Clock Sweeper.
+      whatAreYouBuilding: `Reading from a hard drive is 10,000 times slower than reading from RAM. You need a waiting room (Buffer Pool) for the most popular pages.
 
-Implement a bounded memory buffer pool cache. Maximize hit rate using the Clock sweep replacement algorithm.
+You will build a Buffer Pool Manager. It holds up to 8 pages in memory. If a 9th page is requested, it evicts the least useful page.
 
-You are creating a reliable component of B+ Tree Database Index Engine. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
+For example:
+BTREE_GET 1 (Disk Read -> Cache Miss!)
+BTREE_GET 1 (Read from RAM -> Cache Hit!)
+BUFFER_STATS
 
-Supported Operations:
-• BTREE_INSERT <id> <val> -> Inserts into B-Tree with node capacity M=3. Splits on 4th key. Returns 'OK'.
-• BTREE_GET <id> -> Traverses B-Tree nodes to retrieve value. Returns '<val>' or 'NOT_FOUND'.
-• BUFFER_STATS -> Returns buffer pool metrics: CAPACITY: <c> HITS: <h> MISSES: <m> HIT_RATIO: <r>.`,
+Your engine tracks how often it successfully avoids hitting the slow disk.`,
+      howItWorks: `When the database asks for a page:
+1. Check if the page is currently in the Buffer Pool (RAM).
+2. If yes, it's a Hit! Serve it instantly.
+3. If no, it's a Miss! Load it from disk into a frame in the pool.
+4. If all 8 frames are full, use the Clock Sweep algorithm to find a 'cold' page, evict it, and replace it with the new page.`,
       technicalTerms: [
-        {
-                "term": "Buffer frame table",
-                "definition": "Page ID .> Memory Frame mapping."
-        },
-        {
-                "term": "Clock eviction algorithm (second",
-                "definition": "chance page replacement)."
-        },
-        {
-                "term": "Tracking buffer hit rates (HITS / TOTAL)",
-                "definition": ""
-        }
-],
-      description: `In Level 6 (Buffer Pool Caching & Clock Sweeper), you engineer the core mechanisms for B+ Tree Database Index Engine.
-
-Implement a bounded memory buffer pool cache. Maximize hit rate using the Clock sweep replacement algorithm.
-
-Core Engineering Problem: Disk I/O is 10,000x slower than RAM. The buffer pool caches frequently accessed disk pages in memory, evicting cold pages under memory bounds.
-
-Key Mechanisms Implemented:
-• Buffer frame table: Page ID -> Memory Frame mapping.
-• Clock eviction algorithm (second-chance page replacement).
-• Tracking buffer hit rates (HITS / TOTAL).
-
-You build a production-grade buffer pool manager with Clock eviction.`,
+        { term: "Buffer Pool", definition: "A dedicated chunk of RAM used to cache disk pages to speed up database queries." },
+        { term: "Cache Miss", definition: "When requested data isn't in RAM, forcing the engine to read from the slow disk." },
+        { term: "Clock Algorithm", definition: "An efficient way to pick which page to evict by giving recently used pages a 'second chance'." }
+      ],
+      description: `The single biggest factor in database performance is minimizing disk I/O. A Buffer Pool Manager intercepts all requests for disk pages and caches them in memory. Because RAM is limited, it uses eviction policies like LRU or Clock-Sweep to discard cold pages while keeping hot B-Tree roots and frequently queried leaves in memory. In this level, you build the caching layer that makes databases truly fast.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'BTREE_INSERT <id> <val>': Inserts into B-Tree with node capacity M=3. Splits on 4th key. Returns 'OK'.",
-        "Implement 'BTREE_GET <id>': Traverses B-Tree nodes to retrieve value. Returns '<val>' or 'NOT_FOUND'.",
-        "Implement 'BUFFER_STATS': Returns buffer pool metrics: CAPACITY: <c> HITS: <h> MISSES: <m> HIT_RATIO: <r>.",
-        "Enforce system constraints: Bounded buffer pool frame capacity (e.g. 8 pages); Clock replacement tracking.",
-        "Format output according to the specification and flush standard output."
-],
+        "Maintain a cache simulating the buffer pool with a max capacity of 8.",
+        "On BTREE_GET, check if the simulated page (for the target ID) is in the buffer.",
+        "If it is, increment Hits. If not, increment Misses and add it to the buffer.",
+        "If the buffer exceeds capacity, evict an item (you can simulate Clock or simply use LRU for this challenge).",
+        "Implement BUFFER_STATS to output the hit/miss ratio."
+      ],
       diagram: `BUFFER POOL QUERY             CLOCK EVICTION SWEEPER                CACHE STATS
 BTREE_GET 1 (cold)     ──► Buffer Miss (Disk Read -> Frame)  ──► MISSES: 1
 BTREE_GET 1 (warm)     ──► Buffer Hit (RAM Frame Return)     ──► HITS: 1

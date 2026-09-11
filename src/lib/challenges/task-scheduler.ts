@@ -94,54 +94,45 @@ export const taskSchedulerChallenge: ChallengeData = {
       title: "Cluster Node Registry & FIFO Scheduling",
       difficulty: "Easy",
       tagline: "Register cluster nodes with CPU and RAM capacities. Schedule queued tasks in arrival order on the first eligible node.",
-      whatAreYouBuilding: `In this level, you build: Cluster Node Registry & FIFO Scheduling.
+      whatAreYouBuilding: `You are going to build a basic cluster task scheduler. Think of it as an airport gate agent assigning passengers to shuttle buses. A bus must have enough physical seats (CPU) and luggage space (RAM) to take the passenger. The agent processes people first-come, first-served.
 
-Register cluster nodes with CPU and RAM capacities. Schedule queued tasks in arrival order on the first eligible node.
+For example:
+ADD_NODE worker-1 4 8192
+SUBMIT task-1 2 2048
+SCHEDULE
 
-You are creating a reliable component of Multi-Resource Task Scheduler. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• ADD_NODE <node_id> <cpu> <ram> -> Registers a worker node. Returns 'OK'.
-• SUBMIT <task_id> <cpu> <ram> -> Submits task to the queue. Returns 'QUEUED'.
-• SCHEDULE -> Attempts to schedule the next queued task. Returns 'SCHEDULED <task_id> -> <node_id>' or 'WAITING'.`,
+Your scheduler checks if the worker has enough CPU and RAM, and if so, prints:
+SCHEDULED task-1 -> worker-1`,
+      howItWorks: `When you run the scheduler:
+1. Look at the very first task that was submitted to the queue (FIFO).
+2. Iterate through all the registered nodes in the cluster.
+3. Check if a node has BOTH enough free CPU and enough free RAM to accommodate the task.
+4. If a fitting node is found, deduct the CPU and RAM from its available capacity and schedule the task.
+5. If no node has enough space, leave the task in the queue and wait for resources to free up.`,
       technicalTerms: [
         {
-                "term": "Tracking node CPU and RAM capacity vs allocated usage",
-                "definition": ""
+          "term": "Multi-Resource Scheduling",
+          "definition": "Allocating tasks based on multiple simultaneous hardware constraints, typically CPU cores and Memory (RAM)."
         },
         {
-                "term": "Iterating nodes in registration order to find first fitting node (First",
-                "definition": "Fit)."
+          "term": "First-Fit Algorithm",
+          "definition": "A simple bin-packing strategy that places an item in the first container it finds that has enough space."
         },
         {
-                "term": "Queuing tasks when no node currently has sufficient capacity",
-                "definition": ""
+          "term": "FIFO Queue",
+          "definition": "First-In-First-Out. Processing items strictly in the exact order they arrived."
         }
 ],
-      description: `In Level 1 (Cluster Node Registry & FIFO Scheduling), you engineer the core mechanisms for Multi-Resource Task Scheduler.
+      description: `In single-machine environments, the OS handles scheduling. But in a distributed cluster (like Kubernetes), you have a pool of heterogeneous worker nodes. 
 
-Register cluster nodes with CPU and RAM capacities. Schedule queued tasks in arrival order on the first eligible node.
-
-Core Engineering Problem: Simple schedulers fail to track multi-resource constraints. A node must have both enough CPU AND enough RAM to accept a task.
-
-Key Mechanisms Implemented:
-• Tracking node CPU and RAM capacity vs allocated usage.
-• Iterating nodes in registration order to find first fitting node (First-Fit).
-• Queuing tasks when no node currently has sufficient capacity.
-
-You implement node registration and multi-resource capacity checking.`,
+A simple task queue is not enough because tasks have multi-dimensional resource requirements. A machine might have 90% of its CPU idle, but if it is completely out of RAM, it cannot accept a memory-heavy job. Level 1 introduces tracking these dual constraints and using a First-Fit algorithm to assign workloads to available cluster capacity.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'ADD_NODE <node_id> <cpu> <ram>': Registers a worker node. Returns 'OK'.",
-        "Implement 'SUBMIT <task_id> <cpu> <ram>': Submits task to the queue. Returns 'QUEUED'.",
-        "Implement 'SCHEDULE': Attempts to schedule the next queued task. Returns 'SCHEDULED <task_id> -> <node_id>' or 'WAITING'.",
-        "Enforce system constraints: Node IDs and Task IDs are alphanumeric strings; CPU is integer cores, RAM is integer MB.",
-        "Format output according to the specification and flush standard output."
+        "Maintain a list of nodes tracking {id, total_cpu, total_ram, free_cpu, free_ram}.",
+        "Maintain a FIFO queue (array) for pending tasks tracking {id, cpu, ram}.",
+        "On 'ADD_NODE', store the node and initialize its free resources to its total capacity. Print 'OK'.",
+        "On 'SUBMIT', push the task to the back of the pending queue. Print 'QUEUED'.",
+        "On 'SCHEDULE', peek at the first task. Loop through the nodes in registration order. If node.free_cpu >= task.cpu AND node.free_ram >= task.ram, assign it.",
+        "Deduct the resources from the node, remove the task from the queue, track its status as RUNNING, and print 'SCHEDULED <task_id> -> <node_id>'."
 ],
       diagram: `TASK SUBMISSION                           SCHEDULING ENGINE               ASSIGNMENT
 ADD_NODE worker-1 4 8192      ──► register node capacity   ──► OK
@@ -222,52 +213,45 @@ RUNNING worker-1`,
       title: "Task Priority Ordering & Starvation Prevention",
       difficulty: "Medium",
       tagline: "Incorporate task priority (1-100). Higher-priority tasks must schedule before lower-priority tasks.",
-      whatAreYouBuilding: `In this level, you build: Task Priority Ordering & Starvation Prevention.
+      whatAreYouBuilding: `You are going to build a priority-based queue. Think of the gate agent again, but now VIP passengers get to board the bus before economy passengers, regardless of when they arrived at the gate.
 
-Incorporate task priority (1-100). Higher-priority tasks must schedule before lower-priority tasks.
+For example:
+SUBMIT_P low 10 2 2048
+SUBMIT_P high 90 2 2048
+SCHEDULE
 
-You are creating a reliable component of Multi-Resource Task Scheduler. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• SUBMIT_P <task_id> <priority> <cpu> <ram> -> Submits task with priority (higher int = higher priority). Returns 'QUEUED'.
-• SCHEDULE -> Schedules highest priority pending task that fits. Returns 'SCHEDULED <task_id> -> <node_id>' or 'WAITING'.`,
+Your scheduler completely ignores the arrival order and processes the high-priority task first:
+SCHEDULED high -> n1`,
+      howItWorks: `When you run the scheduler:
+1. Look at all the tasks waiting in the pending queue.
+2. Sort or organize them so that the task with the highest priority number is always evaluated first.
+3. If multiple tasks share the exact same high priority, tie-break them by selecting the one that arrived first (FIFO).
+4. Attempt to schedule this highest-priority task on a node.
+5. If the highest-priority task is too big to fit anywhere, leave it in the queue and wait (do not skip it to schedule smaller tasks).`,
       technicalTerms: [
         {
-                "term": "Priority queue dispatch",
-                "definition": "Higher priority number dispatches first."
+          "term": "Priority Queue",
+          "definition": "A data structure where each element has a priority, and higher priority elements are served before lower priority ones."
         },
         {
-                "term": "Tie",
-                "definition": "breaking by submission order (FIFO among same priority)."
+          "term": "Priority Inversion",
+          "definition": "A failure mode where a low-priority task hogs resources, preventing a high-priority task from executing."
         },
         {
-                "term": "Skipping non",
-                "definition": "fitting high priority tasks or blocking until resources open."
+          "term": "Preemption / Head-of-Line",
+          "definition": "Ensuring the most critical task is at the absolute front of the line, blocking others until it gets what it needs."
         }
 ],
-      description: `In Level 2 (Task Priority Ordering & Starvation Prevention), you engineer the core mechanisms for Multi-Resource Task Scheduler.
+      description: `A strict FIFO queue is disastrous in production. If an engineer submits 1,000 background data-processing jobs, they will clog the entire cluster. When a critical, customer-facing web server crashes and needs to restart, it will be stuck at the back of the queue behind the 1,000 background jobs.
 
-Incorporate task priority (1-100). Higher-priority tasks must schedule before lower-priority tasks.
-
-Core Engineering Problem: FIFO causes priority inversion: a batch of low-priority reporting jobs blocks critical customer-facing API workers.
-
-Key Mechanisms Implemented:
-• Priority queue dispatch: Higher priority number dispatches first.
-• Tie-breaking by submission order (FIFO among same priority).
-• Skipping non-fitting high priority tasks or blocking until resources open.
-
-You implement priority-ordered queueing with deterministic tie-breaking.`,
+Priority queueing ensures that mission-critical tasks jump to the front of the line. By forcing the scheduler to evaluate by priority rather than arrival time, you guarantee that your most important workloads receive resources first.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'SUBMIT_P <task_id> <priority> <cpu> <ram>': Submits task with priority (higher int = higher priority). Returns 'QUEUED'.",
-        "Implement 'SCHEDULE': Schedules highest priority pending task that fits. Returns 'SCHEDULED <task_id> -> <node_id>' or 'WAITING'.",
-        "Enforce system constraints: Priority is integer between 1 and 1000; Higher value means higher priority.",
-        "Format output according to the specification and flush standard output."
+        "Update your pending task queue to store {id, priority, cpu, ram, arrival_index}.",
+        "On 'SUBMIT_P <id> <priority> <cpu> <ram>', push the task to the queue and print 'QUEUED'.",
+        "When 'SCHEDULE' is called, sort the pending queue. Sort primarily by priority (descending). On a tie, sort by arrival_index (ascending).",
+        "Take the single highest-priority task at the front of the sorted queue.",
+        "Attempt to place it using the First-Fit node logic from Level 1.",
+        "If it fits, schedule it. If it doesn't fit, print 'WAITING' (do not try to schedule the second item in the queue)."
 ],
       diagram: `TASK SUBMISSION (PRIORITY QUEUE)          READY QUEUE (ORDERED HEAP)             SCHEDULER
 SUBMIT_P low  10 2 2048  ──► ┌──────────────────────────────────────────┐ ──► SCHEDULE
@@ -331,50 +315,43 @@ SUBMIT_P med  50 2 2048  ──► │ P50: [med]  (cpu=2, ram=2048)  │       
       title: "Best-Fit Resource Packing",
       difficulty: "Medium",
       tagline: "Select the node with the least remaining resources that still fits the task (Best-Fit) to minimize fragmentation.",
-      whatAreYouBuilding: `In this level, you build: Best-Fit Resource Packing.
+      whatAreYouBuilding: `You are going to build a Best-Fit bin-packing algorithm. Think of the gate agent trying to pack the shuttle buses as efficiently as possible. Instead of putting a passenger on the first bus they see, they look at all buses and put the passenger on the bus that leaves the least amount of empty, stranded space.
 
-Select the node with the least remaining resources that still fits the task (Best-Fit) to minimize fragmentation.
+For example:
+SCHEDULE_BEST
 
-You are creating a reliable component of Multi-Resource Task Scheduler. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• SCHEDULE_BEST -> Schedules highest priority task on node with least leftover capacity. Returns 'SCHEDULED <t> -> <n>' or 'WAITING'.`,
+Your scheduler checks all nodes and calculates a 'leftover' score, picking the tightest fit:
+SCHEDULED t1 -> n-small`,
+      howItWorks: `When attempting to place a task:
+1. Look at every single node in the cluster.
+2. Filter out any nodes that don't have enough CPU or RAM to hold the task.
+3. For the nodes that CAN hold the task, calculate a 'score' representing how much empty space would be left over if the task was placed there.
+4. Select the node with the lowest score (the tightest fit).
+5. If there's a tie for the tightest fit, pick the node whose ID comes first alphabetically.`,
       technicalTerms: [
         {
-                "term": "Best",
-                "definition": "Fit algorithm. Score nodes based on remaining capacity after placing the task."
+          "term": "Bin-Packing",
+          "definition": "An optimization problem focused on packing items of various sizes into a finite number of containers in the most efficient way."
         },
         {
-                "term": "Score metric",
-                "definition": "Minimized remaining CPU + RAM normalized ratio."
+          "term": "Best-Fit Heuristic",
+          "definition": "A strategy that places an item in the container that will leave the least amount of leftover space."
         },
         {
-                "term": "Tie",
-                "definition": "breaking nodes deterministically by alphabetical node_id."
+          "term": "Resource Fragmentation",
+          "definition": "When a cluster has plenty of total resources, but they are scattered across many machines in small chunks, preventing large tasks from running."
         }
 ],
-      description: `In Level 3 (Best-Fit Resource Packing), you engineer the core mechanisms for Multi-Resource Task Scheduler.
+      description: `The First-Fit algorithm from Level 1 is fast, but it causes severe 'resource fragmentation'. It tends to spread small tasks thinly across all available servers. Eventually, every server is 50% full. When a massive task arrives requiring 100% of a machine, it cannot be scheduled because no single machine has enough contiguous space, even though the cluster overall is half empty.
 
-Select the node with the least remaining resources that still fits the task (Best-Fit) to minimize fragmentation.
-
-Core Engineering Problem: First-Fit spreads tasks thinly across all nodes, leaving no node with enough contiguous capacity for a large upcoming task.
-
-Key Mechanisms Implemented:
-• Best-Fit algorithm: Score nodes based on remaining capacity after placing the task.
-• Score metric: Minimized remaining CPU + RAM normalized ratio.
-• Tie-breaking nodes deterministically by alphabetical node_id.
-
-You implement best-fit bin-packing to compact cluster resource utilization.`,
+The Best-Fit algorithm solves this by tightly packing tasks into servers that are already partially full, intentionally leaving other servers completely empty and available for large, demanding workloads.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'SCHEDULE_BEST': Schedules highest priority task on node with least leftover capacity. Returns 'SCHEDULED <t> -> <n>' or 'WAITING'.",
-        "Enforce system constraints: Score by leftover CPU remaining + leftover RAM remaining / 1024.",
-        "Format output according to the specification and flush standard output."
+        "On 'SCHEDULE_BEST', sort the pending tasks by priority as in Level 2.",
+        "For the highest priority task, iterate through all nodes that can fit it (node.free_cpu >= task.cpu AND node.free_ram >= task.ram).",
+        "Calculate a leftover score for each eligible node: (node.free_cpu - task.cpu) + ((node.free_ram - task.ram) / 1024).",
+        "Find the node with the lowest score. If multiple nodes tie for the lowest score, select the one with the alphabetically smallest node_id.",
+        "Deduct the resources from the winning node, mark the task RUNNING, and print 'SCHEDULED <task_id> -> <node_id>'.",
+        "If no node can fit the task, print 'WAITING'."
 ],
       diagram: `INCOMING TASK                               CLUSTER NODES (FIT & SCORE)            PLACEMENT
 SUBMIT_P t1 10 2 2048                        ┌──────────────────────────────┐
@@ -439,52 +416,43 @@ Min leftover capacity wins                   │ Leftover: 0c / 0MB   (BEST!) �
       title: "Task Lifecycle & Dynamic Deallocation",
       difficulty: "Medium",
       tagline: "Support task completion, freeing assigned CPU and RAM, and allowing waiting tasks to schedule immediately.",
-      whatAreYouBuilding: `In this level, you build: Task Lifecycle & Dynamic Deallocation.
+      whatAreYouBuilding: `You are going to build a dynamic lifecycle and resource deallocator. Think of passengers finally arriving at the airplane and getting off the shuttle bus. The gate agent immediately marks those seats as available again so waiting passengers can board.
 
-Support task completion, freeing assigned CPU and RAM, and allowing waiting tasks to schedule immediately.
+For example:
+COMPLETE t1
 
-You are creating a reliable component of Multi-Resource Task Scheduler. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• COMPLETE <task_id> -> Marks running task finished, frees node resources. Returns 'COMPLETED <task_id>' or 'NOT_FOUND'.
-• CLUSTER_STATS -> Returns 'NODES <count> RUNNING <count> CPU_FREE <cores> RAM_FREE <mb>'.`,
+Your scheduler marks the task as finished, adds its CPU and RAM back to the worker node, and prints:
+COMPLETED t1`,
+      howItWorks: `When a task finishes:
+1. Look up which node the task was running on.
+2. Add the task's CPU and RAM requirements back into the node's pool of available free resources.
+3. Change the task's internal status from RUNNING to COMPLETED.
+4. Now that resources have been freed up, the next time SCHEDULE is called, a previously stuck task might finally be able to run.
+5. Calculate cluster-wide statistics by summing up the free resources across all nodes.`,
       technicalTerms: [
         {
-                "term": "Transitions",
-                "definition": "PENDING .> RUNNING .> COMPLETED."
+          "term": "Task Lifecycle",
+          "definition": "The state machine a workload moves through: PENDING (queued) -> RUNNING (assigned) -> COMPLETED (finished)."
         },
         {
-                "term": "Atomic subtraction of allocated resources upon task completion",
-                "definition": ""
+          "term": "Resource Deallocation",
+          "definition": "The critical process of reclaiming hardware capacity from a finished process so it can be reused."
         },
         {
-                "term": "Cluster utilization statistics reporting",
-                "definition": ""
+          "term": "Cluster Telemetry",
+          "definition": "Aggregated metrics showing the total health and available capacity of the entire distributed system."
         }
 ],
-      description: `In Level 4 (Task Lifecycle & Dynamic Deallocation), you engineer the core mechanisms for Multi-Resource Task Scheduler.
+      description: `A scheduler is not a one-time script; it is a continuous, dynamic system. Tasks are constantly being submitted, running for a period of time, and then finishing. 
 
-Support task completion, freeing assigned CPU and RAM, and allowing waiting tasks to schedule immediately.
-
-Core Engineering Problem: Schedulers are dynamic: workloads finish and return resources. Resource leaks during deallocation permanently paralyze nodes.
-
-Key Mechanisms Implemented:
-• Transitions: PENDING -> RUNNING -> COMPLETED.
-• Atomic subtraction of allocated resources upon task completion.
-• Cluster utilization statistics reporting.
-
-You implement atomic deallocation and cluster utilization telemetry.`,
+If you do not correctly deallocate resources when a task completes, your cluster will suffer from a permanent 'resource leak'. The system will think the nodes are completely full when they are actually sitting idle. Implementing the COMPLETED state transition ensures that hardware capacity is correctly recycled back into the scheduling pool.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'COMPLETE <task_id>': Marks running task finished, frees node resources. Returns 'COMPLETED <task_id>' or 'NOT_FOUND'.",
-        "Implement 'CLUSTER_STATS': Returns 'NODES <count> RUNNING <count> CPU_FREE <cores> RAM_FREE <mb>'.",
-        "Enforce system constraints: Completing non-running task returns 'NOT_FOUND'.",
-        "Format output according to the specification and flush standard output."
+        "Maintain a dictionary tracking the state and assigned node for every task in the system.",
+        "On 'COMPLETE <task_id>', verify the task exists and is currently in the RUNNING state. If not, print 'NOT_FOUND'.",
+        "Find the node the task was assigned to. Add the task's cpu to node.free_cpu and its ram to node.free_ram.",
+        "Update the task's state to COMPLETED. Print 'COMPLETED <task_id>'.",
+        "On 'CLUSTER_STATS', count the total registered nodes and the number of tasks currently in the RUNNING state.",
+        "Sum up free_cpu and free_ram across all nodes. Print 'NODES <n> RUNNING <r> CPU_FREE <c> RAM_FREE <m>'."
 ],
       diagram: `TASK LIFECYCLE                               NODE CAPACITY STATE                   QUEUED JOBS
 COMPLETE t1 (cpu=4, ram=4096)                 ┌─────────────────────────────┐
@@ -550,50 +518,43 @@ COMPLETE t1 (cpu=4, ram=4096)                 ┌──────────�
       title: "Node Heartbeat Failure & Pod Eviction",
       difficulty: "Hard",
       tagline: "Handle node crashes. Tasks running on dead nodes must be evicted and returned to PENDING state with original priority.",
-      whatAreYouBuilding: `In this level, you build: Node Heartbeat Failure & Pod Eviction.
+      whatAreYouBuilding: `You are going to build a fault-tolerance eviction system. Think of a shuttle bus breaking down on the runway. The gate agent marks the bus as out of service, safely pulls all the passengers off it, and puts them back at the front of the VIP line for the next available bus.
 
-Handle node crashes. Tasks running on dead nodes must be evicted and returned to PENDING state with original priority.
+For example:
+KILL_NODE n1
 
-You are creating a reliable component of Multi-Resource Task Scheduler. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• KILL_NODE <node_id> -> Simulates node crash. Evicts running tasks back to PENDING queue. Returns 'DEAD <node_id> EVICTED <count>' or 'NOT_FOUND'.`,
+Your scheduler marks node n1 as dead, evicts all its running tasks back to the queue, and prints:
+DEAD n1 EVICTED 1`,
+      howItWorks: `When a node crashes:
+1. Find the node in the registry and mark it as DEAD so it cannot receive any future tasks.
+2. Identify every single task that was currently RUNNING on that specific node.
+3. Change the status of those tasks from RUNNING back to PENDING.
+4. Put those tasks back into the main priority queue, retaining their original high priority.
+5. The next time SCHEDULE is called, the system will automatically re-assign them to healthy nodes.`,
       technicalTerms: [
         {
-                "term": "Removing node from active cluster topology",
-                "definition": ""
+          "term": "Fault Tolerance",
+          "definition": "The ability of a system to continue operating properly in the event of the failure of some of its components."
         },
         {
-                "term": "Iterating running tasks assigned to the dead node and resetting their status to PENDING",
-                "definition": ""
+          "term": "Pod Eviction",
+          "definition": "Forcefully terminating workloads running on an unhealthy machine so they can be moved elsewhere."
         },
         {
-                "term": "Re",
-                "definition": "inserting evicted tasks into the priority scheduling queue."
+          "term": "Rescheduling",
+          "definition": "Taking a task that was interrupted by a hardware failure and placing it back into the queue for a new assignment."
         }
 ],
-      description: `In Level 5 (Node Heartbeat Failure & Pod Eviction), you engineer the core mechanisms for Multi-Resource Task Scheduler.
+      description: `In large-scale cloud environments, hardware failure is not an anomaly; it is a statistical certainty. Power supplies fail, network cables get unplugged, and kernel panics freeze servers. 
 
-Handle node crashes. Tasks running on dead nodes must be evicted and returned to PENDING state with original priority.
-
-Core Engineering Problem: Hardware fails constantly in large clusters. If a node loses connection, its tasks must be automatically rescheduled elsewhere.
-
-Key Mechanisms Implemented:
-• Removing node from active cluster topology.
-• Iterating running tasks assigned to the dead node and resetting their status to PENDING.
-• Re-inserting evicted tasks into the priority scheduling queue.
-
-You master fault-tolerant failure recovery and automated rescheduling.`,
+When a worker node goes dark, the scheduler must act immediately. It must identify the 'blast radius' (which tasks were running on the dead machine) and automate their recovery. By evicting the orphaned tasks back into the priority queue, the scheduler guarantees that critical workloads self-heal and migrate to healthy hardware without human intervention.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'KILL_NODE <node_id>': Simulates node crash. Evicts running tasks back to PENDING queue. Returns 'DEAD <node_id> EVICTED <count>' or 'NOT_FOUND'.",
-        "Enforce system constraints: Dead nodes cannot receive future tasks.",
-        "Format output according to the specification and flush standard output."
+        "On 'KILL_NODE <node_id>', find the node. If it doesn't exist, print 'NOT_FOUND'.",
+        "Mark the node as DEAD (or remove it from your active eligible nodes list).",
+        "Loop through all tasks in the system. Find any task that is currently RUNNING on this specific node_id.",
+        "For each affected task, change its state back to PENDING and push it back into your main priority queue.",
+        "Count how many tasks were evicted. Print 'DEAD <node_id> EVICTED <count>'.",
+        "Ensure that 'SCHEDULE_BEST' completely ignores DEAD nodes when searching for available capacity."
 ],
       diagram: `CRASH DETECTOR                               DEAD NODE WORKLOADS                   RE-SCHEDULING
 KILL_NODE n1 (Node Failure)                  ┌─────────────────────────────┐
@@ -660,54 +621,46 @@ DEAD n1 EVICTED 2                            │  • t2 (P10) ──► EVICTED
       title: "Multi-Tenant Dominant Resource Fairness (DRF)",
       difficulty: "Hard",
       tagline: "Implement DRF across multiple tenants. Allocate to the tenant with the lowest dominant share.",
-      whatAreYouBuilding: `In this level, you build: Multi-Tenant Dominant Resource Fairness (DRF).
+      whatAreYouBuilding: `You are going to build a Dominant Resource Fairness (DRF) allocator. Think of two groups of passengers: Group A needs lots of seats but no luggage space, Group B needs lots of luggage space but few seats. DRF perfectly balances fairness by looking at the resource they are 'dominating' the most.
 
-Implement DRF across multiple tenants. Allocate to the tenant with the lowest dominant share.
+For example:
+SCHEDULE_DRF
+USER_SHARE alice
 
-You are creating a reliable component of Multi-Resource Task Scheduler. When commands arrive on standard input, your program parses the action and produces the expected output.`,
-      howItWorks: `Core steps your code performs:
-1. Read input command lines from standard input.
-2. Parse the command name and extract arguments.
-3. Update the internal state or data structure.
-4. Format and print the exact result to standard output.
-
-Supported Operations:
-• SUBMIT_USER <user> <task_id> <cpu> <ram> -> Submits task under a tenant/user account. Returns 'QUEUED'.
-• SCHEDULE_DRF -> Schedules next task for tenant with lowest dominant share. Returns 'DRF_SCHEDULED <user> <task_id> -> <node_id>' or 'WAITING'.
-• USER_SHARE <user> -> Returns 'SHARE <user> <pct>%' where pct is dominant share percentage rounded to 1 decimal place.`,
+Your scheduler picks the user who has received the lowest fair share of the cluster, and prints:
+DRF_SCHEDULED alice a1 -> n1
+SHARE alice 20.0%`,
+      howItWorks: `When DRF scheduling runs:
+1. Calculate the total CPU and RAM existing in the entire cluster.
+2. For each user, sum up the CPU and RAM of all their currently RUNNING tasks.
+3. Calculate their percentage of the total CPU and total RAM. Their 'dominant share' is the higher of these two percentages.
+4. Find the user with the absolute lowest dominant share (the one being most starved of resources).
+5. Schedule the next pending task for that specific user.`,
       technicalTerms: [
         {
-                "term": "Dominant share = max(allocated_cpu / total_cpu, allocated_ram / total_ram)",
-                "definition": ""
+          "term": "Dominant Resource Fairness (DRF)",
+          "definition": "An algorithm that ensures fair multi-tenant sharing in systems where tasks require multiple different types of resources."
         },
         {
-                "term": "Selecting tenant with minimum dominant share for next allocation",
-                "definition": ""
+          "term": "Dominant Share",
+          "definition": "The maximum of a user's percentage allocation across all resource types (e.g., if a user has 50% of CPU but 10% of RAM, their dominant share is 50%)."
         },
         {
-                "term": "Multi",
-                "definition": "tenant fairness in shared computing clusters."
+          "term": "Max-Min Fairness",
+          "definition": "Maximizing the allocation of the user who currently has the minimum (lowest) share of resources."
         }
 ],
-      description: `In Level 6 (Multi-Tenant Dominant Resource Fairness (DRF)), you engineer the core mechanisms for Multi-Resource Task Scheduler.
+      description: `Simple round-robin fairness doesn't work with multiple resources. If Alice runs tasks requiring heavy CPU and Bob runs tasks requiring heavy RAM, how do you decide who is hogging the cluster? 
 
-Implement DRF across multiple tenants. Allocate to the tenant with the lowest dominant share.
-
-Core Engineering Problem: Naive priority allows one user with memory-heavy jobs to starve users with CPU-heavy jobs. DRF calculates dominant resource share for true fair-share scheduling.
-
-Key Mechanisms Implemented:
-• Dominant share = max(allocated_cpu / total_cpu, allocated_ram / total_ram).
-• Selecting tenant with minimum dominant share for next allocation.
-• Multi-tenant fairness in shared computing clusters.
-
-You implement the premier distributed systems multi-resource fairness algorithm.`,
+The DRF algorithm (invented at UC Berkeley and used in Apache Mesos) solves this. It determines each user's 'dominant resource'—the bottleneck they are stressing the most. By always giving the next task to the user with the lowest dominant share, DRF perfectly mathematically balances the cluster, ensuring neither CPU-heavy nor RAM-heavy workloads can starve each other.`,
       implementationGuide: [
-        "Read input commands line-by-line from standard input and parse arguments.",
-        "Implement 'SUBMIT_USER <user> <task_id> <cpu> <ram>': Submits task under a tenant/user account. Returns 'QUEUED'.",
-        "Implement 'SCHEDULE_DRF': Schedules next task for tenant with lowest dominant share. Returns 'DRF_SCHEDULED <user> <task_id> -> <node_id>' or 'WAITING'.",
-        "Implement 'USER_SHARE <user>': Returns 'SHARE <user> <pct>%' where pct is dominant share percentage rounded to 1 decimal place.",
-        "Enforce system constraints: Dominant share is max(allocated_cpu / total_cluster_cpu, allocated_ram / total_cluster_ram).",
-        "Format output according to the specification and flush standard output."
+        "On 'SUBMIT_USER <user> <task> <cpu> <ram>', store the task in a queue specifically mapped to that user. Print 'QUEUED'.",
+        "On 'SCHEDULE_DRF', calculate cluster_cpu (sum of all nodes' total CPU) and cluster_ram (sum of all nodes' total RAM).",
+        "For every user with pending tasks, calculate their running_cpu and running_ram (sum of their tasks currently in RUNNING state).",
+        "Calculate their dominant share: max(running_cpu / cluster_cpu, running_ram / cluster_ram).",
+        "Find the user with the lowest dominant share. Tie-break alphabetically by username.",
+        "Take that user's oldest pending task. Assign it using Best-Fit logic. Print 'DRF_SCHEDULED <user> <task_id> -> <node_id>'.",
+        "On 'USER_SHARE <user>', recalculate their dominant share, multiply by 100, and print 'SHARE <user> <pct>%' formatted to 1 decimal place."
 ],
       diagram: `TENANT SUBMISSIONS                           DOMINANT SHARE TRACKER                DRF ARBITRATOR
 Alice: SUBMIT_USER alice (2c, 100M)  ──►     ┌──────────────────────────────┐ ──► Min dominant share:
