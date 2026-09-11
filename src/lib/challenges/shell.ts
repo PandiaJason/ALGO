@@ -100,7 +100,7 @@ export const shellChallenge: ChallengeData = {
       shortTitle: "REPL & Builtins",
       title: "Interactive REPL & Builtins",
       difficulty: "Easy",
-      tagline: "Can you make it work? Parse command lines and execute echo, pwd, cd, and exit builtins.",
+      tagline: "Parse command lines and execute echo, pwd, cd, and exit builtins.",
       diagram: `USER INPUT: "echo hello world"
       │
       ▼
@@ -149,7 +149,7 @@ export const shellChallenge: ChallengeData = {
       shortTitle: "Fork & Exec",
       title: "Process Fork & Exec",
       difficulty: "Medium",
-      tagline: "Do you understand the core mechanism? Spawn child processes using fork() and execvp() using the 'run' prefix, and capture return status.",
+      tagline: "Spawn child processes using fork() and execvp() using the 'run' prefix, and capture return status.",
       diagram: `INPUT COMMAND: "run ls -l /tmp"
       │
       ▼
@@ -201,7 +201,7 @@ OUTPUT: [binary stdout...] \\n [Process exited with code 0]`,
       shortTitle: "Signal Traps",
       title: "Signal Handling & Zombie Reaping",
       difficulty: "Medium",
-      tagline: "Does it remain correct under edge cases and failures? Trap SIGINT (Ctrl+C) and reap background zombies.",
+      tagline: "Trap SIGINT (Ctrl+C) and reap background zombies.",
       diagram: `SIGNAL TRAP & ZOMBIE REAPING:
   Parent Shell ──► sigaction(SIGINT, handler, NULL)
       │
@@ -252,7 +252,7 @@ BACKGROUND & REAPING:
       shortTitle: "Pipelines & Redirection",
       title: "Multi-stage Pipelines & Redirection",
       difficulty: "Hard",
-      tagline: "Does it handle concurrency, workload and growth? Chain raw commands (without 'run' prefix) with pipe() and redirect I/O streams.",
+      tagline: "Chain raw commands (without 'run' prefix) with pipe() and redirect I/O streams.",
       diagram: `INPUT: "cat names.txt | sort | head -n 1 > top.txt"
 
 ┌───────────────┐      pipefd1      ┌───────────────┐      pipefd2      ┌───────────────┐
@@ -300,7 +300,7 @@ BACKGROUND & REAPING:
       shortTitle: "Syscall Profiling",
       title: "Process Latency & Syscall Profiling",
       difficulty: "Hard",
-      tagline: "Can you identify bottlenecks and prove performance? Profile fork/exec latency and IPC throughput.",
+      tagline: "Profile fork/exec latency and IPC throughput.",
       diagram: `INPUT: "profile echo fast"
       │
       ▼
@@ -353,7 +353,7 @@ OUTPUT: fast \\n [ELAPSED_US: 1420 SYSCALLS: FORK,EXEC,WAIT]`,
       shortTitle: "Zero-Allocation Dispatch",
       title: "Zero-Allocation Fast Path & Buffer Recycling",
       difficulty: "Hard",
-      tagline: "Can you make it measurably better? Eliminate heap allocations during command parsing and dispatch.",
+      tagline: "Eliminate heap allocations during command parsing and dispatch.",
       diagram: `ZERO-ALLOCATION HOT PATH:
 Raw Buffer: "echo   hello   world\\0"
               ▲       ▲       ▲

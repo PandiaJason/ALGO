@@ -99,7 +99,7 @@ export const objectStoreChallenge: ChallengeData = {
       shortTitle: "Blob Store",
       title: "Content-Addressed Blob Storage",
       difficulty: "Easy",
-      tagline: "Can you make it work? Implement PUT, GET, and DELETE operations with SHA-256 content addressing.",
+      tagline: "Implement PUT, GET, and DELETE operations with SHA-256 content addressing.",
       diagram: `INPUT: "PUT doc.txt Hello S3"
       │
       ▼
@@ -152,7 +152,7 @@ OUTPUT: PUT_OK 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824`
       shortTitle: "Deduplication",
       title: "Rabin Fingerprinting & Deduplication",
       difficulty: "Medium",
-      tagline: "Do you understand the core mechanism? Split streams into content-defined chunks and reuse identical blocks.",
+      tagline: "Split streams into content-defined chunks and reuse identical blocks.",
       diagram: `CONTENT-DEFINED CHUNKING (CDC) & DEDUPLICATION:
 
 Stream: [AAAAA_BBBBB_CCCCC_DDDDD]
@@ -206,7 +206,7 @@ Object Manifest for User 2: [H1, H2, H5, H4] ──► 75% Storage Saved!`,
       shortTitle: "Bit-Rot Scrub",
       title: "Bit Rot Detection & Background Scrubbing",
       difficulty: "Hard",
-      tagline: "Does it remain correct under edge cases and failures? Detect silent data corruption via periodic block scrubbing.",
+      tagline: "Detect silent data corruption via periodic block scrubbing.",
       diagram: `BACKGROUND SCRUBBER PIPELINE:
 
   Block Storage Drive
@@ -264,7 +264,7 @@ Object Manifest for User 2: [H1, H2, H5, H4] ──► 75% Storage Saved!`,
       shortTitle: "Multipart Upload",
       title: "Concurrent Multipart Uploads",
       difficulty: "Hard",
-      tagline: "Does it handle concurrency, workload and growth? Support multi-gigabyte uploads via parallel part streaming.",
+      tagline: "Support multi-gigabyte uploads via parallel part streaming.",
       diagram: `MULTIPART UPLOAD STATE MACHINE:
 
   1. init-multipart "large.iso" ──► Session ID: UP_123
@@ -318,7 +318,7 @@ Object Manifest for User 2: [H1, H2, H5, H4] ──► 75% Storage Saved!`,
       shortTitle: "IOPS & Amplification",
       title: "IOPS Saturation & Write Amplification",
       difficulty: "Hard",
-      tagline: "Can you identify bottlenecks and prove performance? Measure chunking CPU costs vs disk write amplification.",
+      tagline: "Measure chunking CPU costs vs disk write amplification.",
       diagram: `WRITE AMPLIFICATION FACTOR (WAF) & CHUNKER PROFILING:
 
   Logical Payload: 1,048,576 bytes (1.0 MB)
@@ -374,7 +374,7 @@ Object Manifest for User 2: [H1, H2, H5, H4] ──► 75% Storage Saved!`,
       shortTitle: "Direct I/O Streaming",
       title: "Zero-Copy Direct I/O & Block Coalescing",
       difficulty: "Hard",
-      tagline: "Can you make it measurably better? Eliminate kernel page cache pollution using O_DIRECT aligned writes.",
+      tagline: "Eliminate kernel page cache pollution using O_DIRECT aligned writes.",
       diagram: `DIRECT I/O vs BUFFERED KERNEL PAGE CACHE:
 
   Standard I/O (Thrashing):

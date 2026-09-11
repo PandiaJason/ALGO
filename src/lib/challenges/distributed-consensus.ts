@@ -99,7 +99,7 @@ export const distributedConsensusChallenge: ChallengeData = {
       shortTitle: "Leader Election",
       title: "Leader Election & Heartbeat Protocol",
       difficulty: "Medium",
-      tagline: "Can you make it work? Elect a stable cluster leader using randomized timeouts and RequestVote RPCs.",
+      tagline: "Elect a stable cluster leader using randomized timeouts and RequestVote RPCs.",
       diagram: `RAFT LEADER ELECTION STATE MACHINE:
 
   [Follower] ──(Election Timeout Expires)──► [Candidate]
@@ -156,7 +156,7 @@ export const distributedConsensusChallenge: ChallengeData = {
       shortTitle: "Log Replication",
       title: "Log Replication & State Machine Commit",
       difficulty: "Hard",
-      tagline: "Do you understand the core mechanism? Replicate log entries across a majority quorum and advance commitIndex.",
+      tagline: "Replicate log entries across a majority quorum and advance commitIndex.",
       diagram: `QUORUM LOG REPLICATION PIPELINE:
 
   Client ──► Leader (Node 1)
@@ -211,7 +211,7 @@ export const distributedConsensusChallenge: ChallengeData = {
       shortTitle: "Network Partitions",
       title: "Network Partitions & Split-Brain Mitigation",
       difficulty: "Hard",
-      tagline: "Does it remain correct under edge cases and failures? Prevent split-brain writes during asymmetric network splits.",
+      tagline: "Prevent split-brain writes during asymmetric network splits.",
       diagram: `5-NODE CLUSTER ASYMMETRIC PARTITION:
 
   Minority Partition (2 nodes):
@@ -272,7 +272,7 @@ export const distributedConsensusChallenge: ChallengeData = {
       shortTitle: "Membership & Snapshots",
       title: "Cluster Membership Changes & Log Compaction",
       difficulty: "Expert",
-      tagline: "Does it handle concurrency, workload and growth? Add/remove nodes dynamically and compact infinite logs with snapshots.",
+      tagline: "Add/remove nodes dynamically and compact infinite logs with snapshots.",
       diagram: `LOG COMPACTION & POINT-IN-TIME SNAPSHOTTING:
 
   Historical Log:
@@ -326,7 +326,7 @@ export const distributedConsensusChallenge: ChallengeData = {
       shortTitle: "Convergence Profiling",
       title: "Election Convergence & Replication Lag",
       difficulty: "Hard",
-      tagline: "Can you identify bottlenecks and prove performance? Measure failover election latency and replication lag.",
+      tagline: "Measure failover election latency and replication lag.",
       diagram: `FAILOVER LATENCY TIMELINE & REPLICATION LAG:
 
   Leader Crashes (t = 0 ms)
@@ -381,7 +381,7 @@ export const distributedConsensusChallenge: ChallengeData = {
       shortTitle: "Pipelined Replication",
       title: "Pipelined Log Replication & Batching",
       difficulty: "Expert",
-      tagline: "Can you make it measurably better? Eliminate synchronous round-trips via pipelined AppendEntries and read-index.",
+      tagline: "Eliminate synchronous round-trips via pipelined AppendEntries and read-index.",
       diagram: `SYNCHRONOUS vs PIPELINED REPLICATION:
 
   Synchronous (Sequential Round-trips):

@@ -98,7 +98,7 @@ export const containerRuntimeChallenge: ChallengeData = {
       shortTitle: "Namespaces",
       title: "Process Isolation with Linux Namespaces",
       difficulty: "Medium",
-      tagline: "Can you make it work? Spawn a child process with isolated PID and hostname namespaces.",
+      tagline: "Spawn a child process with isolated PID and hostname namespaces.",
       diagram: `LINUX NAMESPACE DUAL-PERSPECTIVE MAPPING:
 
 HOST OS VIEW (Global Kernel Table):
@@ -147,7 +147,7 @@ CONTAINER INTERNAL VIEW:
       shortTitle: "Pivot Root",
       title: "Filesystem Isolation & Pivot Root",
       difficulty: "Hard",
-      tagline: "Do you understand the core mechanism? Securely jail container processes using pivot_root into a fresh rootfs.",
+      tagline: "Securely jail container processes using pivot_root into a fresh rootfs.",
       diagram: `PIVOT_ROOT JAIL MECHANICS:
 
   Host Mount Hierarchy:
@@ -203,7 +203,7 @@ CONTAINER INTERNAL VIEW:
       shortTitle: "Cgroups V2",
       title: "Cgroups V2 Resource Constraints",
       difficulty: "Hard",
-      tagline: "Does it remain correct under edge cases and failures? Enforce memory limits, CPU quotas, and fork-bomb protection.",
+      tagline: "Enforce memory limits, CPU quotas, and fork-bomb protection.",
       diagram: `CGROUPS V2 UNIFIED CONTROLLERS:
 
   /sys/fs/cgroup/algo_sandbox_42/
@@ -257,7 +257,7 @@ CONTAINER INTERNAL VIEW:
       shortTitle: "Sandbox Spawning",
       title: "Multi-Tenant Parallel Sandbox Spawning",
       difficulty: "Hard",
-      tagline: "Does it handle concurrency, workload and growth? Concurrently spawn 50 isolated sandboxes with veth bridge networking.",
+      tagline: "Concurrently spawn 50 isolated sandboxes with veth bridge networking.",
       diagram: `MULTI-TENANT ISOLATED EXECUTION POOL:
 
        Host Supervisor / Dispatcher
@@ -315,7 +315,7 @@ CONTAINER INTERNAL VIEW:
       shortTitle: "Cold-Boot Latency",
       title: "Startup Latency & Cold-Start Microbenchmarks",
       difficulty: "Hard",
-      tagline: "Can you identify bottlenecks and prove performance? Profile container cold-start down to the microsecond.",
+      tagline: "Profile container cold-start down to the microsecond.",
       diagram: `CONTAINER COLD-BOOT TIMELINE (Microsecond Precision):
 
 Time: 0 μs             +1,200 μs            +3,300 μs        +4,100 μs
@@ -365,7 +365,7 @@ Time: 0 μs             +1,200 μs            +3,300 μs        +4,100 μs
       shortTitle: "Fast Clone Pool",
       title: "Pre-Forked Worker Pools & Fast Clone",
       difficulty: "Expert",
-      tagline: "Can you make it measurably better? Achieve sub-3ms cold starts via pre-initialized standby worker pools.",
+      tagline: "Achieve sub-3ms cold starts via pre-initialized standby worker pools.",
       diagram: `PRE-FORKED HOT STANDBY DISPATCH:
 
   Idle Pre-Forked Pool (Paused at Unix Domain Socket recv):

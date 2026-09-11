@@ -654,7 +654,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
                                     {UNIVERSAL_STAGES[lvl.level].question} —{" "}
                                   </span>
                                 )}
-                                {lvl.tagline || lvl.description}
+                                {(lvl.tagline || lvl.description || "").replace(/^(Can you|Do you|Does it)[^?]*\?\s*/i, "")}
                               </p>
                             </div>
                           </div>

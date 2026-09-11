@@ -96,7 +96,7 @@ export const gitChallenge: ChallengeData = {
       shortTitle: "Blob Storage",
       title: "Blob Storage & SHA-1 Hashing",
       difficulty: "Easy",
-      tagline: "Can you make it work? Compute SHA-1 object headers ('blob <size>\\0<data>') and store objects.",
+      tagline: "Compute SHA-1 object headers ('blob <size>\\0<data>') and store objects.",
       diagram: `INPUT: "hash-object hello world"
       │
       ▼
@@ -153,7 +153,7 @@ OUTPUT: 95d09f2b10159347eece71399a7e2e907ea3df4f`,
       shortTitle: "Tree & Commit DAG",
       title: "Tree Hierarchy & Commit DAG",
       difficulty: "Medium",
-      tagline: "Do you understand the core mechanism? Assemble directory trees and link commits into an immutable DAG.",
+      tagline: "Assemble directory trees and link commits into an immutable DAG.",
       diagram: `DIRECTORY TREE & COMMIT MERKLE GRAPH:
 
   Commit Object (Hash: c7a1f...)
@@ -210,7 +210,7 @@ OUTPUT: 95d09f2b10159347eece71399a7e2e907ea3df4f`,
       shortTitle: "Integrity & Fsck",
       title: "Object Integrity & Corruption Recovery",
       difficulty: "Medium",
-      tagline: "Does it remain correct under edge cases and failures? Detect bit rot, dangling objects, and cyclic history.",
+      tagline: "Detect bit rot, dangling objects, and cyclic history.",
       diagram: `FSCK INTEGRITY VERIFICATION PIPELINE:
 
   Objects in Store ──► For each object on disk:
@@ -265,7 +265,7 @@ Match stored id?     Mismatch!          Reachable?             Orphaned?
       shortTitle: "Tree Diffing",
       title: "Fast Tree Diffing & Branching",
       difficulty: "Hard",
-      tagline: "Does it handle concurrency, workload and growth? Compare large directory trees in O(differences) time.",
+      tagline: "Compare large directory trees in O(differences) time.",
       diagram: `MERKLE TREE DIFFING ALGORITHM:
 
   Tree A (Hash: X9)                  Tree B (Hash: Y2)
@@ -315,7 +315,7 @@ Match stored id?     Mismatch!          Reachable?             Orphaned?
       shortTitle: "Graph Profiling",
       title: "Repository Footprint & Graph Traversal",
       difficulty: "Hard",
-      tagline: "Can you identify bottlenecks and prove performance? Measure loose object fragmentation and commit traversal speed.",
+      tagline: "Measure loose object fragmentation and commit traversal speed.",
       diagram: `LOOSE REPOSITORY METRICS & GRAPH WALKING:
 
   Filesystem Inode Overhead:
@@ -366,7 +366,7 @@ Match stored id?     Mismatch!          Reachable?             Orphaned?
       shortTitle: "Packfile Deltas",
       title: "Delta Compression & Packfile Format",
       difficulty: "Hard",
-      tagline: "Can you make it measurably better? Compress loose objects into a binary packfile with sliding-window deltas.",
+      tagline: "Compress loose objects into a binary packfile with sliding-window deltas.",
       diagram: `PACKFILE (.pack) & INDEX (.idx) BINARY STRUCTURE:
 
   .idx File (Fanout Table):

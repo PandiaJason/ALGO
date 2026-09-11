@@ -97,7 +97,7 @@ export const mcpRuntimeChallenge: ChallengeData = {
       shortTitle: "JSON-RPC Stdio",
       title: "JSON-RPC 2.0 Stdio Transport & Tool Discovery",
       difficulty: "Easy",
-      tagline: "Can you make it work? Handle JSON-RPC 2.0 initialize, tools/list, and tools/call over stdin/stdout.",
+      tagline: "Handle JSON-RPC 2.0 initialize, tools/list, and tools/call over stdin/stdout.",
       diagram: `STDIO JSON-RPC 2.0 FRAMING & TOOL DISCOVERY:
 
 Client (AI Agent)                       MCP Host Runtime
@@ -154,7 +154,7 @@ Client (AI Agent)                       MCP Host Runtime
       shortTitle: "Resource Templates",
       title: "Resource Templates & Dynamic Context Providers",
       difficulty: "Medium",
-      tagline: "Do you understand the core mechanism? Resolve URI resource templates and stream contextual data to agents.",
+      tagline: "Resolve URI resource templates and stream contextual data to agents.",
       diagram: `URI RESOURCE TEMPLATE MATCHING & CONTEXT RESOLUTION:
 
 Client (Context Resolver)                    Resource Router Engine
@@ -218,7 +218,7 @@ Client (Context Resolver)                    Resource Router Engine
       shortTitle: "Schema & Timeouts",
       title: "Schema Validation & Zombie Subprocess Reaping",
       difficulty: "Hard",
-      tagline: "Does it remain correct under edge cases and failures? Enforce strict JSON Schema and terminate runaway tools.",
+      tagline: "Enforce strict JSON Schema and terminate runaway tools.",
       diagram: `SCHEMA VALIDATION & SUBPROCESS TIMEOUT ISOLATION:
 
 Incoming "tools/call"
@@ -279,7 +279,7 @@ Incoming "tools/call"
       shortTitle: "Parallel Orchestration",
       title: "Multi-Agent Parallel Tool Orchestration",
       difficulty: "Hard",
-      tagline: "Does it handle concurrency, workload and growth? Concurrently dispatch 50 tool executions across multiple agents.",
+      tagline: "Concurrently dispatch 50 tool executions across multiple agents.",
       diagram: `CONCURRENT ASYNC TOOL DISPATCH & CANCELLATION:
 
 Agent 1 (id: 101) ──┐
@@ -339,7 +339,7 @@ Agent 3 (id: 103) ──┘        │
       shortTitle: "Overhead Profiling",
       title: "Protocol Overhead & Dispatch Profiling",
       difficulty: "Hard",
-      tagline: "Can you identify bottlenecks and prove performance? Measure microsecond JSON-RPC framing tax vs tool execution.",
+      tagline: "Measure microsecond JSON-RPC framing tax vs tool execution.",
       diagram: `DISPATCH LATENCY BREAKDOWN & METRICS PROFILING:
 
 Round-Trip Tool Call Timeline (Total Overhead: 0.75ms):
@@ -397,7 +397,7 @@ Round-Trip Tool Call Timeline (Total Overhead: 0.75ms):
       shortTitle: "SIMD JSON Dispatch",
       title: "Zero-Copy JSON Stream Parsing & Fast Dispatch",
       difficulty: "Hard",
-      tagline: "Can you make it measurably better? Achieve sub-0.1ms tool dispatch using SIMD JSON parsing and buffer recycling.",
+      tagline: "Achieve sub-0.1ms tool dispatch using SIMD JSON parsing and buffer recycling.",
       diagram: `SIMD-ACCELERATED ZERO-COPY DISPATCH PIPELINE:
 
 Raw Stdin Byte Stream (e.g. 4KB chunk):

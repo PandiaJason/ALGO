@@ -99,7 +99,7 @@ export const llmInferenceChallenge: ChallengeData = {
       shortTitle: "Decoder Loop",
       title: "Autoregressive Decoder Forward Pass",
       difficulty: "Easy",
-      tagline: "Can you make it work? Implement token generation loop with greedy sampling and stop token detection.",
+      tagline: "Implement token generation loop with greedy sampling and stop token detection.",
       diagram: `AUTOREGRESSIVE TOKEN GENERATION LOOP:
 
 Prompt: "The capital of France is"
@@ -156,7 +156,7 @@ Prompt: "The capital of France is"
       shortTitle: "KV Caching",
       title: "Key-Value (KV) Cache Manager",
       difficulty: "Medium",
-      tagline: "Do you understand the core mechanism? Cache Key and Value tensors to eliminate redundant O(N^2) attention math.",
+      tagline: "Cache Key and Value tensors to eliminate redundant O(N^2) attention math.",
       diagram: `NAIVE ATTENTION vs KV CACHE ATTENTION:
 
 Without KV Cache (O(N^2) Flops Explosion):
@@ -209,7 +209,7 @@ Token 3 ──► ONLY Compute Q3!
       shortTitle: "OOM & Sliding Window",
       title: "Context Window Overflow & OOM Eviction",
       difficulty: "Hard",
-      tagline: "Does it remain correct under edge cases and failures? Prevent GPU OOM crashes via sliding-window cache eviction.",
+      tagline: "Prevent GPU OOM crashes via sliding-window cache eviction.",
       diagram: `SLIDING-WINDOW CONTEXT EVICTION:
 
   Memory Capacity: 2,048 Tokens
@@ -261,7 +261,7 @@ Token 3 ──► ONLY Compute Q3!
       shortTitle: "PagedAttention",
       title: "PagedAttention & Continuous Batching",
       difficulty: "Expert",
-      tagline: "Does it handle concurrency, workload and growth? Implement non-contiguous block tables and iteration-level batching.",
+      tagline: "Implement non-contiguous block tables and iteration-level batching.",
       diagram: `PAGEDATTENTION NON-CONTIGUOUS MEMORY PAGING:
 
   Logical KV Cache (Request 1):
@@ -316,7 +316,7 @@ Token 3 ──► ONLY Compute Q3!
       shortTitle: "TTFT & ITL Profiling",
       title: "TTFT & Inter-Token Latency (ITL)",
       difficulty: "Hard",
-      tagline: "Can you identify bottlenecks and prove performance? Measure prefill Time-to-First-Token vs decode Inter-Token Latency.",
+      tagline: "Measure prefill Time-to-First-Token vs decode Inter-Token Latency.",
       diagram: `SERVING LATENCY BREAKDOWN:
 
 Request Arrives (t = 0ms)
@@ -373,7 +373,7 @@ Request Arrives (t = 0ms)
       shortTitle: "FlashAttention & INT4",
       title: "FlashAttention Kernel & Weight Quantization",
       difficulty: "Expert",
-      tagline: "Can you make it measurably better? Fuse attention online without materializing N×N matrices and unpack 4-bit weights.",
+      tagline: "Fuse attention online without materializing N×N matrices and unpack 4-bit weights.",
       diagram: `FLASHATTENTION SRAM TILING vs STANDARD DRAM:
 
   Standard Attention (Memory Bottleneck):

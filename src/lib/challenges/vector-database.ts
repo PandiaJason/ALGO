@@ -95,7 +95,7 @@ export const vectorDatabaseChallenge: ChallengeData = {
       shortTitle: "Exact Vectors",
       title: "Exact Nearest Neighbors (Brute Force)",
       difficulty: "Easy",
-      tagline: "Can you make it work? Insert multi-dimensional vectors and find exact nearest neighbors using cosine similarity.",
+      tagline: "Insert multi-dimensional vectors and find exact nearest neighbors using cosine similarity.",
       diagram: `EXACT K-NEAREST NEIGHBORS (FLAT SCAN):
 
   Query Vector Q: [1.0, 0.0, 0.0]  (k=2)
@@ -150,7 +150,7 @@ export const vectorDatabaseChallenge: ChallengeData = {
       shortTitle: "HNSW Graph",
       title: "Hierarchical Navigable Small World (HNSW)",
       difficulty: "Hard",
-      tagline: "Do you understand the core mechanism? Build a multi-layer skip-graph and search in O(log N) time.",
+      tagline: "Build a multi-layer skip-graph and search in O(log N) time.",
       diagram: `HNSW MULTI-LAYER SKIP GRAPH NAVIGATION:
 
   Layer 2 (Expressway):
@@ -205,7 +205,7 @@ export const vectorDatabaseChallenge: ChallengeData = {
       shortTitle: "Deletions & Islands",
       title: "Dynamic Deletions & Disconnected Components",
       difficulty: "Hard",
-      tagline: "Does it remain correct under edge cases and failures? Delete nodes without leaving disconnected graph islands.",
+      tagline: "Delete nodes without leaving disconnected graph islands.",
       diagram: `TOMBSTONING & GRAPH EDGE HEALING:
 
   Original Graph:
@@ -258,7 +258,7 @@ export const vectorDatabaseChallenge: ChallengeData = {
       shortTitle: "Sharded Search",
       title: "Concurrent Graph Updates & Multi-Index Sharding",
       difficulty: "Hard",
-      tagline: "Does it handle concurrency, workload and growth? Shard vectors across 4 independent partitions and search in parallel.",
+      tagline: "Shard vectors across 4 independent partitions and search in parallel.",
       diagram: `SCATTER-GATHER SHARDED VECTOR SEARCH:
 
   Query: Q [dim=128, k=5]
@@ -315,7 +315,7 @@ export const vectorDatabaseChallenge: ChallengeData = {
       shortTitle: "Recall vs QPS",
       title: "Recall vs. QPS Tradeoff Profiling",
       difficulty: "Hard",
-      tagline: "Can you identify bottlenecks and prove performance? Plot the Pareto frontier of Recall@10 against QPS.",
+      tagline: "Plot the Pareto frontier of Recall@10 against QPS.",
       diagram: `PARETO FRONTIER: RECALL@10 vs QUERY LATENCY:
 
   Recall@10
@@ -365,7 +365,7 @@ export const vectorDatabaseChallenge: ChallengeData = {
       shortTitle: "SIMD Quantization",
       title: "Scalar Quantization & SIMD Dot-Product",
       difficulty: "Expert",
-      tagline: "Can you make it measurably better? Compress vectors 4x via int8 quantization and evaluate with AVX2 dot-products.",
+      tagline: "Compress vectors 4x via int8 quantization and evaluate with AVX2 dot-products.",
       diagram: `SCALAR QUANTIZATION (SQ8) & AVX2 INTRINSICS:
 
   Raw Float32 Vector (128 dims):

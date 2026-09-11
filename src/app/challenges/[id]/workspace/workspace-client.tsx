@@ -574,7 +574,7 @@ export function WorkspaceClient({
                           {UNIVERSAL_STAGES[selectedLevel].question} —{" "}
                         </span>
                       )}
-                      {currentLevelInfo.tagline}
+                      {currentLevelInfo.tagline?.replace(/^(Can you|Do you|Does it)[^?]*\?\s*/i, "") || currentLevelInfo.tagline}
                     </p>
                   </div>
                 </div>

@@ -94,7 +94,7 @@ export const distributedObjectStorageChallenge: ChallengeData = {
       shortTitle: "Sharded Placement",
       title: "Multi-Node Sharded Placement",
       difficulty: "Medium",
-      tagline: "Can you make it work? Distribute object chunks across a simulated 6-node storage cluster.",
+      tagline: "Distribute object chunks across a simulated 6-node storage cluster.",
       diagram: `MULTI-NODE SHARD PLACEMENT TOPOLOGY:
 
   Object Payload: [HELLO WORLD!] (12 bytes)
@@ -143,7 +143,7 @@ export const distributedObjectStorageChallenge: ChallengeData = {
       shortTitle: "Reed-Solomon Math",
       title: "Reed-Solomon Erasure Coding (4+2)",
       difficulty: "Hard",
-      tagline: "Do you understand the core mechanism? Split data into 4 data shards and calculate 2 parity shards using GF(2^8).",
+      tagline: "Split data into 4 data shards and calculate 2 parity shards using GF(2^8).",
       diagram: `REED-SOLOMON (4+2) ENCODING PIPELINE:
 
   Original Data (16 bytes): [ABCDEFGHIJKLMNOP]
@@ -196,7 +196,7 @@ export const distributedObjectStorageChallenge: ChallengeData = {
       shortTitle: "Reconstruction & Heal",
       title: "Lost Node Reconstruction & Self-Healing",
       difficulty: "Expert",
-      tagline: "Does it remain correct under edge cases and failures? Recover original data when 2 out of 6 nodes are completely dead.",
+      tagline: "Recover original data when 2 out of 6 nodes are completely dead.",
       diagram: `MATRIX INVERSION RECONSTRUCTION (Survive 2 Node Casualties):
 
   Node Status:
@@ -249,7 +249,7 @@ export const distributedObjectStorageChallenge: ChallengeData = {
       shortTitle: "Parallel Streaming",
       title: "Parallel Multi-Node Chunk Streaming",
       difficulty: "Hard",
-      tagline: "Does it handle concurrency, workload and growth? Stream shards in parallel across multiple nodes with hedge requests.",
+      tagline: "Stream shards in parallel across multiple nodes with hedge requests.",
       diagram: `PARALLEL HEDGED STREAMING ARCHITECTURE:
 
   Client Gateway
@@ -300,7 +300,7 @@ export const distributedObjectStorageChallenge: ChallengeData = {
       shortTitle: "Math vs I/O Profiling",
       title: "Erasure Math Overhead & Network Egress",
       difficulty: "Hard",
-      tagline: "Can you identify bottlenecks and prove performance? Measure CPU matrix multiplication vs network egress bandwidth.",
+      tagline: "Measure CPU matrix multiplication vs network egress bandwidth.",
       diagram: `ERASURE MATH vs NETWORK REBUILD AMPLIFICATION:
 
   Rebuilding 1 Dead Storage Node (Disk capacity: 1 TB):
@@ -351,7 +351,7 @@ export const distributedObjectStorageChallenge: ChallengeData = {
       shortTitle: "SIMD Galois Kernels",
       title: "SIMD Galois Field Arithmetic & Zero-Copy",
       difficulty: "Expert",
-      tagline: "Can you make it measurably better? Accelerate erasure coding using 256-bit AVX2/NEON vector instructions.",
+      tagline: "Accelerate erasure coding using 256-bit AVX2/NEON vector instructions.",
       diagram: `VECTORIZED GF(2^8) ARITHMETIC (AVX2 / NEON 256-Bit):
 
   Scalar (Slow, loop per byte):

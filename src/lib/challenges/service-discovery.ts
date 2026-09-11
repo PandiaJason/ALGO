@@ -97,7 +97,7 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       shortTitle: "Service Registry",
       title: "Service Registry & TTL Heartbeat Monitor",
       difficulty: "Easy",
-      tagline: "Can you make it work? Register services with IP:port, refresh heartbeats, and evict expired nodes.",
+      tagline: "Register services with IP:port, refresh heartbeats, and evict expired nodes.",
       diagram: `TTL HEARTBEAT LEASE ENGINE:
 
   Client Microservice              Registry Catalog Table
@@ -149,7 +149,7 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       shortTitle: "UDP DNS Server",
       title: "RFC 1035 UDP DNS Server",
       difficulty: "Medium",
-      tagline: "Do you understand the core mechanism? Parse raw UDP DNS wire packets and return binary A & SRV records.",
+      tagline: "Parse raw UDP DNS wire packets and return binary A & SRV records.",
       diagram: `RFC 1035 UDP DNS PACKET FLOW:
 
   DNS Client                     ALGO DNS Server (UDP Port 53)
@@ -202,7 +202,7 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       shortTitle: "Flap Damping",
       title: "Flapping Node Damping & Split-Horizon DNS",
       difficulty: "Hard",
-      tagline: "Does it remain correct under edge cases and failures? Suppress flapping nodes oscillating between up and down.",
+      tagline: "Suppress flapping nodes oscillating between up and down.",
       diagram: `FLAP DAMPING HYSTERESIS STATE MACHINE:
 
   Node State Transitions:
@@ -254,7 +254,7 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       shortTitle: "SWIM Gossip Mesh",
       title: "SWIM Gossip Protocol Node Membership",
       difficulty: "Hard",
-      tagline: "Does it handle concurrency, workload and growth? Implement decentralized failure detection across a 50-node cluster.",
+      tagline: "Implement decentralized failure detection across a 50-node cluster.",
       diagram: `SWIM GOSSIP FAILURE DETECTION PROTOCOL:
 
   Round t: Node A probes Node B:
@@ -313,7 +313,7 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       shortTitle: "Convergence Profiling",
       title: "Convergence Time & DNS Latency Profiling",
       difficulty: "Hard",
-      tagline: "Can you identify bottlenecks and prove performance? Measure cluster gossip convergence time and DNS QPS.",
+      tagline: "Measure cluster gossip convergence time and DNS QPS.",
       diagram: `EPIDEMIC GOSSIP DISSEMINATION vs DNS QPS:
 
   Epidemic Spread Timeline (50 nodes):
@@ -363,7 +363,7 @@ export const serviceDiscoveryChallenge: ChallengeData = {
       shortTitle: "Lock-Free Routing Tables",
       title: "Lock-Free Routing Tables & UDP Zero-Copy",
       difficulty: "Hard",
-      tagline: "Can you make it measurably better? Eliminate mutex contention using RCU atomic pointer swaps for route tables.",
+      tagline: "Eliminate mutex contention using RCU atomic pointer swaps for route tables.",
       diagram: `READ-COPY-UPDATE (RCU) LOCK-FREE CATALOG:
 
   Active Routing Pointer:
