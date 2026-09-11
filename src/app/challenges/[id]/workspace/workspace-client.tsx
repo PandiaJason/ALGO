@@ -40,6 +40,11 @@ import {
   Compass,
   Info,
   AlertTriangle,
+  Maximize2,
+  Minimize2,
+  Eye,
+  EyeOff,
+  PanelLeft,
 } from "lucide-react";
 
 function getShortParity(rawParity: string): string {
@@ -175,6 +180,24 @@ export function WorkspaceClient({
   const [code, setCode] = useState<string>(() => getInitialCode("python"));
   const [leftTab, setLeftTab] = useState<"description" | "missions" | "submissions" | "leaderboard">("description");
   const [descSubTab, setDescSubTab] = useState<"spec" | "diagram" | "gotcha" | "examples">("spec");
+
+  // Focus mode & Code full screen mode
+  const [isFocusMode, setIsFocusMode] = useState(false);
+  const [isCodeFullScreen, setIsCodeFullScreen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (isCodeFullScreen) {
+          setIsCodeFullScreen(false);
+        } else if (isFocusMode) {
+          setIsFocusMode(false);
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isCodeFullScreen, isFocusMode]);
 
   // Console drawer state
   const [isConsoleOpen, setIsConsoleOpen] = useState(true);
@@ -343,74 +366,166 @@ export function WorkspaceClient({
 
   return (
     <div className="flex flex-col h-screen bg-white text-slate-900 overflow-hidden font-sans">
-      {/* 1. TOP NAVBAR (Dark Systems Style matching other pages) */}
-      <header className="h-12 border-b border-neutral-800 bg-[#262626] px-4 flex items-center justify-between shrink-0 select-none text-white">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/challenges"
-            className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors group"
-          >
-            <AlgoLogoIcon size={24} className="transition-transform group-hover:scale-105" />
-            <span className="font-black tracking-wider text-sm text-white">
-              ALGO
-            </span>
-            <ArrowLeft className="w-3.5 h-3.5 ml-1 text-neutral-400 group-hover:text-white transition-colors" />
-            <span className="text-xs font-semibold text-neutral-300 hover:text-white">Challenges</span>
-          </Link>
-
-          <span className="text-neutral-600">|</span>
-
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-white">
+      {/* 1. TOP NAVBAR (Normal vs Focus Mode) */}
+      {isFocusMode ? (
+        <header className="h-9 border-b border-neutral-800 bg-[#1e1e1e] px-3 flex items-center justify-between shrink-0 select-none text-white text-xs">
+          {/* Left: Compact Badge & Title */}
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-1.5 text-neutral-400 shrink-0">
+              <AlgoLogoIcon size={18} />
+              <span className="font-bold tracking-wider text-xs text-white">ALGO</span>
+            </div>
+            <span className="text-neutral-600">|</span>
+            <span className="text-xs font-semibold text-neutral-200 truncate max-w-[140px] sm:max-w-xs">
               {challenge.title}
             </span>
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#FBAE0C]/15 text-[#FBAE0C] border border-[#FBAE0C]/40">
-              Level {selectedLevel}: {currentLevelInfo.shortTitle}
+            <span className="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-[#FBAE0C]/15 text-[#FBAE0C] border border-[#FBAE0C]/30 shrink-0">
+              L{selectedLevel}
             </span>
           </div>
-        </div>
 
-        {/* Center: Run & Submit Controls */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleRunCode}
-            disabled={isRunningTests || isSubmitting}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-white/10 hover:bg-white/15 text-white border border-white/15 transition-colors disabled:opacity-50 cursor-pointer"
-          >
-            <Play className="w-3.5 h-3.5 text-[#099BE9] fill-[#099BE9]" />
-            <span>{isRunningTests ? "Running..." : "Run"}</span>
-          </button>
-
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitting || isRunningTests}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-[#09C899] hover:bg-[#0AA793] text-white shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
-          >
-            <Send className="w-3 h-3" />
-            <span>{isSubmitting ? "Submitting..." : "Submit"}</span>
-          </button>
-        </div>
-
-        {/* Right: Actions */}
-        <div className="flex items-center gap-3">
-          {user && (
-            <Link
-              href={`/u/${user.username}`}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white/10 text-xs font-mono text-neutral-200 hover:text-white transition-colors"
+          {/* Center: Run & Submit */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRunCode}
+              disabled={isRunningTests || isSubmitting}
+              className="flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium bg-white/10 hover:bg-white/15 text-white border border-white/15 transition-colors disabled:opacity-50 cursor-pointer"
             >
-              <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#099BE9] to-[#09C899] flex items-center justify-center text-[10px] text-white font-bold">
-                {user.username.charAt(0).toUpperCase()}
-              </div>
-              <span className="font-semibold">{user.username}</span>
+              <Play className="w-3 h-3 text-[#099BE9] fill-[#099BE9]" />
+              <span>{isRunningTests ? "Running..." : "Run"}</span>
+            </button>
+
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting || isRunningTests}
+              className="flex items-center gap-1 px-3 py-1 rounded text-xs font-semibold bg-[#09C899] hover:bg-[#0AA793] text-white shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              <Send className="w-3 h-3" />
+              <span>{isSubmitting ? "Submitting..." : "Submit"}</span>
+            </button>
+          </div>
+
+          {/* Right: Code Full Screen & Exit Focus Mode */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsCodeFullScreen(!isCodeFullScreen)}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border transition-colors cursor-pointer ${
+                isCodeFullScreen
+                  ? "bg-[#099BE9]/20 text-[#099BE9] border-[#099BE9]/40"
+                  : "bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white border-white/10"
+              }`}
+              title={isCodeFullScreen ? "Exit Full Screen Editor (Esc)" : "Code Full Screen (Esc to exit)"}
+            >
+              {isCodeFullScreen ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
+              <span className="hidden sm:inline">{isCodeFullScreen ? "Split View" : "Full Code"}</span>
+            </button>
+
+            <button
+              onClick={() => setIsFocusMode(false)}
+              className="flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-semibold bg-[#FBAE0C]/15 text-[#FBAE0C] border border-[#FBAE0C]/40 hover:bg-[#FBAE0C]/25 transition-colors cursor-pointer"
+              title="Exit Focus Mode (Esc)"
+            >
+              <EyeOff className="w-3 h-3" />
+              <span>Exit Focus</span>
+              <kbd className="hidden md:inline px-1 py-0.2 rounded bg-neutral-800 text-[9px] text-neutral-300 font-mono">Esc</kbd>
+            </button>
+          </div>
+        </header>
+      ) : (
+        <header className="h-12 border-b border-neutral-800 bg-[#262626] px-4 flex items-center justify-between shrink-0 select-none text-white">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/challenges"
+              className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors group"
+            >
+              <AlgoLogoIcon size={24} className="transition-transform group-hover:scale-105" />
+              <span className="font-black tracking-wider text-sm text-white">
+                ALGO
+              </span>
+              <ArrowLeft className="w-3.5 h-3.5 ml-1 text-neutral-400 group-hover:text-white transition-colors" />
+              <span className="text-xs font-semibold text-neutral-300 hover:text-white">Challenges</span>
             </Link>
-          )}
-        </div>
-      </header>
+
+            <span className="text-neutral-600">|</span>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-white">
+                {challenge.title}
+              </span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#FBAE0C]/15 text-[#FBAE0C] border border-[#FBAE0C]/40">
+                Level {selectedLevel}: {currentLevelInfo.shortTitle}
+              </span>
+            </div>
+          </div>
+
+          {/* Center: Run & Submit Controls */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRunCode}
+              disabled={isRunningTests || isSubmitting}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-white/10 hover:bg-white/15 text-white border border-white/15 transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              <Play className="w-3.5 h-3.5 text-[#099BE9] fill-[#099BE9]" />
+              <span>{isRunningTests ? "Running..." : "Run"}</span>
+            </button>
+
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting || isRunningTests}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-[#09C899] hover:bg-[#0AA793] text-white shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              <Send className="w-3 h-3" />
+              <span>{isSubmitting ? "Submitting..." : "Submit"}</span>
+            </button>
+          </div>
+
+          {/* Right: Actions (Full Code, Focus Mode, User) */}
+          <div className="flex items-center gap-2">
+            {/* Full Screen Code Toggle */}
+            <button
+              onClick={() => setIsCodeFullScreen(!isCodeFullScreen)}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
+                isCodeFullScreen
+                  ? "bg-[#099BE9]/20 text-[#099BE9] border-[#099BE9]/50 shadow-2xs font-bold"
+                  : "bg-white/10 hover:bg-white/15 text-neutral-300 hover:text-white border-white/10"
+              }`}
+              title={isCodeFullScreen ? "Exit Full Screen Code (Esc)" : "Code Full Screen: 100% editor width (Esc to exit)"}
+            >
+              {isCodeFullScreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+              <span className="hidden lg:inline">{isCodeFullScreen ? "Exit Full Code" : "Full Code"}</span>
+            </button>
+
+            {/* Focus Mode Toggle */}
+            <button
+              onClick={() => setIsFocusMode(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-white/10 hover:bg-white/15 text-neutral-300 hover:text-white border border-white/10 transition-all cursor-pointer"
+              title="Focus Mode: Distraction-free workspace (Esc to exit)"
+            >
+              <Eye className="w-3.5 h-3.5 text-[#FBAE0C]" />
+              <span className="hidden sm:inline">Focus Mode</span>
+            </button>
+
+            {user && (
+              <Link
+                href={`/u/${user.username}`}
+                className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-white/10 text-xs font-mono text-neutral-200 hover:text-white transition-colors ml-1"
+              >
+                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#099BE9] to-[#09C899] flex items-center justify-center text-[10px] text-white font-bold">
+                  {user.username.charAt(0).toUpperCase()}
+                </div>
+                <span className="font-semibold hidden xl:inline">{user.username}</span>
+              </Link>
+            )}
+          </div>
+        </header>
+      )}
 
       {/* 2. MAIN SPLIT PANE BODY */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-slate-50/50">
         {/* LEFT PANEL: Problem Description, Missions, Submissions, Leaderboard */}
-        <div className="w-full md:w-1/2 flex flex-col border-r border-slate-200 bg-white overflow-hidden">
+        <div className={`flex flex-col border-r border-slate-200 bg-white overflow-hidden transition-all duration-200 ${
+          isCodeFullScreen ? "hidden" : "w-full md:w-1/2"
+        }`}>
           {/* Left Panel Tabs */}
           <div className="h-10 border-b border-slate-200 bg-slate-50/90 px-3 flex items-center gap-1.5 shrink-0 select-none">
             <button
@@ -1050,10 +1165,24 @@ export function WorkspaceClient({
         </div>
 
         {/* RIGHT PANEL: Code Editor (Top) + LeetCode Console Drawer (Bottom) */}
-        <div className="w-full md:w-1/2 flex flex-col bg-white overflow-hidden">
+        <div className={`flex flex-col bg-white overflow-hidden transition-all duration-200 ${
+          isCodeFullScreen ? "w-full" : "w-full md:w-1/2"
+        }`}>
           {/* Code Editor Header */}
           <div className="h-10 border-b border-slate-200 bg-slate-50/90 px-3 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
+              {/* If in Code Full Screen, offer quick button to restore Left Spec */}
+              {isCodeFullScreen && (
+                <button
+                  onClick={() => setIsCodeFullScreen(false)}
+                  className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold text-[#099BE9] bg-[#099BE9]/10 hover:bg-[#099BE9]/15 border border-[#099BE9]/30 transition-colors cursor-pointer mr-1"
+                  title="Show Problem Spec (Restore Split View)"
+                >
+                  <PanelLeft className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Show Spec</span>
+                </button>
+              )}
+
               <select
                 value={language}
                 onChange={(e) => handleLanguageChange(e.target.value as SupportedLanguage)}
@@ -1083,6 +1212,29 @@ export function WorkspaceClient({
             </div>
 
             <div className="flex items-center gap-1.5">
+              {/* If in Code Full Screen, also offer Run and Submit directly in editor toolbar */}
+              {isCodeFullScreen && (
+                <div className="flex items-center gap-1.5 mr-1.5 border-r border-slate-200 pr-2">
+                  <button
+                    onClick={handleRunCode}
+                    disabled={isRunningTests || isSubmitting}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white disabled:opacity-50 transition-colors cursor-pointer"
+                  >
+                    <Play className="w-3 h-3 text-[#099BE9] fill-[#099BE9]" />
+                    <span>{isRunningTests ? "Running..." : "Run"}</span>
+                  </button>
+
+                  <button
+                    onClick={handleSubmit}
+                    disabled={isSubmitting || isRunningTests}
+                    className="flex items-center gap-1 px-3 py-1 rounded-md text-xs font-semibold bg-[#09C899] hover:bg-[#0AA793] text-white disabled:opacity-50 shadow-2xs transition-colors cursor-pointer"
+                  >
+                    <Send className="w-3 h-3" />
+                    <span>{isSubmitting ? "Submitting..." : "Submit"}</span>
+                  </button>
+                </div>
+              )}
+
               <button
                 onClick={handleCopyCode}
                 className="p-1.5 rounded-md hover:bg-slate-200 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
@@ -1097,6 +1249,29 @@ export function WorkspaceClient({
                 title="Reset to Starter Template"
               >
                 <RotateCcw className="w-4 h-4" />
+              </button>
+
+              {/* Code Full Screen Toggle Button */}
+              <button
+                onClick={() => setIsCodeFullScreen(!isCodeFullScreen)}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium border transition-all cursor-pointer ml-0.5 ${
+                  isCodeFullScreen
+                    ? "bg-[#099BE9]/10 text-[#099BE9] border-[#099BE9]/40 font-bold shadow-2xs"
+                    : "bg-white hover:bg-slate-200 text-slate-600 hover:text-slate-900 border-slate-300"
+                }`}
+                title={isCodeFullScreen ? "Exit Full Screen Editor (Esc)" : "Code Full Screen (Esc to exit)"}
+              >
+                {isCodeFullScreen ? (
+                  <>
+                    <Minimize2 className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Exit Full Screen</span>
+                  </>
+                ) : (
+                  <>
+                    <Maximize2 className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Full Screen</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
