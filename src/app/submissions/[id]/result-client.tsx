@@ -274,6 +274,58 @@ export function ResultClient({
             </div>
           )}
 
+          {/* Next Level Progression Banner */}
+          {submission.level < 6 ? (
+            <div className="p-4 rounded-xl border border-[#09C899]/30 bg-gradient-to-r from-[#09C899]/10 via-white to-[#09C899]/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-[#09C899]/15 border border-[#09C899]/40 flex items-center justify-center text-[#0AA793] font-bold text-sm shrink-0">
+                  <Check className="w-5 h-5 text-[#09C899]" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <span>Level {submission.level} Solved & Benchmark Verified!</span>
+                    <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#09C899]/15 text-[#0AA793] font-semibold border border-[#09C899]/30">
+                      Level {submission.level + 1} Unlocked
+                    </span>
+                  </div>
+                  <div className="text-xs font-mono text-slate-500 mt-0.5">
+                    Continue to Level {submission.level + 1} of {submission.challengeTitle} to implement next architectural requirements.
+                  </div>
+                </div>
+              </div>
+
+              <Link href={`/challenges/${submission.challengeSlug}/workspace?level=${submission.level + 1}`}>
+                <Button size="sm" variant="primary" className="h-9 px-4 text-xs font-semibold gap-1.5 shadow-xs bg-[#0AA793] hover:bg-[#0AA793]/90 text-white shrink-0">
+                  <span>Continue to Level {submission.level + 1}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="p-4 rounded-xl border border-[#FBAE0C]/30 bg-gradient-to-r from-[#FBAE0C]/10 via-white to-[#FBAE0C]/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-[#FBAE0C]/15 border border-[#FBAE0C]/40 flex items-center justify-center text-[#F78424] font-bold text-base shrink-0">
+                  🏆
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-slate-900">
+                    All 6 Levels Mastered!
+                  </div>
+                  <div className="text-xs font-mono text-slate-500 mt-0.5">
+                    You have completely built and benchmarked all architectural stages of {submission.challengeTitle}.
+                  </div>
+                </div>
+              </div>
+
+              <Link href="/challenges">
+                <Button size="sm" variant="primary" className="h-9 px-4 text-xs font-semibold gap-1.5 shadow-xs shrink-0">
+                  <span>Explore Next Challenge</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Button>
+              </Link>
+            </div>
+          )}
+
           {/* LeetCode Tabs: Code & Testcases */}
           <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-2xs">
             {/* Tab header */}
@@ -381,22 +433,41 @@ export function ResultClient({
             )}
           </div>
 
-          {/* LeetCode Bottom Action Buttons */}
+          {/* Bottom Action Buttons with Direct Next Level Redirect */}
           <div className="flex flex-wrap items-center gap-3 pt-2">
-            <Link href={`/challenges/${submission.challengeSlug}/workspace`}>
-              <Button size="sm" variant="primary" className="h-9 px-4 text-xs font-semibold gap-1.5 shadow-xs">
-                <Terminal className="w-3.5 h-3.5" />
-                <span>Optimize & Resubmit Code</span>
+            {submission.level < 6 ? (
+              <Link href={`/challenges/${submission.challengeSlug}/workspace?level=${submission.level + 1}`}>
+                <Button size="sm" variant="primary" className="h-9 px-4 text-xs font-semibold gap-1.5 shadow-xs bg-[#0AA793] hover:bg-[#0AA793]/90 text-white">
+                  <span>Continue to Level {submission.level + 1}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/challenges">
+                <Button size="sm" variant="primary" className="h-9 px-4 text-xs font-semibold gap-1.5 shadow-xs">
+                  <span>Explore Next Challenge</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Button>
+              </Link>
+            )}
+
+            <Link href={`/challenges/${submission.challengeSlug}/workspace?level=${submission.level}`}>
+              <Button size="sm" variant="outline" className="h-9 px-4 text-xs font-medium border-slate-200 text-slate-700 hover:text-slate-900">
+                <Terminal className="w-3.5 h-3.5 text-slate-500" />
+                <span>Optimize Level {submission.level}</span>
               </Button>
             </Link>
+
             <Link href={`/challenges/${submission.challengeSlug}/leaderboard`}>
-              <Button size="sm" variant="outline" className="h-9 px-4 text-xs font-medium border-slate-200">
-                <span>View Full Leaderboard</span>
+              <Button size="sm" variant="outline" className="h-9 px-4 text-xs font-medium border-slate-200 text-slate-700 hover:text-slate-900">
+                <Trophy className="w-3.5 h-3.5 text-[#FBAE0C]" />
+                <span>Leaderboard</span>
               </Button>
             </Link>
+
             <Link href="/challenges">
               <Button size="sm" variant="ghost" className="h-9 px-3 text-xs font-medium text-slate-600 hover:text-slate-900">
-                <span>Next Challenge →</span>
+                <span>All Challenges →</span>
               </Button>
             </Link>
           </div>
@@ -428,11 +499,23 @@ export function ResultClient({
             </div>
           )}
 
-          <div className="pt-2">
-            <Link href={`/challenges/${submission.challengeSlug}/workspace`}>
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            <Link href={`/challenges/${submission.challengeSlug}/workspace?level=${submission.level}`}>
               <Button size="sm" variant="danger" className="h-9 px-4 text-xs font-semibold gap-1.5 shadow-xs">
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>Return to Workspace to Debug</span>
+                <span>Return to Level {submission.level} to Debug</span>
+              </Button>
+            </Link>
+
+            <Link href={`/challenges/${submission.challengeSlug}/leaderboard`}>
+              <Button size="sm" variant="outline" className="h-9 px-4 text-xs font-medium border-slate-200">
+                <span>Leaderboard</span>
+              </Button>
+            </Link>
+
+            <Link href="/challenges">
+              <Button size="sm" variant="ghost" className="h-9 px-3 text-xs font-medium text-slate-600 hover:text-slate-900">
+                <span>All Challenges →</span>
               </Button>
             </Link>
           </div>

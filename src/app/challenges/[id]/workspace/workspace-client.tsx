@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MonacoWrapper } from "@/components/editor/monaco-wrapper";
@@ -213,6 +213,12 @@ export function WorkspaceClient({
     setSelectedCaseIndex(0);
     setCustomInput(targetLevel?.cases?.[0]?.input || "");
   };
+
+  useEffect(() => {
+    if (levelParam >= 1 && levelParam <= 6 && levelParam !== selectedLevel) {
+      handleSelectLevel(levelParam);
+    }
+  }, [levelParam]);
 
   const currentLevelInfo = levelData[selectedLevel] || levelData[1] || {};
   const sampleCases = currentLevelInfo?.cases || [];
@@ -1152,10 +1158,21 @@ export function WorkspaceClient({
                             </span>
                           </div>
 
-                          <span className="text-[11px] font-mono text-[#0AA793] font-semibold flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-[#0AA793] animate-pulse" />
-                            Linux Sandbox: Active
-                          </span>
+                          <div className="flex items-center gap-2">
+                            {testResult.passed === testResult.total && selectedLevel < 6 && (
+                              <button
+                                onClick={() => handleSelectLevel(selectedLevel + 1)}
+                                className="px-2.5 py-1 rounded bg-[#09C899]/15 hover:bg-[#09C899]/25 text-[#0AA793] border border-[#09C899]/30 text-xs font-semibold flex items-center gap-1 transition-colors shadow-2xs"
+                              >
+                                <span>Continue to Level {selectedLevel + 1}</span>
+                                <ChevronRight className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                            <span className="text-[11px] font-mono text-[#0AA793] font-semibold flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-[#0AA793] animate-pulse" />
+                              Linux Sandbox: Active
+                            </span>
+                          </div>
                         </div>
 
                         {testResult.cases && testResult.cases.length > 0 ? (
