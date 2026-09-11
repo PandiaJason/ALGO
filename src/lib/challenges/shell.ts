@@ -170,7 +170,7 @@ Builtin commands execute directly within the shell process itself rather than la
       },
       operations: [
         { cmd: "echo <text>", desc: "Prints the given text back to stdout." },
-        { cmd: "pwd", desc: "Prints the current working directory (returns 'OK' in tests for the initial directory)." },
+        { cmd: "pwd", desc: "Prints the current working directory." },
         { cmd: "cd <path>", desc: "Changes the current working directory." },
         { cmd: "exit", desc: "Terminates the shell session (outputs 'CLEAN_EXIT' when active children are present)." },
       ],
