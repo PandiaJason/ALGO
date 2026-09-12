@@ -299,14 +299,14 @@ export function HomeManifesto() {
           </div>
 
           {/* The New Engineering Question Callout */}
-          <div className="p-4 rounded-xl bg-slate-950 text-white font-mono text-xs space-y-2">
-            <div className="text-[10px] text-[#099BE9] font-bold uppercase tracking-wider">
+          <div className="p-4 rounded-xl bg-slate-100/80 border border-slate-200 font-mono text-xs space-y-2">
+            <div className="text-[10px] text-slate-600 font-bold uppercase tracking-wider">
               The New Engineering Question:
             </div>
-            <p className="text-sm font-bold text-white">
+            <p className="text-sm font-bold text-slate-950">
               &ldquo;Can you engineer a system when implementation itself can be delegated?&rdquo;
             </p>
-            <p className="text-slate-400 text-xs font-sans font-medium">
+            <p className="text-slate-600 text-xs font-sans font-medium">
               AI can produce the implementation. Systems thinking determines whether the implementation deserves to exist.
             </p>
           </div>
@@ -556,10 +556,10 @@ export function HomeManifesto() {
               <div className="text-[10px] text-slate-700 font-medium">Kernel, CPU Cache, I/O Friction</div>
             </div>
 
-            <div className="bg-slate-950 text-white border border-slate-800 rounded-xl p-3 shadow-sm space-y-1">
-              <div className="text-[10px] uppercase font-bold text-[#09C899]">SIGNAL</div>
-              <div className="font-bold text-white text-xs sm:text-sm">Empirical Telemetry</div>
-              <div className="text-[10px] text-slate-300 font-medium">p99, ops/s, Crash Durability</div>
+            <div className="bg-white border-2 border-slate-900 rounded-xl p-3 shadow-2xs space-y-1">
+              <div className="text-[10px] uppercase font-bold text-slate-900">SIGNAL</div>
+              <div className="font-bold text-slate-950 text-xs sm:text-sm">Empirical Telemetry</div>
+              <div className="text-[10px] text-slate-600 font-medium">p99, ops/s, Crash Durability</div>
             </div>
           </div>
           <p className="text-xs text-slate-700 font-medium text-center mt-4">

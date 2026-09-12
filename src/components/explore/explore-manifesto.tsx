@@ -358,60 +358,44 @@ export function ExploreManifesto() {
               In an agentic workflow, the engineer increasingly operates as a control layer between intent and physical reality:
             </p>
 
-            <div className="bg-slate-950 text-white rounded-2xl p-5 border border-slate-800 font-mono text-xs shadow-inner">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
-                  <div className="text-[10px] text-slate-400 font-bold uppercase">INTENT</div>
-                  <div className="font-bold text-white text-xs">Human Intent</div>
-                  <div className="text-[10px] text-slate-500">System goals &amp; boundaries</div>
+            {/* Clean Monochrome Flowchart */}
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 select-none space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-center font-mono text-xs">
+                <div className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-1">
+                  <div className="text-[10px] text-slate-500 font-bold uppercase">1. INTENT</div>
+                  <div className="font-bold text-slate-950 text-xs sm:text-sm">Human Intent</div>
+                  <div className="text-[11px] text-slate-600 font-sans font-medium">Objectives &amp; boundaries</div>
                 </div>
-                <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
-                  <div className="text-[10px] text-[#099BE9] font-bold uppercase">BLUEPRINT</div>
-                  <div className="font-bold text-white text-xs">Architecture</div>
-                  <div className="text-[10px] text-slate-500">Invariants &amp; protocols</div>
+
+                <div className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-1">
+                  <div className="text-[10px] text-slate-500 font-bold uppercase">2. BLUEPRINT</div>
+                  <div className="font-bold text-slate-950 text-xs sm:text-sm">Architecture</div>
+                  <div className="text-[11px] text-slate-600 font-sans font-medium">Invariants &amp; protocols</div>
                 </div>
-                <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
-                  <div className="text-[10px] text-[#F78424] font-bold uppercase">DELEGATION</div>
-                  <div className="font-bold text-white text-xs">Agentic Code</div>
-                  <div className="text-[10px] text-slate-500">Accelerated implementation</div>
+
+                <div className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-1">
+                  <div className="text-[10px] text-slate-500 font-bold uppercase">3. DELEGATION</div>
+                  <div className="font-bold text-slate-950 text-xs sm:text-sm">Agentic Code</div>
+                  <div className="text-[11px] text-slate-600 font-sans font-medium">AI implementation</div>
                 </div>
-                <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
-                  <div className="text-[10px] text-[#09C899] font-bold uppercase">SUBSTRATE</div>
-                  <div className="font-bold text-white text-xs">Real Environment</div>
-                  <div className="text-[10px] text-slate-500">Linux kernel, CPU, I/O</div>
+
+                <div className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-1">
+                  <div className="text-[10px] text-slate-500 font-bold uppercase">4. SUBSTRATE</div>
+                  <div className="font-bold text-slate-950 text-xs sm:text-sm">Physical Reality</div>
+                  <div className="text-[11px] text-slate-600 font-sans font-medium">Hardware sandbox &amp; I/O</div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-center my-3 text-slate-500 font-mono text-xs font-semibold">
-                <span>↓ Telemetry &amp; Evidence Feedback Loop ↓</span>
+              {/* Minimal Return Loop */}
+              <div className="pt-3 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-mono text-slate-700 text-center">
+                <span className="font-bold text-slate-950 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-900" />
+                  Closed Control Loop:
+                </span>
+                <span className="text-slate-600 text-[11px]">
+                  Telemetry &amp; Evidence ──▶ Engineering Judgment ──▶ Architectural Optimization
+                </span>
               </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
-                  <div className="text-[10px] text-cyan-400 font-bold uppercase">METRICS</div>
-                  <div className="font-bold text-white text-xs">Telemetry Data</div>
-                  <div className="text-[10px] text-slate-500">p99 latency, ops/s, mem</div>
-                </div>
-                <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
-                  <div className="text-[10px] text-purple-400 font-bold uppercase">CONTROL</div>
-                  <div className="font-bold text-white text-xs">Engineering Judgment</div>
-                  <div className="text-[10px] text-slate-500">Diagnosing root causes</div>
-                </div>
-                <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
-                  <div className="text-[10px] text-amber-400 font-bold uppercase">REFACTOR</div>
-                  <div className="font-bold text-white text-xs">Correction</div>
-                  <div className="text-[10px] text-slate-500">Architectural iteration</div>
-                </div>
-                <div className="p-2.5 rounded-lg bg-[#064E3B]/60 border border-[#09C899]/50 space-y-1">
-                  <div className="text-[10px] text-[#34D399] font-bold uppercase">SCALE</div>
-                  <div className="font-bold text-white text-xs">Optimization</div>
-                  <div className="text-[10px] text-emerald-300">Verified benchmark gain</div>
-                </div>
-              </div>
-
-              <p className="text-xs text-slate-400 font-medium text-center mt-3 pt-3 border-t border-slate-800/80">
-                The agent accelerates implementation. The engineer provides the mental model, invariants, evaluation criteria, and corrective decisions.
-              </p>
             </div>
           </div>
 
@@ -492,22 +476,22 @@ export function ExploreManifesto() {
           </div>
 
           {/* The New Engineering Question Callout */}
-          <div className="rounded-2xl border-2 border-[#099BE9]/40 bg-white p-6 shadow-sm space-y-3">
-            <div className="text-xs font-mono uppercase tracking-wider font-bold text-[#099BE9]">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 space-y-3">
+            <div className="text-xs font-mono uppercase tracking-wider font-bold text-slate-600">
               The New Engineering Question
             </div>
             <h4 className="text-base sm:text-lg font-bold text-slate-950 leading-snug">
               The important question of the agentic era is not <span className="font-mono text-slate-600">&ldquo;Can you code without AI?&rdquo;</span> nor is it simply <span className="font-mono text-slate-600">&ldquo;Can you code with AI?&rdquo;</span>
             </h4>
-            <p className="text-sm sm:text-base font-bold text-slate-950 bg-[#099BE9]/10 p-3.5 rounded-xl border border-[#099BE9]/20 font-mono">
+            <p className="text-sm sm:text-base font-bold text-slate-950 bg-white p-3.5 rounded-xl border border-slate-200 font-mono">
               &ldquo;Can you engineer a system when implementation itself can be delegated?&rdquo;
             </p>
             <p className="text-xs sm:text-sm text-slate-700 font-medium leading-relaxed">
               That requires understanding not only how to produce software, but why the system is structured the way it is, what must remain true, how it can fail, how its behavior can be measured, and how evidence should change the architecture.
             </p>
-            <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
-              <span className="text-slate-500 font-semibold">AI can produce the implementation.</span>
-              <span className="text-[#0AA793] font-bold">Systems thinking determines whether the implementation deserves to exist.</span>
+            <div className="pt-2 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
+              <span className="text-slate-600 font-medium">AI can produce the implementation.</span>
+              <span className="text-slate-950 font-bold">Systems thinking determines whether the implementation deserves to exist.</span>
             </div>
           </div>
         </div>
