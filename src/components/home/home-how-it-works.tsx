@@ -1,100 +1,110 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { GitBranch, ShieldCheck, Cpu, ArrowRight, Check } from "lucide-react";
+import { RefreshCw, Layers, Activity, Check } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
-/* Challenge 03: Git Version Control Engine (Core Systems)                    */
-/* Systems Thinking: Content-addressed Directed Acyclic Graph (DAG) & Branch  */
-/* Convergence. Shows immutable causal history without duplicates.            */
+/* Diagram 1: Causal Loop Diagram (CLD) — Balancing (B) & Reinforcing (R)     */
+/* Foundational Systems Thinking: Feedback polarities and self-stabilization  */
 /* -------------------------------------------------------------------------- */
-function GitDagDiagram() {
+function CausalLoopDiagram() {
   return (
     <div className="w-full rounded-2xl bg-white border border-slate-200 p-4 shadow-2xs select-none relative overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-100">
         <div className="flex items-center gap-1.5 text-[11px] font-mono font-semibold text-slate-700">
           <span className="p-1 rounded-md bg-[#09C899]/10 text-[#0AA793] inline-flex items-center justify-center">
-            <GitBranch className="w-3.5 h-3.5" />
+            <RefreshCw className="w-3.5 h-3.5" />
           </span>
-          <span>Causal History DAG</span>
+          <span>Causal Loop Diagram</span>
         </div>
         <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#09C899]/15 text-[#0AA793] font-bold">
           <span className="w-1.5 h-1.5 rounded-full bg-[#09C899] animate-ping" />
-          <span>Immutable DAG</span>
+          <span>Balancing Feedback</span>
         </span>
       </div>
 
-      {/* SVG Canvas: Clean Minimal DAG with Branching & Merge Convergence */}
+      {/* SVG: Causal Loop Diagram with Interlocking B & R Feedback Loops */}
       <div className="py-3 flex items-center justify-center">
         <div className="w-full max-w-[260px] h-32 relative">
           <svg viewBox="0 0 260 128" className="w-full h-full overflow-visible">
-            {/* Main branch horizontal baseline */}
-            <line x1="26" y1="84" x2="228" y2="84" stroke="#CBD5E1" strokeWidth="1.5" strokeDasharray="3 3" />
-            <text x="246" y="87" textAnchor="end" className="text-[9px] font-mono font-bold fill-[#0AA793]">main</text>
+            {/* Variable Nodes */}
+            {/* Top: System Load */}
+            <rect x="92" y="6" width="76" height="22" rx="6" fill="#F8FAFC" stroke="#CBD5E1" strokeWidth="1" />
+            <text x="130" y="21" textAnchor="middle" className="text-[10px] font-mono font-bold fill-slate-800">System Load</text>
 
-            {/* Feature branch curve diverging from c1 (75, 84) to c2 (135, 34) to merge c3 (195, 84) */}
+            {/* Bottom Left: Throttle Rate */}
+            <rect x="6" y="96" width="94" height="22" rx="6" fill="#F8FAFC" stroke="#CBD5E1" strokeWidth="1" />
+            <text x="53" y="111" textAnchor="middle" className="text-[10px] font-mono font-bold fill-slate-800">Throttle Rate</text>
+
+            {/* Bottom Right: Buffer Depth */}
+            <rect x="160" y="96" width="94" height="22" rx="6" fill="#F8FAFC" stroke="#CBD5E1" strokeWidth="1" />
+            <text x="207" y="111" textAnchor="middle" className="text-[10px] font-mono font-bold fill-slate-800">Buffer Depth</text>
+
+            {/* Causal Feedback Loop 1: Balancing Loop Path (Left) */}
             <path
-              id="git-feat-path"
-              d="M 75 84 C 95 84, 110 34, 135 34 C 160 34, 175 84, 195 84"
+              id="cld-path-b"
+              d="M 100 28 C 60 46, 30 68, 45 96 C 60 110, 85 85, 115 28"
               fill="none"
-              stroke="#8647E2"
+              stroke="#09C899"
               strokeWidth="1.5"
               strokeDasharray="3 3"
             />
-            <text x="135" y="20" textAnchor="middle" className="text-[8px] font-mono font-bold fill-[#8647E2]">
-              feat/branch
-            </text>
+            {/* Causal Feedback Loop 2: Reinforcing Path (Right) */}
+            <path
+              id="cld-path-r"
+              d="M 160 28 C 190 46, 225 68, 215 96 C 195 110, 175 80, 145 28"
+              fill="none"
+              stroke="#FBAE0C"
+              strokeWidth="1.5"
+              strokeDasharray="3 3"
+            />
 
-            {/* Commit Nodes on Main */}
-            {/* Commit c0 */}
-            <circle cx="26" cy="84" r="8" fill="#FFFFFF" stroke="#09C899" strokeWidth="2" />
-            <text x="26" y="87" textAnchor="middle" className="text-[8px] font-mono font-bold fill-slate-700">c0</text>
-
-            {/* Commit c1 (Branch Divergence Point) */}
-            <circle cx="75" cy="84" r="8" fill="#FFFFFF" stroke="#09C899" strokeWidth="2" />
-            <text x="75" y="87" textAnchor="middle" className="text-[8px] font-mono font-bold fill-slate-700">c1</text>
-
-            {/* Commit c2 on Feature Branch */}
-            <circle cx="135" cy="34" r="8" fill="#FFFFFF" stroke="#8647E2" strokeWidth="2" />
-            <text x="135" y="37" textAnchor="middle" className="text-[8px] font-mono font-bold fill-[#8647E2]">c2</text>
-
-            {/* Merge Commit c3 (Convergence Point) */}
-            <circle cx="195" cy="84" r="11" fill="#099BE9" opacity="0.15" />
-            <circle cx="195" cy="84" r="8" fill="#FFFFFF" stroke="#099BE9" strokeWidth="2" />
-            <text x="195" y="87" textAnchor="middle" className="text-[6.5px] font-mono font-black fill-[#099BE9]">MERGE</text>
-
-            {/* HEAD Pointer Pill */}
-            <g transform="translate(182, 102)">
-              <rect x="0" y="0" width="26" height="13" rx="3" fill="#FBAE0C" />
-              <text x="13" y="9.5" textAnchor="middle" className="text-[7px] font-mono font-bold fill-white">HEAD</text>
-            </g>
-
-            {/* Traveling Commit Signal along Feature Branch */}
-            <circle r="3" fill="#8647E2">
+            {/* Traveling Signal Pulse along Balancing Loop */}
+            <circle r="3" fill="#09C899">
               <animateMotion
-                path="M 75 84 C 95 84, 110 34, 135 34 C 160 34, 175 84, 195 84"
+                path="M 100 28 C 60 46, 30 68, 45 96 C 60 110, 85 85, 115 28"
                 dur="2.4s"
                 repeatCount="indefinite"
               />
             </circle>
 
-            {/* Traveling Signal along Main Branch */}
-            <circle r="3" fill="#09C899">
-              <animate attributeName="cx" from="75" to="195" dur="2.4s" repeatCount="indefinite" />
-              <animate attributeName="cy" from="84" to="84" dur="2.4s" repeatCount="indefinite" />
+            {/* Traveling Signal Pulse along Reinforcing Loop */}
+            <circle r="3" fill="#FBAE0C">
+              <animateMotion
+                path="M 160 28 C 190 46, 225 68, 215 96 C 195 110, 175 80, 145 28"
+                dur="2.8s"
+                repeatCount="indefinite"
+              />
             </circle>
+
+            {/* Center Badges: (B) Balancing Loop Symbol */}
+            <g transform="translate(74, 54)">
+              <circle cx="12" cy="12" r="12" fill="#09C899" opacity="0.12" />
+              <circle cx="12" cy="12" r="10" fill="#FFFFFF" stroke="#09C899" strokeWidth="1" />
+              <text x="12" y="16" textAnchor="middle" className="text-[10px] font-mono font-black fill-[#0AA793]">B</text>
+            </g>
+
+            {/* Center Badges: (R) Reinforcing Loop Symbol */}
+            <g transform="translate(150, 54)">
+              <circle cx="12" cy="12" r="12" fill="#FBAE0C" opacity="0.12" />
+              <circle cx="12" cy="12" r="10" fill="#FFFFFF" stroke="#FBAE0C" strokeWidth="1" />
+              <text x="12" y="16" textAnchor="middle" className="text-[10px] font-mono font-black fill-[#F78424]">R</text>
+            </g>
+
+            {/* Polarities */}
+            <text x="36" y="58" className="text-[9px] font-mono font-bold fill-[#0AA793]">( - )</text>
+            <text x="214" y="58" className="text-[9px] font-mono font-bold fill-[#F78424]">( + )</text>
           </svg>
         </div>
       </div>
 
       {/* Footer */}
       <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-        <span>Causal History</span>
+        <span>Negative Feedback</span>
         <span className="text-[#0AA793] font-bold flex items-center gap-1">
           <Check className="w-3 h-3" />
-          <span>Zero Duplicate Blobs</span>
+          <span>Homeostatic Equilibrium</span>
         </span>
       </div>
     </div>
@@ -102,17 +112,16 @@ function GitDagDiagram() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Challenge 11: Distributed Rate Limiter (Distributed Systems)               */
-/* Systems Thinking: Token Bucket Stock & Flow with Backpressure Feedback.    */
-/* Constant inflow refills the bucket; incoming requests drain tokens.        */
+/* Diagram 2: Stock & Flow Diagram — Accumulation, Rates & Backpressure      */
+/* Foundational Systems Thinking: Reservoirs, Inflow/Outflow, Valve Control   */
 /* -------------------------------------------------------------------------- */
-function RateLimiterDiagram() {
-  const [tokens, setTokens] = useState(4);
+function StockAndFlowDiagram() {
+  const [level, setLevel] = useState(52);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setTokens((prev) => (prev <= 1 ? 5 : prev - 1));
-    }, 1200);
+      setLevel((prev) => 48 + Math.floor(Math.sin(Date.now() / 900) * 12));
+    }, 600);
     return () => clearInterval(timer);
   }, []);
 
@@ -122,249 +131,119 @@ function RateLimiterDiagram() {
       <div className="flex items-center justify-between pb-3 border-b border-slate-100">
         <div className="flex items-center gap-1.5 text-[11px] font-mono font-semibold text-slate-700">
           <span className="p-1 rounded-md bg-[#099BE9]/10 text-[#099BE9] inline-flex items-center justify-center">
-            <ShieldCheck className="w-3.5 h-3.5" />
+            <Layers className="w-3.5 h-3.5" />
           </span>
-          <span>Token Bucket Dynamics</span>
+          <span>Stock & Flow Diagram</span>
         </div>
         <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#099BE9]/15 text-[#099BE9] font-bold">
           <span className="w-1.5 h-1.5 rounded-full bg-[#099BE9] animate-ping" />
-          <span>Refill +10k/s</span>
+          <span>Rate Throttling</span>
         </span>
       </div>
 
-      {/* SVG Canvas: Clean Token Bucket Reservoir with Pass/Throttle Gate */}
+      {/* SVG: Canonical Stock and Flow with Valves and Feedback Link */}
       <div className="py-3 flex items-center justify-center">
         <div className="w-full max-w-[260px] h-32 relative">
           <svg viewBox="0 0 260 128" className="w-full h-full overflow-visible">
-            {/* Top Refill Stream into Bucket */}
-            <line x1="130" y1="4" x2="130" y2="38" stroke="#099BE9" strokeWidth="1.5" strokeDasharray="3 3" />
-            <text x="130" y="12" textAnchor="middle" className="text-[7px] font-mono font-bold fill-[#099BE9]">
-              REFILL (+r)
-            </text>
-            {/* Falling Token Pulse */}
-            <circle r="2.5" fill="#099BE9">
-              <animate attributeName="cx" from="130" to="130" dur="1.2s" repeatCount="indefinite" />
-              <animate attributeName="cy" from="14" to="44" dur="1.2s" repeatCount="indefinite" />
+            <defs>
+              <g id="valve-symbol">
+                <polygon points="-6,-6 6,6 6,-6 -6,6" fill="#099BE9" />
+                <circle cx="0" cy="0" r="2.5" fill="#FFFFFF" />
+              </g>
+            </defs>
+
+            {/* Inflow Cloud Source */}
+            <circle cx="18" cy="52" r="10" fill="#F1F5F9" stroke="#CBD5E1" strokeWidth="1" strokeDasharray="2 2" />
+            <text x="18" y="55" textAnchor="middle" className="text-[8px] font-mono fill-slate-400">Src</text>
+
+            {/* Inflow Pipe Line */}
+            <line x1="28" y1="52" x2="88" y2="52" stroke="#099BE9" strokeWidth="2.5" />
+
+            {/* Inflow Valve */}
+            <g transform="translate(56, 52)">
+              <use href="#valve-symbol" />
+              <text x="0" y="-10" textAnchor="middle" className="text-[8px] font-mono font-bold fill-slate-700">Inflow</text>
+            </g>
+
+            {/* Continuous Inflow Packets */}
+            <circle r="3" fill="#099BE9">
+              <animate attributeName="cx" from="28" to="88" dur="1.2s" repeatCount="indefinite" />
+              <animate attributeName="cy" from="52" to="52" dur="1.2s" repeatCount="indefinite" />
             </circle>
 
-            {/* Central Bucket Reservoir */}
-            <path
-              d="M 96 38 L 104 104 L 156 104 L 164 38"
-              fill="none"
+            {/* CENTRAL STOCK (Accumulator Box) */}
+            <rect
+              x="88"
+              y="26"
+              width="84"
+              height="52"
+              rx="4"
+              fill="#FFFFFF"
               stroke="#099BE9"
               strokeWidth="2"
-              strokeLinecap="round"
             />
-            {/* Bucket Dynamic Fill Level */}
+            {/* Dynamic Fill Level in Stock */}
             <rect
-              x="105"
-              y={102 - tokens * 11}
-              width="50"
-              height={tokens * 11}
-              rx="3"
+              x="90"
+              y={76 - (level * 48) / 100}
+              width="80"
+              height={(level * 48) / 100}
+              rx="2"
               fill="#099BE9"
-              opacity="0.16"
-              className="transition-all duration-300"
+              opacity="0.18"
+              className="transition-all duration-500"
             />
-            <text x="130" y="82" textAnchor="middle" className="text-[9px] font-mono font-black fill-slate-800">
-              {tokens} / 5
-            </text>
-            <text x="130" y="94" textAnchor="middle" className="text-[6.5px] font-mono fill-slate-500">
-              TOKENS
-            </text>
-
-            {/* Left Ingress: Requests arriving */}
-            <rect x="4" y="60" width="58" height="24" rx="5" fill="#F8FAFC" stroke="#CBD5E1" strokeWidth="1" />
-            <text x="33" y="75" textAnchor="middle" className="text-[8px] font-mono font-bold fill-slate-800">
-              REQ IN
-            </text>
-
-            {/* Ingress Arrow to Bucket */}
-            <line x1="62" y1="72" x2="96" y2="72" stroke="#CBD5E1" strokeWidth="1.5" strokeDasharray="2 2" />
-            {/* Request Pulse arriving */}
-            <circle r="3" fill="#8647E2">
-              <animate attributeName="cx" from="62" to="96" dur="1.4s" repeatCount="indefinite" />
-              <animate attributeName="cy" from="72" to="72" dur="1.4s" repeatCount="indefinite" />
-            </circle>
-
-            {/* Right Egress: Allowed Requests passing through gate */}
-            <line x1="164" y1="72" x2="200" y2="72" stroke="#09C899" strokeWidth="1.5" strokeDasharray="2 2" />
-            <rect x="200" y="60" width="56" height="24" rx="5" fill="#09C899" opacity="0.12" stroke="#09C899" strokeWidth="1" />
-            <text x="228" y="75" textAnchor="middle" className="text-[8px] font-mono font-bold fill-[#0AA793]">
-              200 OK
-            </text>
-
-            {/* Allowed Request Pulse exiting */}
-            <circle r="3" fill="#09C899">
-              <animate attributeName="cx" from="164" to="200" dur="1.4s" begin="0.2s" repeatCount="indefinite" />
-              <animate attributeName="cy" from="72" to="72" dur="1.4s" begin="0.2s" repeatCount="indefinite" />
-            </circle>
-
-            {/* Bottom Backpressure Throttling Notice */}
-            <path
-              d="M 130 106 C 130 120, 62 120, 62 84"
-              fill="none"
-              stroke="#FBAE0C"
-              strokeWidth="1"
+            {/* Stock Level Surface Line */}
+            <line
+              x1="90"
+              y1={76 - (level * 48) / 100}
+              x2="170"
+              y2={76 - (level * 48) / 100}
+              stroke="#099BE9"
+              strokeWidth="1.5"
               strokeDasharray="2 2"
+              className="transition-all duration-500"
             />
-            <text x="110" y="122" textAnchor="middle" className="text-[6.5px] font-mono font-bold fill-[#F78424]">
-              Empty -&gt; 429 Throttle
-            </text>
-          </svg>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-        <span>Decision Speed</span>
-        <span className="text-[#099BE9] font-bold flex items-center gap-1">
-          <Check className="w-3 h-3" />
-          <span>Sub-20µs Evaluation</span>
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-/* Challenge 20: Model Context Protocol (MCP) Runtime (AI Systems)            */
-/* Systems Thinking: Type-Safe JSON-RPC 2.0 Dispatch & Sandboxed Tool Loops.  */
-/* Host dispatch validates schemas, executes sandboxed tools, returns state.  */
-/* -------------------------------------------------------------------------- */
-function McpRuntimeDiagram() {
-  const [activeStep, setActiveStep] = useState(1);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveStep((prev) => (prev + 1) % 3);
-    }, 1500);
-    return () => clearInterval(timer);
-  }, []);
-
-  return (
-    <div className="w-full rounded-2xl bg-white border border-slate-200 p-4 shadow-2xs select-none relative overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-        <div className="flex items-center gap-1.5 text-[11px] font-mono font-semibold text-slate-700">
-          <span className="p-1 rounded-md bg-[#8647E2]/10 text-[#8647E2] inline-flex items-center justify-center">
-            <Cpu className="w-3.5 h-3.5" />
-          </span>
-          <span>JSON-RPC 2.0 Dispatcher</span>
-        </div>
-        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#8647E2]/15 text-[#8647E2] font-bold">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#8647E2] animate-ping" />
-          <span>Tool Overhead &lt; 0.8ms</span>
-        </span>
-      </div>
-
-      {/* SVG Canvas: Clean 3-Stage Pipeline (Host -> MCP Runtime -> Tool Sandbox) */}
-      <div className="py-3 flex items-center justify-center">
-        <div className="w-full max-w-[260px] h-32 relative">
-          <svg viewBox="0 0 260 128" className="w-full h-full overflow-visible">
-            {/* Host / Agent Box (Left) */}
-            <rect
-              x="4"
-              y="44"
-              width="64"
-              height="40"
-              rx="6"
-              fill="#FFFFFF"
-              stroke={activeStep === 0 ? "#8647E2" : "#CBD5E1"}
-              strokeWidth={activeStep === 0 ? "2" : "1"}
-            />
-            <text x="36" y="60" textAnchor="middle" className="text-[8px] font-mono font-black fill-slate-900">
-              AGENT
-            </text>
-            <text x="36" y="72" textAnchor="middle" className="text-[6.5px] font-mono font-bold fill-[#8647E2]">
-              send-rpc
+            <text x="130" y="44" textAnchor="middle" className="text-[10px] font-mono font-black fill-slate-900">STOCK</text>
+            <text x="130" y="58" textAnchor="middle" className="text-[9px] font-mono font-semibold fill-[#099BE9]">
+              Queue [{level}%]
             </text>
 
-            {/* Forward Link: Agent -> MCP Core */}
+            {/* Outflow Pipe Line */}
+            <line x1="172" y1="52" x2="232" y2="52" stroke="#099BE9" strokeWidth="2.5" />
+
+            {/* Outflow Valve */}
+            <g transform="translate(202, 52)">
+              <use href="#valve-symbol" />
+              <text x="0" y="-10" textAnchor="middle" className="text-[8px] font-mono font-bold fill-slate-700">Drain</text>
+            </g>
+
+            {/* Outflow Cloud Sink */}
+            <circle cx="242" cy="52" r="10" fill="#F1F5F9" stroke="#CBD5E1" strokeWidth="1" strokeDasharray="2 2" />
+            <text x="242" y="55" textAnchor="middle" className="text-[8px] font-mono fill-slate-400">Sink</text>
+
+            {/* Continuous Outflow Packets */}
+            <circle r="3" fill="#09C899">
+              <animate attributeName="cx" from="172" to="232" dur="1.2s" begin="0.3s" repeatCount="indefinite" />
+              <animate attributeName="cy" from="52" to="52" dur="1.2s" repeatCount="indefinite" />
+            </circle>
+
+            {/* Information Feedback Link: Stock to Inflow Valve (Backpressure) */}
             <path
-              d="M 68 56 L 98 56"
+              d="M 130 78 C 130 110, 56 110, 56 64"
               fill="none"
               stroke="#8647E2"
               strokeWidth="1.5"
-              strokeDasharray="2 2"
-            />
-            {/* Traveling RPC Request Pulse */}
-            <circle r="3" fill="#8647E2">
-              <animate attributeName="cx" from="68" to="98" dur="1.5s" repeatCount="indefinite" />
-              <animate attributeName="cy" from="56" to="56" dur="1.5s" repeatCount="indefinite" />
-            </circle>
-
-            {/* Central MCP Runtime Sandbox Box */}
-            <rect
-              x="98"
-              y="28"
-              width="74"
-              height="72"
-              rx="8"
-              fill="#F8FAFC"
-              stroke={activeStep === 1 ? "#09C899" : "#099BE9"}
-              strokeWidth="1.5"
-            />
-            <rect x="106" y="36" width="58" height="15" rx="3" fill="#8647E2" opacity="0.1" />
-            <text x="135" y="47" textAnchor="middle" className="text-[7.5px] font-mono font-black fill-[#8647E2]">
-              MCP CORE
-            </text>
-            <text x="135" y="66" textAnchor="middle" className="text-[6.5px] font-mono font-bold fill-slate-700">
-              Schema Check
-            </text>
-            <text x="135" y="78" textAnchor="middle" className="text-[6px] font-mono font-bold fill-[#0AA793]">
-              VALIDATED
-            </text>
-            <circle cx="135" cy="88" r="3" fill="#09C899" />
-
-            {/* Forward Link: MCP Core -> Tool Sandbox */}
-            <path
-              d="M 172 56 L 196 56"
-              fill="none"
-              stroke="#09C899"
-              strokeWidth="1.5"
-              strokeDasharray="2 2"
-            />
-            {/* Traveling Exec Pulse */}
-            <circle r="3" fill="#09C899">
-              <animate attributeName="cx" from="172" to="196" dur="1.5s" begin="0.3s" repeatCount="indefinite" />
-              <animate attributeName="cy" from="56" to="56" dur="1.5s" begin="0.3s" repeatCount="indefinite" />
-            </circle>
-
-            {/* Tool Sandbox Box (Right) */}
-            <rect
-              x="196"
-              y="44"
-              width="60"
-              height="40"
-              rx="6"
-              fill="#FFFFFF"
-              stroke={activeStep === 2 ? "#09C899" : "#CBD5E1"}
-              strokeWidth={activeStep === 2 ? "2" : "1"}
-            />
-            <text x="226" y="60" textAnchor="middle" className="text-[8px] font-mono font-black fill-slate-900">
-              TOOL
-            </text>
-            <text x="226" y="72" textAnchor="middle" className="text-[6.5px] font-mono font-bold fill-[#0AA793]">
-              execute
-            </text>
-
-            {/* Return Result Link (Bottom curve back to Agent) */}
-            <path
-              d="M 226 84 C 226 114, 36 114, 36 84"
-              fill="none"
-              stroke="#099BE9"
-              strokeWidth="1.5"
               strokeDasharray="3 3"
             />
-            <text x="131" y="112" textAnchor="middle" className="text-[6.5px] font-mono font-bold fill-[#099BE9]">
-              tools/call result -&gt; ACK
+            <text x="96" y="112" textAnchor="middle" className="text-[8px] font-mono font-bold fill-[#8647E2]">
+              Backpressure Throttle Link
             </text>
-            {/* Returning Result Packet */}
-            <circle r="2.5" fill="#099BE9">
+            {/* Feedback Signal Traveling Along Link */}
+            <circle r="2" fill="#8647E2">
               <animateMotion
-                path="M 226 84 C 226 114, 36 114, 36 84"
-                dur="2.2s"
+                path="M 130 78 C 130 110, 56 110, 56 64"
+                dur="1.8s"
                 repeatCount="indefinite"
               />
             </circle>
@@ -374,10 +253,10 @@ function McpRuntimeDiagram() {
 
       {/* Footer */}
       <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-        <span>Protocol Safety</span>
-        <span className="text-[#8647E2] font-bold flex items-center gap-1">
+        <span>Accumulation Law</span>
+        <span className="text-[#099BE9] font-bold flex items-center gap-1">
           <Check className="w-3 h-3" />
-          <span>Zero Escape Isolation</span>
+          <span>Inflow = Outflow Steady State</span>
         </span>
       </div>
     </div>
@@ -385,54 +264,117 @@ function McpRuntimeDiagram() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Main Section: 3 Featured ALGO Challenges with Pure Systems Diagrams        */
-/* 03 Git Version Control Engine                                              */
-/* 11 Distributed Rate Limiter                                                */
-/* 20 Model Context Protocol (MCP) Runtime                                    */
+/* Diagram 3: Dynamic Equilibrium & Delay Dampening (Systems Thinking)        */
+/* Foundational Systems Thinking: Time delays, oscillations, state stability  */
+/* -------------------------------------------------------------------------- */
+function EquilibriumDelayDiagram() {
+  return (
+    <div className="w-full rounded-2xl bg-white border border-slate-200 p-4 shadow-2xs select-none relative overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="flex items-center gap-1.5 text-[11px] font-mono font-semibold text-slate-700">
+          <span className="p-1 rounded-md bg-[#8647E2]/10 text-[#8647E2] inline-flex items-center justify-center">
+            <Activity className="w-3.5 h-3.5" />
+          </span>
+          <span>Dynamic Equilibrium</span>
+        </div>
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#8647E2]/15 text-[#8647E2] font-bold">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#8647E2] animate-ping" />
+          <span>Damped Delay</span>
+        </span>
+      </div>
+
+      {/* SVG: Phase Response Curve Showing Damped Convergence toward Goal State */}
+      <div className="py-3 flex items-center justify-center">
+        <div className="w-full max-w-[260px] h-32 relative">
+          <svg viewBox="0 0 260 128" className="w-full h-full overflow-visible">
+            {/* Axis grid lines */}
+            <line x1="20" y1="110" x2="246" y2="110" stroke="#CBD5E1" strokeWidth="1" />
+            <line x1="20" y1="16" x2="20" y2="110" stroke="#CBD5E1" strokeWidth="1" />
+            <text x="246" y="122" textAnchor="end" className="text-[8px] font-mono fill-slate-400">Time (t) -&gt;</text>
+            <text x="14" y="24" textAnchor="end" className="text-[8px] font-mono fill-slate-400">State</text>
+
+            {/* Target Goal Equilibrium Line (Dashed Green) */}
+            <line x1="20" y1="56" x2="246" y2="56" stroke="#09C899" strokeWidth="1.5" strokeDasharray="4 4" />
+            <rect x="180" y="44" width="66" height="15" rx="3" fill="#09C899" opacity="0.1" />
+            <text x="213" y="55" textAnchor="middle" className="text-[8px] font-mono font-bold fill-[#0AA793]">
+              Goal Equilibrium
+            </text>
+
+            {/* Time Delay Marker Line */}
+            <line x1="70" y1="16" x2="70" y2="110" stroke="#FBAE0C" strokeWidth="1" strokeDasharray="2 2" />
+            <text x="70" y="14" textAnchor="middle" className="text-[8px] font-mono font-bold fill-[#F78424]">
+              Delay (τ)
+            </text>
+
+            {/* Damped Convergence Wave Path */}
+            <path
+              id="damping-curve"
+              d="M 20 102 C 40 102, 50 16, 70 20 C 95 24, 110 82, 135 78 C 160 74, 175 48, 195 54 C 215 58, 230 56, 246 56"
+              fill="none"
+              stroke="#8647E2"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+
+            {/* Traveling Tracer on the Damped Convergence Curve */}
+            <circle r="4" fill="#8647E2" stroke="#FFFFFF" strokeWidth="1.5">
+              <animateMotion
+                path="M 20 102 C 40 102, 50 16, 70 20 C 95 24, 110 82, 135 78 C 160 74, 175 48, 195 54 C 215 58, 230 56, 246 56"
+                dur="3s"
+                repeatCount="indefinite"
+              />
+            </circle>
+
+            {/* Stable Convergence Point Indicator */}
+            <circle cx="246" cy="56" r="4" fill="#09C899" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+        <span>Stability Factor</span>
+        <span className="text-[#8647E2] font-bold flex items-center gap-1">
+          <Check className="w-3 h-3" />
+          <span>Critically Damped (No Thrashing)</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Main Section: Pure Systems Thinking Diagrams                              */
 /* -------------------------------------------------------------------------- */
 export function HomeHowItWorks() {
   const cards = [
     {
-      num: "03",
-      slug: "git",
-      badge: "GIT · MEDIUM",
+      badge: "BALANCING & REINFORCING",
       color: "#09C899", // ALGO Green
       badgeStyle: "text-[#0AA793] bg-[#09C899]/10 border-[#09C899]/30",
-      title: "Git Version Control Engine",
+      title: "Causal Feedback Loops",
       description:
-        "Content-addressed object database and Directed Acyclic Graph (DAG)",
-      tech: "Git",
-      difficulty: "Medium",
-      metric: "Commit creation: < 2ms",
-      widget: <GitDagDiagram />,
+        "Every distributed system is governed by feedback. Balance load through negative feedback loops, and identify runaway reinforcing loops before cascading failures strike.",
+      widget: <CausalLoopDiagram />,
     },
     {
-      num: "11",
-      slug: "rate-limiter",
-      badge: "TRAFFIC · MEDIUM",
+      badge: "STOCKS & FLOW RATES",
       color: "#099BE9", // ALGO Blue
       badgeStyle: "text-[#099BE9] bg-[#099BE9]/10 border-[#099BE9]/30",
-      title: "Distributed Rate Limiter",
+      title: "Stocks & Flow Rates",
       description:
-        "Low-overhead token bucket and sliding window rate limiter",
-      tech: "Stripe API, Cloudflare",
-      difficulty: "Medium",
-      metric: "Decision latency: < 0.02ms",
-      widget: <RateLimiterDiagram />,
+        "Model queues, buffer pools, and thread states as physical accumulations. Design closed information links where stock levels throttle inflow rates through backpressure.",
+      widget: <StockAndFlowDiagram />,
     },
     {
-      num: "20",
-      slug: "mcp-runtime",
-      badge: "AI SYSTEMS · MEDIUM",
+      badge: "DYNAMIC EQUILIBRIUM",
       color: "#8647E2", // ALGO Purple
       badgeStyle: "text-[#8647E2] bg-[#8647E2]/10 border-[#8647E2]/30",
-      title: "Model Context Protocol (MCP) Runtime",
+      title: "Equilibrium & Delay",
       description:
-        "Type-safe JSON-RPC 2.0 tool execution runtime with schema validation and isolation",
-      tech: "Anthropic MCP, Google Sidecars",
-      difficulty: "Medium",
-      metric: "Tool dispatch: < 0.8ms",
-      widget: <McpRuntimeDiagram />,
+        "Time delays between measurement and actuation cause oscillation and thrashing. Engineer critically damped systems that converge predictably to goal equilibrium.",
+      widget: <EquilibriumDelayDiagram />,
     },
   ];
 
@@ -449,31 +391,33 @@ export function HomeHowItWorks() {
               <span className="w-1.5 h-1.5 rounded-full bg-[#8647E2]" />
               <span className="w-1.5 h-1.5 rounded-full bg-[#FBAE0C]" />
             </span>
-            <span>Featured System Challenges</span>
+            <span>How ALGO Works</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-950">
-            Learn systems by building them.
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-950 leading-tight">
+            AI can write the code.
+            <span className="block text-[#09C899] mt-1.5">
+              ALGO teaches you to understand the system.
+            </span>
           </h2>
-          <p className="text-sm sm:text-base text-slate-600 font-medium leading-relaxed">
-            From content-addressed DAGs to token-bucket rate limiters and sandboxed MCP tool dispatchers. Master first-principles engineering from scratch.
-          </p>
+          <div className="pt-2">
+            <p className="text-sm sm:text-base text-slate-700 font-semibold leading-snug">
+              Code is becoming cheaper to produce.{" "}
+              <span className="text-slate-950 font-black">
+                Understanding systems is not.
+              </span>
+            </p>
+          </div>
         </div>
 
-        {/* 3 Challenge Cards with Pure Systems Thinking Diagrams */}
+        {/* 3 Pure Systems Thinking Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
           {cards.map((card) => (
             <div
-              key={card.slug}
-              className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-2xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between space-y-5 group"
+              key={card.title}
+              className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-2xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between space-y-6 group cursor-default"
             >
-              {/* Top: Challenge Number & Category Badge */}
-              <div className="flex items-center justify-between">
-                <span
-                  className="w-7 h-7 rounded-xl flex items-center justify-center font-mono font-extrabold text-xs text-white shadow-2xs transition-transform duration-300 group-hover:scale-110"
-                  style={{ backgroundColor: card.color }}
-                >
-                  {card.num}
-                </span>
+              {/* Top: Category Eyebrow Badge (No numbers) */}
+              <div className="flex items-center">
                 <span
                   className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border ${card.badgeStyle} transition-transform duration-300 group-hover:scale-105`}
                 >
@@ -481,44 +425,17 @@ export function HomeHowItWorks() {
                 </span>
               </div>
 
-              {/* Center: Systems Thinking Animated Diagram */}
+              {/* Center: Systems Thinking Diagram with Abstract Vector Motion */}
               <div className="pt-1">{card.widget}</div>
 
-              {/* Bottom: Title, Description, Metadata & Action Button */}
-              <div className="space-y-3 pt-2 border-t border-slate-100 flex-1 flex flex-col justify-between">
-                <div className="space-y-1.5">
-                  <Link
-                    href={`/challenges/${card.slug}`}
-                    className="block text-lg font-bold text-slate-950 tracking-tight transition-colors hover:text-[#0AA793]"
-                  >
-                    {card.title}
-                  </Link>
-                  <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed">
-                    {card.description}
-                  </p>
-                </div>
-
-                {/* Challenge Metadata Chips */}
-                <div className="space-y-2 pt-1">
-                  <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-mono text-slate-500">
-                    <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-medium">
-                      {card.tech}
-                    </span>
-                    <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-medium">
-                      {card.metric}
-                    </span>
-                  </div>
-
-                  {/* Solve Button */}
-                  <Link
-                    href={`/challenges/${card.slug}/workspace`}
-                    className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold text-white transition-all shadow-2xs hover:opacity-95 active:scale-98"
-                    style={{ backgroundColor: card.color }}
-                  >
-                    <span>Solve Challenge</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
+              {/* Bottom: Title & Deep Dive Description */}
+              <div className="space-y-2 pt-2 border-t border-slate-100">
+                <h3 className="text-lg font-bold text-slate-950 tracking-tight transition-colors group-hover:text-[#0AA793]">
+                  {card.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed">
+                  {card.description}
+                </p>
               </div>
             </div>
           ))}
