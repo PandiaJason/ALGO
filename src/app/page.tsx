@@ -5,7 +5,8 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { HeroTerminal } from "@/components/home/hero-terminal";
 import { DailyChallengeBanner } from "@/components/home/daily-challenge-banner";
-import { HomeManifesto } from "@/components/home/home-manifesto";
+import { HomeHowItWorks } from "@/components/home/home-how-it-works";
+import { HomeProblemset } from "@/components/home/home-problemset";
 import { HomeWishlist } from "@/components/home/home-wishlist";
 import { HomeCaseStudyBanner } from "@/components/home/home-case-study-banner";
 import { ChevronRight, Play, Route } from "lucide-react";
@@ -77,9 +78,14 @@ export default async function HomePage() {
         <DailyChallengeBanner />
 
         {/* ============================================================== */}
-        {/* 5. THE PROVING GROUND THESIS & SYSTEMS VERIFICATION LOOP       */}
+        {/* 3. HOW IT WORKS (3 MINIMAL CARDS - BRILLIANT STYLE)            */}
         {/* ============================================================== */}
-        <HomeManifesto />
+        <HomeHowItWorks />
+
+        {/* ============================================================== */}
+        {/* 4. SYSTEMS CHALLENGES PROBLEMSET (LEETCODE / HACKERRANK STYLE) */}
+        {/* ============================================================== */}
+        <HomeProblemset />
 
         {/* ============================================================== */}
         {/* 6. JOIN WISHLIST & DIRECT MESSAGE (Queued in Admin Control)    */}

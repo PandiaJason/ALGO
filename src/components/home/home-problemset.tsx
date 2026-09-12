@@ -19,11 +19,17 @@ export function HomeProblemset() {
       {/* Section Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
         <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-mono font-bold text-[#0AA793] uppercase tracking-wider">
+              Curriculum Catalog
+            </span>
+            <span className="text-xs font-mono text-slate-400">• 20 Real Systems</span>
+          </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950">
-            Challenges
+            Systems Engineering Challenges
           </h2>
-          <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1 max-w-2xl">
-            20 challenges designed to help you understand systems engineering and boost your agentic workflow.
+          <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1 max-w-2xl">
+            Choose a challenge, implement the protocol over stdin/stdout, and benchmark your performance level by level.
           </p>
         </div>
 
@@ -149,7 +155,7 @@ export function HomeProblemset() {
                       className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all group/btn ${
                         c.status === "COMING_SOON"
                           ? "text-slate-700 bg-slate-100 hover:bg-slate-200"
-                          : "text-[#099BE9] bg-[#099BE9]/10 hover:bg-[#099BE9] hover:text-white"
+                          : "text-[#0AA793] bg-[#09C899]/10 hover:bg-[#09C899] hover:text-white shadow-2xs"
                       }`}
                     >
                       <span>{c.status === "COMING_SOON" ? "Preview" : "Solve"}</span>
