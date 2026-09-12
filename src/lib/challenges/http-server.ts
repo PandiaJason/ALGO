@@ -209,10 +209,11 @@ Not Found`,
         "If the search succeeds, extract the named parameter values and return the dynamically generated string (e.g., 'User 42').",
         "Return 404 Not Found if no trie path matches the incoming request."
 ],
-      diagram: `RADIX TRIE ROUTER                        PARAMETER EXTRACTION            DISPATCH
-GET /users/42          ──► Trie Lookup ──► matches /users/:id (id=42) ──► 200 OK "User 42"
-GET /posts/systems     ──► Trie Lookup ──► matches /posts/:slug       ──► 200 OK "Post systems"
-GET /unknown           ──► Trie Lookup ──► no match in radix tree     ──► 404 Not Found
+      diagram: `RADIX TRIE ROUTER                        PARAMETER EXTRACTION              OUTPUT
+GET /users/101         ──► Trie Lookup ──► matches /users/:id (id=101)  ──► HTTP/1.1 200 OK\nContent-Length: 8\n\nUser 101
+GET /posts/systems     ──► Trie Lookup ──► matches /posts/:slug         ──► HTTP/1.1 200 OK\nContent-Length: 12\n\nPost systems
+GET /users/42/status   ──► Trie Lookup ──► matches /users/:id/status    ──► HTTP/1.1 200 OK\nContent-Length: 14\n\nStatus User 42
+GET /unknown           ──► Trie Lookup ──► no match in radix tree       ──► HTTP/1.1 404 Not Found\nContent-Length: 9\n\nNot Found
 
 Trie Node Topology:
           / (root)
@@ -279,9 +280,12 @@ Lookup: O(path length) prefix traversal without linear route array scanning.`,
         "Store headers in a dictionary, ensuring you call lowercase on all header keys before storing them.",
         "Use these dictionaries to implement handlers like '/echo-agent' that respond with the client's User-Agent."
 ],
-      diagram: `HEADER & QUERY PARSER                    EXTRACTION PIPELINE             NORMALIZED OUTPUT
-GET /search?q=redis    ──► Query Tokenizer ──► param["q"] = "redis"   ──► 200 OK "Search: redis"
-user-agent: AlgoClient ──► Lowercase Normalizer──► header["user-agent"] ──► 200 OK "Agent AlgoClient"
+      diagram: `HEADER & QUERY PARSER                    EXTRACTION PIPELINE             WIRE OUTPUT
+GET /search?q=redis    ──► Query Tokenizer ──► param["q"] = "redis"   ──► HTTP/1.1 200 OK\nContent-Length: 13\n\nSearch: redis
+user-agent: AlgoClient ──► Lowercase Map   ──► header["user-agent"]   ──► HTTP/1.1 200 OK\nContent-Length: 16\n\nAgent AlgoClient
+
+Query Parsing:
+"/search?q=redis" ──► path: "/search", query: "q=redis" ──► params: { q: "redis" }
 
 Header Normalization Table:
 Raw Wire Header                 Normalized Internal Map
@@ -289,10 +293,7 @@ Raw Wire Header                 Normalized Internal Map
 │ User-Agent: AlgoClient  │ ──►│ "user-agent": AlgoClient│
 │ CONTENT-TYPE: text/html │ ──►│ "content-type": text/html
 │ X-Trace-ID: 99482       │ ──►│ "x-trace-id": 99482     │
-└─────────────────────────┘    └─────────────────────────┘
-
-Query String Splitting:
-"/filter?type=db&sort=desc" ──► path: "/filter", params: { type: "db", sort: "desc" }`,
+└─────────────────────────┘    └─────────────────────────┘`,
       learningLoop: {
         bottleneck: "HTTP header names are case-insensitive (Host vs host), and query strings require URL decoding. How do servers parse both without redundant allocations?",
         whatYouUnderstand: [
@@ -350,19 +351,16 @@ Query String Splitting:
         "For the '/uppercase' route, call uppercase on the body string before responding."
 ],
       diagram: `POST PAYLOAD INGESTION                   BODY FRAMING ENGINE             PROCESSED RESPONSE
-POST /echo             ──► Read Header: Content-Length: 5 ──► Payload: "hello" (5 bytes)
-Payload: hello         ──► Buffer exact N bytes (no desync) ──► 200 OK "hello"
+POST /echo             ──► Read Header: Content-Length: 5 ──► HTTP/1.1 200 OK\nContent-Length: 5\n\nhello
+Content-Length: 5      ──► Buffer exact 5 bytes           ──► (Body "hello" framed without desync)
+\nhello
 
 Framing Lifecycle:
-Wire Stream: [POST /echo\\r\\n][Content-Length: 5\\r\\n\\r\\n][hello][Next Request...]
-             │               │                          │       │
-             ▼               ▼                          ▼       ▼
-       Status Line      Header Map                 Exact 5B   Safe Boundary
-       (Parsed)        (Len = 5)                  (Consumed) (No Smuggling)
-
-Safety Invariant:
-Under-read (Len < actual) ──► Rejects or waits for full packet.
-Over-read (Len > actual)  ──► Reads exactly N bytes, leaving remainder for next message.`,
+Wire Stream: [POST /echo\n][Content-Length: 5\n\n][hello]
+             │              │                      │
+             ▼              ▼                      ▼
+       Status Line     Header Map             Exact 5 Bytes Body
+       (Parsed)        (Len = 5)              (Echoed Back)`,
       learningLoop: {
         bottleneck: "TCP streams have no built-in packet boundaries. If a server reads too few or too many bytes, request smuggling or stream desynchronization occurs.",
         whatYouUnderstand: [
@@ -420,19 +418,17 @@ Over-read (Len > actual)  ──► Reads exactly N bytes, leaving remainder for
         "If the client sends 'Connection: close', break the loop and terminate cleanly after sending the response.",
         "Ensure your response headers explicitly include 'Connection: keep-alive' or 'Connection: close'."
 ],
-      diagram: `CLIENT TCP STREAM                        SESSION COORDINATOR             PIPELINED STREAM
-Request 1: GET /hello  ──► Process Req 1 ──► Keep socket OPEN ──────► Res 1: 200 OK (keep-alive)
-Request 2: GET /ping   ──► Process Req 2 ──► Final req in stream ───► Res 2: 200 OK (close)
+      diagram: `CLIENT TCP STREAM                        SESSION COORDINATOR             PIPELINED OUTPUT
+GET /hello             ──► Process Req 1 ──► Keep socket OPEN ──────► HTTP/1.1 200 OK\nContent-Length: 11\nConnection: keep-alive\n\nHello World
+---
+GET /ping              ──► Process Req 2 ──► Final req in stream ───► HTTP/1.1 200 OK\nContent-Length: 4\nConnection: close\n\nPONG
 
 Keep-Alive Connection Timeline:
-TCP Handshake (SYN, SYN-ACK, ACK) [Paid ONCE]
+TCP Connection Established
   │
   ├──► [Request 1: GET /hello] ────► [Response 1: keep-alive]
-  ├──► [Request 2: POST /echo] ────► [Response 2: keep-alive]
-  └──► [Request 3: GET /ping]  ────► [Response 3: close] ──► FIN (Socket Closed)
-
-Throughput Advantage:
-Eliminates 3-way TCP handshake + TLS negotiation on repeated asset requests.`,
+  ├──► [Request Delimiter: ---]
+  └──► [Request 2: GET /ping]  ────► [Response 2: close] ──► Socket Closed`,
       learningLoop: {
         bottleneck: "Opening a new TCP connection (3-way handshake + slow start) for every asset adds 50-100ms latency per request. Keep-alive is mandatory for high throughput.",
         whatYouUnderstand: [
@@ -490,10 +486,10 @@ Eliminates 3-way TCP handshake + TLS negotiation on repeated asset requests.`,
         "Ensure memory isn't leaked over time by completely resetting the state for a connection once its response is sent.",
         "Support 'QUIT' to break the loop and gracefully drain the server."
 ],
-      diagram: `EVENT LOOP (epoll/kqueue)                WORKER DISPATCHER               CONCURRENCY PEAK
-Socket 1: Ready to Read ──► epoll_wait() ──► Zero-Copy Parse ──► 200 OK
-Socket 2: Ready to Read ──► Non-Blocking ──► Direct Write    ──► 200 OK
-Throughput: > 50,000 req/sec | Latency: p99 < 1.0ms
+      diagram: `EVENT LOOP (epoll/kqueue)                PIPELINED REQUEST INGRESS       OUTPUT STREAM
+GET /hello             ──► epoll readiness ──► Parse & Dispatch ──► HTTP/1.1 200 OK\nContent-Length: 11\n\nHello World
+GET /ping              ──► epoll readiness ──► Parse & Dispatch ──► HTTP/1.1 200 OK\nContent-Length: 4\n\nPONG
+GET /hello             ──► epoll readiness ──► Parse & Dispatch ──► HTTP/1.1 200 OK\nContent-Length: 11\n\nHello World
 
 C10K Event Loop Architecture:
                  ┌─────────────────────────┐

@@ -135,12 +135,11 @@ This approach is extremely memory efficient because you only need to store a sin
         "If the counter is below the limit, increment it and print 'ALLOWED <remaining>'.",
         "If the counter is at the limit, calculate the start time of the next epoch and print 'REJECTED <retry_after_ms>'."
 ],
-      diagram: `REQUEST EVALUATION                        RATE LIMIT ENGINE               DECISION
-CONFIG 2 10                   ──► configure global window  ──► OK
-REQUEST alice 1000            ──► epoch 0 (1 req seen)     ──► ALLOWED 1
-REQUEST alice 2000            ──► epoch 0 (2 reqs seen)    ──► ALLOWED 0
-REQUEST alice 3000            ──► epoch 0 (exceeded limit) ──► REJECTED 7000
-REQUEST alice 10500           ──► epoch 1 (new window)     ──► ALLOWED 1`,
+      diagram: `FIXED WINDOW RATE LIMITER (Case 1):
+CONFIG 3 5             ──► 3 requests allowed per 5 second window ──► OK
+REQUEST alice 1000     ──► Window [0..5000ms]: count 1/3 (rem: 2)  ──► ALLOWED 2
+REQUEST alice 2000     ──► Window [0..5000ms]: count 2/3 (rem: 1)  ──► ALLOWED 1
+REQUEST alice 3000     ──► Window [0..5000ms]: count 3/3 (rem: 0)  ──► ALLOWED 0`,
       importantChallenge: {
         title: "Window Edge Boundary Spikes",
         description:
@@ -253,13 +252,11 @@ The sliding window log fixes this by keeping a precise record of every request t
         "If the array length is less than the limit, append the new timestamp and print 'ALLOWED <remaining>'.",
         "If the array is full, do not append. Calculate retry_after as (oldest_timestamp + window_ms - current_timestamp) and print 'REJECTED <retry_after>'."
 ],
-      diagram: `REQUEST STREAM (ROLLING WINDOW)           TIMESTAMP LOG DEQUE (c1)              DECISION
-CONFIG_SLIDING 2 5 (limit=2, win=5s)
-REQUEST_SLIDING c1 4000  ──► [t=4000]                                     ──► ALLOWED 1
-REQUEST_SLIDING c1 4500  ──► [t=4000, t=4500]                             ──► ALLOWED 0
-REQUEST_SLIDING c1 5500  ──► [t=4000, t=4500] (win: 500..5500, count=2)   ──► REJECTED 3500
-                                  │ (earliest: 4000 + 5000 - 5500 = 3500)
-REQUEST_SLIDING c1 9100  ──► Evict < 4100 ──► [t=4500, t=9100]           ──► ALLOWED 0`,
+      diagram: `SLIDING LOG ALGORITHM (Case 1):
+CONFIG_SLIDING 2 5           ──► Max 2 requests per sliding 5s window ──► OK
+REQUEST_SLIDING c1 4000      ──► Timestamps in window: [4000] (rem: 1)──► ALLOWED 1
+REQUEST_SLIDING c1 4500      ──► Timestamps: [4000, 4500] (rem: 0)   ──► ALLOWED 0
+REQUEST_SLIDING c1 5500      ──► Window [500..5500]: [4000, 4500] full!──► REJECTED 3500`,
       learningLoop: {
         bottleneck: "Fixed windows suffer from boundary spikes: sending the full quota at 00:09 and another at 00:10 yields 2x throughput in 1 second.",
         whatYouUnderstand: [
@@ -354,14 +351,10 @@ By refilling tokens lazily (calculating the refill only when a new request arriv
         "If current_tokens >= requested_tokens, subtract them and print 'ALLOWED <floor(remaining)>'.",
         "If not, leave the token count untouched and print 'REJECTED'."
 ],
-      diagram: `INCOMING ACQUIRE                          TOKEN BUCKET (c1: cap=5, rate=1/s)     STATUS
-CONFIG_BUCKET c1 5 1                     ┌─────────────────────────────┐
-ACQUIRE c1 3 1000        ──► Deduct 3    │ Tokens: [● ● ● ● ●] (5/5)   │ ──► ALLOWED 2
-ACQUIRE c1 2 1000        ──► Deduct 2    │ Tokens: [● ●]       (2/5)   │ ──► ALLOWED 0
-ACQUIRE c1 1 1000        ──► Empty       │ Tokens: [ ]         (0/5)   │ ──► REJECTED
-                              │          └─────────────────────────────┘
-                              ▼ (Δt = 1000ms: +1 token refilled)
-ACQUIRE c1 1 2000        ──► Deduct 1    │ Tokens: [●]         (1/5)   │ ──► ALLOWED 0`,
+      diagram: `TOKEN BUCKET REFILL PIPELINE (Case 1):
+CONFIG_BUCKET c1 10 2  ──► Capacity: 10, Refill Rate: 2 tokens/sec ──► OK
+ACQUIRE c1 10 1000     ──► Consumes all 10 tokens (0 remain)        ──► ALLOWED 0
+ACQUIRE c1 1 1000      ──► Bucket empty! (0 tokens available)       ──► REJECTED`,
       learningLoop: {
         bottleneck: "Sliding window logs consume O(N) memory per client. Token buckets track only two scalar numbers: tokens available and last refill time.",
         whatYouUnderstand: [
@@ -460,14 +453,13 @@ The leaky bucket (or traffic shaper) solves this by acting as a shock absorber. 
         "Shift up to num_to_leak items from the front of the queue. Update last_leak_ms by advancing it exactly by (num_to_leak / leak_rate) seconds.",
         "Print 'PROCESSED <ids...>' or 'IDLE' if nothing was leaked."
 ],
-      diagram: `INBOUND BURST (ENQUEUE)                   LEAKY BUCKET BUFFER (cap=3, leak=1/s)  OUTBOUND FLOW
-ENQUEUE r1 1000 ────────┐                 ┌─────────────────────────────┐
-ENQUEUE r2 1000 ────────┼───────────────► │ [r3] [r2] [r1] (3/3 FULL)   │ ──► QUEUED 1..3
-ENQUEUE r4 1000 ────────┼───────────────► └──────────────┬──────────────┘ ──► DROPPED (Full)
-                        │                                │
-                        ▼                                ▼ (Δt = 1s: 1 req leaked)
-LEAK 2000 ───────────────────────────────────────────────┴──────────────► PROCESSED r1
-                                          Remaining: [r3] [r2] (2/3)`,
+      diagram: `LEAKY BUCKET BUFFERING (Case 1):
+CONFIG_LEAKY 3 1       ──► Queue size: 3, Leak rate: 1 req/sec ──► OK
+ENQUEUE r1 1000        ──► Enqueues r1 (queue len: 1)          ──► QUEUED 1
+ENQUEUE r2 1000        ──► Enqueues r2 (queue len: 2)          ──► QUEUED 2
+ENQUEUE r3 1000        ──► Enqueues r3 (queue len: 3)          ──► QUEUED 3
+ENQUEUE r4 1000        ──► Queue full! Dropped                 ──► DROPPED
+LEAK 2000              ──► Leaks 1 request from queue          ──► PROCESSED r1`,
       learningLoop: {
         bottleneck: "Token buckets permit burst spikes to hit downstream services. Leaky buckets shape traffic into an exact, steady dispatch frequency.",
         whatYouUnderstand: [
@@ -567,16 +559,15 @@ In this level, you build a multi-tenant quota manager that maps client identitie
         "Use the resolved tier's limit and window to evaluate the request using the fixed-window logic from Level 1.",
         "Print 'ALLOWED <tier> <remaining>' or 'REJECTED <tier>'."
 ],
-      diagram: `CLIENT REQUESTS                           TIER SLA REGISTRY                      QUOTA ENFORCEMENT
-REQUEST_TIER alice 1000                   ┌─────────────────────────────┐
-       │                                  │ FREE: limit=1, window=10s   │ ──► ALLOWED FREE 0
-       ▼ (alice -> FREE)                  ├─────────────────────────────┤
-REQUEST_TIER alice 2000                   │ PRO:  limit=5, window=10s   │ ──► REJECTED FREE
-                                          └─────────────────────────────┘
-REQUEST_TIER bob 1000                     ┌─────────────────────────────┐
-       │                                  │ bob -> PRO (Quota: 5)       │ ──► ALLOWED PRO 4
-       ▼ (bob -> PRO)                     │ Current usage: 1/5          │
-REQUEST_TIER bob 2000                     │ Current usage: 2/5          │ ──► ALLOWED PRO 3`,
+      diagram: `TIERED MULTI-TENANT QUOTAS (Case 1):
+ADD_TIER FREE 1 10     ──► Free: 1 req / 10s       ──► OK
+ADD_TIER PRO 5 10      ──► Pro: 5 req / 10s        ──► OK
+ASSIGN_TIER alice FREE ──► alice mapped to FREE    ──► OK
+ASSIGN_TIER bob PRO    ──► bob mapped to PRO       ──► OK
+REQUEST_TIER alice 1000──► alice 1/1 consumed      ──► ALLOWED FREE 0
+REQUEST_TIER alice 2000──► alice limit exceeded    ──► REJECTED FREE
+REQUEST_TIER bob 1000  ──► bob 1/5 consumed        ──► ALLOWED PRO 4
+REQUEST_TIER bob 2000  ──► bob 2/5 consumed        ──► ALLOWED PRO 3`,
       learningLoop: {
         bottleneck: "Hardcoding one limit treats free trial users and paying enterprise customers identically. Tiered limiting enforces monetization SLAs.",
         whatYouUnderstand: [
@@ -671,14 +662,16 @@ This level simulates tracking complete state telemetry atomically alongside the 
         "On 'CLIENT_STATS', recalculate the current tokens (lazy refill) to show the most up-to-date balance.",
         "Print 'STATS <client> ALLOWED <allowed_count> REJECTED <rejected_count> TOKENS <current_tokens>'"
 ],
-      diagram: `EVENT STREAM                              TELEMETRY / STATE CORE                 TELEMETRY / METRICS
-Event-1: ATOMIC_ACQUIRE c1 3 ──┐          ┌─────────────────────────────┐
-Event-2: ATOMIC_ACQUIRE c1 3 ──┼────────► │ Token Tracking Engine       │ ──► ALLOWED 2 (c1: 2 rem)
-                               │          │ Prevents Over-allocation    │ ──► RATE_LIMITED
-                               ▼          └──────────────┬──────────────┘
-CLIENT_STATS c1 ─────────────────────────────────────────┴──────────────► STATS c1
-                                                                          ALLOWED 1 REJECTED 1
-                                                                          TOKENS 2`,
+      diagram: `ATOMIC CONCURRENCY TRACKING (Case 1):
+CONFIG_BUCKET c1 5 1        ──► Capacity: 5, Rate: 1/sec ──► OK
+ATOMIC_ACQUIRE c1 3 1000    ──► Atomically takes 3 (rem: 2) ──► ALLOWED 2
+ATOMIC_ACQUIRE c1 3 1000    ──► Needs 3, only 2 left!    ──► RATE_LIMITED
+CLIENT_STATS c1             ──► Client Telemetry
+OUTPUT:
+OK
+ALLOWED 2
+RATE_LIMITED
+STATS c1 ALLOWED 1 REJECTED 1 TOKENS 2`,
       learningLoop: {
         bottleneck: "In distributed clusters, tracking exact allocations avoids race conditions. Even sequentially, you must ensure strict bounds.",
         whatYouUnderstand: [

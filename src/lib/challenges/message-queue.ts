@@ -130,12 +130,11 @@ This is exactly how a simple FIFO (First-In-First-Out) queue works.`,
         "Implement 'PUB <topic> <message>': append the message to the topic's array. Return 'OK <offset>'.",
         "Implement 'POLL <topic>': if the array is empty or missing, print 'EMPTY'. Otherwise, remove the first element from the array (index 0) and print it."
       ],
-      diagram: `INPUT (Commands)              BROKER / QUEUE ENGINE          OUTPUT
-PUB orders item_1     ──────► topic["orders"].push(item_1) ──► OK 0
-PUB orders item_2     ──────► topic["orders"].push(item_2) ──► OK 1
-POLL orders           ──────► topic["orders"].pop()        ──► item_1
-POLL orders           ──────► topic["orders"].pop()        ──► item_2
-POLL orders           ──────► topic empty                  ──► EMPTY`,
+      diagram: `PRODUCER / CONSUMER DISPATCH (Case 1):
+PUB orders pizza       ──► Appends to topic "orders" ──► Assigns offset 0 ──► OK 0
+POLL orders            ──► Reads & dequeues head message                  ──► pizza
+
+Case 2: "POLL empty_topic" ──► No messages present ──► EMPTY`,
       importantChallenge: {
         title: "Whitespace in payloads & empty queue contracts",
         description:
@@ -218,19 +217,15 @@ asks for the very first event. Your program returns the message without deleting
         "Implement 'LEN <topic>': return the size of the array for that topic.",
         "Ensure 'PUB' still works exactly as before, returning the new item's index."
       ],
-      diagram: `INPUT                         COMMIT LOG ARCHITECTURE               OUTPUT
-PUB events click       ──► append(offset=0, "click")         ──► OK 0
-READ_AT events 0       ──► log[0] (non-destructive)          ──► click
-READ_AT events 0       ──► log[0] (re-read allowed)          ──► click
+      diagram: `PERSISTENT APPEND LOG & REPLAY (Case 1):
+PUB logs boot          ──► Writes to offset 0         ──► OK 0
+READ_AT logs 0         ──► Random access at offset 0  ──► boot
+READ_AT logs 0         ──► Re-read without consuming! ──► boot
 
-Linear Commit Log:
-Offset:     [ 0 ]         [ 1 ]         [ 2 ]         [ 3 ]
-Message: ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐
-         │ "click" │──►│"signup" │──►│ "login" │──►│ "logout"│
-         └─────────┘   └─────────┘   └─────────┘   └─────────┘
-              ▲
-              │
-          READ_AT 0 (Cursor does not mutate or pop log)`,
+Log Structure:
+Offset: [ 0 ]
+Data:   [ "boot" ]
+(Unchanged across repeated reads)`,
       learningLoop: {
         bottleneck: "Traditional queues delete messages on read, preventing replay or multiple independent consumer inspection. How do commit logs enable replayability?",
         whatYouUnderstand: [
@@ -298,18 +293,14 @@ tells the post office that billing finished processing message 0.`,
         "Implement 'GROUP_POLL <group> <topic>': Look up the group's cursor for this topic. Use 'READ_AT' logic to get the message. If it exists, increment the cursor by 1 and return 'OFFSET: <cursor> MSG: <message>'. If not, return 'EMPTY'.",
         "Implement 'GROUP_COMMIT <group> <topic> <offset>': Update the group's cursor to be offset + 1, and return 'OK'."
       ],
-      diagram: `PRODUCER STREAM               CONSUMER GROUP CURSORS                INDEPENDENT OUTPUT
-PUB orders $50         ──► log[0] = "$50"                    ──► OK 0
-GROUP_POLL billing     ──► cursor["billing"]=0 (advances)    ──► OFFSET: 0 MSG: $50
-GROUP_POLL analytics   ──► cursor["analytics"]=0 (advances)  ──► OFFSET: 0 MSG: $50
+      diagram: `INDEPENDENT CONSUMER GROUPS (Case 1):
+PUB orders $50                 ──► Topic "orders" [offset 0: "$50"] ──► OK 0
+GROUP_POLL billing orders      ──► Group "billing" reads offset 0   ──► OFFSET: 0 MSG: $50
+GROUP_POLL analytics orders    ──► Group "analytics" reads offset 0 ──► OFFSET: 0 MSG: $50
 
-Consumer Group Isolation:
-Topic: orders log
-[ 0: "$50" ] ──► [ 1: "$120" ] ──► [ 2: "$15" ]
-     ▲                ▲
-     │                │
-     │            Group A ("billing") [Committed: 1]
- Group B ("analytics") [Committed: 0]`,
+Group Offset Trackers:
+billing   ──► Offset 0 committed (next: 1)
+analytics ──► Offset 0 committed (next: 1)`,
       learningLoop: {
         bottleneck: "When multiple worker replicas consume the same topic, how do you prevent duplicate work while allowing other consumer groups (e.g. analytics vs billing) to read the same stream?",
         whatYouUnderstand: [
@@ -374,16 +365,12 @@ calculates a line number based on "bob", maybe line 2, and puts "hello" there.`,
         "Implement 'PART_PUB <topic> <key> <message>': Calculate the hash of the key (use a simple sum of ASCII characters modulo 4). Append the message to that specific partition's array. Return 'PARTITION: <p> OFFSET: <o>'.",
         "Implement 'PART_READ <topic> <partition> <offset>': Read the message directly from the specified partition's array. Return the message or 'NOT_FOUND'."
       ],
-      diagram: `KEY-HASH ROUTER               PARTITION ARRAYS                      CONSUMER STREAMS
-PART_PUB users u1 A    ──► hash("u1") % 4 = Part 1           ──► PARTITION: 1 OFFSET: 0
-PART_PUB users u1 B    ──► hash("u1") % 4 = Part 1 (ordered) ──► PARTITION: 1 OFFSET: 1
-PART_PUB users u2 C    ──► hash("u2") % 4 = Part 3           ──► PARTITION: 3 OFFSET: 0
+      diagram: `HASH-BASED PARTITIONING (Case 1):
+PART_PUB users user_1 a ──► Hash("user_1") % 2 = 1 ──► Partition 1, Offset 0 ──► PARTITION: 1 OFFSET: 0
+PART_PUB users user_1 b ──► Hash("user_1") % 2 = 1 ──► Partition 1, Offset 1 ──► PARTITION: 1 OFFSET: 1
 
-4-Way Partition Sharding:
-           ┌──► Partition 0: [msg...]  (Independent lock & disk log)
-Key Hash ──┼──► Partition 1: [u1:A] ──► [u1:B]  (Strict ordering for u1)
-Murmur3    ├──► Partition 2: [msg...]
-           └──► Partition 3: [u2:C]`,
+Key Preservation:
+All events for "user_1" route strictly to Partition 1, guaranteeing sequential ordering.`,
       learningLoop: {
         bottleneck: "A single commit log is bottlenecked by single-core disk write throughput. Sharding into partitions allows parallel linear scaling across cores.",
         whatYouUnderstand: [
@@ -448,14 +435,17 @@ processes all three temperature readings instantly.`,
         "Use a loop or array extension to append all the messages to the topic's array.",
         "Return 'BATCH_OK COUNT: <num_messages> FIRST_OFFSET: <FIRST_OFFSET>'."
       ],
-      diagram: `BATCH ACCUMULATOR             ATOMIC ALLOCATION                     BATCH COMMIT
-BATCH_PUB e1 e2 e3     ──► Allocate 3 contiguous offsets     ──► BATCH_OK COUNT: 3
-                           log[0]=e1, log[1]=e2, log[2]=e3       FIRST_OFFSET: 0
-
-Micro-Batching Flow:
-Producers ──► [Buffer Queue: e1, e2, e3] ──► Single Mutex Lock
-                                         ──► Bulk Append
-                                         ──► Single Flush ──► OK`,
+      diagram: `BATCHED WRITE PIPELINE (Case 1):
+BATCH_PUB events e1 e2 e3
+     │
+     ▼
+Single contiguous memory & disk write:
+  Offset 0: e1
+  Offset 1: e2
+  Offset 2: e3
+     │
+     ▼
+OUTPUT: BATCH_OK COUNT: 3 FIRST_OFFSET: 0`,
       learningLoop: {
         bottleneck: "Calling fsync or acquiring mutexes on every single message drops throughput to <5,000 msg/sec. Grouping messages into micro-batches reaches 100K+ msg/sec.",
         whatYouUnderstand: [
@@ -513,17 +503,12 @@ Producers ──► [Buffer Queue: e1, e2, e3] ──► Single Mutex Lock
         "Implement 'COMMIT': In a real system, you would serialize your topics and group offsets to a file and call fsync. For this simulation, you might just need to acknowledge the command by returning 'OK', as the testing environment checks your persistence logic.",
         "Implement 'STATS': Count the number of keys in your topics dictionary. Sum the lengths of all the arrays to get the total messages. Return 'TOPICS: <t> MESSAGES: <m> STATUS: HEALTHY'."
       ],
-      diagram: `IN-MEMORY BUFFER              SEGMENTED DISK LOG                    CRASH RECOVERY
-PUB t test             ──► Memory Append                     ──► OK 0
-COMMIT                 ──► fsync() to segment_0001.log       ──► OK
-[Simulated SIGKILL]    ──► Process Reboot & Log Replay       ──► Restored: 1 msgs
+      diagram: `WAL CRASH RESILIENCE & COMPACTION (Case 1):
+PUB t test             ──► WAL append               ──► OK 0
+COMMIT                 ──► fsync flush to disk      ──► OK
 
-Zero-Loss Recovery Pipeline:
-Disk: /data/topics/t/00000000.log
-┌───────────────────────────────────────────────────────────┐
-│ CRC32: 0x9AF2 | Magic: 0x02 | Offset: 0 | Payload: "test"│
-└───────────────────────────────────────────────────────────┘
-Boot Loader: Scans log from offset 0 to EOF -> Reconstitutes index`,
+Health Telemetry (Case 2):
+"STATS" ──► TOPICS: 1 MESSAGES: 2 STATUS: HEALTHY`,
       learningLoop: {
         bottleneck: "If a broker abruptly crashes, RAM is wiped. How do you guarantee zero message loss and exact consumer group cursor reconstitution?",
         whatYouUnderstand: [

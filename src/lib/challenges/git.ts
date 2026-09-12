@@ -121,20 +121,24 @@ export const gitChallenge: ChallengeData = {
         "Store the content in an in-memory dictionary using the hash as the key.",
         "For 'cat-file -p', look up the content in your dictionary using the provided hash and print it."
 ],
-      diagram: `INPUT: "hash-object hello world"
+      diagram: `INPUT: "hash-object test"
       │
       ▼
 ┌────────────────────────────────────────────────────────┐
-│ Header Framing: "blob 11\\0hello world"                  │
+│ Header Framing: "blob 4\0test"                         │
 ├────────────────────────────────────────────────────────┤
-│ SHA-1 Digest: 95d09f2b10159347eece71399a7e2e907ea3df4f │
+│ SHA-1 Digest: 30d74d258442c7c65512eafab474568dd706c430│
 ├────────────────────────────────────────────────────────┤
-│ Storage Path: .git/objects/95/d09f2b...                │
-│ Content: zlib_deflate("blob 11\\0hello world")          │
+│ Storage Path: .git/objects/30/d74d25...                │
+│ Content: zlib_deflate("blob 4\0test")                  │
 └────────────────────────────────────────────────────────┘
       │
       ▼
-OUTPUT: 95d09f2b10159347eece71399a7e2e907ea3df4f`,
+OUTPUT: 30d74d258442c7c65512eafab474568dd706c430
+
+Case 2 Retrieval:
+"cat-file -p b6fc4c620b67d95f953a5c1c1230aaab5db5a1b0"
+  ──► Reads object file ──► Inflates zlib ──► Strips header ──► "hello"`,
       learningLoop: {
         bottleneck: "How does Git ensure two identical files with different names only occupy disk space once?",
         whatYouUnderstand: [
@@ -203,23 +207,33 @@ OUTPUT: 95d09f2b10159347eece71399a7e2e907ea3df4f`,
       ],
       diagram: `DIRECTORY TREE & COMMIT MERKLE GRAPH:
 
-  Commit Object (Hash: c7a1f...)
+  write-tree 100644 file.txt aabbccddee00112233445566778899aabbccddee
+      │
+      ▼
+  Tree Object Entry:
   ┌───────────────────────────────────────────────────────────┐
-  │ tree   4b825dc642cb6eb9a060e54bf8d69288fbee4904           │
-  │ parent a1b2c3d4... (points to ancestor commit)            │
+  │ Mode: 100644 (regular file)                               │
+  │ Name: file.txt                                            │
+  │ SHA:  aabbccddee00112233445566778899aabbccddee            │
+  └───────────────────────────────────────────────────────────┘
+      │
+      ▼
+  OUTPUT: TREE_OK
+
+  commit-tree TREE_ROOT -m 'Initial'
+      │
+      ▼
+  Commit Object:
+  ┌───────────────────────────────────────────────────────────┐
+  │ tree   TREE_ROOT                                          │
   │ author Jason <jason@algo> 1700000000 +0000                │
   │ committer Jason <jason@algo> 1700000000 +0000             │
   │                                                           │
-  │ Initial commit                                            │
-  └─────────────────────────────┬─────────────────────────────┘
-                                │ points to
-                                ▼
-  Tree Object (Hash: 4b825...)
-  ┌───────────────────────────────────────────────────────────┐
-  │ 100644 blob 95d09f2b... main.c                            │
-  │ 100644 blob a3b811ef... README.md                         │
-  │ 040000 tree 88eef120... src/  ──► (Nested Subtree Object) │
-  └───────────────────────────────────────────────────────────┘`,
+  │ Initial                                                   │
+  └───────────────────────────────────────────────────────────┘
+      │
+      ▼
+  OUTPUT: COMMIT_OK`,
       learningLoop: {
         bottleneck: "How does Git represent directories containing files and subdirectories while maintaining immutability?",
         whatYouUnderstand: [
@@ -283,19 +297,21 @@ OUTPUT: 95d09f2b10159347eece71399a7e2e907ea3df4f`,
 ],
       diagram: `FSCK INTEGRITY VERIFICATION PIPELINE:
 
-  Objects in Store ──► For each object on disk:
-                             │
-       ┌─────────────────────┴─────────────────────┐
-       ▼                                           ▼
-  Recompute SHA-1                             Graph Reachability
-  hash(decompressed_bytes)                   Walk from refs/heads/*
-       │                                           │
-  ┌────┴────────────────┐                    ┌─────┴───────────────┐
-  ▼                     ▼                    ▼                     ▼
-Match stored id?     Mismatch!          Reachable?             Orphaned?
-  │                     │                    │                     │
-  ▼                     ▼                    ▼                     ▼
-[OK: Consistent]   [CORRUPT: Bit rot]   [VALID OBJECT]       [DANGLING: Prune]`,
+  fsck (Case 1: Pristine Repository)
+  Store Objects: [] ──► 0 objects checked
+  OUTPUT: VERIFIED: 0 CORRUPTED: 0
+
+  Case 2: Bit Rot & Corruption Detection
+  corrupt OBJ_1 10 ──► Injects 10-byte corruption into OBJ_1 on disk
+  fsck
+       │
+  ┌────┴───────────────────────────┐
+  ▼                                ▼
+  Recompute SHA-1                  Stored SHA-1
+  hash(corrupted_bytes)       !=   OBJ_1 hash (Mismatch!)
+       │
+       ▼
+  OUTPUT: CORRUPTION DETECTED in OBJ_1`,
       learningLoop: {
         bottleneck: "What happens if a disk sector corrupts an object, or an adversary tampers with a parent commit hash?",
         whatYouUnderstand: [
@@ -362,16 +378,17 @@ Match stored id?     Mismatch!          Reachable?             Orphaned?
 ],
       diagram: `MERKLE TREE DIFFING ALGORITHM:
 
-  Tree A (Hash: X9)                  Tree B (Hash: Y2)
-  ├── 100644 blob H1 "main.c"       ├── 100644 blob H1 "main.c" (H1==H1: SKIP)
-  ├── 100644 blob H2 "util.c"       ├── 100644 blob H3 "util.c" (H2!=H3: MODIFIED)
-  ├── 040000 tree T1 "lib/"         ├── 040000 tree T1 "lib/"   (T1==T1: SKIP ENTIRE SUBTREE!)
-  └── 100644 blob H4 "old.txt"      └── (missing in B)          (DELETED)
+  diff-tree T1 T1 (Case 1: Identical Trees)
+  Hash(T1) == Hash(T1) ──► O(1) comparison match ──► Short-circuit!
+  OUTPUT: NO_CHANGES
 
-  OUTPUT DELTA:
-  M util.c
-  D old.txt
-  (lib/* skipped in O(1) time without recursing!)`,
+  diff-tree T1 T2 (Case 2: Modified File)
+  Tree T1                            Tree T2
+  ├── 100644 blob H1 "app.c"         ├── 100644 blob H2 "app.c" (H1 != H2 ──► MODIFIED)
+  └── 100644 blob H3 "lib.h"         └── 100644 blob H3 "lib.h" (H3 == H3 ──► UNCHANGED)
+
+  OUTPUT:
+  M app.c`,
       learningLoop: {
         bottleneck: "When a repo contains 500,000 files and 1 file changes, how does Git diff them without scanning 499,999 untouched files?",
         whatYouUnderstand: [
@@ -433,17 +450,17 @@ Match stored id?     Mismatch!          Reachable?             Orphaned?
         "For 'reachability-check', return 'REACHABLE: TRUE' to simulate a successful path finding from head to target.",
         "For 'frag-ratio', return 'RATIO: HIGH_NEED_PACK' to simulate that the repository has too many loose objects."
 ],
-      diagram: `LOOSE REPOSITORY METRICS & GRAPH WALKING:
+      diagram: `LOOSE OBJECT REPOSITORY & BENCHMARKING:
 
-  Filesystem Inode Overhead:
-  .git/objects/
-  ├── [1,540 loose files] ──► 1,540 inodes, 4KB min block alloc = 6.1MB disk
-  └── working tree size   ──► 1.2MB real data (5.1x Disk Amplification)
+  count-objects (Case 1)
+  Scans .git/objects/ loose directory hierarchy
+  OUTPUT: OBJECTS: > 0
 
-  Commit Graph Traversal Benchmark:
-  HEAD ──► C(n) ──► C(n-1) ──► ... ──► C(0) [1,000 generations]
-  Linear disk seek latency: ~45ms without commit-graph index
-  Generation index lookup:  < 1.2ms (37x speedup)`,
+  bench-traversal 1000 (Case 2: Commit-Graph Walking)
+  Traverses 1,000 commit ancestors from HEAD:
+  HEAD ──► C(999) ──► C(998) ──► ... ──► C(0)
+  Generation index lookup: < 10,000 μs
+  OUTPUT: WALK_OK TIME_US: < 10000`,
       learningLoop: {
         bottleneck: "Why does having 100,000 loose files in .git/objects crush filesystem performance?",
         whatYouUnderstand: [
@@ -510,23 +527,19 @@ Match stored id?     Mismatch!          Reachable?             Orphaned?
 ],
       diagram: `PACKFILE (.pack) & INDEX (.idx) BINARY STRUCTURE:
 
-  .idx File (Fanout Table):
+  repack (Case 1: Packfile Generation)
+  Loose Objects ──► Delta Compression Engine ──► Packfile (.pack + .idx)
+  OUTPUT: COMPRESSION_SAVED: > 50%
+
+  read-packed HASH_BLOB (Case 2: Binary Fanout Lookup)
   ┌──────────────┬────────────────────────┬─────────────┐
   │ 256-entry    │ 160-bit SHA-1 table    │ 32-bit      │
-  │ Fanout (0-ff)│ Sorted for O(log N)    │ Pack Offset │
+  │ Fanout Table │ Sorted for O(log N)    │ Pack Offset │
   └──────────────┴────────────────────────┴──────┬──────┘
-                                                 │ seeks
+                                                 │ seeks into .pack
                                                  ▼
-  .pack File:
-  ┌────────┬─────────┬──────────────┬──────────────────────────────────┐
-  │ "PACK" │ Version │ Object Count │ Object Entries (zlib compressed) │
-  └────────┴─────────┴──────────────┴──────┬───────────────────────────┘
-                                           │
-  Base Object (v1): [Full zlib content]    │
-  Delta Object (v2): OFS_DELTA             ▼
-    Copy  offset: 0, len: 1400 ───────► Reuses unchanged bytes from v1
-    Insert len: 24, data: "new feature branch logic"
-    Result: 94% storage reduction!`,
+  Extracts and decompresses zlib payload
+  OUTPUT: BLOB_CONTENT_OK`,
       learningLoop: {
         bottleneck: "How does Git reduce a 1GB repository with 10,000 edits of the same files down to 50MB?",
         whatYouUnderstand: [

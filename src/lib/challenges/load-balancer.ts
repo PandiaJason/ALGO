@@ -134,12 +134,12 @@ While round-robin guarantees that every server receives an equal number of reque
         "Otherwise, select the server at current_index. Print 'FORWARD -> <server_id>'.",
         "Update current_index to (current_index + 1) % length of the server list."
 ],
-      diagram: `CLIENT REQUEST                            LOAD BALANCER                   ROUTED TARGET
-ADD_BACKEND s1                ──► register server in pool  ──► OK
-ADD_BACKEND s2                ──► register server in pool  ──► OK
-ROUTE r1                      ──► (0 % 2) -> select s1     ──► FORWARD -> s1
-ROUTE r2                      ──► (1 % 2) -> select s2     ──► FORWARD -> s2
-ROUTE r3                      ──► (2 % 2) -> select s1     ──► FORWARD -> s1`,
+      diagram: `ROUND-ROBIN ROUTING (Case 1):
+ADD_BACKEND s1         ──► Registers s1             ──► OK
+ADD_BACKEND s2         ──► Registers s2             ──► OK
+ROUTE r1               ──► Routes to index 0 (s1)   ──► FORWARD -> s1
+ROUTE r2               ──► Routes to index 1 (s2)   ──► FORWARD -> s2
+ROUTE r3               ──► Wraps to index 0 (s1)    ──► FORWARD -> s1`,
       importantChallenge: {
         title: "Stateful Cycling & Dynamic Pool Mutation",
         description:
@@ -256,13 +256,22 @@ Assigning weights solves this, but a naive implementation (A, A, A, A, B) create
         "Subtract the total sum of all servers' weights from the selected server's current_weight.",
         "Print 'FORWARD -> <selected_server_id>'."
 ],
-      diagram: `INCOMING REQUEST                          NGINX SMOOTH WEIGHT ENGINE             SELECTED UPSTREAM
-ROUTE_WEIGHTED 1 ──┐                      ┌──────────────────────────────┐
-ROUTE_WEIGHTED 2 ──┼────────────────────► │ Weights: a=4, b=2, c=1 (Σ=7)  │ ──► FORWARD -> a
-ROUTE_WEIGHTED 3 ──┤                      │ cur_w += eff_w; pick max;   │ ──► FORWARD -> b
-                   │                      │ cur_w[max] -= total_weight  │ ──► FORWARD -> a
-                   ▼                      └──────────────────────────────┘
-Sequence: a -> b -> a -> a -> c -> b -> a (Smooth interleaving without burst clumps)`,
+      diagram: `WEIGHTED ROUND-ROBIN (Case 1):
+ADD_WEIGHTED a 4       ──► Weight(a) = 4            ──► OK
+ADD_WEIGHTED b 2       ──► Weight(b) = 2            ──► OK
+ADD_WEIGHTED c 1       ──► Weight(c) = 1            ──► OK
+ROUTE_WEIGHTED 1..7    ──► Smooth dispatch sequence:
+OUTPUT:
+OK
+OK
+OK
+FORWARD -> a
+FORWARD -> b
+FORWARD -> a
+FORWARD -> a
+FORWARD -> c
+FORWARD -> b
+FORWARD -> a`,
       learningLoop: {
         bottleneck: "Naive weighted round-robin sends 10 consecutive requests to server A (weight 10) then 1 to B (weight 1). This causes CPU spikes on A. Smooth weighted distributes them evenly: A, A, A, B, A, A...",
         whatYouUnderstand: [
@@ -357,14 +366,14 @@ The Least-Connections algorithm is 'dynamic'. By tracking exactly how many reque
         "On 'TRACK_END <server_id> <req_id>', decrement that server's active_conns by 1 (don't let it go below 0) and print 'OK'.",
         "On 'ACTIVE_CONNS', print 'CONNS ' followed by 'id:count' for all servers in alphabetical order."
 ],
-      diagram: `INCOMING REQUEST                          ACTIVE CONNECTION TRACKER              ROUTING DECISION
-ROUTE_LEAST_CONN r1 ──┐                   ┌──────────────────────────────┐
-ROUTE_LEAST_CONN r2 ──┼─────────────────► │ [s1] Active Connections: 1   │ ──► FORWARD -> s1
-ROUTE_LEAST_CONN r3 ──┤                   │ [s2] Active Connections: 0   │ ──► FORWARD -> s2
-                      │                   └──────────────┬───────────────┘
-                      ▼                                  │
-TRACK_END s1 r1 ─────────────────────────────────────────┴──────────────► [s1] Conns: 1 -> 0
-ROUTE_LEAST_CONN r4 ────────────────────────────────────────────────────► FORWARD -> s1 (least busy)`,
+      diagram: `LEAST-CONNECTIONS ROUTING (Case 1):
+ADD_BACKEND s1         ──► Backend s1 (conns: 0)    ──► OK
+ADD_BACKEND s2         ──► Backend s2 (conns: 0)    ──► OK
+ROUTE_LEAST_CONN r1    ──► s1 chosen (conns s1:1, s2:0) ──► FORWARD -> s1
+ROUTE_LEAST_CONN r2    ──► s2 chosen (conns s1:1, s2:1) ──► FORWARD -> s2
+ROUTE_LEAST_CONN r3    ──► s1 chosen (conns s1:2, s2:1) ──► FORWARD -> s1
+TRACK_END s1 r1        ──► Connection r1 ends (s1:1)──► OK
+ROUTE_LEAST_CONN r4    ──► s1 chosen (conns tie)    ──► FORWARD -> s1`,
       learningLoop: {
         bottleneck: "Round-robin fails when some requests take 10 seconds while others take 10ms. Least connections adapts dynamically to slow servers.",
         whatYouUnderstand: [
@@ -464,13 +473,14 @@ A Circuit Breaker monitors the success and failure of real traffic. When a node 
         "Update ALL routing commands (ROUTE, ROUTE_WEIGHTED, ROUTE_LEAST_CONN) to strictly filter out any servers where status is 'DOWN'.",
         "If filtering leaves zero eligible servers, print 'NO_BACKENDS'."
 ],
-      diagram: `SERVER PROBING / TRAFFIC                  CIRCUIT BREAKER STATE (Thresh=2)       TRAFFIC ROUTING
-FAIL s1 (count=1)    ──► s1: UP (1/2)     ┌──────────────────────────────┐
-FAIL s1 (count=2)    ──► s1: DOWN (TRIP!) │ [s1] STATUS: DOWN (Tripped)  │ ──► Excluded from pool
-                                          ├──────────────────────────────┤
-ROUTE r1 ────────────────────────────────►│ [s2] STATUS: UP (Healthy)    │ ──► FORWARD -> s2
-                                          └──────────────────────────────┘
-SUCCESS s1 (Probe)   ──► s1: UP (0/2)     ──► Restored to Pool           ──► FORWARD -> s1`,
+      diagram: `CIRCUIT BREAKER & HEALTH CHECKS (Case 1):
+ADD_BACKEND s1         ──► Initial state UP         ──► OK
+ADD_BACKEND s2         ──► Initial state UP         ──► OK
+SET_FAIL_THRESHOLD 2   ──► Trip after 2 failures    ──► OK
+FAIL s1                ──► Fail count 1/2           ──► STATUS s1 UP
+FAIL s1                ──► Threshold reached!       ──► STATUS s1 DOWN
+ROUTE r1               ──► Bypasses s1              ──► FORWARD -> s2
+ROUTE r2               ──► Bypasses s1              ──► FORWARD -> s2`,
       learningLoop: {
         bottleneck: "Routing traffic to dead backends creates cascading 500/502 errors. Passive health checks circuit-break failing nodes automatically.",
         whatYouUnderstand: [
@@ -570,14 +580,11 @@ Standard modulo hashing ('hash(key) % N') works until a server crashes, changing
         "Otherwise, hash the key using FNV-1a. Find the first virtual node in the sorted ring where node.hash >= key.hash (clockwise search).",
         "If no node hash is greater, wrap around and pick the first node in the array (index 0). Print 'HASH_FORWARD -> <server_id>'."
 ],
-      diagram: `CACHE KEY REQUEST                         32-BIT CIRCULAR HASH RING              TARGET NODE
-ROUTE_KEY user:100                        ┌──────────────────────────────┐
-      │                                   │          0 / 2^32            │
-      ▼                                   │        c1#0      c2#0        │
-hash(user:100) = 0x4F1A... ─────────────► │    c2#1              c1#1    │ ──► HASH_FORWARD -> c1
-(Clockwise binary search)                 │        c1#2      c2#2        │     (Nearest clockwise
-                                          │                              │      virtual node)
-ROUTE_KEY user:200 ─────────────────────► └──────────────────────────────┘ ──► HASH_FORWARD -> c2`,
+      diagram: `CONSISTENT HASH RING (Case 1):
+ADD_RING_NODE c1 5     ──► Adds c1 with 5 virtual vnodes ──► OK
+ADD_RING_NODE c2 5     ──► Adds c2 with 5 virtual vnodes ──► OK
+ROUTE_KEY alpha        ──► Hash("alpha") clockwise map   ──► HASH_FORWARD -> c2
+ROUTE_KEY alpha        ──► Deterministic sticky route    ──► HASH_FORWARD -> c2`,
       learningLoop: {
         bottleneck: "Modulo routing hash(key) % N invalidates almost all cache keys when a server is added or removed. Consistent hashing remaps only K/N keys.",
         whatYouUnderstand: [
@@ -673,14 +680,14 @@ Connection draining (or graceful shutdown) solves this. The load balancer marks 
         "Ensure your routing logic from all previous levels strictly ignores servers that are 'DRAINING' or 'REMOVED'.",
         "On 'SERVER_STATUS <server_id>', print 'STATE <status> ACTIVE <conns>' or 'NOT_FOUND'."
 ],
-      diagram: `MAINTENANCE SIGNAL                        SERVER DRAIN LIFECYCLE                 NEW TRAFFIC ROUTING
-DRAIN s1 (active=1)  ──► State: DRAINING  ┌──────────────────────────────┐
-                                          │ [s1] DRAINING (active: 1)    │ ──► 0 new requests
-ROUTE r2 ────────────────────────────────►│ [s2] UP       (active: 0)    │ ──► FORWARD -> s2
-                                          └──────────────┬───────────────┘
-TRACK_END s1 r1      ──► active: 1 -> 0                  │
-                                                         ▼
-SERVER_STATUS s1     ──► All conns done   ──► STATE REMOVED ACTIVE 0`,
+      diagram: `CONNECTION DRAINING & GRACEFUL REMOVAL (Case 1):
+ADD_BACKEND s1         ──► s1 active                ──► OK
+ADD_BACKEND s2         ──► s2 active                ──► OK
+ROUTE_LEAST_CONN r1    ──► Dispatches to s1         ──► FORWARD -> s1
+DRAIN s1               ──► Stops new routes to s1   ──► DRAINING s1 ACTIVE 1
+ROUTE r2               ──► Sent to s2 instead!      ──► FORWARD -> s2
+TRACK_END s1 r1        ──► Existing conn ends       ──► OK
+SERVER_STATUS s1       ──► All drained, node removed──► STATE REMOVED ACTIVE 0`,
       learningLoop: {
         bottleneck: "Immediately killing an upstream node aborts users mid-checkout. Connection draining waits for in-flight requests to complete before terminating.",
         whatYouUnderstand: [

@@ -135,21 +135,13 @@ retrieves 'Hello S3'.`,
         "Implement 'GET <key>': If the key exists, print the data. Otherwise, print 'NOT_FOUND'.",
         "Implement 'DELETE <key>': If the key exists, delete it from the dictionary. Return 'DELETE_OK' (or 'NOT_FOUND' if it didn't exist)."
       ],
-      diagram: `INPUT: "PUT doc.txt Hello S3"
-      │
-      ▼
-┌────────────────────────────────────────────────────────────┐
-│ SHA-256 Digest: 2cf24dba5fb0a30e26e83b2ac5b9e29e1b...      │
-├────────────────────────────────────────────────────────────┤
-│ Sharded Disk Path:                                         │
-│   .storage/2c/f2/2cf24dba5fb0a30e...                       │
-├────────────────────────────────────────────────────────────┤
-│ Metadata Index:                                            │
-│   "doc.txt" ──► hash: 2cf24dba..., size: 8 bytes           │
-└────────────────────────────────────────────────────────────┘
-      │
-      ▼
-OUTPUT: PUT_OK 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824`,
+      diagram: `STORAGE PROTOCOL INGRESS                 METADATA & DATA PIPELINE        OUTPUT
+PUT k1 hello           ──► Content-Addressed Hash ──► Store payload      ──► PUT_OK
+GET k1                 ──► Lookup key "k1"        ──► Retrieve payload   ──► hello
+
+Execution Lifecycle (Case 1):
+PUT k1 hello ──► In-memory / disk store registers "k1" ──► "PUT_OK"
+GET k1       ──► Resolves "k1"                         ──► "hello"`,
       learningLoop: {
         bottleneck: "How does an object store manage millions of files without overloading a single flat directory?",
         whatYouUnderstand: [
@@ -221,22 +213,15 @@ Since 'AAAAA' was uploaded twice, it is only stored on disk once!`,
         "Implement 'STATS-DEDUP': For this simulation, if the test stores the same chunk twice (like 'share'), return 'SHARED_CHUNKS: 1'. Otherwise return 'PHYSICAL_CHUNKS: 1'.",
         "Implement 'check-dedup-ratio': Just return 'DEDUP_SAVINGS: DETECTED' to pass the simulation."
       ],
-      diagram: `CONTENT-DEFINED CHUNKING (CDC) & DEDUPLICATION:
+      diagram: `CONTENT-ADDRESSED DEDUPLICATION:
+PUT-DEDUP a test       ──► Hash("test") = 0x9f8a... ──► Stores Chunk 1   ──► PUT_OK
+PUT-DEDUP b test       ──► Hash("test") = 0x9f8a... ──► Points to Chunk 1──► PUT_OK
+STATS-DEDUP            ──► 2 Keys mapped to 1 Physical Chunk             ──► PHYSICAL_CHUNKS: 1
 
-Stream: [AAAAA_BBBBB_CCCCC_DDDDD]
-           │ (Rabin rolling hash boundary detection)
-           ├── Chunk 1: [AAAAA] (Hash: H1) ──► Stored on disk
-           ├── Chunk 2: [BBBBB] (Hash: H2) ──► Stored on disk
-           ├── Chunk 3: [CCCCC] (Hash: H3) ──► Stored on disk
-           └── Chunk 4: [DDDDD] (Hash: H4) ──► Stored on disk
-
-User 2 Uploads: [AAAAA_BBBBB_EEEEE_DDDDD]
-           ├── Chunk 1: [AAAAA] (H1) ──► EXISTS! Refcount + 1 (0 bytes written)
-           ├── Chunk 2: [BBBBB] (H2) ──► EXISTS! Refcount + 1 (0 bytes written)
-           ├── Chunk 3: [EEEEE] (H5) ──► NEW chunk written to disk
-           └── Chunk 4: [DDDDD] (H4) ──► EXISTS! Refcount + 1 (0 bytes written)
-
-Object Manifest for User 2: [H1, H2, H5, H4] ──► 75% Storage Saved!`,
+Deduplication Topology:
+Key "a" ──┐
+          ├──► SHA-256 Hash [0x9f8a...] ──► Physical Storage ("test") [1 Copy]
+Key "b" ──┘`,
       learningLoop: {
         bottleneck: "If two users upload 1GB files that differ by only 1 byte at the beginning, why does fixed chunking fail to deduplicate?",
         whatYouUnderstand: [
@@ -308,24 +293,16 @@ Simulates a rat chewing on CHUNK_1. The scrub command detects it and reports: 'C
         "Implement 'GET-CHUNK <hash>': If the hash is in the corrupt set, return 'ERROR: BLOCK_CORRUPTED'. Otherwise return 'RECOVERED_OK'.",
         "Implement 'recover-chunk <hash>': Remove it from the corrupt set and return 'RECOVERED_OK'."
       ],
-      diagram: `BACKGROUND SCRUBBER PIPELINE:
+      diagram: `BACKGROUND DATA SCRUBBING & BIT-ROT REPAIR:
 
-  Block Storage Drive
-  ┌──────────────┬──────────────┬──────────────┬──────────────┐
-  │ Chunk #1     │ Chunk #2     │ Chunk #3     │ Chunk #4     │
-  │ CRC32: 0x8A  │ CRC32: 0x9B  │ CRC32: 0x1F  │ CRC32: 0x5C  │
-  └──────┬───────┴──────┬───────┴──────┬───────┴──────────────┘
-         │              │              │
-         ▼              ▼              ▼
-  Scrubber Read   Scrubber Read  Scrubber Read (Flipped bit!)
-  Recompute CRC   Recompute CRC  Recompute CRC: 0x2E != 0x1F
-         │              │              │
-         ▼              ▼              ▼
-     [HEALTHY]      [HEALTHY]     [CORRUPTION DETECTED]
-                                       │
-                                       ▼
-                                 QUARANTINE BLOCK
-                                 (Prevent client reads)`,
+  scrub (Case 1: Clean Storage)
+  Recomputes SHA-256 for all stored chunks
+  OUTPUT: SCRUB_OK CORRUPT: 0
+
+  Case 2: Corrupted Block Detection
+  corrupt-block CHUNK_1 ──► Injects artificial bit flip into block
+  scrub                 ──► Recomputed hash != stored manifest hash
+  OUTPUT: CORRUPT DETECTED: CHUNK_1`,
       learningLoop: {
         bottleneck: "What happens when physical disk magnets flip a bit silently without the OS throwing an I/O error?",
         whatYouUnderstand: [
@@ -401,20 +378,18 @@ Even though part 2 arrived before part 1, the warehouse assembles it correctly a
         "Implement 'complete-multipart <id>': Sort the parts by partNum, join them, store the result in your main storage dictionary under the session's key, delete the session, and return 'COMPLETE_OK'.",
         "Implement 'abort-multipart <id>': Delete the session entirely and return 'ABORT_OK'."
       ],
-      diagram: `MULTIPART UPLOAD STATE MACHINE:
+      diagram: `MULTIPART UPLOAD LIFECYCLE (Case 1):
+init-multipart file1   ──► Allocates session "UP1"       ──► UPLOAD_INIT
+upload-part UP1 1 A    ──► Stage Part 1 payload "A"      ──► PART_OK
+upload-part UP1 2 B    ──► Stage Part 2 payload "B"      ──► PART_OK
+complete-multipart UP1 ──► Assembles Parts [1, 2] in order──► COMPLETE_OK
+GET file1              ──► Read reassembled object       ──► AB
 
-  1. init-multipart "large.iso" ──► Session ID: UP_123
-
-  2. Concurrent Parallel Part Streams:
-     Part 1: upload-part UP_123 1 [Chunk A] ──► /staging/UP_123/part_1.tmp
-     Part 3: upload-part UP_123 3 [Chunk C] ──► /staging/UP_123/part_3.tmp
-     Part 2: upload-part UP_123 2 [Chunk B] ──► /staging/UP_123/part_2.tmp
-     (Arrived out-of-order without blocking!)
-
-  3. complete-multipart UP_123:
-     Verify Parts [1, 2, 3] present and validated
-     Concatenate parts ──► Move to final /storage/large.iso
-     Prune temporary staging directory`,
+Manifest Assembly:
+UP1 Session Map:
+  Part 1 ──► "A"
+  Part 2 ──► "B"
+Concat: "A" + "B" = "AB" ──► Committed as "file1"`,
       learningLoop: {
         bottleneck: "How do you reliably upload a 50GB file over flaky networks without restarting from byte 0 on failure?",
         whatYouUnderstand: [
@@ -486,22 +461,12 @@ Simulates receiving a 1MB file, deduplicating half of it, and reporting the exac
         "Implement 'bench-iops <threads>': Return 'IOPS: 5001'.",
         "Implement 'profile-chunker': Return 'THROUGHPUT: 301 MB/s'."
       ],
-      diagram: `WRITE AMPLIFICATION FACTOR (WAF) & CHUNKER PROFILING:
+      diagram: `STORAGE EFFICIENCY & WRITE AMPLIFICATION:
+bench-waf 1048576      ──► Writes 1MB through buffered chunking engine
+                       ──► Bytes Written to Storage / Logical Payload
+                       ──► OUTPUT: WAF: < 1.0
 
-  Logical Payload: 1,048,576 bytes (1.0 MB)
-         │
-         ▼
-  ┌─────────────────────────────────────────────────────────┐
-  │ CDC Rabin Rolling Hash Chunker                          │
-  │ CPU Cost: 3.2 ms / MB (Throughput: ~312 MB/s)           │
-  ├─────────────────────────────────────────────────────────┤
-  │ Deduplication Engine:                                   │
-  │   - 524,288 bytes matched existing chunks               │
-  │   - 524,288 bytes unique new chunks                     │
-  ├─────────────────────────────────────────────────────────┤
-  │ Physical Disk Written: 524,288 bytes                    │
-  │ Write Amplification Factor (WAF) = 0.50 (50% reduction) │
-  └─────────────────────────────────────────────────────────┘`,
+Case 2: "bench-iops 8" ──► Parallel disk throughput ──► IOPS: > 5000`,
       learningLoop: {
         bottleneck: "At what point does CDC chunking calculation consume more CPU time than the disk write savings are worth?",
         whatYouUnderstand: [
@@ -575,21 +540,12 @@ Writes a block straight to disk, and then verifies that 0 bytes were left dirtyi
         "Implement 'bench-stream': Return 'THROUGHPUT: 801 MB/s'.",
         "Implement 'audit-engine': Return 'STAGE: OPTIMIZED AUDIT: PASSED'."
       ],
-      diagram: `DIRECT I/O vs BUFFERED KERNEL PAGE CACHE:
+      diagram: `DIRECT I/O ZERO-COPY PIPELINE:
+direct-write b1 4096   ──► O_DIRECT block bypasses kernel page cache
+                       ──► Direct DMA transfer to storage block
+                       ──► OUTPUT: DIRECT_IO_OK
 
-  Standard I/O (Thrashing):
-  User Buffer ──► Kernel Page Cache (Pollution) ──► Disk Controller
-
-  ALGO Level 6 (O_DIRECT + Sector Aligned):
-  ┌─────────────────────────────────────────────────────────┐
-  │ Aligned Memory Arena: posix_memalign(&buf, 4096, size)  │
-  ├─────────────────────────────────────────────────────────┤
-  │ Coalescing Window:                                      │
-  │   Merge 16x 4KB writes ──► Single contiguous 64KB I/O   │
-  ├─────────────────────────────────────────────────────────┤
-  │ open("chunk.dat", O_DIRECT | O_WRONLY)                  │
-  │ DMA transfer straight to NVMe Controller (Zero Kernel Copies)│
-  └─────────────────────────────────────────────────────────┘`,
+Case 2: "verify-pagecache" ──► PAGECACHE_POLLUTION: ZERO`,
       learningLoop: {
         bottleneck: "How do you stream multi-gigabyte files to disk without evicting active database pages from the Linux page cache?",
         whatYouUnderstand: [

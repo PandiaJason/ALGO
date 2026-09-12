@@ -142,22 +142,17 @@ By using randomized election timeouts, you prevent split-vote scenarios where mu
         "Implement 'request-vote <candidate> <term>' to send vote requests to all other nodes. Ensure each node only votes once per term.",
         "Implement 'heartbeat <nodeId>' to send empty AppendEntries messages from the leader, resetting follower timers."
       ],
-      diagram: `RAFT LEADER ELECTION STATE MACHINE:
+      diagram: `RAFT LEADER ELECTION (Case 1):
+tick n1                ──► Election timer expires for n1
+                       ──► n1 transitions to CANDIDATE (Term 1)
+                       ──► Requests votes from cluster quorum
+                       ──► Achieves majority -> becomes LEADER
+status                 ──► Cluster topology query
+OUTPUT:
+n1: LEADER term 1
 
-  [Follower] ──(Election Timeout Expires)──► [Candidate]
-      ▲                                           │
-      │                                    Increment currentTerm
-      │                                    Vote for self
-      │                                    Send RequestVote RPCs
-      │                                           │
-      │       ┌───────────────────────────────────┴─────────────────┐
-      │       ▼                                                     ▼
-      │  Votes >= Majority (> N/2)                          Discovers higher term
-      │       │                                             or new valid leader
-      │       ▼                                                     │
-      └── [Leader] ◄────────────────────────────────────────────────┘
-              │
-              └── Sends periodic empty AppendEntries (Heartbeats)`,
+Case 2 Heartbeat Broadcast:
+"tick n1\nheartbeat n1\ntick n2\nstatus" ──► n1: LEADER term 1\nn2: FOLLOWER term 1`,
       learningLoop: {
         bottleneck: "What prevents two nodes from voting for themselves simultaneously and causing an endless split vote tie?",
         whatYouUnderstand: [
@@ -240,17 +235,14 @@ This is where the magic of consensus happens. The leader doesn't just broadcast 
         "On the follower, verify the previous log index and term. If they match, append the entry; otherwise, reject it.",
         "On the leader, track the match index for each follower. When an entry is replicated to a strict majority, advance the commit index."
       ],
-      diagram: `QUORUM LOG REPLICATION PIPELINE:
-
-  Client ──► Leader (Node 1)
-               ├── 1. Append entry [term=1, index=3, cmd="SET x=10"]
-               ├── 2. Dispatch AppendEntries RPCs
-               │        ├── Follower 2: ACK (MatchIndex=3)
-               │        └── Follower 3: Network partition (Timeout)
-               ├── 3. Quorum Count: 2 of 3 nodes ACK (Strict Majority!)
-               ├── 4. Advance commitIndex: 2 ──► 3
-               └── 5. Apply to State Machine: memory["x"] = 10
-                       └── Return OK to Client`,
+      diagram: `LOG REPLICATION & COMMIT INDEX (Case 1):
+client-write 'SET x=10' ──► Leader receives proposal, writes uncommitted entry
+replicate              ──► Broadcasts AppendEntries RPCs to cluster
+                       ──► Quorum acknowledges -> Commit Index advances to 1
+get-state              ──► Applies entry to state machine
+OUTPUT:
+COMMITTED index 1
+STATE: x=10`,
       learningLoop: {
         bottleneck: "How does a leader know an entry is safely committed and cannot be lost even if the leader crashes immediately?",
         whatYouUnderstand: [
@@ -334,23 +326,15 @@ Raft prevents split-brain by mathematically ensuring that only one partition can
         "Implement 'write-majority <nodeId> <cmd>'. The majority leader should successfully commit the write.",
         "Implement 'heal-partition'. When the old leader receives a message from the new leader with a higher term, it must step down to follower and overwrite its uncommitted log entries."
       ],
-      diagram: `5-NODE CLUSTER ASYMMETRIC PARTITION:
+      diagram: `NETWORK PARTITION SPLIT-BRAIN RESISTANCE (Case 1):
+partition n1,n2 | n3,n4,n5 ──► Cluster split into minority (n1,n2) and majority (n3,n4,n5)
+write-minority n1 'SET x=bad'
+                       ──► n1 receives write in minority partition
+check-commit n1        ──► Cannot form quorum (2/5 nodes) -> refuses to commit!
+OUTPUT:
+UNCOMMITTED_NO_QUORUM
 
-  Minority Partition (2 nodes):
-  ┌──────────────┐     ┌──────────────┐
-  │   Node 1     │◄───►│   Node 2     │ ──► Max Quorum: 2/5 (NO QUORUM)
-  │ (Old Leader) │     │  (Follower)  │     Writes REJECTED / UNCOMMITTED!
-  └──────────────┘     └──────────────┘
-  ═══════════════ NETWORK SPLIT ═══════════════
-  Majority Partition (3 nodes):
-  ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-  │   Node 3     │◄───►│   Node 4     │◄───►│   Node 5     │
-  │ (New Leader) │     │  (Follower)  │     │  (Follower)  │
-  └──────────────┘     └──────────────┘     └──────────────┘
-         ▲
-         └── Quorum: 3/5 votes (COMMITS AUTHORITATIVE WRITES)
-
-  On Partition Heal: Node 1 sees Term 2 > Term 1 ──► Steps down to Follower`,
+Case 2: "write-majority n3 'SET x=good'" ──► COMMITTED_MAJORITY: x=good`,
       learningLoop: {
         bottleneck: "What happens when a 5-node cluster splits into 2 nodes (minority) and 3 nodes (majority)? Can the minority commit writes?",
         whatYouUnderstand: [
@@ -431,19 +415,13 @@ Furthermore, clusters are not static. Hardware fails and needs replacement. By i
         "Implement 'install-snapshot <nodeId>' for the leader to stream the snapshot to a lagging follower.",
         "Implement 'add-node <nodeId>' and 'remove-node <nodeId>' using joint consensus, where the cluster temporarily requires majorities from both the old and new configurations before committing the change."
       ],
-      diagram: `LOG COMPACTION & POINT-IN-TIME SNAPSHOTTING:
+      diagram: `LOG COMPACTION & SNAPSHOTTING (Case 1):
+take-snapshot          ──► Compacts committed log entries 1..100 into state image
+                       ──► Truncates log before index 100
+                       ──► OUTPUT: SNAPSHOT_CREATED index 100
 
-  Historical Log:
-  Index: 1      2      3   ...   1000     1001     1002
-  Entry: [x=1]  [y=2]  [x=5]     [z=9]    [x=10]   [w=4]
-  └──────────────────┬───────────────┘    └──────┬──────┘
-                     │                           │
-                     ▼                           ▼
-          State Machine Snapshot:         Remaining Log:
-          lastIncludedIndex: 1000         Index 1001, 1002
-          lastIncludedTerm:  2
-          State: { x: 5, y: 2, z: 9 }
-          (998 historic log entries discarded from disk!)`,
+Case 2 Snapshot Installation:
+"install-snapshot n4"  ──► Transmits snapshot to lagging follower ──► SNAPSHOT_INSTALLED index 100`,
       learningLoop: {
         bottleneck: "If a cluster runs for 3 years, the log would grow to billions of entries. How does a new node join without replaying 3 years of logs?",
         whatYouUnderstand: [
@@ -522,20 +500,12 @@ By measuring failover latency and replication lag, you gain visibility into the 
         "Implement 'bench-commits <count>' to flood the leader with writes and measure the maximum commit throughput.",
         "Ensure your election timeouts are tuned correctly to achieve failover in under 150ms without causing false elections under normal load."
       ],
-      diagram: `FAILOVER LATENCY TIMELINE & REPLICATION LAG:
-
-  Leader Crashes (t = 0 ms)
-      │
-      ├─► Follower 2 Election Timer: 120 ms
-      ├─► Follower 3 Election Timer: 210 ms (Randomized delay prevents split)
-      │
-  t = 120 ms: Follower 2 transitions to Candidate
-      │
-      ├── Sends RequestVote to Follower 3
-      └── Receives Vote ACK in 12 ms
-      │
-  t = 132 ms: Follower 2 becomes NEW LEADER!
-  Total Failover Downtime: 132 ms (Within < 150ms SLA)`,
+      diagram: `LEADER FAILOVER LATENCY BENCHMARK (Case 1):
+kill-leader            ──► Terminates current leader
+                       ──► Followers detect heartbeat loss
+                       ──► New election round triggered
+                       ──► Quorum elects replacement leader
+                       ──► OUTPUT: FAILOVER_TIME: < 150ms`,
       learningLoop: {
         bottleneck: "What is the true upper bound on downtime when the leader crashes, and how does network jitter affect it?",
         whatYouUnderstand: [
@@ -613,18 +583,11 @@ Synchronous replication is safe but slow, bound by network round-trip times. By 
         "Update your client-write logic to batch concurrent commands into a single log entry when under heavy load.",
         "Implement 'read-index <key>' to perform a linearizable read. The leader must record its commit index, send a round of heartbeats to confirm its leadership, and then return the value once the state machine catches up."
       ],
-      diagram: `SYNCHRONOUS vs PIPELINED REPLICATION:
-
-  Synchronous (Sequential Round-trips):
-  Leader: [Write 1] ──RPC──► Follower ──ACK──► [Write 2] ──RPC──► Follower
-  Throughput: ~2,500 writes/sec (Limited by network RTT)
-
-  Pipelined + ReadIndex (ALGO Level 6):
-  Leader: ───[Batch 1]───►───[Batch 2]───►───[Batch 3]───► Follower
-               ▲                ▲                ▲
-               └── Concurrent in-flight window (Flow control: max 16)
-  ReadIndex: Heartbeat confirms active leader ──► Serve read directly (0 disk I/O)
-  Throughput: > 25,000 ops/sec (10x Acceleration!)`,
+      diagram: `PIPELINED HIGH-THROUGHPUT ENGINE (Case 1):
+enable-pipelining      ──► Pipelined batch AppendEntries RPCs active
+bench-pipeline 5000    ──► Evaluates 5000 non-blocking concurrent consensus writes
+                       ──► Asynchronous disk flush + batch commits
+                       ──► OUTPUT: PIPELINE_THROUGHPUT: > 20000 ops/s`,
       learningLoop: {
         bottleneck: "How does etcd achieve 50,000+ writes/sec without blocking the leader waiting for network ACKs on every single entry?",
         whatYouUnderstand: [

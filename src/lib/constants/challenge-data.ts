@@ -169,11 +169,9 @@ Like Redis or Memcached, this acts as an ultra-fast cache. By keeping data exclu
         "Implement 'DELETE <key>' to remove the key from the dictionary."
       ],
     diagram: `INPUT                         ENGINE                 OUTPUT
-SET name Jason        ──────► memory["name"]="Jason" ───► OK
-GET name              ──────► lookup("name")       ───► Jason
-EXISTS name           ──────► lookup("name")       ───► TRUE
-DELETE name           ──────► remove("name")       ───► OK
-GET name              ──────► lookup("name")       ───► NULL
+SET alpha 42          ──────► memory["alpha"]="42"   ───► OK
+GET alpha             ──────► lookup("alpha")        ───► 42
+GET non_existent_key  ──────► lookup("non_existent") ───► NULL
 
 Internally:
 ┌───────────────────────────────┐
@@ -181,9 +179,7 @@ Internally:
 ├───────────────┬───────────────┤
 │ Key           │ Value         │
 ├───────────────┼───────────────┤
-│ name          │ Jason         │
-│ score         │ 42            │
-│ language      │ C++           │
+│ alpha         │ 42            │
 └───────────────┴───────────────┘
 
 Command Dispatcher Loop:
@@ -311,26 +307,24 @@ By scrambling keys into array indices, you achieve O(1) constant-time lookups. T
         "If multiple keys hash to the same bucket, store them in a Linked List (or a simple sub-array).",
         "When retrieving a value, hash the key, navigate to the bucket, and iterate through the list comparing the raw key strings until you find the match."
       ],
-    diagram: `INPUT KEY                      HASH ENGINE                  BUCKET ARRAY
-"user:101" ──────► 64-bit Hash (FNV / Murmur3)
-                   0x8f3c...b9a2 ──────► idx = hash % 8 (Slot 2)
-                                                │
-                                                ▼
+    diagram: `INPUT KEY                      HASH ENGINE                  BUCKET ARRAY (Cap: 8)
+SET a 1        ──────► Hash("a") % 8 = Slot 1 ──► [1] = ("a", "1")       ──► OK
+SET b 2        ──────► Hash("b") % 8 = Slot 4 ──► [4] = ("b", "2")       ──► OK
+GET a          ──────► Hash("a") % 8 = Slot 1 ──► Found "a"              ──► 1
+GET b          ──────► Hash("b") % 8 = Slot 4 ──► Found "b"              ──► 2
+
                                          ┌──────────────┐
                                    [0]   │ NULL         │
                                          ├──────────────┤
-                                   [1]   │ "session"    │
+                                   [1]   │ ("a", "1")   │
                                          ├──────────────┤
-"user:101" (collision) ──────────► [2]   │ "user:101" ──┼──► "admin" (Chain Node)
+                                   ...   │ NULL         │
                                          ├──────────────┤
-                                   [3]   │ "auth"       │
-                                         ├──────────────┤
-                                   ...   │ ...          │
+                                   [4]   │ ("b", "2")   │
                                          └──────────────┘
 
 Rehashing Dynamic (Load Factor > 0.75):
-Old Table (Cap: 8, Items: 7) ──► Allocate New Table (Cap: 16)
-Recompute idx = hash % 16 for all nodes ──► Zero Collisions, O(1) Preserved`,
+Initial capacity: 8 buckets. When items exceed capacity * 0.75, table doubles to 16.`,
     learningLoop: {
       bottleneck:
         "Why do naive hash tables degrade from O(1) to catastrophic O(N) when bucket collisions occur or under Hash DoS attacks?",
@@ -430,7 +424,7 @@ Writing directly to a database file on disk is complex and slow because it invol
         "Implement a startup routine: when the database boots, open the log file, read it line by line, and execute the commands to rebuild your in-memory Hash Table."
       ],
     diagram: `WRITE PIPELINE (Synchronous fsync):
-SET user "Alice" ──► 1. Serialize Record  ──► [SET user Alice\\n]
+SET user:1 jason ──► 1. Serialize Record  ──► [SET user:1 jason\n]
                             │
                             ▼
                      2. Disk Write (WAL)  ──► ./data/wal.log (append-only)
@@ -439,10 +433,11 @@ SET user "Alice" ──► 1. Serialize Record  ──► [SET user Alice\\n]
                      3. OS fsync() flush  ──► Guaranteed on Disk Platter
                             │
                             ▼
-                     4. Update In-Memory  ──► memory["user"] = "Alice"
+                     4. Update In-Memory  ──► memory["user:1"] = "jason"
                             │
                             ▼
                      5. Return to Client  ──► "OK"
+GET user:1       ──► Memory Lookup        ──► "jason"
 
 CRASH RECOVERY PIPELINE (Boot Replay):
 Process Restart / Post-Crash (SIGKILL)
@@ -450,9 +445,7 @@ Process Restart / Post-Crash (SIGKILL)
        ▼
 Read ./data/wal.log sequentially (Offset 0 ──► EOF)
        │
-       ├────► Record 1: SET alpha 10   ──► memory["alpha"] = 10
-       ├────► Record 2: SET beta 20    ──► memory["beta"] = 20
-       ├────► Record 3: DELETE alpha   ──► remove("alpha")
+       ├────► Record 1: SET user:1 jason ──► memory["user:1"] = "jason"
        ▼
 Replay Complete (State 100% Reconstituted) ──► Ready for Traffic`,
     learningLoop: {
@@ -554,29 +547,19 @@ If you only checked for expiration when a user requested a key (lazy expiration)
         "Implement a background loop that runs every few seconds, picks a random subset of keys, and deletes any that have expired."
       ],
     diagram: `TTL REGISTRATION:
-SET session "token" ──► memory["session"] = "token"
-EXPIRE session 10   ──► expiry_table["session"] = now_monotonic_ms() + 10,000
+SET auth 99      ──► memory["auth"] = "99"                    ──► OK
+EXPIRE auth 5000 ──► expiry_table["auth"] = now_ms() + 5000   ──► OK
+GET auth         ──► now_ms() < expiry ──► Return "99"        ──► 99
 
-DUAL-MODE EVICTION ARCHITECTURE:
+TTL Status Code Conventions:
+TTL perm         ──► Key exists with no expiration            ──► -1
+TTL not_there    ──► Key does not exist                       ──► -2
 
-1. PASSIVE (On-Read Lazy Eviction):
-   GET session
-        │
-        ▼
-   Lookup in expiry_table
-        │
-        ├─── If now_ms() < expiry ────► Return "token" (Valid)
-        │
-        └─── If now_ms() >= expiry ───► DELETE session from memory & expiry
-                                        Return NULL (Expired)
-
-2. ACTIVE (Periodic Background Sweeper):
-   [Timer Interval (e.g. 100ms)] ──► Sample 20 random keys with TTL
-        │
-        ▼
-   Check each sample key:
-        ├─── If expired ──────────────► Evict from store & free memory
-        └─── If > 25% sampled expired ─► Repeat sweep immediately`,
+PASSIVE (On-Read Lazy Eviction):
+GET auth (after 5000ms)
+     │
+     ▼
+Lookup in expiry_table ──► now_ms() >= expiry ──► DELETE "auth" ──► NULL`,
     learningLoop: {
       bottleneck:
         "In high-throughput caches, unbounded data accumulation leads to Out-Of-Memory (OOM) fatal kills. How do you evict expired keys without degrading read/write latency?",
@@ -677,25 +660,22 @@ If you simply wrap your entire database in a single mutex lock, your multi-core 
         "Implement an array of Mutexes (e.g., 16 locks). When modifying a bucket, use `hash(key) % 16` to determine which lock to acquire.",
         "Ensure locks are always released, even if an error occurs during the operation, to prevent permanent deadlocks."
       ],
-    diagram: `CONCURRENT REQUEST INGRESS:
-Client Thread 1 (SET "user:1")    Client Thread 2 (GET "order:99")
-        │                                  │
-        ▼                                  ▼
- Hash("user:1") % 16                Hash("order:99") % 16
-   = Shard Index 3                    = Shard Index 11
-        │                                  │
-        ▼                                  ▼
-┌────────────────────────────────────────────────────────┐
-│           STRIPED MUTEX SHARD COORDINATOR              │
-├──────────────┬──────────────┬───────────┬──────────────┤
-│ Shard [0]    │ Shard [3]    │ ...       │ Shard [11]   │
-│ Mutex 0      │ Mutex 3 (LOCKED)         │ Mutex 11 (LOCKED)
-│ Sub-Store 0  │ Sub-Store 3  │           │ Sub-Store 11 │
-│              │ "user:1"     │           │ "order:99"   │
-└──────────────┴──────────────┴───────────┴──────────────┘
-        ▲                                  ▲
-        │                                  │
-    Parallel Execution (Zero Contention / Lock Striping)`,
+    diagram: `PING PROTOCOL & MULTI-KEY DISPATCH:
+PING             ──► Health Check Responder      ──► PONG
+PING hello       ──► Echo Argument               ──► hello
+
+MSET alpha 1 beta 2 gamma 3
+     │
+     ▼
+Atomically sets entries across memory partitions:
+  memory["alpha"] = "1"
+  memory["beta"]  = "2"
+  memory["gamma"] = "3"
+     │
+     ▼
+OUTPUT: OK
+GET alpha        ──► memory["alpha"] ──► 1
+GET beta         ──► memory["beta"]  ──► 2`,
     learningLoop: {
       bottleneck:
         "A single global mutex (like Python's GIL or a monolithic lock) serializes all incoming requests, reducing a 32-core server to the speed of a single core. How do you scale across parallel threads?",
@@ -799,26 +779,31 @@ Without compaction, a database server running for months would eventually consum
         "Iterate over every valid key-value pair currently in your Hash Table and write it as a `SET` command to the temporary file.",
         "Perform an atomic file rename (e.g., `mv wal.tmp wal.log`) to safely replace the bloated file with the optimized one."
       ],
-    diagram: `LOG COMPACTION PIPELINE (Disk Space Reclamation):
-Original WAL (Uncompacted - 100,000 Mutations, 50MB):
+    diagram: `LOG COMPACTION PIPELINE:
+Original WAL (Uncompacted Mutations):
 ┌────────────────────────────────────────────────────────────┐
-│ SET x 1 │ SET x 2 │ SET y 5 │ DELETE x │ SET y 10 │ ...    │
+│ SET user:1 old │ SET user:1 new │ ...                      │
 └────────────────────────────────────────────────────────────┘
                               │
-                              ▼ Log Compaction Trigger
+                              ▼ COMPACT Command Triggered
 Scan In-Memory Keyspace (Only Live State):
-Live Keys: { "y": "10" } (x is dead, earlier y mutations obsolete)
+Live Keys: { "user:1": "new" } (Obsolete "old" entry discarded!)
                               │
                               ▼
 Atomic Swap: Write wal.log.tmp ──► rename to wal.log
-Compacted WAL (1 Entry, 24 Bytes - 99.9% Space Reclaimed):
+Compacted WAL (1 Entry, Space Reclaimed):
 ┌────────────────────────────────────────────────────────────┐
-│ SET y 10                                                   │
+│ SET user:1 new                                             │
 └────────────────────────────────────────────────────────────┘
 
-MEMORY ARENA & ZERO-COPY PIPELINE:
-Raw stdin buffer ──► Custom Arena Pool (Preallocated 64KB Slices)
-                     ──► Zero Syscall Malloc ──► > 100,000 ops/sec`,
+EXECUTION TRACE (Case 1):
+SET user:1 old  ──► OK
+SET user:1 new  ──► OK
+COMPACT         ──► OK
+GET user:1      ──► new
+
+MEMSTATS (Memory Tracking):
+ALLOCATED_BYTES: 1024 PEAK_BYTES: 1024 FRAGMENTATION_RATIO: 1.00`,
     learningLoop: {
       bottleneck:
         "Pushing beyond 100,000 ops/sec with sub-0.20ms latency requires eliminating operating system malloc fragmentation, CPU cache misses, and unbounded log file growth.",

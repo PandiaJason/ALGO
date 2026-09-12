@@ -130,17 +130,13 @@ By splitting files into chunks and distributing them across multiple independent
         "Implement 'put-distributed <key> <data>' to split the data string evenly into chunks and send one chunk to each node.",
         "Implement 'get-distributed <key>' to request all chunks from the nodes, concatenate them, and return the original data."
       ],
-      diagram: `MULTI-NODE SHARD PLACEMENT TOPOLOGY:
+      diagram: `DISTRIBUTED CLUSTER INITIALIZATION (Case 1):
+cluster-init 6         ──► Spawns 6 virtual storage node processes
+                       ──► Initializes data and parity directories
+                       ──► OUTPUT: CLUSTER_READY: 6 NODES
 
-  Object Payload: [HELLO WORLD!] (12 bytes)
-         │
-         ├── Shard 1 (bytes 0..1) ──► Node 1 (10.0.1.1:9000)
-         ├── Shard 2 (bytes 2..3) ──► Node 2 (10.0.1.2:9000)
-         ├── Shard 3 (bytes 4..5) ──► Node 3 (10.0.1.3:9000)
-         ├── Shard 4 (bytes 6..7) ──► Node 4 (10.0.1.4:9000)
-         ├── Shard 5 (bytes 8..9) ──► Node 5 (10.0.1.5:9000)
-         └── Shard 6 (bytes 10..11)─► Node 6 (10.0.1.6:9000)
-  Manifest Metadata: {"key": "file1", "shards": [n1, n2, n3, n4, n5, n6]}`,
+Case 2 Write & Read:
+"put-distributed k1 test_payload\nget-distributed k1" ──► DISTRIBUTED_OK\ntest_payload`,
       learningLoop: {
         bottleneck: "How do you place files evenly across 6 storage nodes so that no single disk becomes a bottleneck?",
         whatYouUnderstand: [
@@ -218,22 +214,12 @@ By calculating mathematical parity shards using Reed-Solomon, you can survive lo
         "Apply a Cauchy generator matrix in GF(2^8) to multiply the 4 data shards and produce 2 parity shards.",
         "Implement 'inspect-shards' to verify that exactly 6 shards (4 data, 2 parity) were created and padded correctly if the input length wasn't a multiple of 4."
       ],
-      diagram: `REED-SOLOMON (4+2) ENCODING PIPELINE:
-
-  Original Data (16 bytes): [ABCDEFGHIJKLMNOP]
-  Split into 4 Data Shards:
-  D1: [ABCD]   D2: [EFGH]   D3: [IJKL]   D4: [MNOP]
-
-  Generator Matrix (Cauchy in GF(2^8)):
-  ┌─────────────┐   ┌────┐     ┌────────────────────────────────┐
-  │ 1  0  0  0  │   │ D1 │     │ D1 (Data Shard 1)              │
-  │ 0  1  0  0  │   │ D2 │     │ D2 (Data Shard 2)              │
-  │ 0  0  1  0  │ × │ D3 │  =  │ D3 (Data Shard 3)              │
-  │ 0  0  0  1  │   │ D4 │     │ D4 (Data Shard 4)              │
-  ├─────────────┤   └────┘     ├────────────────────────────────┤
-  │ c1 c2 c3 c4 │              │ P1 = c1·D1 ⊕ c2·D2 ⊕ c3·D3 ⊕ c4·D4 │
-  │ d1 d2 d3 d4 │              │ P2 = d1·D1 ⊕ d2·D2 ⊕ d3·D3 ⊕ d4·D4 │
-  └─────────────┘              └────────────────────────────────┘`,
+      diagram: `REED-SOLOMON ERASURE CODING (Case 1):
+ec-encode ABCDEFGHIJKLMNOP
+                       ──► Breaks 16-byte payload into 4 data shards (4B each)
+                       ──► Computes 2 parity shards using Galois Field GF(2^8) math
+                       ──► Distribution: [D1, D2, D3, D4] + [P1, P2]
+                       ──► OUTPUT: ENCODED: 4_DATA_2_PARITY`,
       learningLoop: {
         bottleneck: "Why can't simple XOR parity protect against losing 2 disks at the same time, and why is Galois Field arithmetic necessary?",
         whatYouUnderstand: [
@@ -313,22 +299,14 @@ This is the hardest part of erasure coding: matrix inversion. When shards are lo
         "Invert the sub-matrix in GF(2^8).",
         "Multiply the inverted matrix by the surviving shards to completely reconstruct the original 4 data shards."
       ],
-      diagram: `MATRIX INVERSION RECONSTRUCTION (Survive 2 Node Casualties):
+      diagram: `CLUSTER FAULT TOLERANCE & RECONSTRUCTION (Case 1):
+kill-nodes n1          ──► Disk on node n1 fails (Loss of 1 shard)
+ec-decode              ──► Vandermonde inversion reconstructs lost data
+                       ──► Survives failure of any 2 nodes!
+                       ──► OUTPUT: RECOVERED_FROM_5_SHARDS
 
-  Node Status:
-  [Node 1: DEAD ✗] [Node 2: OK ✓] [Node 3: DEAD ✗]
-  [Node 4: OK ✓]   [Node 5: OK ✓] [Node 6: OK ✓]
-
-  Surviving Shards: [D2, D4, P1, P2] (Any 4 of 6 shards)
-         │
-         ▼
-  Extract 4×4 Submatrix from Generator Matrix ──► Invert in GF(2^8)
-  ┌──────────────┐-1   ┌────┐     ┌────┐
-  │ Sub-matrix   │   × │ D2 │  =  │ D1 │ (Recovered 100%!)
-  │ of surviving │     │ D4 │     │ D2 │ (Intact)
-  │ rows         │     │ P1 │     │ D3 │ (Recovered 100%!)
-  └──────────────┘     │ P2 │     │ D4 │ (Intact)
-                       └────┘     └────┘`,
+Case 2 Two Node Loss:
+"kill-nodes n1,n2\nec-decode" ──► RECOVERED_FROM_4_SHARDS`,
       learningLoop: {
         bottleneck: "When Node 1 and Node 3 catch fire simultaneously, how do you mathematically invert the remaining shards to recover the missing bytes?",
         whatYouUnderstand: [
@@ -407,20 +385,13 @@ By requesting parity shards when a data shard is delayed, you trade a tiny bit o
         "If a timeout occurs before all 4 data shards arrive, trigger a hedge request to fetch a parity shard.",
         "Use your 'ec-decode' logic to reconstruct the delayed data shard from the parity shard."
       ],
-      diagram: `PARALLEL HEDGED STREAMING ARCHITECTURE:
+      diagram: `PARALLEL STREAMING & HEDGED READS (Case 1):
+bench-stream 50        ──► Streams 50MB payload concurrently across shards
+                       ──► Aggregates network pipe throughput
+                       ──► OUTPUT: AGGREGATE_THROUGHPUT: > 400 MB/s
 
-  Client Gateway
-      │
-      ├── GET shard 1 ──► Node 1 [RTT: 2.1ms] ──► [D1 Chunk]
-      ├── GET shard 2 ──► Node 2 [RTT: 2.4ms] ──► [D2 Chunk]
-      ├── GET shard 3 ──► Node 3 [RTT: 2.2ms] ──► [D3 Chunk]
-      ├── GET shard 4 ──► Node 4 [STRAGGLER! Disk delay > 50ms...]
-      │                      │
-      │                      ▼ (Hedge timer fires at 10ms)
-      └── GET parity 1 ──► Node 5 [RTT: 2.3ms] ──► [P1 Chunk]
-             │
-             └── Reconstruct D4 from D1, D2, D3, P1 in < 0.1ms!
-                 Total stream time: 4.8ms instead of waiting 50ms.`,
+Case 2 Straggler Mitigation:
+"simulate-straggler n1\nget-distributed file_stream" ──► HEDGE_REQUEST_TRIGGERED: RECOVERED_VIA_PARITY`,
       learningLoop: {
         bottleneck: "When reading from 4 nodes, what if 3 nodes respond in 2ms but the 4th node takes 500ms due to disk latency?",
         whatYouUnderstand: [
@@ -496,20 +467,12 @@ Rebuilding a dead drive is incredibly expensive. In a 4+2 cluster, replacing 1TB
         "Implement 'profile-ec-math' to run a loop of encode and decode operations, measuring the elapsed time to calculate MB/s throughput.",
         "Implement 'measure-rebuild-amplification'. Given a lost disk size, calculate how much total data must be pulled from surviving nodes to reconstruct it (Disk Size * Data Shards)."
       ],
-      diagram: `ERASURE MATH vs NETWORK REBUILD AMPLIFICATION:
+      diagram: `FINITE FIELD POLYNOMIAL PROFILER (Case 1):
+profile-ec-math        ──► Benchmarks SIMD Galois Field GF(2^8) multiplication
+                       ──► Computes encoding rate
+                       ──► OUTPUT: MATH_THROUGHPUT: > 600 MB/s
 
-  Rebuilding 1 Dead Storage Node (Disk capacity: 1 TB):
-  ┌────────────────────────────────────────────────────────┐
-  │ Network Read Ingress:                                  │
-  │   Must fetch 1TB from Node 2 + 1TB from Node 4 +       │
-  │   1TB from Node 5 + 1TB from Node 6 = 4.0 TB Read!     │
-  ├────────────────────────────────────────────────────────┤
-  │ Network Amplification Factor = 4.0x                     │
-  ├────────────────────────────────────────────────────────┤
-  │ Galois Field Matrix Inversion CPU Cost:                │
-  │   Throughput: ~640 MB/s (Single Core Scalar)           │
-  │   Rebuild Time on 10Gbps Network: ~1.8 hours           │
-  └────────────────────────────────────────────────────────┘`,
+Case 2: "measure-rebuild-amplification 1000" ──► NETWORK_AMPLIFICATION: 4.0x`,
       learningLoop: {
         bottleneck: "Is cluster throughput limited by CPU Galois Field calculations or by 10Gbps top-of-rack network switches?",
         whatYouUnderstand: [
@@ -587,21 +550,12 @@ By vectorizing the Galois Field arithmetic using AVX2 or NEON intrinsics, you pr
         "Instead of looping byte-by-byte, process chunks using simulated AVX2 table lookups (splitting 8-bit multiplication into low-nibble and high-nibble lookups).",
         "Implement 'bench-simd-ec' to prove that the new vectorized code is strictly mathematically identical to the scalar code, but runs at least 4x faster."
       ],
-      diagram: `VECTORIZED GF(2^8) ARITHMETIC (AVX2 / NEON 256-Bit):
+      diagram: `SIMD HARDWARE-ACCELERATED ERASURE (Case 1):
+enable-simd            ──► AVX2/NEON vector instructions active
+                       ──► Parallel 128/256-bit XOR and table lookups
+                       ──► OUTPUT: SIMD_ENABLED: OK
 
-  Scalar (Slow, loop per byte):
-  for (i=0; i<N; i++) out[i] ^= gf_mult(in[i], coeff); // 780 MB/s
-
-  AVX2 SIMD Vector Kernel (32 bytes per cycle):
-  ┌─────────────────────────────────────────────────────────┐
-  │ _mm256_loadu_si256(data) (Load 32 bytes into ymm0)      │
-  ├─────────────────────────────────────────────────────────┤
-  │ Low-nibble table lookup:  _mm256_shuffle_epi8(tbl_lo, lo)│
-  │ High-nibble table lookup: _mm256_shuffle_epi8(tbl_hi, hi)│
-  │ XOR partials:             _mm256_xor_si256(res_lo,res_hi)│
-  ├─────────────────────────────────────────────────────────┤
-  │ Throughput: 4,800 MB/s (6.1x Hardware Acceleration!)    │
-  └─────────────────────────────────────────────────────────┘`,
+Case 2: "bench-simd-ec" ──► SIMD_THROUGHPUT: > 3000 MB/s`,
       learningLoop: {
         bottleneck: "How does Intel ISA-L achieve 10+ GB/s erasure coding throughput on standard x86/ARM server CPUs?",
         whatYouUnderstand: [

@@ -253,21 +253,26 @@ Additionally, you will implement 'which <bin>', which scans the directories list
         "In the parent process: wait for the child using waitpid(). Capture the termination status using WEXITSTATUS.",
         "Format output: print the binary's stdout followed by '[Process exited with code <code>]'."
 ],
-      diagram: `INPUT COMMAND: "run ls -l /tmp"
+      diagram: `INPUT COMMAND: "run echo test"
       │
       ▼
 Parent Process (PID 1000)
-  ├── 1. PATH lookup ──► found "/bin/ls"
+  ├── 1. PATH lookup ──► found "/bin/echo"
   ├── 2. pid = fork()
   │        ├── CHILD (PID 1001)
-  │        │     └── execvp("/bin/ls", ["ls", "-l", "/tmp"])
-  │        │           └── Replaces address space, runs binary
+  │        │     └── execvp("/bin/echo", ["echo", "test"])
+  │        │           └── Prints "test" to stdout
   │        └── PARENT waits
   └── 3. waitpid(1001, &status, 0)
            └── status: exited normally, code: 0
       │
       ▼
-OUTPUT: [binary stdout...] \\n [Process exited with code 0]`,
+OUTPUT:
+test
+[Process exited with code 0]
+
+Case 2 (Missing Binary):
+"run /bin/notexist" ──► No such file or directory\n[Process exited with code 127]`,
       learningLoop: {
         bottleneck: "How do you run arbitrary binary programs located in system PATH while keeping the shell alive?",
         whatYouUnderstand: [
@@ -345,19 +350,23 @@ Additionally, when commands are run in the background ('spawn-bg <cmd>'), they e
         "Implement 'reap': execute a non-blocking waitpid(-1, &status, WNOHANG) loop, counting how many zombie children were collected, and output 'REAPED: <count>'.",
         "On 'exit', if background tasks are still running, wait for their completion and output 'CLEAN_EXIT'."
 ],
-      diagram: `SIGNAL TRAP & ZOMBIE REAPING:
-  Parent Shell ──► sigaction(SIGINT, handler, NULL)
+      diagram: `SIGNAL TRAP (Case 1):
+  sigint
       │
   User presses Ctrl+C (SIGINT)
+      ├── Handler traps SIGINT ──► prints "^C"
+      └── Next command: echo ok ──► prints "ok"
       │
-      ├── Default OS Action: Terminate process (Shell dies ✗)
-      └── With Handler: Mask signal, print "^C", restore prompt (Alive ✓)
+      ▼
+  OUTPUT:
+  ^C
+  ok
 
-BACKGROUND & REAPING:
-  spawn-bg sleep 10 ──► fork() ──► Child PID 2042 running in BG
-  Child exits       ──► Becomes [sleep <defunct>] (Zombie in OS table)
-  reap              ──► waitpid(-1, &status, WNOHANG)
-                          └── Reaps PID 2042 ──► Returns: REAPED: 1`,
+BACKGROUND & REAPING (Case 2):
+  spawn-bg true ──► fork() ──► Child running in background
+  Child exits   ──► Becomes [true <defunct>] (Zombie in OS table)
+  reap          ──► waitpid(-1, &status, WNOHANG)
+                      └── Reaps PID ──► REAPED: 1`,
       learningLoop: {
         bottleneck: "What prevents a Ctrl+C from killing the interactive shell, and why do un-reaped processes become zombies?",
         whatYouUnderstand: [
@@ -454,16 +463,20 @@ A pipe is an anonymous kernel buffer with two file descriptors: a write end and 
         "Close all pipe descriptors in the parent shell so children can receive EOF signals upon upstream completion.",
         "Wait for all pipeline stages to terminate before returning to the prompt."
 ],
-      diagram: `INPUT: "cat names.txt | sort | head -n 1 > top.txt"
+      diagram: `INPUT PIPELINE (Case 1): "echo hello | tr a-z A-Z"
 
-┌───────────────┐      pipefd1      ┌───────────────┐      pipefd2      ┌───────────────┐
-│     cat       │ ──► [w]   [r] ──► │     sort      │ ──► [w]   [r] ──► │     head      │
-│ dup2(p1[1],1) │                   │ dup2(p1[0],0) │                   │ dup2(p2[0],0) │
-└───────────────┘                   │ dup2(p2[1],1) │                   │ dup2(fd_out,1)│
-                                    └───────────────┘                   └───────┬───────┘
-                                                                                │
-                                                                        file: top.txt
-                                                                        (O_WRONLY|O_CREAT|O_TRUNC)`,
+┌─────────────────────┐      pipefd1      ┌─────────────────────┐
+│     echo hello      │ ──► [w]   [r] ──► │     tr a-z A-Z      │
+│  dup2(p1[1], STDOUT)│                   │  dup2(p1[0], STDIN) │
+└─────────────────────┘                   │  stdout to terminal │
+                                          └──────────┬──────────┘
+                                                     │
+                                                     ▼
+                                                  OUTPUT:
+                                                  HELLO
+
+REDIRECTION (Case 3): "echo test > /tmp/algo_test.txt"
+  echo test ──► open(/tmp/algo_test.txt, O_WRONLY|O_CREAT|O_TRUNC) ──► dup2(fd, STDOUT)`,
       learningLoop: {
         bottleneck: "How does data flow through multiple concurrent processes without blocking or deadlocking on full pipe buffers?",
         whatYouUnderstand: [
@@ -544,20 +557,24 @@ Your shell measures the high-resolution elapsed time of commands, distinguishes 
         "Implement 'memcheck <n>': loop N times executing builtins and verify zero heap leaks ('LEAKS: 0 BYTES').",
         "Implement 'zombie-check': sweep the process table and verify no zombie processes exist ('ZOMBIES: 0')."
 ],
-      diagram: `INPUT: "profile echo fast"
+      diagram: `INPUT: "profile echo ping"
       │
       ▼
 ┌─────────────────────────────────────────────────────────────┐
 │ High-Resolution Clock Start (clock_gettime / CLOCK_MONOTONIC)│
 ├─────────────────────────────────────────────────────────────┤
-│ Syscall Trace Hook / Counters:                             │
-│   SYS_fork: 1   SYS_execve: 1   SYS_wait4: 1                │
+│ Dispatch: Identifies "echo" as BUILTIN                     │
+│ Execute: Builtin handler outputs "ping"                     │
 ├─────────────────────────────────────────────────────────────┤
-│ High-Resolution Clock Stop ──► Elapsed: 1,420 μs            │
+│ High-Resolution Clock Stop ──► Elapsed: < 100 μs            │
 └─────────────────────────────────────────────────────────────┘
       │
       ▼
-OUTPUT: fast \\n [ELAPSED_US: 1420 SYSCALLS: FORK,EXEC,WAIT]`,
+OUTPUT:
+ping
+TYPE: BUILTIN ELAPSED_US: < 100
+
+Case 2: "profile true" ──► TYPE: EXTERNAL FORK_US: OK`,
       learningLoop: {
         bottleneck: "Why is fork() slow on large processes, and how much overhead does pipe context-switching incur?",
         whatYouUnderstand: [
@@ -643,20 +660,27 @@ Instead of duplicating strings into arrays of dynamic heap buffers, the shell re
         "Implement 'repeat <n> <cmd>': execute the command N times in a tight loop.",
         "Implement 'audit-engine': verify full compliance across all levels, outputting 'COMPLIANT: ZERO_ALLOC_FAST_PATH'."
 ],
-      diagram: `ZERO-ALLOCATION HOT PATH:
-Raw Buffer: "echo   hello   world\\0"
+      diagram: `INPUT: "bench-allocs 10000"
+      │
+      ▼
+ZERO-ALLOCATION HOT PATH:
+Raw Buffer: "echo   zero   copy\0"
               ▲       ▲       ▲
               │       │       │
-In-Place:    "echo\\0" "hello\\0" "world\\0" (Zero string duplication)
+In-Place:    "echo\0" "zero\0" "copy\0" (Zero string duplication)
               │
               ▼
-Static Argv: argv[0] = &buf[0], argv[1] = &buf[8], argv[2] = &buf[16], argv[3] = NULL
+Static Argv: argv[0] = &buf[0], argv[1] = &buf[7], argv[2] = &buf[14], argv[3] = NULL
               │
               ▼
-Builtin Hash Table: MurmurHash("echo") % 16 ──► Slot 4 (Builtin_Echo)
-              │
-              ▼
-Heap Allocations: 0 bytes malloced | Hot Path Execution: < 120 ns`,
+Command Dispatch: Evaluated across 10,000 iterations in-place
+Heap Allocations: 0 bytes malloced during evaluation
+      │
+      ▼
+OUTPUT:
+ITERATIONS: 10000 HEAP_ALLOCS: 0
+
+Case 2: "fast-eval echo zero copy" ──► "zero copy"`,
       learningLoop: {
         bottleneck: "How do production shells parse 100,000 commands/sec in tight scripts without GC pauses or malloc fragmentation?",
         whatYouUnderstand: [

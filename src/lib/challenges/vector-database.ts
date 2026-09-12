@@ -133,21 +133,14 @@ Large Language Models convert sentences into dense vectors, where words with sim
         "For each vector, calculate its Cosine Similarity against the query vector (dot product divided by the product of their magnitudes).",
         "Sort the results by descending score and return the top 'k' matches."
       ],
-      diagram: `EXACT K-NEAREST NEIGHBORS (FLAT SCAN):
+      diagram: `EXACT K-NEAREST NEIGHBORS (FLAT SCAN) (Case 1):
+insert-vector v1 1.0,0.0 ──► Stores 2D vector v1 = [1.0, 0.0] ──► INSERT_OK
+query-knn 1.0,0.0 1      ──► Query vector Q = [1.0, 0.0]
+                             ├── Cosine(v1, Q) = 1.000 (Top 1)──► TOP_1: v1
 
-  Query Vector Q: [1.0, 0.0, 0.0]  (k=2)
-         │
-         ├── Scan v1: [1.0, 0.0, 0.0] ──► Cosine: 1.000 ──► Push to Min-Heap
-         ├── Scan v2: [0.9, 0.1, 0.0] ──► Cosine: 0.994 ──► Push to Min-Heap
-         ├── Scan v3: [0.0, 1.0, 0.0] ──► Cosine: 0.000 ──► (Displaced!)
-         └── Scan v4: [0.5, 0.5, 0.0] ──► Cosine: 0.707 ──► (Lower than min)
-         │
-         ▼
-  Bounded Min-Heap (Capacity k=2):
-  ┌──────────────┬──────────────┐
-  │ Top 1: doc1  │ Top 2: doc2  │
-  │ Score: 1.000 │ Score: 0.994 │
-  └──────────────┴──────────────┘`,
+Case 2 Multi-Vector Scan (k=2):
+"insert-vector a 1.0,0.0\ninsert-vector b 0.5,0.5\ninsert-vector c 0.0,1.0\nquery-knn 1.0,0.0 2"
+  ──► Sim(a) = 1.000, Sim(b) = 0.707, Sim(c) = 0.000 ──► TOP_2: a, b`,
       learningLoop: {
         bottleneck: "How do you calculate similarity between two 128-dimensional float arrays without floating-point drift?",
         whatYouUnderstand: [
@@ -229,20 +222,15 @@ By creating a skip-list style hierarchy of graphs, you achieve logarithmic O(log
         "Implement 'inspect-hnsw-layers'. Verify that the multi-layer hierarchy has more than 1 populated layer.",
         "Implement 'bench-eval-count <count>' and 'verify-connectivity'. Confirm distance evaluations are logarithmic and all nodes remain connected."
       ],
-      diagram: `HNSW MULTI-LAYER SKIP GRAPH NAVIGATION:
+      diagram: `HIERARCHICAL NAVIGABLE SMALL WORLD (HNSW) INSERT (Case 1):
+hnsw-insert node1 1.0,0.0
+  ├── Assigns random layer level (decay factor ml)
+  ├── Greedy search from top entry point layer down to target layer
+  ├── Connects M nearest neighbor bidirectional edges
+  └── OUTPUT: HNSW_INSERT_OK
 
-  Layer 2 (Expressway):
-  [Entry Point] ──────────────────────────► [Node X]
-        │ (Greedy route to closest neighbor)
-        ▼ Drop down to Layer 1
-  Layer 1 (Regional Roads):
-  [Node X] ──────────► [Node Y] ──────────► [Node Z]
-                             │
-                             ▼ Drop down to Layer 0
-  Layer 0 (Local Streets - Dense Graph):
-  [Node Z] ──► [Neighbor A] ──► [Neighbor B] ──► [TARGET: Top-K]
-  Beam search window: efSearch = 32
-  Hops: 8 distance evaluations vs 1,000,000 linear scans!`,
+Case 2 HNSW Search:
+"hnsw-search 1.0,0.0 1 16" ──► Beam search with efSearch=16 ──► TOP_1: node1`,
       learningLoop: {
         bottleneck: "When the database grows to 1,000,000 vectors, brute force takes 500ms. How does HNSW find neighbors in 0.2ms?",
         whatYouUnderstand: [
@@ -326,18 +314,14 @@ If an entry-point node or bridge node is deleted, searches could fail to reach v
         "Implement 'check-island-isolation': Traverse the graph from the entry point to verify all active nodes are reachable (0 islands).",
         "Implement 'compact-graph': Remove all tombstoned nodes and reclaim memory."
       ],
-      diagram: `TOMBSTONING & GRAPH EDGE HEALING:
+      diagram: `GRAPH PRUNING & NODE TOMBSTONING (Case 1):
+hnsw-delete node1
+  ├── Marks node1 as deleted / tombstoned
+  └── Heuristic rewires neighbor edges to preserve graph connectivity
+hnsw-search 1.0,0.0 1 16 ──► Search skips tombstoned node1 ──► EXCLUDED: node1
 
-  Original Graph:
-  [Node A] ───────► [Node X (Target)] ───────► [Node B]
-      │                     ▲                     │
-      └─────────────────────┼─────────────────────┘
-                            │
-  On Delete(Node X):        │
-  1. Set Tombstone flag on Node X (Excluded from search)
-  2. Edge Healing: Connect Node A directly to Node B
-  3. If Node X was Entry Point: Migrate Entry Point to closest neighbor
-  Result: 0 disconnected islands, search paths remain continuous!`,
+Case 2 Entry Point Migration:
+"delete-entry-point\ncheck-entry-point" ──► ENTRY_POINT_MIGRATED: OK`,
       learningLoop: {
         bottleneck: "What happens when an entry-point node is deleted? Does the rest of the graph become completely unreachable?",
         whatYouUnderstand: [
@@ -421,23 +405,13 @@ You implement a scatter-gather architecture: queries execute concurrently agains
         "Implement 'verify-top-k-sort': Ensure the merged result is strictly ordered by descending similarity score.",
         "Implement 'bench-concurrent-rw' and 'check-shard-distribution': Verify read/write stability and balanced partition distribution."
       ],
-      diagram: `SCATTER-GATHER SHARDED VECTOR SEARCH:
+      diagram: `HORIZONTAL VECTOR SHARDING (Case 1):
+create-shards 4
+  ├── Partitions vector space across 4 independent shard workers
+  └── OUTPUT: SHARDS_INITIALIZED: 4
 
-  Query: Q [dim=128, k=5]
-         │
-  ┌──────┴───────────────┬──────────────────────┬──────────────────────┐
-  ▼                      ▼                      ▼                      ▼
-┌──────────────┐       ┌──────────────┐       ┌──────────────┐       ┌──────────────┐
-│   Shard 0    │       │   Shard 1    │       │   Shard 2    │       │   Shard 3    │
-│ 250k vectors │       │ 250k vectors │       │ 250k vectors │       │ 250k vectors │
-│ Local Top-5  │       │ Local Top-5  │       │ Local Top-5  │       │ Local Top-5  │
-└──────┬───────┘       └──────┬───────┘       └──────┬───────┘       └──────┬───────┘
-       │                      │                      │                      │
-       └──────────────────────┼──────────────────────┴──────────────────────┘
-                              │
-                              ▼
-                 K-Way Priority Queue Merger
-                 Sorted Global Top-5 Consolidated (< 1.5ms)`,
+Case 2 Sharded Scatter-Gather:
+"sharded-query 1.0,0.0 2" ──► Scatter to 4 shards, k-way heap merge ──► SHARDED_TOP_2: OK`,
       learningLoop: {
         bottleneck: "When an index exceeds 10GB of RAM, how do you distribute it across partitions while maintaining single-query top-K?",
         whatYouUnderstand: [
@@ -519,16 +493,12 @@ You implement rigorous evaluation metrics: comparing approximate graph search re
         "Implement 'measure-p99-latency' and 'measure-dist-calcs': Measure tail latency and distance evaluation counts.",
         "Implement 'audit-recall-curve': Verify the recall-vs-QPS curve forms an optimal Pareto frontier."
       ],
-      diagram: `PARETO FRONTIER: RECALL@10 vs QUERY LATENCY:
-
-  Recall@10
-  100% ┼                                 ● (efSearch=128: 99.1% Recall, 1.8k QPS)
-       │                         ● (efSearch=64:  97.8% Recall, 3.4k QPS)
-   95% ┼                 ● (efSearch=32:  96.4% Recall, 4.8k QPS) [SWEET SPOT]
-       │         ● (efSearch=16:  91.2% Recall, 7.2k QPS)
-   90% ┼ ● (efSearch=8: 82.5% Recall, 11.5k QPS)
-       └─┼───────┼───────┼───────┼───────┼─────► QPS (Throughput)
-        2k      4k      6k      8k     10k`,
+      diagram: `RECALL@K EMPIRICAL BENCHMARK (Case 1):
+measure-recall 10 64
+  ├── Ground truth: Exact flat brute-force scan Top-10
+  ├── Approximate: HNSW traversal with efSearch=64
+  ├── Recall = |HNSW ∩ GroundTruth| / 10
+  └── OUTPUT: RECALL@10: > 95%`,
       learningLoop: {
         bottleneck: "How do you systematically tune efSearch to achieve 98% recall without dropping QPS below 3,000?",
         whatYouUnderstand: [
@@ -608,18 +578,12 @@ By compressing 32-bit floats into signed 8-bit integers, you reduce RAM usage by
         "Implement 'check-quant-recall': Verify quantization accuracy loss does not drop recall by more than 2%.",
         "Implement 'verify-simd-kernel' and 'audit-engine': Validate kernel mathematical correctness and system integrity."
       ],
-      diagram: `SCALAR QUANTIZATION (SQ8) & AVX2 INTRINSICS:
-
-  Raw Float32 Vector (128 dims):
-  [ 0.824, -0.312, 0.054, ... ] ──► 512 bytes per vector
-
-  Quantized Int8 Vector (SQ8):
-  [ 105,   -40,    7,     ... ] ──► 128 bytes (75% Memory Saved!)
-         │
-         ▼
-  AVX2 SIMD Kernel (vpdpbusd / _mm256_maddubs_epi16):
-  Multiplies 32 int8 components per instruction cycle
-  Throughput: 18,200 QPS (3.8x speedup over scalar float32)`,
+      diagram: `SCALAR QUANTIZATION (SQ8) COMPACTION (Case 1):
+enable-quantization
+  ├── Compresses 32-bit float dimensions to 8-bit unsigned integers:
+  │     quantized = round((x - min) / (max - min) * 255)
+  ├── Reduces RAM footprint by 75% (4 bytes -> 1 byte per dimension)
+  └── OUTPUT: SQ8_ENABLED: 75% MEMORY SAVED`,
       learningLoop: {
         bottleneck: "Why do floating-point vector comparisons saturate memory bus bandwidth, and how does int8 quantization unlock 10x throughput?",
         whatYouUnderstand: [

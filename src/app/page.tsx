@@ -19,7 +19,7 @@ import { HomeLeaderboardSnapshot } from "@/components/home/home-leaderboard-snap
 import { HomeManifesto } from "@/components/home/home-manifesto";
 import { HomeWishlist } from "@/components/home/home-wishlist";
 import { HomeCaseStudyBanner } from "@/components/home/home-case-study-banner";
-import { ChevronRight, Play } from "lucide-react";
+import { ChevronRight, Play, Route } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -85,11 +85,11 @@ export default async function HomePage() {
                     <ChevronRight className="w-4 h-4" />
                   </Link>
                   <Link
-                    href="/challenges/kv-store/workspace"
+                    href="/roadmap"
                     className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 text-white border border-white/20 px-5 py-3 rounded-full text-sm font-semibold transition-all active:scale-95"
                   >
-                    <Play className="w-3.5 h-3.5 fill-white" />
-                    <span>Launch Key-Value Engine</span>
+                    <Route className="w-4 h-4 text-emerald-400" />
+                    <span>Systems Roadmap</span>
                   </Link>
                 </div>
               </div>

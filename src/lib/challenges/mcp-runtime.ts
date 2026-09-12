@@ -138,26 +138,16 @@ JSON-RPC 2.0 is a stateless, lightweight remote procedure call protocol. By impl
         "Implement a 'ping' method that returns `{\"jsonrpc\": \"2.0\", \"id\": <id>, \"result\": \"pong\"}`.",
         "If parsing fails or fields are missing, return the corresponding standard JSON-RPC error objects."
       ],
-      diagram: `STDIO JSON-RPC 2.0 FRAMING & TOOL DISCOVERY:
+      diagram: `JSON-RPC 2.0 PROTOCOL HANDSHAKE (Case 1):
+send-rpc {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}
+  ├── Parses inbound JSON message
+  ├── Validates protocol version "2024-11-05"
+  ├── Formats conforming JSON-RPC 2.0 response
+  └── OUTPUT: {"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2024-11-05"}}
 
-Client (AI Agent)                       MCP Host Runtime
-       │                                       │
-       │─── 1. Write send-rpc ─────────────────►│
-       │    send-rpc {"jsonrpc":"2.0","id":1,  │──► Parse JSON Payload
-       │     "method":"initialize",...}        │──► Negotiate Capabilities
-       │◄── 2. Emit Stdout Line (\\n) ──────────│
-       │    {"jsonrpc":"2.0","id":1,           │
-       │     "result":{"protocolVersion":...}} │
-       │                                       │
-       │─── 3. Query Tools ("tools/list") ────►│
-       │                                       │──► Scan Registered Registry
-       │◄── 4. Return Tool Definitions ────────│
-       │    {"result":{"tools":[{"name":"echo",│
-       │     "description":"..."}]}}           │
-       │                                       │
-       │─── 5. Dispatch Tool ("tools/call") ──►│
-       │    {"params":{"name":"echo",...}}     │──► Dispatch Handler
-       │◄── 6. Tool Result SCO ────────────────│`,
+Case 2 Tool List Query:
+send-rpc {"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}
+  ──► Returns registered tools: {"tools":[{"name":"echo"}]}`,
       learningLoop: {
         bottleneck: "How do processes communicate over stdio pipes without interleaving or corrupting JSON message boundaries?",
         whatYouUnderstand: [
@@ -237,31 +227,14 @@ Rather than granting unrestricted shell access, MCP exposes context via structur
         "Implement 'subscribe-resource <uri>': Register client subscriptions for specific URIs.",
         "Implement 'notify-change <uri>': Broadcast 'NOTIFICATION: RESOURCE_UPDATED' to subscribed listeners."
       ],
-      diagram: `URI RESOURCE TEMPLATE MATCHING & CONTEXT RESOLUTION:
+      diagram: `RESOURCE DISCOVERY & URI TEMPLATES (Case 1):
+send-rpc {"jsonrpc":"2.0","id":1,"method":"resources/templates/list","params":{}}
+  ├── Scans registered URI templates
+  └── OUTPUT: {"resourceTemplates":[{"uriTemplate":"file:///{path}"}]}
 
-Client (Context Resolver)                    Resource Router Engine
-       │                                                │
-       │─── 1. "resources/read" ───────────────────────►│
-       │    uri: "file:///app/config.json"              │
-       │                                                ▼
-       │                                     [Route Pattern Matcher]
-       │                                     Template: "file:///{path}"
-       │                                     Matched Param: path="app/config.json"
-       │                                                │
-       │                                                ▼
-       │                                     [Content Provider Engine]
-       │                                     Resolves live file buffer from disk
-       │                                                │
-       │◄── 2. MIME-Typed Context Payload ──────────────┘
-       │    {"contents": [{"uri": "file:///app/config.json",
-       │      "mimeType": "application/json",
-       │      "text": "CONFIG_DATA"}]}
-       │
-       │─── 3. "subscribe-resource" ───────────────────► [Subscription Map]
-       │    uri: "file:///logs"                          {"file:///logs": [client_1]}
-       │                                                │
-       │◄── 4. Push Notification Event ─────────────────┘ On FS Change Notification
-       │    "NOTIFICATION: RESOURCE_UPDATED"`,
+Case 2 Resource Read:
+send-rpc {"jsonrpc":"2.0","id":2,"method":"resources/read","params":{"uri":"file:///system/info"}}
+  ──► OUTPUT: {"contents":[{"text":"OS: Linux"}]}`,
       learningLoop: {
         bottleneck: "How does an agent read file or database schemas without executing heavy shell commands?",
         whatYouUnderstand: [
@@ -338,29 +311,15 @@ You cannot trust the AI's output. By enforcing rigorous type checking before exe
         "Check for missing required properties, incorrect types, and unexpected additional properties.",
         "If validation fails, return an Invalid Params (-32602) error containing a string explaining exactly which field failed."
       ],
-      diagram: `SCHEMA VALIDATION & SUBPROCESS TIMEOUT ISOLATION:
+      diagram: `SANDBOXED TOOL EXECUTION (Case 1):
+execute-tool-sandboxed echo {"msg":"test"}
+  ├── Validates arguments against tool JSON Schema: {"type":"object","properties":{"msg":{"type":"string"}}}
+  ├── Dispatches execution inside isolated sandbox worker
+  └── OUTPUT: SCHEMA_VALID: EXECUTED_OK
 
-Incoming "tools/call"
-       │
-       ▼
-[JSON Schema Validator (Ajv Engine)]
-  ├── Validate: type == string, required: ["msg"]
-  ├── If Invalid ──► Emit SCHEMA_ERROR: INVALID_TYPE / MISSING_REQUIRED_FIELD
-  └── If Valid   ──► Proceed to Sandboxed Execution
-       │
-       ▼
-[Process Supervisor] ──► Configure Watchdog (e.g. 50ms Deadline)
-       │
-       ├── Fork Subprocess (PID 1042)
-       │    ├── Isolate Stdin / Stdout / Stderr Pipes
-       │    └── Enforce Execution Budget
-       │
-   [Execution Race]
-   ├── Normal Case: Exits in 12ms ────► Read Stdout ──► Emit SCHEMA_VALID: EXECUTED_OK
-   └── Runaway Tool: Exceeds 50ms ───► Watchdog Alarm Triggers!
-                                         ├── Send SIGKILL to PID 1042
-                                         ├── waitpid(1042, &st, 0) (Reap Zombie FD)
-                                         └── Emit PROCESS_TERMINATED: TIMEOUT_KILLED`,
+Case 2 Schema Validation Error:
+execute-tool-sandboxed echo {"msg":12345}
+  ──► Number passed instead of string! ──► SCHEMA_ERROR: INVALID_TYPE (expected string)`,
       learningLoop: {
         bottleneck: "What stops a tool from getting stuck in an infinite while loop and freezing the entire AI agent forever?",
         whatYouUnderstand: [
@@ -438,25 +397,14 @@ If the runtime blocks the main thread while waiting for a tool to finish, the en
         "Implement a test tool 'sleep <ms>' that uses setTimeout to delay its response.",
         "Verify that sending a 'sleep' command followed immediately by a 'ping' results in the 'ping' response arriving first."
       ],
-      diagram: `CONCURRENT ASYNC TOOL DISPATCH & CANCELLATION:
+      diagram: `PARALLEL CONCURRENT TOOL POOL (Case 1):
+dispatch-parallel 10
+  ├── Dispatches 10 tool invocations concurrently across worker pool
+  ├── Collects and synchronizes all execution futures
+  └── OUTPUT: PARALLEL_COMPLETED: 10
 
-Agent 1 (id: 101) ──┐
-Agent 2 (id: 102) ──┼──► [Async Multiplexer / Event Loop]
-Agent 3 (id: 103) ──┘        │
-                             ├── Task Queue (FIFO Priority Scheduling)
-                             ▼
-                 [Worker Pool (N = 8 Workers)]
-                 ├── Worker 1: Executing "git-diff"    (id: 101)
-                 ├── Worker 2: Executing "grep-search" (id: 102)
-                 └── Worker 3: Executing "build"       (id: 103)
-                             │
-                             ├─ Cancel Trigger: "notifications/cancelled" (id: 103)
-                             │   └── Worker 3 immediately aborts & frees thread
-                             │
-                             ▼
-                 [Result Correlator & Out-of-Order Router]
-                 ├── Matches completion by request \`id\`
-                 └── Streams JSON-RPC response back to respective agent`,
+Case 2 Request Cancellation:
+"dispatch-long-job id=99\ncancel-request 99" ──► JOB_CANCELLED: 99`,
       learningLoop: {
         bottleneck: "When 5 subagents call search, git, and compiler tools simultaneously, how do you prevent thread contention?",
         whatYouUnderstand: [
@@ -543,24 +491,13 @@ You build an empirical benchmarking harness that instruments each stage of tool 
         "Implement 'measure-p99-dispatch': Capture latency percentiles and verify p99 remains below 1.5ms.",
         "Implement 'measure-allocs-per-call' and 'audit-protocol-metrics': Profile heap allocations and verify protocol SLA compliance."
       ],
-      diagram: `DISPATCH LATENCY BREAKDOWN & METRICS PROFILING:
+      diagram: `SUB-MILLISECOND PROTOCOL OVERHEAD (Case 1):
+profile-tool-overhead
+  ├── Inbound JSON serialization + validation + routing + outbound framing
+  ├── Measures round-trip runtime latency
+  └── OUTPUT: TOTAL_OVERHEAD: < 0.8ms
 
-Round-Trip Tool Call Timeline (Total Overhead: 0.75ms):
-┌─────────────────┬───────────────┬─────────────────┬──────────────────┐
-│ JSON Deserial   │ Schema Verify │ IPC Stdio Pipe  │ Subprocess Exec  │
-│ 0.18ms (24%)    │ 0.22ms (29%)  │ 0.15ms (20%)    │ 0.20ms (27%)     │
-└─────────────────┴───────────────┴─────────────────┴──────────────────┘
-       │                 │                │                 │
-       ▼                 ▼                ▼                 ▼
-[Telemetry Hook] ──► Record Stage Latency & Allocations
-                         │
-                         ▼
-             [Latency Percentile Histogram]
-             ├── p50:  0.42ms
-             ├── p95:  0.68ms
-             ├── p99:  1.20ms (Target: < 1.5ms)
-             ├── QPS:  > 5,000 dispatches/sec
-             └── Allocations: 8 allocs/call (Target: < 10)`,
+Case 2: "bench-dispatch-qps 8" ──► Multi-threaded dispatch ──► QPS: > 5000`,
       learningLoop: {
         bottleneck: "How much latency does JSON string serialization add compared to raw binary IPC?",
         whatYouUnderstand: [
@@ -646,25 +583,14 @@ By processing raw byte buffers with vectorized SIMD scans, you extract method an
         "Implement 'verify-zero-allocs': Confirm that tool routing executes with zero heap allocations.",
         "Implement 'bench-fast-qps' and 'audit-engine': Measure throughput (> 10,000 QPS) and verify final engine durability."
       ],
-      diagram: `SIMD-ACCELERATED ZERO-COPY DISPATCH PIPELINE:
+      diagram: `SIMD ZERO-COPY JSON PARSING (Case 1):
+enable-simd-parser
+  ├── AVX-512 / NEON vector bitmask parsing for structural whitespace and quotes
+  ├── In-place string reference extraction
+  └── OUTPUT: SIMD_PARSER_ACTIVE: OK
 
-Raw Stdin Byte Stream (e.g. 4KB chunk):
-["jsonrpc":"2.0","method":"tools/call","params":{"name":"echo","args":{...}}]
-       │
-       ▼ [AVX-512 / NEON SIMD Vector Scan]
-[Bitmask Indexer] ──► Identifies structural delimiters: { } [ ] " : ,
-       │
-       ▼ [Zero-Copy String Views (Pointer + Length)]
-Method Slice  ──► points to input buffer offset 26..36 ("tools/call")
-Params Slice  ──► points to input buffer offset 48..75 (raw arguments)
-       │          (Zero malloc / free heap string allocation!)
-       │
-       ▼
-[Reused Worker Dispatch Ring Buffer]
-Direct Kernel Splice (vmsplice/pipe) ──► Fast Sandboxed Worker Execution
-       │
-       ▼
-Round-Trip Overhead: 0.08ms (10x faster) | Zero Heap Allocations | > 10,000 QPS`,
+Case 2 Fast Dispatch:
+"bench-fast-dispatch 10000" ──► Zero-copy dispatcher ──► AVERAGE_OVERHEAD: < 0.1ms`,
       learningLoop: {
         bottleneck: "How does simdjson parse gigabytes of JSON per second, and how can an MCP runtime use it to eliminate serialization bottlenecks?",
         whatYouUnderstand: [

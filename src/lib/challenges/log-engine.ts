@@ -126,10 +126,9 @@ When asked COUNT, it tells you exactly how many patients have been logged so far
         "Implement 'INGEST <status> <latency_ms> <endpoint>': For now, you don't even need to save the data. Just increment your total count and return 'OK'.",
         "Implement 'COUNT': Return the current value of your total count variable."
       ],
-      diagram: `RAW LOG INPUT                                  INGESTION ENGINE        OUTPUT
-INGEST 200 12 /api/v1/checkout                ──► parse line tokens ──► OK
-INGEST 500 45 /api/v1/payment                 ──► parse line tokens ──► OK
-COUNT                                         ──► inspect counter   ──► 2`,
+      diagram: `STRUCTURED LOG INGESTION (Case 1):
+INGEST 200 15 /api/users ──► Records status=200, latency=15, endpoint=/api/users ──► OK
+COUNT                    ──► Total logs recorded                                 ──► 1`,
       importantChallenge: {
         title: "Regex vs Single-Pass Scanning",
         description:
@@ -210,20 +209,12 @@ records an emergency. If someone asks STATUS_COUNT 500, you return the exact cou
         "Implement 'STATUS_COUNT <status_code>': Return the exact count for that code, or 0 if it hasn't been seen.",
         "Implement 'FAMILY_COUNT <family>': Return the total for that family string, or 0."
       ],
-      diagram: `STREAM INGESTION              STATUS HISTOGRAM BUCKETS              OUTPUT
-INGEST 200 10 /a       ──► status[200]++, family["2XX"]++    ──► OK
-INGEST 500 80 /c       ──► status[500]++, family["5XX"]++    ──► OK
-STATUS_COUNT 200       ──► lookup exact status: 200          ──► 1
-FAMILY_COUNT 5XX       ──► lookup status family: 5XX         ──► 1
+      diagram: `METRIC FILTERING & STATUS CODES (Case 1):
+INGEST 200 10 /a         ──► Ingests 200 OK log ──► OK
+INGEST 200 12 /b         ──► Ingests 200 OK log ──► OK
+STATUS_COUNT 200         ──► Filter count status == 200 ──► 2
 
-Status Code Histogram:
-┌────────┬──────┬────────────────────────────┐
-│ Family │ Code │ Count                      │
-├────────┼──────┼────────────────────────────┤
-│  2XX   │ 200  │ ████████████████ (2)       │
-│  4XX   │ 404  │ ░░░░░░░░░░░░░░░░ (0)       │
-│  5XX   │ 500  │ ████████ (1)               │
-└────────┴──────┴────────────────────────────┘`,
+Case 2: "FAMILY_COUNT 5XX" ──► Aggregates 500, 503 error logs`,
       learningLoop: {
         bottleneck: "Production monitors must alert when 5xx errors spike. Status code counters must resolve in O(1) time.",
         whatYouUnderstand: [
@@ -287,16 +278,12 @@ If you've seen 4 patients total, and 1 of them was a 500-level emergency, then E
         "Format the resulting float to exactly 2 decimal places and append a '%' sign.",
         "In Python, you can use an f-string: f'{rate:.2f}%'."
       ],
-      diagram: `STREAM INGESTION              SLO ERROR RATE CALCULATOR             OUTPUT
-INGEST 200 ... x3      ──► total=3, 5xx=0                    ──► OK
-INGEST 500 ... x1      ──► total=4, 5xx=1                    ──► OK
-ERROR_RATE             ──► (5xx_count / total) * 100         ──► 25.00%
+      diagram: `ERROR RATE COMPUTATION (Case 1):
+INGEST 200 10 /ok        ──► Ingests success (Total: 1, Errors: 0) ──► OK
+ERROR_RATE               ──► (Errors 0 / Total 1) * 100            ──► 0.00%
 
-Error Rate Ratio:
-Total Requests = 4  [ 200 | 200 | 200 | 500 ]
-                                         ▲
-                                         │ 1 Server Error (5XX)
-Calculation: (1 / 4) * 100 = 25.00%`,
+Case 2:
+1 Success (200) + 1 Error (500) ──► ERROR_RATE ──► 50.00%`,
       learningLoop: {
         bottleneck: "Service Level Objectives (SLOs) require calculating error ratios dynamically without scanning historical data.",
         whatYouUnderstand: [
@@ -363,15 +350,16 @@ If two departments have the exact same number of visits, sort them alphabeticall
         "Extract the items and sort them. Sort primarily by count (descending), and secondarily by endpoint name (ascending/alphabetical).",
         "Take the first K endpoint names from the sorted list, join them with a single space, and return them."
       ],
-      diagram: `ENDPOINT INGESTION            FREQUENCY MAP & HEAVY HITTERS         TOP-K EXTRACTION
-INGEST ... /users (x2) ──► endpoints["/users"] = 2           ──► OK
-INGEST ... /home  (x1) ──► endpoints["/home"]  = 1           ──► OK
-TOP_ENDPOINTS 2        ──► Sort by count DESC, name ASC      ──► /users /home
-
-Heavy Hitters Ranking:
-Rank 1: /users  [Count: 2] ──► Top 1
-Rank 2: /home   [Count: 1] ──► Top 2
-Rank 3: /about  [Count: 0]`,
+      diagram: `CARDINALITY & TOP ENDPOINTS (Case 1):
+INGEST 200 10 /users     ──► /users count = 1 ──► OK
+INGEST 200 10 /users     ──► /users count = 2 ──► OK
+INGEST 200 10 /home      ──► /home count = 1  ──► OK
+TOP_ENDPOINTS 2          ──► Sorts frequency desc
+OUTPUT:
+OK
+OK
+OK
+/users /home`,
       learningLoop: {
         bottleneck: "Storing every unique URL in a hash map causes memory explosion under random URL fuzzing attacks. Heavy-hitter algorithms bound memory.",
         whatYouUnderstand: [
@@ -437,17 +425,13 @@ tells you that 99% of patients waited less than this amount of time.`,
         "Calculate the index: max(0, ceil(percentile * length) - 1), where percentile is 0.50, 0.95, or 0.99.",
         "Return the latency at that index, formatted as '<val>ms'."
       ],
-      diagram: `REQUEST DURATIONS             ORDERED LATENCY BUFFER                PERCENTILE RANK
-Durations: [10ms, 20ms, 30ms] ──► sorted = [10, 20, 30]
-LATENCY P50                   ──► index = ceil(0.50 * 3) - 1 = 1    ──► 20ms
-LATENCY P99                   ──► index = ceil(0.99 * 3) - 1 = 2    ──► 30ms
+      diagram: `LATENCY HISTOGRAM & PERCENTILES (Case 1):
+INGEST 200 10 /a         ──► Latency: 10ms ──► OK
+INGEST 200 20 /b         ──► Latency: 20ms ──► OK
+INGEST 200 30 /c         ──► Latency: 30ms ──► OK
+LATENCY P50              ──► Median (50th percentile) latency ──► 20ms
 
-Percentile Cumulative Distribution:
-Sorted: [ 10ms , 20ms , 30ms ]
-                 ▲      ▲
-                 │      │
-            p50 (Median)│
-                        p99 (Tail Latency SLA)`,
+Case 2: "LATENCY P99" ──► Identifies tail outliers (e.g. 500ms)`,
       learningLoop: {
         bottleneck: "Averages hide severe latency spikes. If 1 in 100 requests takes 5000ms, average latency is fine but p99 is catastrophic.",
         whatYouUnderstand: [
@@ -512,16 +496,12 @@ And RESET clears all memory.`,
         "Implement 'RESET': Re-initialize your total counter to 0. Clear or replace your status dictionary, family dictionary, endpoints dictionary, and latency array with empty ones.",
         "Return 'OK' for RESET."
       ],
-      diagram: `CONTINUOUS INGEST STREAM      TELEMETRY AGGREGATOR ENGINE           DASHBOARD STATS
-INGEST 200 10 /ok      ──► Single-pass counter update        ──► OK
-STATS                  ──► Real-time metric snapshot         ──► TOTAL: 1 ERRORS: 0
-                                                                 P99: 10ms STATUS: HEALTHY
-RESET                  ──► O(1) buffer reset                 ──► OK
-
-Engine Architecture:
-Raw Log Stream ──► Ingestion Filter ──► In-Memory Ring Buffer
-                                    ──► P50/P99 Rank Selector ──► STATS
-                                    ──► Error Rate Calculator`,
+      diagram: `SYSTEM DASHBOARD & HEALTH STATS (Case 1):
+INGEST 200 10 /ok        ──► Records log entry ──► OK
+STATS                    ──► Aggregates total, error count, p99, and health
+OUTPUT:
+OK
+TOTAL: 1 ERRORS: 0 P99: 10ms STATUS: HEALTHY`,
       learningLoop: {
         bottleneck: "Streaming millions of lines causes CPU cache thrashing. Batching and pre-allocated buffers maintain peak throughput.",
         whatYouUnderstand: [

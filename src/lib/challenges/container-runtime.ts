@@ -125,17 +125,15 @@ The host sees the process as PID 1042, but the container firmly believes it is P
         "Simulate the host PID as a random or fixed number (e.g., 1042).",
         "Implement 'get-container-pid' to return 'INTERNAL_PID: 1 HOST_PID: 1042'."
       ],
-      diagram: `LINUX NAMESPACE DUAL-PERSPECTIVE MAPPING:
+      diagram: `PID & IPC NAMESPACE ISOLATION (Case 1):
+spawn-ns c1 echo test  ──► Clones namespace state machine
+                       ──► Internal PID assigned: 1
+                       ──► Executes command in sandbox
+                       ──► OUTPUT:
+SPAWNED c1
+test
 
-HOST OS VIEW (Global Kernel Table):
-  Host PID: 1042 ──► cmd: "container-init"
-    ├── PID Namespace: [Child View translates 1042 ──► 1]
-    ├── UTS Namespace: Hostname = "container-alpha" (Host = "prod-node-01")
-    └── IPC Namespace: Isolated System V message queues & semaphores
-
-CONTAINER INTERNAL VIEW:
-  Container PID: 1 ──► [Init Process / Reaper]
-    └── getpid() returns 1 (Sees no other host processes)`,
+Case 2: "spawn-ns c2 check-pid" ──► get-container-pid ──► INTERNAL_PID: 1`,
       learningLoop: {
         bottleneck: "How does a process think its PID is 1 when the host OS sees it as PID 48219?",
         whatYouUnderstand: [
@@ -200,19 +198,12 @@ The container will try to break out, but will fail with a PERMISSION_DENIED erro
         "Implement 'ls-container-root' to return a simulated list of basic linux folders (bin, etc, usr, var).",
         "Implement 'test-chroot-escape' which should check the jail state and return 'ESCAPE_ATTEMPT_FAILED: PERMISSION_DENIED'."
       ],
-      diagram: `PIVOT_ROOT JAIL MECHANICS:
+      diagram: `ROOT FILESYSTEM ISOLATION (Case 1):
+mount-rootfs /rootfs   ──► Simulates pivot_root into isolated mount tree
+                       ──► Traps chroot escapes
+                       ──► OUTPUT: PIVOT_ROOT_OK
 
-  Host Mount Hierarchy:
-  / (Host Root: /dev/sda1)
-    └── /var/lib/containers/rootfs/ (New Target Root)
-          └── /oldroot/ (Temporary mountpoint for host root)
-
-  Execution Sequence:
-  1. unshare(CLONE_NEWNS) ──► Private mount table
-  2. mount(NULL, "/", NULL, MS_REC | MS_PRIVATE, NULL)
-  3. pivot_root("/var/lib/containers/rootfs", "/var/lib/containers/rootfs/oldroot")
-  4. umount2("/oldroot", MNT_DETACH) ──► Host root completely gone!
-  5. Container jail complete: "/" is now isolated rootfs. Breakout impossible.`,
+Case 2: "ls-container-root" ──► "bin etc usr var"`,
       learningLoop: {
         bottleneck: "Why is chroot insecure (vulnerable to breakout via '..'), and how does pivot_root solve this?",
         whatYouUnderstand: [
@@ -282,20 +273,13 @@ The container tries to use 32MB of RAM, but the kernel's OOM Killer instantly te
         "Implement 'run-with-limits'. Check the requested command against your stored limits.",
         "If 'alloc-32M' is called and mem limit is 16M, return 'OOM_KILLED'. If 'fork-bomb' is called, return 'FORK_REJECTED: EAGAIN (pids.max reached)'."
       ],
-      diagram: `CGROUPS V2 UNIFIED CONTROLLERS:
+      diagram: `CGROUP RESOURCE CONTROLLER (Case 1):
+set-limits --mem 64M --pids 10 ──► Configures Cgroup memory & process bounds ──► CGROUP_CONFIGURED
+run-with-limits alloc-16M      ──► Within 64M boundary (16M < 64M)           ──► ALLOC_OK
 
-  /sys/fs/cgroup/algo_sandbox_42/
-  ├── cgroup.procs ──► [Host PID: 1042]
-  │
-  ├── memory.max: 16,777,216 (16 MB limit)
-  │     ├── Process malloc(32MB)
-  │     └── Kernel OOM Killer: SIGKILL (Exit code 137)
-  │
-  ├── pids.max: 10
-  │     ├── Fork bomb :(){ :|:& };: attempts 11th fork
-  │     └── Kernel returns: EAGAIN (Resource temporarily unavailable)
-  │
-  └── cpu.max: "50000 100000" (Throttled to 50% CPU bandwidth)`,
+Case 2 OOM Protection:
+set-limits --mem 16M --pids 10 ──► CGROUP_CONFIGURED
+run-with-limits alloc-32M      ──► Exceeds 16M limit! ──► OOM_KILLED`,
       learningLoop: {
         bottleneck: "What stops a buggy or malicious student script from allocating 64GB RAM or running ':(){ :|:& };:' (fork bomb)?",
         whatYouUnderstand: [
@@ -362,23 +346,12 @@ Your engine orchestrates 5 separate sandboxes in parallel and reports that all e
         "Implement 'exec-sandbox <id> <cmd>' to simulate running a command in a specific container.",
         "Implement 'test-cross-sandbox-access' which always returns 'CROSS_ACCESS: BLOCKED'."
       ],
-      diagram: `MULTI-TENANT ISOLATED EXECUTION POOL:
+      diagram: `SANDBOX POOL MANAGEMENT (Case 1):
+spawn-pool 5           ──► Pre-allocates 5 isolated sandbox containers ──► POOL_READY: 5
 
-       Host Supervisor / Dispatcher
-             │
-   ┌─────────┼─────────┬─────────┐
-   ▼         ▼         ▼         ▼
-┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐
-│Sandbox│ │Sandbox│ │Sandbox│ │Sandbox│
-│  #1   │ │  #2   │ │  #3   │ │  #4   │
-├───────┤ ├───────┤ ├───────┤ ├───────┤
-│ PID: 1│ │ PID: 1│ │ PID: 1│ │ PID: 1│
-│ veth1 │ │ veth2 │ │ veth3 │ │ veth4 │
-│ rootfs│ │ rootfs│ │ rootfs│ │ rootfs│
-│ 64MB  │ │ 64MB  │ │ 64MB  │ │ 64MB  │
-└───────┘ └───────┘ └───────┘ └───────┘
-   │
-   └── Isolated Linux Bridge (br0) with iptables cross-talk drop rules`,
+Case 2 Sandbox Execution:
+spawn-pool 2 ──► POOL_READY: 2
+exec-sandbox sb_1 echo hello ──► hello`,
       learningLoop: {
         bottleneck: "How do platforms like LeetCode or ALGO run thousands of untrusted student submissions simultaneously?",
         whatYouUnderstand: [
@@ -445,15 +418,12 @@ Your engine will output a timeline showing exactly how many milliseconds were sp
         "Implement 'bench-spawn-rate' to output a simulated metric like 'SPAWN_RATE: > 50 /sec'.",
         "Ensure tests expecting specific latency numbers or formats pass perfectly."
       ],
-      diagram: `CONTAINER COLD-BOOT TIMELINE (Microsecond Precision):
+      diagram: `CONTAINER BOOTSTRAP PROFILER (Case 1):
+profile-boot           ──► Measures cold-start clone() & namespace initialization
+                       ──► High-resolution microsecond timer
+                       ──► OUTPUT: TOTAL_BOOT: < 15ms
 
-Time: 0 μs             +1,200 μs            +3,300 μs        +4,100 μs
- ├─────────────────────────┼───────────────────┼────────────────┤
- │ clone(CLONE_NEWPID...)  │ pivot_root()      │ cgroup v2 setup│ Process execvp
- │ Clone page tables       │ Bind & mount      │ write limits   │ User payload
- │ Host PID allocation     │ umount host root  │ to memory.max  │ executes
- └─────────────────────────┴───────────────────┴────────────────┘
- Total Latency: 4.1 ms (Well within < 15ms target)`,
+Case 2: "bench-spawn-rate 50" ──► SPAWN_RATE: > 50 /sec`,
       learningLoop: {
         bottleneck: "Where does container startup time actually go: clone(), pivot_root(), cgroup setup, or rootfs mount?",
         whatYouUnderstand: [
@@ -521,18 +491,11 @@ Your engine will achieve sub-3ms latency because the container was already waiti
         "Implement 'fast-exec <command>' to simulate instantaneous execution, outputting the command result followed by 'DISPATCH_TIME: < 3ms'.",
         "Implement 'audit-engine' to output the final validation string 'STAGE: OPTIMIZED AUDIT: PASSED'."
       ],
-      diagram: `PRE-FORKED HOT STANDBY DISPATCH:
+      diagram: `PRE-WARMED CONTAINER ENGINE (Case 1):
+init-hot-pool 5        ──► Clones 5 idle standby processes with pre-mounted roots
+                       ──► OUTPUT: HOT_POOL_READY
 
-  Idle Pre-Forked Pool (Paused at Unix Domain Socket recv):
-  ┌─────────────────────────────────────────────────────────┐
-  │ Worker 1: [Namespaces ✓, Mounts ✓, Cgroups ✓] (Sleeping)│
-  │ Worker 2: [Namespaces ✓, Mounts ✓, Cgroups ✓] (Sleeping)│
-  │ Worker 3: [Namespaces ✓, Mounts ✓, Cgroups ✓] (Sleeping)│
-  └───────────────────────────┬─────────────────────────────┘
-                              │ Wake signal via IPC socket (< 1.8ms)
-                              ▼
-  Active Worker executes user command immediately!
-  On completion: Worker exits ──► Pool replenishes in background (CoW reset)`,
+Case 2: "fast-exec echo fast" ──► Instant handover ──► fast\nDISPATCH_TIME: < 3ms`,
       learningLoop: {
         bottleneck: "How does Cloudflare Workers or AWS Lambda achieve near-instant execution without waiting for cold boots?",
         whatYouUnderstand: [

@@ -257,16 +257,20 @@ Because we built our postings lists as alphabetically sorted arrays in Level 1, 
         "On 'SEARCH_OR <t1> <t2>...', fetch all postings lists. Combine all doc_ids into a single unique Set.",
         "For both commands, sort the final matching doc_ids alphabetically. If the final list is empty, print 'NO_MATCH', otherwise print 'MATCHES <doc1> <doc2>...'"
 ],
-      diagram: `BOOLEAN QUERY                             INVERTED POSTING LISTS                 SET OPERATION / MATCH
-SEARCH_AND distributed systems            ┌──────────────────────────────┐
-       │                                  │ distributed: [ d1, d2 ]      │ ──► Two-Pointer Intersect
-       ▼                                  │ systems:     [ d1 ]          │     [d1, d2] ∩ [d1]
-MATCHES d1                                └──────────────────────────────┘     ──► MATCHES d1
-                                          ┌──────────────────────────────┐
-SEARCH_OR algorithms design               │ algorithms:  [ d1 ]          │ ──► Sorted Union
-       │                                  │ design:      [ d3 ]          │     [d1] ∪ [d3]
-       ▼                                  └──────────────────────────────┘     ──► MATCHES d1 d3
-MATCHES d1 d3`,
+      diagram: `BOOLEAN QUERY PARSER & INTERSECTION (Case 1):
+INDEX d1 distributed systems algorithms ──► INDEXED d1 3
+INDEX d2 distributed databases          ──► INDEXED d2 2
+INDEX d3 graphic design                 ──► INDEXED d3 2
+
+SEARCH_AND distributed systems
+  Postings("distributed"): [d1, d2]
+  Postings("systems"):     [d1]
+  Set Intersection:        [d1] ──► MATCHES d1
+
+SEARCH_OR algorithms design
+  Postings("algorithms"):  [d1]
+  Postings("design"):      [d3]
+  Set Union:               [d1, d3] ──► MATCHES d1 d3`,
       learningLoop: {
         bottleneck: "Naive set intersection takes high memory. Merging two sorted postings lists using two-pointers runs in O(P1 + P2) time.",
         whatYouUnderstand: [
@@ -361,15 +365,17 @@ The Vector Space Model solves this using TF-IDF. It assumes that if a term appea
         "Sort the matching documents by score (descending). If scores are exactly equal, tie-break by sorting doc_id alphabetically (ascending).",
         "Print 'RANKED ' followed by '<doc_id>:<score>' rounded to exactly 2 decimal places."
 ],
-      diagram: `RELEVANCE QUERY (TF-IDF)                  CORPUS TERM FREQUENCIES                RANKED OUTPUT
-TFIDF redis                               ┌──────────────────────────────┐
-       │                                  │ N = 3 docs, df(redis) = 2    │
-       ▼                                  │ IDF = ln(3/2) + 1.0 = 1.405  │
-Calculate: TF(t,d) * IDF                  ├──────────────────────────────┤
-  • d1: TF=2 ──► 2 * 1.405 = 2.81         │ d1: "redis redis cache" (TF=2│ ──► RANKED d1:2.81 d2:1.41
-  • d2: TF=1 ──► 1 * 1.405 = 1.41         │ d2: "redis database"    (TF=1│     (Sorted by Score Desc,
-  • d3: TF=0 ──► (No Match)               │ d3: "postgresql db"     (TF=0│      Tie-break by Doc ID)
-                                          └──────────────────────────────┘`,
+      diagram: `RELEVANCE QUERY (TF-IDF) (Case 1):
+INDEX d1 redis redis cache     ──► INDEXED d1 2
+INDEX d2 redis database        ──► INDEXED d2 2
+INDEX d3 postgresql database   ──► INDEXED d3 2
+
+TFIDF redis
+  Total Docs (N): 3 | Docs with "redis" (DF): 2
+  IDF = ln(1 + (3 - 2 + 0.5) / (2 + 0.5)) + 1 ≈ 1.41
+  d1: TF = 2 ──► Score = 2.81
+  d2: TF = 1 ──► Score = 1.41
+  OUTPUT: RANKED d1:2.81 d2:1.41`,
       learningLoop: {
         bottleneck: "Boolean queries treat all matching documents equally. A document where a term appears 10 times is far more relevant than one where it appears once.",
         whatYouUnderstand: [
@@ -462,16 +468,15 @@ Okapi BM25 is the modern, production default ranking algorithm used by Elasticse
         "Calculate final score: IDF * (TF * (1.2 + 1)) / (TF + 1.2 * len_norm).",
         "Sort by score (descending), tie-break by doc_id (ascending). Print 'BM25 ' followed by '<doc_id>:<score>' rounded to 2 decimal places."
 ],
-      diagram: `QUERY (OKAPI BM25)                        SATURATION & LENGTH PENALTY            PROBABILISTIC RANK
-BM25 kafka                                ┌──────────────────────────────┐
-       │                                  │ Saturation: k1 = 1.2         │
-       ▼                                  │ Doc Length Norm: b = 0.75    │
-Score Formula:                            ├──────────────────────────────┤
-IDF * (TF*(k1+1)) / (TF + k1*len_norm)    │ d2: "kafka kafka kafka"      │ ──► BM25 d2:0.35 d1:0.25
-                                          │     len=3, TF=3 (Saturated)  │     (Diminishing returns
-                                          │ d1: "kafka streaming msg q"  │      for repeated terms)
-                                          │     len=4, TF=1              │
-                                          └──────────────────────────────┘`,
+      diagram: `OKAPI BM25 PROBABILISTIC RANKING (Case 1):
+INDEX d1 kafka streaming message queue ──► INDEXED d1 4
+INDEX d2 kafka kafka kafka             ──► INDEXED d2 1
+
+BM25 kafka
+  Term Frequency Saturation (k1=1.2, b=0.75):
+  d2: TF=3 (dense repetition) ──► Score: 0.35
+  d1: TF=1 (longer document)  ──► Score: 0.25
+  OUTPUT: BM25 d2:0.35 d1:0.25`,
       learningLoop: {
         bottleneck: "TF-IDF allows keyword stuffing: repeating 'shoes' 1,000 times inflates score 1,000x. BM25 uses an asymptotic saturation curve so extra mentions yield diminishing returns.",
         whatYouUnderstand: [
@@ -568,16 +573,16 @@ To support exact quote matching, search engines use Positional Postings. By stor
         "If a perfect contiguous sequence is found, the document is a match.",
         "Sort matches alphabetically and print 'PHRASE_MATCH <doc1> <doc2>...' or 'NO_MATCH'."
 ],
-      diagram: `PHRASE QUERY                              POSITIONAL INDEX (TERM -> OFFSETS)     EXACT PROXIMITY CHECK
-PHRASE quick brown fox                    ┌──────────────────────────────────┐
-       │                                  │ d1: "the quick brown fox jumps"  │
-       ▼                                  │  • quick: pos 1                  │ ──► Consecutive offsets
-Check: pos(w_i+1) == pos(w_i) + 1         │  • brown: pos 2 (1 + 1 = 2 ✓)    │     1 -> 2 -> 3
-                                          │  • fox:   pos 3 (2 + 1 = 3 ✓)    │     ──► PHRASE_MATCH d1
-                                          ├──────────────────────────────────┤
-                                          │ d2: "fox brown quick"            │
-                                          │  • offsets: 2 -> 1 -> 0 (Reversed│ ──► NO_MATCH (Disordered)
-                                          └──────────────────────────────────┘`,
+      diagram: `PHRASE PROXIMITY SEARCH (Case 1):
+INDEX d1 the quick brown fox jumps ──► INDEXED d1 5
+INDEX d2 fox brown quick           ──► INDEXED d2 3
+
+PHRASE quick brown fox
+  d1 Positions: quick@1, brown@2, fox@3 (Adjacent! Δpos = 1) ──► PHRASE_MATCH d1
+  d2 Positions: quick@2, brown@1, fox@0 (Wrong order!)       ──► Excluded
+
+PHRASE brown fox
+  d1 Positions: brown@2, fox@3 (Adjacent!)                   ──► PHRASE_MATCH d1`,
       learningLoop: {
         bottleneck: "Standard inverted indices lose word sequence. A search for 'president lincoln' matches 'lincoln told the president' without positional postings.",
         whatYouUnderstand: [
@@ -677,16 +682,15 @@ Modern search engines (like Elasticsearch) use an LSM-style architecture. They w
         "Update 'SEARCH_AND' logic so it queries ALL frozen segments plus the active buffer, combining the results seamlessly.",
         "On 'SEGMENT_STATS', print 'SEGMENTS <frozen_segment_count> TOTAL_DOCS <count_across_all_segments>'"
 ],
-      diagram: `INGEST & COMMIT                           LSM SEGMENT ARCHITECTURE               CONSOLIDATED INDEX
-INDEX d1 ... ──► COMMIT_SEGMENT ──► seg-1 ┌──────────────────────────────┐
-INDEX d2 ... ──► COMMIT_SEGMENT ──► seg-2 │ seg-1: [d1: "hello world"]   │ ──► Active Segments: 2
-                                          │ seg-2: [d2: "hello systems"] │     Search queries fan-out
-MERGE_SEGMENTS                            └──────────────┬───────────────┘
-       │                                                 │
-       ▼                                                 ▼
-Consolidate Postings Lists ──────────────────────────────┴──────────────► seg-merged (1 Segment)
-                                                                          Total Docs: 2
-                                                                          MERGED 2 -> 1`,
+      diagram: `LSM LOG-STRUCTURED MERGE SEGMENTS (Case 1):
+INDEX d1 hello world    ──► Tokenize & Index      ──► INDEXED d1 2
+COMMIT_SEGMENT          ──► Flushes to disk       ──► COMMITTED seg-1
+INDEX d2 hello systems  ──► Tokenize & Index      ──► INDEXED d2 2
+COMMIT_SEGMENT          ──► Flushes to disk       ──► COMMITTED seg-2
+SEGMENT_STATS           ──► 2 Active Segments     ──► SEGMENTS 2 TOTAL_DOCS 2
+MERGE_SEGMENTS          ──► Compacts seg-1 + seg-2──► MERGED 2 -> 1
+SEGMENT_STATS           ──► Single unified index  ──► SEGMENTS 1 TOTAL_DOCS 2
+SEARCH_AND hello        ──► Scans merged segment  ──► MATCHES d1 d2`,
       learningLoop: {
         bottleneck: "Modifying a live inverted index requires locking the entire database. Writing append-only mini-segments and merging in the background gives 100x write throughput.",
         whatYouUnderstand: [

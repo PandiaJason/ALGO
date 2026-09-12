@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { Logo } from "./logo";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield, User, LogOut, Code, Trophy, Sparkles, Settings, FileText } from "lucide-react";
+import { Shield, User, LogOut, Code, Trophy, Sparkles, Settings, FileText, Route } from "lucide-react";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 
 interface NavbarProps {
@@ -26,6 +26,7 @@ export function Navbar({ user, variant = "dark" }: NavbarProps) {
 
   const navLinks = [
     { href: "/challenges", label: "Challenges", icon: Code },
+    { href: "/roadmap", label: "Roadmap", icon: Route },
     { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
     { href: "/case-study", label: "Case Study", icon: FileText },
   ];

@@ -134,11 +134,11 @@ A simple task queue is not enough because tasks have multi-dimensional resource 
         "On 'SCHEDULE', peek at the first task. Loop through the nodes in registration order. If node.free_cpu >= task.cpu AND node.free_ram >= task.ram, assign it.",
         "Deduct the resources from the node, remove the task from the queue, track its status as RUNNING, and print 'SCHEDULED <task_id> -> <node_id>'."
 ],
-      diagram: `TASK SUBMISSION                           SCHEDULING ENGINE               ASSIGNMENT
-ADD_NODE worker-1 4 8192      ──► register node capacity   ──► OK
-SUBMIT task-1 2 2048          ──► enqueue pending job      ──► QUEUED
-SCHEDULE                      ──► first-fit capacity check ──► SCHEDULED task-1 -> worker-1
-STATUS task-1                 ──► query task state         ──► RUNNING worker-1`,
+      diagram: `FIFO CLUSTER SCHEDULING (Case 1):
+ADD_NODE worker-1 4 8192 ──► Registers worker (4 CPU, 8192MB RAM)──► OK
+SUBMIT task-1 2 2048     ──► Enqueues task (2 CPU, 2048MB RAM)   ──► QUEUED
+SCHEDULE                 ──► Allocates to worker-1               ──► SCHEDULED task-1 -> worker-1
+STATUS task-1            ──► Queries execution state             ──► RUNNING worker-1`,
       importantChallenge: {
         title: "Multi-Dimensional Resource Constraints",
         description:
@@ -253,12 +253,12 @@ Priority queueing ensures that mission-critical tasks jump to the front of the l
         "Attempt to place it using the First-Fit node logic from Level 1.",
         "If it fits, schedule it. If it doesn't fit, print 'WAITING' (do not try to schedule the second item in the queue)."
 ],
-      diagram: `TASK SUBMISSION (PRIORITY QUEUE)          READY QUEUE (ORDERED HEAP)             SCHEDULER
-SUBMIT_P low  10 2 2048  ──► ┌──────────────────────────────────────────┐ ──► SCHEDULE
-SUBMIT_P high 90 2 2048  ──► │ P90: [high] (cpu=2, ram=2048)  ▲ HIGHEST │       │
-SUBMIT_P med  50 2 2048  ──► │ P50: [med]  (cpu=2, ram=2048)  │         │       ▼
-                             │ P10: [low]  (cpu=2, ram=2048)  ▼ LOWEST  │   SCHEDULED high -> n1
-                             └──────────────────────────────────────────┘   (FIFO within same P)`,
+      diagram: `PRIORITY SCHEDULING (Case 1):
+ADD_NODE n1 4 8192        ──► Capacity: 4 CPU, 8192 RAM           ──► OK
+SUBMIT_P low 10 2 2048    ──► Priority: 10                        ──► QUEUED
+SUBMIT_P high 90 2 2048   ──► Priority: 90                        ──► QUEUED
+SCHEDULE                  ──► Priority 90 scheduled first!        ──► SCHEDULED high -> n1
+SCHEDULE                  ──► Priority 10 scheduled next          ──► SCHEDULED low -> n1`,
       learningLoop: {
         bottleneck: "FIFO causes priority inversion: a batch of low-priority reporting jobs blocks critical customer-facing API workers.",
         whatYouUnderstand: [
@@ -353,14 +353,11 @@ The Best-Fit algorithm solves this by tightly packing tasks into servers that ar
         "Deduct the resources from the winning node, mark the task RUNNING, and print 'SCHEDULED <task_id> -> <node_id>'.",
         "If no node can fit the task, print 'WAITING'."
 ],
-      diagram: `INCOMING TASK                               CLUSTER NODES (FIT & SCORE)            PLACEMENT
-SUBMIT_P t1 10 2 2048                        ┌──────────────────────────────┐
-       │                                     │ [n-large] (16c, 32GB)        │
-       ▼                                     │ Leftover: 14c / 30GB  (POOR) │
-SCHEDULE_BEST ──────────────────────────────►├──────────────────────────────┤ ──► SCHEDULED t1 -> n-small
-Score = (rem_cpu + rem_ram/1024)             │ [n-small] (2c, 2048MB)       │     (Tightest Fit /
-Min leftover capacity wins                   │ Leftover: 0c / 0MB   (BEST!) │      Least Stranded)
-                                             └──────────────────────────────┘`,
+      diagram: `MULTI-RESOURCE PACKING / BEST-FIT (Case 1):
+ADD_NODE n-large 16 32768 ──► Large worker                        ──► OK
+ADD_NODE n-small 2 2048   ──► Small worker                        ──► OK
+SUBMIT_P t1 10 2 2048     ──► Needs (2 CPU, 2048 RAM)             ──► QUEUED
+SCHEDULE_BEST             ──► Packs tightest fit onto n-small!    ──► SCHEDULED t1 -> n-small`,
       learningLoop: {
         bottleneck: "First-Fit spreads tasks thinly across all nodes, leaving no node with enough contiguous capacity for a large upcoming task.",
         whatYouUnderstand: [
@@ -454,14 +451,12 @@ If you do not correctly deallocate resources when a task completes, your cluster
         "On 'CLUSTER_STATS', count the total registered nodes and the number of tasks currently in the RUNNING state.",
         "Sum up free_cpu and free_ram across all nodes. Print 'NODES <n> RUNNING <r> CPU_FREE <c> RAM_FREE <m>'."
 ],
-      diagram: `TASK LIFECYCLE                               NODE CAPACITY STATE                   QUEUED JOBS
-COMPLETE t1 (cpu=4, ram=4096)                 ┌─────────────────────────────┐
-       │                                      │ [worker-1] Total: 4c / 4GB  │
-       ▼                                      │ ┌─────────────────────────┐ │
-[RUNNING] ──► [COMPLETED]                     │ │ t1 allocated (4c, 4GB)  │ │ ──► Freed: 4c / 4GB
-       │                                      │ └─────────────────────────┘ │
-       └─────────────────────────────────────►│ Available: 4c / 4096MB      │ ──► Unblocks [t2]
-                                              └─────────────────────────────┘     SCHEDULED t2 -> worker-1`,
+      diagram: `TASK LIFECYCLE & RECLAMATION (Case 1):
+ADD_NODE n1 4 4096        ──► Node registered (Free: 4 CPU, 4096 RAM) ──► OK
+SUBMIT_P t1 10 4 4096     ──► Allocates entire node                   ──► QUEUED
+SCHEDULE_BEST             ──► Dispatched to n1 (Free: 0 CPU, 0 RAM)   ──► SCHEDULED t1 -> n1
+COMPLETE t1               ──► Task finished, resources freed!         ──► COMPLETED t1
+STATUS t1                 ──► Verified completed                      ──► COMPLETED`,
       learningLoop: {
         bottleneck: "Schedulers are dynamic: workloads finish and return resources. Resource leaks during deallocation permanently paralyze nodes.",
         whatYouUnderstand: [
@@ -556,16 +551,14 @@ When a worker node goes dark, the scheduler must act immediately. It must identi
         "Count how many tasks were evicted. Print 'DEAD <node_id> EVICTED <count>'.",
         "Ensure that 'SCHEDULE_BEST' completely ignores DEAD nodes when searching for available capacity."
 ],
-      diagram: `CRASH DETECTOR                               DEAD NODE WORKLOADS                   RE-SCHEDULING
-KILL_NODE n1 (Node Failure)                  ┌─────────────────────────────┐
-       │                                     │ [n1 (DEAD)]                 │
-       ▼                                     │  • t1 (P90) ──► EVICTED     │ ──► Re-enqueue PENDING
-DEAD n1 EVICTED 2                            │  • t2 (P10) ──► EVICTED     │     (Preserves Priority)
-                                             └─────────────────────────────┘            │
-                                             ┌─────────────────────────────┐            ▼
-                                             │ [n2 (HEALTHY)] 4c / 4096MB  │ ◄── SCHEDULE_BEST
-                                             │  • t1 (P90) -> SCHEDULED    │     (t1 takes precedence)
-                                             └─────────────────────────────┘`,
+      diagram: `NODE FAILURE RESCHEDULING (Case 1):
+ADD_NODE n1 4 4096        ──► Node 1                              ──► OK
+ADD_NODE n2 4 4096        ──► Node 2                              ──► OK
+SUBMIT_P t1 10 2 2048     ──► Dispatched to n1                    ──► QUEUED\nSCHEDULED t1 -> n1
+KILL_NODE n1              ──► n1 crashes, 1 task evicted!         ──► DEAD n1 EVICTED 1
+STATUS t1                 ──► Back in pending queue               ──► PENDING
+SCHEDULE_BEST             ──► Failover: rescheduled on n2!        ──► SCHEDULED t1 -> n2
+STATUS t1                 ──► Running healthy on n2               ──► RUNNING n2`,
       learningLoop: {
         bottleneck: "Hardware fails constantly in large clusters. If a node loses connection, its tasks must be automatically rescheduled elsewhere.",
         whatYouUnderstand: [
@@ -662,14 +655,12 @@ The DRF algorithm (invented at UC Berkeley and used in Apache Mesos) solves this
         "Take that user's oldest pending task. Assign it using Best-Fit logic. Print 'DRF_SCHEDULED <user> <task_id> -> <node_id>'.",
         "On 'USER_SHARE <user>', recalculate their dominant share, multiply by 100, and print 'SHARE <user> <pct>%' formatted to 1 decimal place."
 ],
-      diagram: `TENANT SUBMISSIONS                           DOMINANT SHARE TRACKER                DRF ARBITRATOR
-Alice: SUBMIT_USER alice (2c, 100M)  ──►     ┌──────────────────────────────┐ ──► Min dominant share:
-Bob:   SUBMIT_USER bob   (1c, 400M)  ──►     │ Alice: 2c/10c=20%, 100M/1G=10%│     Alice (0.0% -> 20.0%)
-Cluster: 10 Cores / 1000 MB                  │ ──► Dominant Share: 20.0%    │            │
-                                             ├──────────────────────────────┤            ▼
-                                             │ Bob:   1c/10c=10%, 400M/1G=40%│     DRF_SCHEDULED alice
-                                             │ ──► Dominant Share: 40.0%    │     Next: Bob (20% < 40%)
-                                             └──────────────────────────────┘`,
+      diagram: `DOMINANT RESOURCE FAIRNESS (DRF) (Case 1):
+ADD_NODE n1 10 1000       ──► Total Cluster (10 CPU, 1000 RAM)    ──► OK
+SUBMIT_USER alice a1 1 100──► Alice dominant share: 10%           ──► QUEUED
+SUBMIT_USER bob b1 1 100  ──► Bob dominant share: 10%             ──► QUEUED
+SCHEDULE_DRF              ──► Equal share: Alice scheduled first  ──► DRF_SCHEDULED alice a1 -> n1
+SCHEDULE_DRF              ──► Fair balance: Bob scheduled next    ──► DRF_SCHEDULED bob b1 -> n1`,
       learningLoop: {
         bottleneck: "Naive priority allows one user with memory-heavy jobs to starve users with CPU-heavy jobs. DRF calculates dominant resource share for true fair-share scheduling.",
         whatYouUnderstand: [

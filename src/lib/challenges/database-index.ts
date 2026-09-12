@@ -118,10 +118,11 @@ When searching for data:
         "Implement 'SCAN <id>' by using a for-loop to check every item in the list.",
         "Return the value if found, or 'NOT_FOUND' if the loop finishes without a match."
       ],
-      diagram: `COMMANDS                     STORAGE ENGINE                 OUTPUT
-INSERT 42 "Alice"     ──────► table.push({42, "Alice"})   ──► OK
-SCAN 42               ──────► scan: compare 0..N rows     ──► Alice
-SCAN 99               ──────► scan entire table (miss)    ──► NOT_FOUND`,
+      diagram: `POINT LOOKUP & SCAN (Case 1):
+INSERT 10 Jason        ──► Inserts record at ID 10        ──► OK
+SCAN 10                ──► Point lookup at key 10         ──► Jason
+
+Case 2: "SCAN 999"     ──► Key not present in table       ──► NOT_FOUND`,
       importantChallenge: {
         title: "Sequential scan scalability bottleneck",
         description:
@@ -198,19 +199,15 @@ This takes a 1,000,000 row search down to just 20 checks!`,
         "Implement 'INDEX_GET <id>' using a standard while-loop binary search (low = 0, high = len - 1).",
         "If the middle element matches, return it. Otherwise adjust low or high appropriately."
       ],
-      diagram: `UNSORTED INSERTS              SORTED PRIMARY KEY ARRAY              BINARY SEARCH
-INSERT 50 E            ──► Keep keys sorted: [20, 50]        ──► OK
-INDEX_GET 20           ──► Binary Search: Low=0, High=1      ──► 20 (Found: "B")
-                           Mid=0 -> keys[0] == 20 (1 hop!)
+      diagram: `ORDERED DENSE INDEX (Case 1):
+INSERT 30 C            ──► Record 30                      ──► OK
+INSERT 10 A            ──► Record 10                      ──► OK
+INSERT 20 B            ──► Record 20                      ──► OK
+INDEX_GET 10           ──► Binary search index for 10     ──► A
 
-Sorted Primary Key Index vs Heap Rows:
-Index Array (Sorted Keys):
-┌──────┬──────┬──────┬──────┬──────┐
-│  10  │  20  │  30  │  40  │  50  │  ──► O(log N) Binary Search
-└──┬───┴──┬───┴──┬───┴──┬───┴──┬───┘
-   │      │      │      │      │ (Pointer / Tuple ID)
-   ▼      ▼      ▼      ▼      ▼
-Heap: [A]    [B]    [C]    [D]    [E]`,
+Ordered Index Vector:
+[ (10, Ptr to A), (20, Ptr to B), (30, Ptr to C) ]
+Lookup complexity: O(log N)`,
       learningLoop: {
         bottleneck: "Linear scans check N items. Keeping an array sorted allows binary search in log2(N) steps, reducing 10,000,000 checks to just 24 checks.",
         whatYouUnderstand: [
@@ -269,21 +266,16 @@ If the node already has [1, 2, 3], it overflows. It splits into two nodes and pu
         "Implement BTREE_INSERT to traverse down to a leaf, insert, and if keys > 3, split the leaf and promote the median to the parent.",
         "Implement BTREE_GET to traverse from the root, comparing the target ID against the router keys to decide which child to follow."
       ],
-      diagram: `KEY INSERTION                 M=3 NODE SPLIT PIPELINE               BALANCED TREE
-BTREE_INSERT 4 D       ──► Node [1, 2, 3] + 4 overflows!     ──► OK
-                           Median key (2) promoted to Parent
-                           Leaves split into [1] and [3, 4]
+      diagram: `B-TREE POINT RETRIEVAL (Case 1):
+BTREE_INSERT 1 A       ──► Inserts key 1                  ──► OK
+BTREE_INSERT 2 B       ──► Inserts key 2                  ──► OK
+BTREE_INSERT 3 C       ──► Inserts key 3 (Node splits)    ──► OK
+BTREE_GET 2            ──► Traverse B-Tree root to leaf   ──► B
 
-Node Split Mechanics:
-Before Split (Overflow):
-┌─────────────────────────┐
-│     [ 1 , 2 , 3 , 4 ]   │ (Max M=3 keys exceeded!)
-└─────────────────────────┘
-              │
-              ▼ Split & Promote Median (2)
-             [ 2 ]  <-- New Root / Parent
-            ┌──┴──┐
-         [ 1 ]   [ 3 , 4 ]  <-- Balanced Children`,
+Node Split Topology:
+           [ 2: B ]  (Root)
+          ┌───┴───┐
+     [ 1: A ]   [ 3: C ] (Leaves)`,
       learningLoop: {
         bottleneck: "A flat sorted array requires shifting elements on insertion (O(N)). B-Trees group keys into small bounded nodes (e.g. 4 keys), splitting nodes on overflow.",
         whatYouUnderstand: [
@@ -341,22 +333,15 @@ Your engine finds 10 using the tree, then just follows a linked chain to instant
         "Implement 'RANGE <min> <max>': use BTREE_GET logic to seek to the leaf containing 'min'.",
         "Iterate through the node's keys, and follow 'next' pointers to subsequent leaves until the key exceeds 'max'."
       ],
-      diagram: `RANGE SEARCH (10 to 25)       SEEK + LEAF TRAVERSAL                 RESULT
-RANGE 10 25            ──► 1. Seek min_key (10) via root    ──► "A B"
-                           2. Follow leaf next-pointers
-                           3. Stop when key > max_key (25)
+      diagram: `B-TREE RANGE SCAN (Case 1):
+BTREE_INSERT 10 A      ──► Inserts 10                     ──► OK
+BTREE_INSERT 20 B      ──► Inserts 20                     ──► OK
+BTREE_INSERT 30 C      ──► Inserts 30                     ──► OK
+RANGE 10 25            ──► Leaf-level sibling scan 10..25 ──► A B
 
-B+ Tree Leaf Chain Topology:
-            [  20  ]  <-- Internal Routing Key
-           ┌───┴───┐
-      [ 10 ]      [ 30 ]
-        │           │
-        ▼           ▼
-   ┌─────────┐   ┌─────────┐   ┌─────────┐
-   │ 10: "A" │──►│ 20: "B" │──►│ 30: "C" │ (Doubly-Linked Leaf List)
-   └─────────┘   └─────────┘   └─────────┘
-        ▲             ▲
-        └─────────────┴── Range [10..25] scanned directly via leaf links!`,
+Leaf Chain Traversal:
+[Leaf 1: (10,A), (20,B)] ──next──► [Leaf 2: (30,C)]
+Range [10..25] emits: A, B (stops before 30)`,
       learningLoop: {
         bottleneck: "Standard B-Trees require expensive in-order tree traversals for range queries. B+ Trees link all leaf nodes into a doubly-linked list, allowing fast sequential scanning.",
         whatYouUnderstand: [
@@ -415,21 +400,15 @@ Your engine calculates exactly how many bytes are used in the 4KB block and repo
         "Calculate free bytes as 4096 - (number_of_items * 40).",
         "Implement the logic to output the exact free bytes and item counts for the requested page ID."
       ],
-      diagram: `COMMAND                       4KB SLOTTED DISK PAGE                 PAGE STATS
-BTREE_INSERT 100 alpha ──► Slot Array grows DOWN (Header)    ──► PAGE: 0
-PAGE_STATS 0           ──► Tuple Data grows UP (End of Page) ──► FREE_BYTES: 4056
-                                                                 ITEMS: 1
+      diagram: `SLOTTED PAGE STORAGE ARCHITECTURE (Case 1):
+BTREE_INSERT 100 alpha ──► Tuple length: 40 bytes         ──► OK
+PAGE_STATS 0           ──► 4096B Page - 40B Tuple         ──► PAGE: 0 FREE_BYTES: 4056 ITEMS: 1
 
-4096-Byte Slotted Page Binary Layout:
-┌────────────────────────────────────────────────────────┐
-│ Page Header (LSN, Slot Count: 1, Free Space Pointer)  │
-├────────────────────────────────────────────────────────┤
-│ Slot 0: [Offset: 4070, Length: 26] ──► grows DOWN      │
-│                     ▼                                  │
-│         --- FREE CONTIGUOUS SPACE ---                  │
-│                     ▲                                  │
-│ Tuple 0: {id: 100, val: "alpha"}   ──► grows UP        │
-└────────────────────────────────────────────────────────┘`,
+Slotted Page Layout (4KB):
+┌────────────────────────┬────────────────────────────────────────┬────────────────────────┐
+│ Page Header & Slots    │            Free Space                  │ Tuple Data Heap        │
+│ [Slot 0: off=4056,len] │            (4056 Bytes)                │ [Tuple: 100, "alpha"]  │
+└────────────────────────┴────────────────────────────────────────┴────────────────────────┘`,
       learningLoop: {
         bottleneck: "Disks and OS file systems operate on 4096-byte pages. Variable-length records cause page fragmentation unless packed using slotted page architectures.",
         whatYouUnderstand: [
@@ -490,16 +469,14 @@ Your engine tracks how often it successfully avoids hitting the slow disk.`,
         "If the buffer exceeds capacity, evict an item (you can simulate Clock or simply use LRU for this challenge).",
         "Implement BUFFER_STATS to output the hit/miss ratio."
       ],
-      diagram: `BUFFER POOL QUERY             CLOCK EVICTION SWEEPER                CACHE STATS
-BTREE_GET 1 (cold)     ──► Buffer Miss (Disk Read -> Frame)  ──► MISSES: 1
-BTREE_GET 1 (warm)     ──► Buffer Hit (RAM Frame Return)     ──► HITS: 1
-                                                                 HIT_RATIO: 0.50
-
-Buffer Pool Frame Table (Capacity = 8 Frames):
-Frame 0: [Page 0 | RefBit=1 | Dirty=0] ──► Clock Hand ──► Advances if RefBit=1
-Frame 1: [Page 1 | RefBit=0 | Dirty=1] ──► (Evicted if RefBit=0, flushes dirty)
-Frame 2: [Page 2 | RefBit=1 | Dirty=0]
-RAM Hit Ratio: Keeps hot B-Tree root/internal pages in memory!`,
+      diagram: `BUFFER POOL MANAGER (Case 1):
+BTREE_INSERT 1 a       ──► Write tuple                    ──► OK
+BTREE_GET 1            ──► Page fetched from disk (Miss)  ──► a
+BUFFER_STATS           ──► Buffer Pool Metrics
+OUTPUT:
+OK
+a
+CAPACITY: 8 HITS: 0 MISSES: 1 HIT_RATIO: 0.00`,
       learningLoop: {
         bottleneck: "Disk I/O is 10,000x slower than RAM. The buffer pool caches frequently accessed disk pages in memory, evicting cold pages under memory bounds.",
         whatYouUnderstand: [

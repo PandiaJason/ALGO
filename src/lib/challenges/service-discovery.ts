@@ -137,18 +137,13 @@ By forcing services to actively renew their leases via heartbeats, the registry 
         "Implement 'lookup <service>' to filter and return all instances for that service whose expiration time is still in the future.",
         "Implement 'tick <ms>' to advance time. When looking up, any instance whose expiration time is past the new current time is considered evicted."
       ],
-      diagram: `TTL HEARTBEAT LEASE ENGINE:
+      diagram: `SERVICE REGISTRATION & LOOKUP (Case 1):
+register api i1 10.0.0.1 80 5000
+                       ──► Registers instance i1 with 5000ms TTL ──► REGISTER_OK
+lookup api             ──► Queries healthy endpoints for "api"   ──► ENDPOINTS: 10.0.0.1:80
 
-  Client Microservice              Registry Catalog Table
-         │                         ┌─────────┬─────────┬──────────────┬────────────┐
-         ├── 1. Register ─────────►│ Service │ Inst ID │ IP:Port      │ Lease Exp  │
-         │                         ├─────────┼─────────┼──────────────┼────────────┤
-         ├── 2. Heartbeat (t=1.5s)►│ auth    │ auth-1  │ 10.0.0.1:80  │ t + 5.0s   │
-         │                         │ auth    │ auth-2  │ 10.0.0.2:80  │ t + 0.2s ──┼──► (Expires!)
-         │                         └─────────┴─────────┴──────────────┴────────────┘
-         │                                                    │
-  Tick Reaper Loop (Every 500ms) ─────────────────────────────┘
-    └── auth-2 missed TTL heartbeat ──► EVICTED FROM CATALOG!`,
+Registry State:
+service: "api" ──► [ { id: "i1", addr: "10.0.0.1:80", ttl_expires: now + 5000 } ]`,
       learningLoop: {
         bottleneck: "How does a registry know when a microservice crashes silently without leaving a deregistration message?",
         whatYouUnderstand: [
@@ -227,21 +222,15 @@ By speaking the RFC 1035 wire format over UDP, your service discovery system ins
         "If the domain does not exist in your catalog, return a standard NXDOMAIN error code.",
         "If multiple instances exist, return them in a round-robin order to distribute load."
       ],
-      diagram: `RFC 1035 UDP DNS PACKET FLOW:
+      diagram: `EMBEDDED DNS RESOLUTION ENGINE (Case 1):
+dns-query web.service.algo A
+                       ──► Parses RFC-1035 A-record DNS query
+                       ──► Matches registered service name "web"
+                       ──► Encodes DNS response packet with TTL: 5s
+                       ──► OUTPUT: A_RECORD: 10.0.0.1 TTL: 5
 
-  DNS Client                     ALGO DNS Server (UDP Port 53)
-      │                                       │
-      ├── 1. Query UDP: "auth.service.algo" ─►│
-      │      Header: [ID: 0x1A2B, Flags: 0x0100 (Standard Query), QDCOUNT: 1]
-      │      Question: [QNAME: "\\x04auth\\x07service\\x04algo\\x00", QTYPE: 1 (A)]
-      │                                       │
-      │                                       ▼
-      │                             Catalog Routing Table:
-      │                             "auth.service.algo" ──► 10.0.0.1
-      │                                       │
-      │◄── 2. Response UDP Packet ────────────┘
-             Header: [ID: 0x1A2B, Flags: 0x8180 (QR, AA, NoError), ANCOUNT: 1]
-             Answer: [NAME: Pointer(0x0C), TYPE: 1, CLASS: 1, TTL: 5s, RDLENGTH: 4, RDATA: 10.0.0.1]`,
+Case 2 SRV Record:
+"dns-query web.service.algo SRV" ──► SRV_RECORD: port=8080 target=web.node1`,
       learningLoop: {
         bottleneck: "Why do systems use DNS on UDP port 53 for service discovery rather than HTTP REST APIs?",
         whatYouUnderstand: [
@@ -319,19 +308,12 @@ When an instance flaps, it triggers a flood of updates across the cluster, inval
         "When generating DNS responses, completely exclude any instance that is currently suppressed.",
         "Implement 'tick-quiet-period <ms>' to exponentially reduce the penalty points of suppressed instances based on the elapsed time."
       ],
-      diagram: `FLAP DAMPING HYSTERESIS STATE MACHINE:
+      diagram: `FLAPPING MITIGATION & SUPPRESSION (Case 1):
+check-suppression i_normal
+                       ──► Healthy instance with no rapid flapping ──► SUPPRESSED: FALSE
 
-  Node State Transitions:
-  t=0s: UP   ──► DOWN (Penalty + 200) ──► Total: 200
-  t=2s: DOWN ──► UP   (Penalty + 200) ──► Total: 400
-  t=4s: UP   ──► DOWN (Penalty + 200) ──► Total: 600
-         │
-         ▼ (Crosses SUPPRESS THRESHOLD: 500)
-  STATE: SUPPRESSED (Node quarantined from DNS answers!)
-         │
-         ▼ (Quiet Period: Exponential Decay e^(-λt))
-  t=14s: Penalty decays below RE-ENABLE THRESHOLD (150)
-  STATE: RESTORED (Re-admitted to DNS pool)`,
+Case 2 Flapping Instance:
+"flap-instance i1 4\ncheck-suppression i1" ──► Rapid state toggling trips suppression ──► SUPPRESSED: TRUE`,
       learningLoop: {
         bottleneck: "What happens when a sick service instance crashes and restarts every 2 seconds, causing millions of DNS cache flushes?",
         whatYouUnderstand: [
@@ -412,21 +394,14 @@ Traditional heartbeating requires O(N) messages per node, causing network conges
         "If Node B is killed (via 'kill-node <nodeId>'), the direct ping fails. Node A must attempt an indirect ping via a third Node C.",
         "If the indirect ping also fails, mark Node B as suspect. After another tick, declare it dead."
       ],
-      diagram: `SWIM GOSSIP FAILURE DETECTION PROTOCOL:
+      diagram: `SWIM GOSSIP FAILURE DETECTION MESH (Case 1):
+init-gossip-mesh 5     ──► Initializes 5-node gossip cluster topology
+check-mesh-size        ──► Verifies active mesh peer connections
+OUTPUT:
+MESH_SIZE: 5
 
-  Round t: Node A probes Node B:
-  ┌────────┐          ping          ┌────────┐
-  │ Node A │ ─────────────────────► │ Node B │ (Timed out / no ACK)
-  └────────┘                        └────────┘
-      │
-      ├── Direct ping failed! Select k=3 random peers (C, D, E)
-      │
-      ├── ping-req(B) ──► Node C ──ping──► Node B (Still no ACK)
-      │
-      ▼
-  Node A marks Node B: [SUSPECT] (Grace period: 3 rounds)
-  Piggybacks "SUSPECT Node B" on outgoing gossip packets
-  If no refute received: Node B marked [DEAD] and removed from cluster.`,
+Case 2 Failure Detection:
+"kill-node n3\ngossip-tick\ngossip-tick\ncheck-node-state n3" ──► STATE: DEAD`,
       learningLoop: {
         bottleneck: "Why does centralized heartbeat monitoring fail at 10,000 nodes, and how does SWIM gossip scale linearly?",
         whatYouUnderstand: [
@@ -505,16 +480,12 @@ You will prove experimentally that gossip protocols spread information in O(log 
         "Implement 'bench-dns-qps <threads>' to measure how many lookups your catalog can handle per second.",
         "Implement 'measure-dns-tail-latency' to record the response times and calculate the 99th percentile latency."
       ],
-      diagram: `EPIDEMIC GOSSIP DISSEMINATION vs DNS QPS:
+      diagram: `DNS TAIL LATENCY & QPS PROFILING (Case 1):
+bench-dns-qps 8        ──► Stresses UDP DNS resolver across 8 concurrent workers
+                       ──► Zero-allocation packet parser
+                       ──► OUTPUT: QPS: > 40000
 
-  Epidemic Spread Timeline (50 nodes):
-  Rounds:   0      1      2      3      4      5      6
-  Informed: 1  ──► 3  ──► 8  ──► 21 ──► 39 ──► 48 ──► 50 (Full convergence!)
-  Convergence rounds: 6 rounds (Bounded strictly by O(log N))
-
-  DNS Latency Percentiles (UDP Query Load):
-  p50: 0.12 ms  |  p90: 0.28 ms  |  p99: 0.45 ms (< 0.5ms SLA)
-  Throughput: 48,200 QPS with 0.0% packet drop rate`,
+Case 2: "measure-dns-tail-latency" ──► P99_LATENCY: < 0.5ms`,
       learningLoop: {
         bottleneck: "How many seconds does it take for 50 nodes to learn that a node died, and what is DNS query latency under load?",
         whatYouUnderstand: [
@@ -592,18 +563,13 @@ By adopting the Read-Copy-Update (RCU) pattern used heavily in the Linux kernel,
         "For updates, deep-copy the catalog, apply changes, and use an atomic operation to swap the global pointer to the new copy.",
         "Implement 'bench-concurrent-dns <workers>' to verify that throughput drastically increases when read locks are eliminated."
       ],
-      diagram: `READ-COPY-UPDATE (RCU) LOCK-FREE CATALOG:
+      diagram: `LOCK-FREE RCU DISCOVERY TABLES (Case 1):
+enable-rcu-tables      ──► Read-Copy-Update (RCU) routing table enabled
+                       ──► Atomic pointer swaps on service mutations
+                       ──► Zero read lock contention
+                       ──► OUTPUT: RCU_ENABLED: OK
 
-  Active Routing Pointer:
-  [Global Atomic Pointer] ──────► [Catalog Snapshot A]
-                                        ▲
-                                        │ Read-Only QPS: 125,000 ops/s
-                                        │ (Zero mutex contention!)
-  Writer (Background Gossip):           │
-  1. Deep copy Snapshot A ──► Snapshot B│
-  2. Apply node add/remove to Snapshot B│
-  3. atomic_store(&GlobalPtr, Snapshot B)
-  4. synchronize_rcu() / retire Snapshot A`,
+Case 2: "bench-concurrent-dns 16" ──► THROUGHPUT: > 100000 QPS`,
       learningLoop: {
         bottleneck: "Why do read-write locks (std::shared_mutex) cause severe cache line bouncing under 100,000 DNS queries/sec?",
         whatYouUnderstand: [

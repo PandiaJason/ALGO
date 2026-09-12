@@ -141,25 +141,15 @@ You take an input prompt, compute logits for candidate next tokens, convert logi
         "Implement 'validate-logits <logits>': Verify that the normalized probability distribution sums to 1.0.",
         "Enforce constraints: Stop immediately on <EOS> token and handle temperature=0.0 greedy selection."
       ],
-      diagram: `AUTOREGRESSIVE TOKEN GENERATION LOOP:
+      diagram: `AUTOREGRESSIVE TOKEN DECODING LOOP (Case 1):
+decode-step 'hello' 3
+  ├── Step 1: Prompt token "hello" ──► Next token: "world"
+  ├── Step 2: Input "world"        ──► Next token: "!"
+  ├── Step 3: Loop terminates (max_tokens: 3)
+  └── OUTPUT: TOKENS: world !
 
-Prompt: "The capital of France is"
-           │
-           ▼
-[Token IDs]: [464, 3139, 286, 4881, 318]
-           │
-           ▼
-[Transformer Forward Pass] ──► Output Logits Vector (Vocab: 32,000)
-                                 ├── Token 1024 ("Paris"):  14.2
-                                 ├── Token 2901 ("Lyon"):    8.1
-                                 └── Token 5012 ("dog"):    -3.2
-                                       │
-                                       ▼ Softmax(logits / temperature)
-                               Probability: "Paris" (92.4%)
-                                       │
-                                       ▼
-                             Emit Token: "Paris"
-                             Append to Sequence ──► Next Iteration Step!`,
+Deterministic Token Transition Model:
+"hello" ──► "world" ──► "!" (Simulated token vocabulary)`,
       learningLoop: {
         bottleneck: "Why do LLMs generate text one token at a time rather than producing the entire paragraph in one pass?",
         whatYouUnderstand: [
@@ -241,19 +231,14 @@ Self-attention computes Q * K^T * V. Because previous tokens never change their 
         "Implement 'inspect-kv-size' and 'reset-cache': Check current cache memory usage and clear state between requests.",
         "Implement 'verify-cache-math': Confirm cached attention outputs match full recomputation."
       ],
-      diagram: `NAIVE ATTENTION vs KV CACHE ATTENTION:
+      diagram: `KV CACHE ATTENTION ACCELERATION (Case 1):
+enable-kv-cache
+  ├── Pre-allocates key-value tensor cache for prompt prefix
+  ├── Reuses previous key/value states instead of recomputing
+  └── OUTPUT: KV_CACHE_ENABLED: OK
 
-Without KV Cache (O(N^2) Flops Explosion):
-Step 1: Compute Q, K, V for Token 1
-Step 2: Recompute Q, K, V for Token 1 + Token 2
-Step 3: Recompute Q, K, V for Token 1 + Token 2 + Token 3 (Redundant!)
-
-With KV Cache (O(1) Step Math):
-Token 1 ──► Compute Q1, K1, V1 ──► Store [K1], [V1] in KV Cache
-Token 2 ──► Compute Q2, K2, V2 ──► Store [K2], [V2] in KV Cache
-Token 3 ──► ONLY Compute Q3!
-              └── Attention: Q3 × [K1, K2, K3]^T × [V1, V2, V3]
-              Zero redundant K/V recomputation!`,
+Case 2 FLOP Efficiency:
+"decode-with-cache 'test' 3" ──► FLOP_SAVINGS: > 70%`,
       learningLoop: {
         bottleneck: "Why does generating token 100 take 100 times longer without a KV cache?",
         whatYouUnderstand: [
@@ -337,18 +322,14 @@ When conversational history exceeds context capacity, naive runtimes crash with 
         "Implement 'check-system-prompt-pinned': Verify tokens 0..S (system instructions) remain untouched.",
         "Implement 'check-eviction-integrity': Verify memory usage never exceeds the ceiling and ordering is preserved."
       ],
-      diagram: `SLIDING-WINDOW CONTEXT EVICTION:
+      diagram: `CONTEXT WINDOW ROLLING BUFFER (Case 1):
+set-max-context 2048   ──► Allocates token ring buffer of 2048 tokens ──► OK
+feed-tokens 1000       ──► Appends 1000 tokens (1000/2048 used)      ──► CONTEXT_OK: 1000/2048
 
-  Memory Capacity: 2,048 Tokens
-  Incoming Tokens: 3,000 Tokens (Overflow!)
-
-  Eviction Policy:
-  ┌───────────────────────┬─────────────────────────┬───────────────────────┐
-  │ Pinned System Prompt  │ Discarded Middle Range  │ Recent Sliding Window │
-  │ Tokens: [0 .. 64]     │ Tokens: [65 .. 1015]    │ Tokens: [1016 .. 2048]│
-  │ (Preserved Intact!)   │ (Evicted from Cache ✗)  │ (Active Attention ✓)  │
-  └───────────────────────┴─────────────────────────┴───────────────────────┘
-  Result: GPU OOM crashes prevented, conversational context preserved!`,
+Case 2 Sliding Window Eviction:
+set-max-context 100
+feed-tokens 150        ──► Exceeds 100! Evicts oldest 50 tokens
+                       ──► OUTPUT: EVICTION_TRIGGERED: RETAINED_100`,
       learningLoop: {
         bottleneck: "What happens when a user submits a 32,000 token prompt that exceeds physical memory boundaries?",
         whatYouUnderstand: [
@@ -432,20 +413,14 @@ Inspired by virtual memory paging in operating systems, PagedAttention breaks th
         "Implement 'inspect-block-table <req_id>' and 'retire-request <req_id>': Trace block mappings and reclaim blocks upon completion.",
         "Implement 'check-free-pages' and 'audit-fragmentation': Verify zero internal memory fragmentation."
       ],
-      diagram: `PAGEDATTENTION NON-CONTIGUOUS MEMORY PAGING:
+      diagram: `PAGEDATTENTION VIRTUAL MEMORY (Case 1):
+init-paged-attention --block-size 16
+  ├── Breaks KV cache into non-contiguous 16-token virtual pages
+  ├── Eliminates internal memory fragmentation
+  └── OUTPUT: PAGED_ATTENTION_READY
 
-  Logical KV Cache (Request 1):
-  [Block 0: Tokens 0-15] ──► [Block 1: Tokens 16-31] ──► [Block 2: Tokens 32-47]
-           │                          │                          │
-  Physical Block Table:              │                          │
-  ┌─────────────┬────────────────┐   │                          │
-  │ Logical Blk │ Physical Frame │   │                          │
-  ├─────────────┼────────────────┤   │                          │
-  │ Block 0     │ Frame #7 ──────┼───┘ (Zero Contiguous Requirement!)
-  │ Block 1     │ Frame #2       │
-  │ Block 2     │ Frame #9       │
-  └─────────────┴────────────────┘
-  Continuous Batching: New requests dynamically enter on any decode step!`,
+Case 2 Continuous Batching:
+"schedule-continuous-batch" ──► Dynamically interleaves requests ──► BATCH_ACTIVE: 3 REQUESTS`,
       learningLoop: {
         bottleneck: "Why does static batching force fast 5-token requests to wait for slow 500-token requests, and why does contiguous memory fragment?",
         whatYouUnderstand: [
@@ -526,22 +501,14 @@ Prompt prefill is compute-bound: all prompt tokens are processed concurrently, f
         "Implement 'profile-bandwidth' and 'bench-concurrency-curve': Profile memory bus utilization under concurrent requests.",
         "Implement 'audit-serving-metrics': Verify compliance with SLA thresholds."
       ],
-      diagram: `SERVING LATENCY BREAKDOWN:
+      diagram: `TIME TO FIRST TOKEN (TTFT) PROFILER (Case 1):
+measure-ttft
+  ├── Prefill phase latency timer
+  ├── Measures time from prompt ingest to first output token emission
+  └── OUTPUT: TTFT: < 25ms
 
-Request Arrives (t = 0ms)
-    │
-    ▼ (PROMPT PREFILL: Compute-Bound)
-    All prompt tokens processed in parallel
-    Matrix multiplication saturates Tensor Cores
-    │
-    ▼ First Token Emitted!
-    Time-To-First-Token (TTFT) = 18.2 ms
-    │
-    ▼ (TOKEN DECODING: Memory-Bandwidth-Bound)
-    Token 2: +4.1 ms
-    Token 3: +4.0 ms
-    Token 4: +4.2 ms
-    Inter-Token Latency (ITL) = 4.1 ms / token (245 tokens/sec)`,
+Case 2 Inter-Token Latency:
+"measure-itl" ──► Generation phase per-token step time ──► ITL: < 5ms`,
       learningLoop: {
         bottleneck: "Why is prompt processing compute-bound while token generation is memory-bandwidth bound?",
         whatYouUnderstand: [
@@ -623,21 +590,14 @@ FlashAttention tiles Query, Key, and Value blocks directly into fast on-chip SRA
         "Implement 'bench-long-ctx <len>': Benchmark latency scaling on long contexts (e.g. 8,192 tokens).",
         "Implement 'bench-optimized-throughput' and 'audit-engine': Validate end-to-end serving throughput."
       ],
-      diagram: `FLASHATTENTION SRAM TILING vs STANDARD DRAM:
+      diagram: `FLASH ATTENTION TILING ENGINE (Case 1):
+enable-flash-attention
+  ├── Fuses softmax and attention matrix multiply into SRAM tiles
+  ├── Avoids round-trip reads/writes to high-latency HBM
+  └── OUTPUT: FLASH_ATTENTION: ACTIVE
 
-  Standard Attention (Memory Bottleneck):
-  HBM/DRAM ──Load K,V──► SRAM ──Write N×N Matrix──► HBM (Massive I/O traffic)
-
-  FlashAttention (Tiled Online Softmax):
-  ┌────────────────────────────────────────────────────────┐
-  │ On-Chip SRAM Cache (Fast 19 TB/s Bandwidth)            │
-  │ Load Q_tile (64x64) and K_tile (64x64)                 │
-  │ Compute Softmax online with running max/sum scalers     │
-  │ Accumulate Output tile directly into registers         │
-  ├────────────────────────────────────────────────────────┤
-  │ Zero N×N matrix written to DRAM! Space complexity: O(N) │
-  │ Speedup: 3.4x faster, 85% memory bandwidth saved       │
-  └────────────────────────────────────────────────────────┘`,
+Case 2 Long Context Complexity:
+"bench-long-ctx 8192" ──► Linear memory scaling ──► MEMORY_BOUND: O(N)`,
       learningLoop: {
         bottleneck: "Why does standard attention run out of memory on long documents, and how does FlashAttention compute it in O(N) space?",
         whatYouUnderstand: [

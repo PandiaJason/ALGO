@@ -118,12 +118,16 @@ When you add a new item, you put it at the "head" (newest) of the list. If the l
         "On PUT, if the key is new and capacity is reached, remove the node before the dummy tail and delete its key from the dictionary.",
         "Add new nodes right after the dummy head."
       ],
-      diagram: `INPUT (Capacity=2)            CACHE STATE (MRU ──► LRU)      OUTPUT
-PUT k1 v1              ──────► [k1:v1]                   ──► OK
-PUT k2 v2              ──────► [k2:v2] ──► [k1:v1]       ──► OK
-PUT k3 v3              ──────► [k3:v3] ──► [k2:v2]       ──► OK (k1 evicted!)
-GET k1                 ──────► not found                 ──► NULL
-GET k2                 ──────► hit                       ──► v2`,
+      diagram: `LRU CACHE OPERATIONS (Case 1):
+CAPACITY 2             ──► Configures Max Cache Size = 2  ──► OK
+PUT a 1                ──► Cache: [a:1]                  ──► OK
+PUT b 2                ──► Cache: [b:2, a:1]             ──► OK
+PUT c 3                ──► Evicts oldest "a"! [c:3, b:2] ──► OK
+GET a                  ──► Not in cache                  ──► NULL
+GET c                  ──► Found in cache                ──► 3
+
+Doubly-Linked List + Hash Map State:
+HEAD ──► [c: 3] ◄──► [b: 2] ◄── TAIL  (Size: 2/2)`,
       importantChallenge: {
         title: "Doubly-linked pointer edge-case bugs",
         description:
@@ -203,17 +207,14 @@ This ensures that frequently accessed items stay near the head, while ignored it
         "Update the dictionary if necessary (though the reference to the node remains the same).",
         "Make sure to also promote the node when an existing key is overwritten via PUT."
       ],
-      diagram: `GET QUERY                     POINTER SPLICING (MRU PROMOTION)       CACHE ORDER
-State: [a] <-> [b]     ──► GET a touches node "a"             ──► [a] promoted to HEAD
-PUT c 3                ──► Capacity=2: Evicts tail "b"!       ──► Cache: [c] <-> [a]
-GET b                  ──► "b" was evicted                    ──► NULL
-
-Doubly-Linked List Pointer Splicing:
-Before GET(a):  [HEAD] <──► [ b ] <──► [ a ] <──► [TAIL]
-                             ▲           │
-                             │   Splice  │ Unlink from middle
-                             └─── out ───┘
-After GET(a):   [HEAD] <──► [ a ] <──► [ b ] <──► [TAIL]`,
+      diagram: `RECENCY UPDATE ON READ (Case 1):
+CAPACITY 2             ──► Max Size = 2                   ──► OK
+PUT a 1                ──► [a:1]                         ──► OK
+PUT b 2                ──► [b:2, a:1]                    ──► OK
+GET a                  ──► Touches "a"! Now [a:1, b:2]   ──► 1
+PUT c 3                ──► Evicts least recent "b"!       ──► OK
+GET a                  ──► Present                       ──► 1
+GET b                  ──► Evicted                       ──► NULL`,
       learningLoop: {
         bottleneck: "If reads don't refresh recency, hot keys accessed a thousand times will be evicted simply because they were inserted earliest. GET must promote keys to head.",
         whatYouUnderstand: [
@@ -273,15 +274,16 @@ PUT c 3 (evicts 'b' because it has the lowest frequency)
         "If 'MODE LFU' is active and an eviction is needed, iterate to find the minimum frequency.",
         "To handle ties naturally without complex buckets for now, rely on your existing linked list order to break ties (evict the first minimum frequency node starting from the tail)."
       ],
-      diagram: `ACCESS WORKLOAD               FREQUENCY BUCKET TRACKING              EVICTION DECISION
-MODE LFU               ──► Switch policy to LFU               ──► OK
-PUT a 1, GET a, GET a  ──► freq["a"] = 3                      ──► 1
-PUT b 2, PUT c 3       ──► freq["b"] = 1, evicts "b" (not a!) ──► OK
-
-LFU Multi-Frequency Lists:
-Freq 1: [ b ] (Least Frequently Used -> Eviction candidate)
-Freq 2: [ c ]
-Freq 3: [ a ] (Protected by high query volume)`,
+      diagram: `LFU FREQUENCY TRACKING (Case 1):
+CAPACITY 2             ──► Max Size = 2                   ──► OK
+MODE LFU               ──► Switch to Least Frequently Used──► OK
+PUT a 1                ──► Freq(a) = 1                   ──► OK
+PUT b 2                ──► Freq(b) = 1                   ──► OK
+GET a                  ──► Freq(a) = 2                   ──► 1
+GET a                  ──► Freq(a) = 3                   ──► 1
+PUT c 3                ──► Evicts lowest frequency "b"!   ──► OK
+GET a                  ──► Freq=3 (Safe)                 ──► 1
+GET b                  ──► Evicted                       ──► NULL`,
       learningLoop: {
         bottleneck: "LRU suffers from 'cache pollution': a one-time sequential scan flushes all hot items from the cache. LFU protects frequently accessed keys by tracking access counts.",
         whatYouUnderstand: [
@@ -338,14 +340,13 @@ This sets a key 'token' that will expire in 5000 milliseconds. After that time, 
         "In your GET method, check if the key has an expiration timestamp. If the current time exceeds it, remove the node, delete from the dictionary, and return 'NULL'.",
         "Implement the TTL command to calculate and return the remaining milliseconds."
       ],
-      diagram: `TEMPORAL OPERATION            TTL LIFECYCLE EVALUATION               RETURN VALUE
-SETEX token 5000 abc   ──► Store val="abc", expire_at=T+5000 ──► OK
-TTL token              ──► Check remaining monotonic ms      ──► 4998 ms
-[After 5000ms] GET     ──► Passive Expire: Purge node!       ──► NULL
+      diagram: `TTL KEY EXPIRATION (Case 1):
+CAPACITY 2             ──► Max Size = 2                   ──► OK
+SETEX session 5000 123 ──► Stores "session"="123" (5000ms)──► OK
+GET session            ──► now < expiry                   ──► 123
 
-Dual-Mode Eviction Engine:
-Read Access (GET / TTL) ──► Is expired? ──► YES ──► Delete & Return NULL
-                                        └──► NO  ──► Return Value & Touch`,
+TTL Handling:
+PUT perm 42 ──► Key with no TTL ──► TTL perm ──► -1`,
       learningLoop: {
         bottleneck: "Caches must discard stale data before evicting valuable fresh items. Passive lazy evaluation checks expiration on read.",
         whatYouUnderstand: [
@@ -405,15 +406,11 @@ The second PUT pushes the total to 12 bytes, exceeding the 10-byte limit, so 'a'
         "Subtract len(key) + len(value) on every eviction or overwrite.",
         "Change the eviction loop in PUT: while the total memory exceeds MAXMEMORY, repeatedly evict the LRU (or LFU) node."
       ],
-      diagram: `BYTE BUDGET                   HEAP CONSUMPTION TRACKER              EVICTION LOOP
-MAXMEMORY 10           ──► Set hard ceiling = 10 bytes        ──► OK
-PUT a 12345 (6 bytes)  ──► Used: 6B <= 10B                   ──► OK
-PUT b 12345 (6 bytes)  ──► Used: 12B > 10B! Evicts "a"!       ──► OK (Used: 6B)
-
-Memory Allocation Accounting:
-Item "a": key(1B) + val(5B) = 6 Bytes
-Item "b": key(1B) + val(5B) = 6 Bytes
-Total = 12 Bytes > 10 Bytes Limit ──► Evict Tail until used <= 10B`,
+      diagram: `MEMORY-BOUNDED EVICTION (Case 1):
+MAXMEMORY 10           ──► Max Budget = 10 bytes          ──► OK
+PUT k1 1234            ──► Size: 6 bytes (Key:2, Val:4)   ──► OK
+PUT k2 1234            ──► Size: 12 bytes > 10! Evicts k1 ──► OK
+GET k1                 ──► Evicted to respect budget      ──► NULL`,
       learningLoop: {
         bottleneck: "Ten 10-byte strings take 100 bytes; ten 10MB images take 100MB. Item-count limits cannot prevent Out-Of-Memory kills. Memory limits must be enforced in bytes.",
         whatYouUnderstand: [
@@ -474,17 +471,18 @@ Your system will report that you have a 50% hit ratio.`,
         "Implement the STATS command to format these counters and calculate the ratio.",
         "Implement FLUSHALL to clear the dictionary, linked list, and reset all counters back to 0."
       ],
-      diagram: `CACHE WORKLOAD                TELEMETRY COUNTERS                     STATS OUTPUT
-GET a (Found in cache) ──► Hits++ (Hits = 1)                 ──► 1
-GET b (Not in cache)   ──► Misses++ (Misses = 1)             ──► NULL
-STATS                  ──► Hit Ratio = 1 / (1 + 1) = 0.50    ──► HITS: 1 MISSES: 1
-                                                                 RATIO: 0.50 EVICTIONS: 0
-
-Production Telemetry Matrix:
-┌───────────────────────────┬───────────────────────────┐
-│ Cache Hits:      1        │ Hit Ratio:       50.0%    │
-│ Cache Misses:    1        │ Eviction Count:  0        │
-└───────────────────────────┴───────────────────────────┘`,
+      diagram: `CACHE TELEMETRY & STATS (Case 1):
+CAPACITY 2             ──► Max Size = 2                   ──► OK
+PUT a 1                ──► Cache: [a:1]                   ──► OK
+GET a                  ──► Cache Hit (Hits: 1)            ──► 1
+GET b                  ──► Cache Miss (Misses: 1)         ──► NULL
+STATS                  ──► Telemetry Snapshot
+OUTPUT:
+OK
+OK
+1
+NULL
+HITS: 1 MISSES: 1 RATIO: 0.50 EVICTIONS: 0`,
       learningLoop: {
         bottleneck: "Without telemetry, engineers cannot know whether a cache is absorbing database load or wasting memory thrashing evictions.",
         whatYouUnderstand: [
