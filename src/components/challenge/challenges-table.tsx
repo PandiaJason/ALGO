@@ -197,7 +197,7 @@ export function ChallengesTable({
                           className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all group/btn ${
                             c.status === "COMING_SOON"
                               ? "text-slate-700 bg-slate-100 hover:bg-slate-200"
-                              : "text-[#099BE9] bg-[#099BE9]/10 hover:bg-[#099BE9] hover:text-white"
+                              : "text-[#0AA793] bg-[#09C899]/10 hover:bg-[#09C899] hover:text-white shadow-2xs"
                           }`}
                         >
                           <span>{c.status === "COMING_SOON" ? "Preview" : "Solve"}</span>
