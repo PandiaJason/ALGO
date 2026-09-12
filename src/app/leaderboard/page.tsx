@@ -68,25 +68,22 @@ export default async function GlobalLeaderboardPage() {
           </p>
           <div className="flex items-center gap-2 mt-4">
             <Link href="/challenges/kv-store/workspace">
-              <button className="inline-flex items-center gap-2 h-9 px-4 rounded-xl text-xs font-bold text-white bg-[#09C899] hover:bg-[#0AA793] border-2 border-slate-900 shadow-[2px_2px_0px_0px_#09090b] transition-all cursor-pointer">
+              <Button size="sm" variant="primary" className="h-8 gap-1.5 text-xs font-semibold px-3 shadow-xs">
                 <Terminal className="w-3.5 h-3.5" />
                 <span>Submit Implementation</span>
-              </button>
+              </Button>
             </Link>
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-10 bg-[#f8fafc]" style={{ clipPath: "polygon(0 100%, 100% 100%, 100% 0)" }} />
+        <div className="absolute bottom-0 left-0 right-0 h-10 bg-white" style={{ clipPath: "polygon(0 100%, 100% 100%, 100% 0)" }} />
       </section>
 
-      {/* Main Canvas with Dot-Grid Depth */}
-      <main className="flex-1 w-full bg-[#f8fafc]/60 py-8 relative selection:bg-[#099BE9]/20 selection:text-[#099BE9]">
-        <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none opacity-40" />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-6">
-          <LeaderboardTable
-            entries={entries}
-            currentUsername={(session?.user as any)?.username}
-          />
-        </div>
+      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Interactive Ranking Table with Medals & KPIs */}
+        <LeaderboardTable
+          entries={entries}
+          currentUsername={(session?.user as any)?.username}
+        />
       </main>
 
       <Footer />
