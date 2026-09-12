@@ -2,7 +2,7 @@ import React from "react";
 import { Metadata } from "next";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { submissions, challenges } from "@/db/schema";
+import { submissions, challenges, submissionResults } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
@@ -20,22 +20,48 @@ export const metadata: Metadata = {
 export default async function RoadmapPage() {
   const session = await auth();
   const userSolvedSlugs: string[] = [];
+  const levelProgressMap: Record<string, number> = {};
 
   try {
     if (session?.user?.id) {
       const userSubs = await db
-        .select({ slug: challenges.slug })
+        .select({
+          slug: challenges.slug,
+          level: submissions.level,
+          isCorrect: submissionResults.isCorrect,
+        })
         .from(submissions)
         .innerJoin(challenges, eq(submissions.challengeId, challenges.id))
+        .leftJoin(
+          submissionResults,
+          eq(submissions.id, submissionResults.submissionId)
+        )
         .where(
           and(
             eq(submissions.userId, session.user.id),
             eq(submissions.status, "COMPLETED")
           )
         );
+
+      const challengeLevelsMap: Record<string, Set<number>> = {};
       userSubs.forEach((s) => {
-        if (s.slug && !userSolvedSlugs.includes(s.slug)) {
-          userSolvedSlugs.push(s.slug);
+        const passed =
+          s.isCorrect === true ||
+          s.isCorrect === null ||
+          s.isCorrect === undefined;
+        if (s.slug && s.level && passed) {
+          if (!challengeLevelsMap[s.slug]) {
+            challengeLevelsMap[s.slug] = new Set();
+          }
+          challengeLevelsMap[s.slug].add(s.level);
+        }
+      });
+
+      // ONLY if all 6 levels are completed mark as solved!
+      Object.entries(challengeLevelsMap).forEach(([slug, levelsSet]) => {
+        levelProgressMap[slug] = levelsSet.size;
+        if (levelsSet.size >= 6) {
+          userSolvedSlugs.push(slug);
         }
       });
     }
@@ -69,7 +95,10 @@ export default async function RoadmapPage() {
 
       {/* Roadmap Body */}
       <main className="flex-1">
-        <SystemsRoadmap userSolvedSlugs={userSolvedSlugs} />
+        <SystemsRoadmap
+          userSolvedSlugs={userSolvedSlugs}
+          levelProgressMap={levelProgressMap}
+        />
       </main>
 
       <Footer />

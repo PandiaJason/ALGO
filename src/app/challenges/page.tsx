@@ -1,7 +1,7 @@
 import React from "react";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { submissions, leaderboardEntries, challenges } from "@/db/schema";
+import { submissions, leaderboardEntries, challenges, submissionResults } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
@@ -18,17 +18,43 @@ export default async function ChallengesPage() {
   try {
     if (session?.user?.id) {
       const userSubs = await db
-        .select({ slug: challenges.slug })
+        .select({
+          slug: challenges.slug,
+          level: submissions.level,
+          isCorrect: submissionResults.isCorrect,
+        })
         .from(submissions)
         .innerJoin(challenges, eq(submissions.challengeId, challenges.id))
+        .leftJoin(
+          submissionResults,
+          eq(submissions.id, submissionResults.submissionId)
+        )
         .where(
           and(
             eq(submissions.userId, session.user.id),
             eq(submissions.status, "COMPLETED")
           )
         );
+
+      const challengeLevelsMap: Record<string, Set<number>> = {};
       userSubs.forEach((s) => {
-        if (s.slug) userSolvedIds.push(s.slug);
+        const passed =
+          s.isCorrect === true ||
+          s.isCorrect === null ||
+          s.isCorrect === undefined;
+        if (s.slug && s.level && passed) {
+          if (!challengeLevelsMap[s.slug]) {
+            challengeLevelsMap[s.slug] = new Set();
+          }
+          challengeLevelsMap[s.slug].add(s.level);
+        }
+      });
+
+      // ONLY if all 6 levels are completed mark as solved!
+      Object.entries(challengeLevelsMap).forEach(([slug, levelsSet]) => {
+        if (levelsSet.size >= 6) {
+          userSolvedIds.push(slug);
+        }
       });
     }
 
