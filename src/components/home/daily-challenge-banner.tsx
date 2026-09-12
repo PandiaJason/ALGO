@@ -39,7 +39,7 @@ export function DailyChallengeBanner() {
   const durabilityMetric = challenge.benchmarkMetrics[2] || (challenge.inspiredBy ? `Inspired by ${challenge.inspiredBy}` : "Crash-resilient");
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 my-8 relative z-20">
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-8 relative z-20">
       <div className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-6 shadow-md hover:shadow-lg transition-shadow">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           {/* Left: Tag + Title + Metrics */}
