@@ -34,7 +34,7 @@ export function ExploreManifesto() {
       <section className="space-y-6 pt-2 border-b border-slate-200/80 pb-14">
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wider uppercase bg-slate-950 text-white">
-            <FileText className="w-3.5 h-3.5 text-[#099BE9]" />
+            <FileText className="w-3.5 h-3.5 text-[#09C899]" />
             Case Study: Systems Engineering in the Agentic Era
           </span>
           <span className="text-xs font-mono font-bold text-slate-700">
@@ -52,9 +52,12 @@ export function ExploreManifesto() {
           </p>
         </div>
 
-        <div className="p-6 rounded-2xl bg-slate-950 text-white shadow-lg border border-slate-800 space-y-3">
-          <div className="text-xs font-mono uppercase tracking-wider text-[#099BE9] font-bold">
-            The Central Question
+        <div className="p-6 rounded-2xl bg-slate-950 text-white shadow-lg border-2 border-[#09C899]/40 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#09C899] animate-pulse" />
+            <span className="text-xs font-mono uppercase tracking-wider text-[#09C899] font-bold">
+              The Central Question
+            </span>
           </div>
           <p className="text-lg sm:text-xl font-extrabold text-white leading-relaxed">
             &ldquo;When an AI agent can write the code, can you still understand, direct, verify, and optimize the system that code creates?&rdquo;

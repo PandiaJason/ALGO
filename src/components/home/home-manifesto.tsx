@@ -22,7 +22,7 @@ export function HomeManifesto() {
       <div className="space-y-6">
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-slate-950 text-white">
-            <Sparkles className="w-3.5 h-3.5 text-[#099BE9]" />
+            <Sparkles className="w-3.5 h-3.5 text-[#09C899]" />
             The Proving Ground Thesis
           </span>
           <span className="text-xs font-mono font-bold text-slate-700">
@@ -42,9 +42,12 @@ export function HomeManifesto() {
           </p>
         </div>
 
-        <div className="p-5 rounded-2xl bg-slate-950 text-white shadow-lg border border-slate-800 space-y-2">
-          <div className="text-xs font-mono uppercase tracking-wider text-[#099BE9] font-bold">
-            The Central Question
+        <div className="p-5 sm:p-6 rounded-2xl bg-slate-950 text-white shadow-lg border-2 border-[#09C899]/40 space-y-2.5">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#09C899] animate-pulse" />
+            <span className="text-xs font-mono uppercase tracking-wider text-[#09C899] font-bold">
+              The Central Question
+            </span>
           </div>
           <p className="text-base sm:text-lg font-bold text-white leading-relaxed">
             &ldquo;When an AI agent can write the code, can you still understand, direct, verify, and optimize the system that code creates?&rdquo;
@@ -487,27 +490,27 @@ export function HomeManifesto() {
       {/* 7. CTA: READ FULL CASE STUDY                                   */}
       {/* ============================================================== */}
       <div className="pt-4 border-t border-slate-200">
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xs">
+        <div className="rounded-3xl bg-slate-950 text-white p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl border-2 border-[#09C899]/30">
           <div className="space-y-1.5 text-center sm:text-left">
             <div className="flex items-center justify-center sm:justify-start gap-2">
-              <span className="text-xs font-mono font-bold text-[#099BE9] uppercase tracking-wider">
+              <span className="text-xs font-mono font-bold text-[#09C899] uppercase tracking-wider">
                 DEEP RESEARCH &amp; ANALYSIS
               </span>
-              <span className="text-xs font-mono text-slate-500">• 20-System Curriculum</span>
+              <span className="text-xs font-mono text-slate-400">• 20-System Curriculum</span>
             </div>
-            <h4 className="text-lg sm:text-xl font-extrabold text-slate-950 tracking-tight">
+            <h4 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
               Case Study: Systems Engineering in the Agentic Era
             </h4>
-            <p className="text-xs sm:text-sm text-slate-700 font-medium max-w-xl">
+            <p className="text-xs sm:text-sm text-slate-300 font-normal max-w-xl">
               Explore the 10 invariant dimensions of systems thinking, the 6-stage engineering progression, the 20-system curriculum, and full empirical data from SWE-bench and developer reports.
             </p>
           </div>
 
           <Link
             href="/case-study"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-xs sm:text-sm font-bold text-white bg-slate-950 hover:bg-slate-800 transition-all shadow-sm shrink-0 active:scale-95"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#09C899] hover:bg-[#0AA793] shadow-md shadow-[#09C899]/25 transition-all shrink-0 active:scale-95"
           >
-            <FileText className="w-4 h-4 text-[#099BE9]" />
+            <FileText className="w-4 h-4 text-white" />
             <span>Read Full Case Study</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
