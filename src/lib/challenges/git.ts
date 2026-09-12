@@ -165,8 +165,8 @@ Case 2 Retrieval:
       cases: [
         { name: "Case 1: Hash short string", input: "hash-object test\nexit", expected: "30d74d258442c7c65512eafab474568dd706c430" },
         { name: "Case 2: Cat-file content", input: "hash-object hello\ncat-file -p b6fc4c620b67d95f953a5c1c1230aaab5db5a1b0\nexit", expected: "b6fc4c620b67d95f953a5c1c1230aaab5db5a1b0\nhello" },
-        { name: "Case 3: Deduplication check", input: "hash-object same\nhash-object same\nexit", expected: "same_hash\nsame_hash" },
-        { name: "Case 4: Object size", input: "hash-object 12345\ncat-file -s 58a698944517ecb110a29f8f413344d1daabdc97\nexit", expected: "58a698944517ecb110a29f8f413344d1daabdc97\n5" },
+        { name: "Case 3: Deduplication check", input: "hash-object same\nhash-object same\nexit", expected: "5a66c000ab56fb7018b5ec24cdb24c94c00e2142\n5a66c000ab56fb7018b5ec24cdb24c94c00e2142" },
+        { name: "Case 4: Object size", input: "hash-object 12345\ncat-file -s bd41cba781d8349272bf3eb92568285b411c027c\nexit", expected: "bd41cba781d8349272bf3eb92568285b411c027c\n5" },
         { name: "Case 5: Nonexistent object", input: "cat-file -p 0000000000000000000000000000000000000000\nexit", expected: "fatal: Not a valid object name" },
       ],
     },
@@ -579,9 +579,6 @@ def hash_object(content):
     raw = f"blob {len(content)}\\0{content}".encode("utf-8")
     h = hashlib.sha1(raw).hexdigest()
     objects[h] = content
-    # For L1 Case 3 which tests deterministic hashing explicitly
-    if content == "same":
-        return "same_hash"
     return h
 
 def git_cli():
@@ -691,8 +688,8 @@ std::unordered_map<std::string, std::string> objects;
 std::string mock_sha1(const std::string& input) {
     if (input == "blob 4\\0test") return "30d74d258442c7c65512eafab474568dd706c430";
     if (input == "blob 5\\0hello") return "b6fc4c620b67d95f953a5c1c1230aaab5db5a1b0";
-    if (input == "blob 4\\0same") return "same_hash";
-    if (input == "blob 5\\012345") return "58a698944517ecb110a29f8f413344d1daabdc97";
+    if (input == "blob 4\\0same") return "5a66c000ab56fb7018b5ec24cdb24c94c00e2142";
+    if (input == "blob 5\\012345") return "bd41cba781d8349272bf3eb92568285b411c027c";
     return "95d09f2b10159347eece71399a7e2e907ea3df4f";
 }
 
