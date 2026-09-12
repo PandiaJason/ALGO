@@ -7,14 +7,14 @@ import { eq, and } from "drizzle-orm";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { SystemsRoadmap } from "@/components/roadmap/systems-roadmap";
-import { Sparkles, Terminal, Route, ShieldCheck } from "lucide-react";
+import { Route } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Systems Engineering Roadmap | ALGO",
   description:
-    "A progressive first-principles roadmap from beginner-friendly single-process systems to intermediate storage engines and advanced distributed consensus.",
+    "A progressive visual roadmap from single-process Unix primitives to high-throughput storage engines, Raft consensus, and LLM KV caches.",
 };
 
 export default async function RoadmapPage() {
@@ -47,29 +47,28 @@ export default async function RoadmapPage() {
     <div className="flex min-h-screen flex-col bg-white">
       <Navbar user={session?.user as any} variant="dark" />
 
-      {/* Hero Header */}
-      <section className="relative bg-[#262626] pt-12 pb-20 overflow-hidden text-white border-b border-neutral-800">
-        <div className="absolute inset-0 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
-
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-emerald-400 border border-white/10 backdrop-blur-md">
-            <Route className="w-3.5 h-3.5 text-[#09C899]" />
-            Inspired by roadmap.sh
+      {/* Hero Section matching ALGO styling */}
+      <section className="relative bg-[#262626] pt-10 pb-16 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-xs font-mono font-bold text-neutral-400 uppercase tracking-wider mb-1.5">
+            SYSTEMS ENGINEERING CURRICULUM
           </div>
-
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
-            Systems Engineering Roadmap
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2.5">
+            <Route className="w-6 h-6 text-[#09C899]" />
+            <span>Systems Engineering Roadmap</span>
           </h1>
-
-          <p className="max-w-2xl mx-auto text-sm sm:text-base text-neutral-300 leading-relaxed">
-            Deconstruct 20 production systems layer-by-layer. Move from beginner-friendly
-            Unix shells and HTTP parsers to B-Tree storage engines, Raft consensus, and LLM KV caches.
+          <p className="text-sm text-neutral-300 font-medium mt-1.5 max-w-2xl">
+            A structured visual path from single-process Unix primitives to high-throughput storage engines, Raft consensus, and LLM KV caches.
           </p>
         </div>
+        <div
+          className="absolute bottom-0 left-0 right-0 h-10 bg-white"
+          style={{ clipPath: "polygon(0 100%, 100% 100%, 100% 0)" }}
+        />
       </section>
 
-      {/* Interactive Roadmap Body */}
-      <main className="flex-1 pb-24">
+      {/* Roadmap Body */}
+      <main className="flex-1">
         <SystemsRoadmap userSolvedSlugs={userSolvedSlugs} />
       </main>
 

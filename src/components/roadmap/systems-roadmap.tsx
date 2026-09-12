@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import {
-  CheckCircle2,
+  Check,
   ArrowRight,
   Sparkles,
   Terminal,
@@ -17,9 +17,10 @@ import {
   Award,
   BookOpen,
   Route,
-  Check,
+  X,
+  ExternalLink,
   ChevronRight,
-  SlidersHorizontal,
+  Filter,
 } from "lucide-react";
 import { CORE_CHALLENGES, CoreChallenge } from "@/lib/constants/core-challenges";
 
@@ -27,151 +28,186 @@ interface SystemsRoadmapProps {
   userSolvedSlugs: string[];
 }
 
-type ViewMode = "difficulty" | "domain";
-
-interface TierDefinition {
+interface RoadmapStage {
   id: string;
+  stageNumber: number;
   name: string;
-  badge: string;
-  difficulty: "Beginner" | "Medium" | "Hard";
-  colorTheme: {
-    badgeBg: string;
-    badgeText: string;
-    border: string;
-    accent: string;
-    dotBg: string;
-    lightBg: string;
-  };
-  description: string;
-  milestoneTitle: string;
-  milestoneDesc: string;
-  slugs: string[];
+  category: string;
+  tagline: string;
+  accentColor: "teal" | "purple" | "orange" | "blue";
+  systems: {
+    slug: string;
+    subtopics: string[];
+    position: "center" | "left" | "right";
+  }[];
 }
 
-const ROADMAP_TIERS: TierDefinition[] = [
+const ROADMAP_STAGES: RoadmapStage[] = [
   {
-    id: "tier-1",
-    name: "Tier 1: Foundations & Single-Process Systems",
-    badge: "Beginner-Friendly",
-    difficulty: "Beginner",
-    colorTheme: {
-      badgeBg: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-      badgeText: "text-emerald-600",
-      border: "border-emerald-500/30",
-      accent: "#10b981",
-      dotBg: "bg-emerald-500",
-      lightBg: "from-emerald-500/5 to-transparent",
-    },
-    description:
-      "Start here. Learn operating system primitives, request parsing, in-memory pointer manipulation, and logging without complex distributed dependencies.",
-    milestoneTitle: "Milestone 1: Foundations Complete",
-    milestoneDesc:
-      "You understand POSIX syscalls, process fork/exec, protocol framing, hash tables, and latency percentiles.",
-    slugs: ["shell", "http-server", "kv-store", "lru-cache", "log-engine"],
-  },
-  {
-    id: "tier-2",
-    name: "Tier 2: Core Infrastructure, Storage & Schedulers",
-    badge: "Medium / Intermediate",
-    difficulty: "Medium",
-    colorTheme: {
-      badgeBg: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-      badgeText: "text-amber-600",
-      border: "border-amber-500/30",
-      accent: "#f59e0b",
-      dotBg: "bg-amber-500",
-      lightBg: "from-amber-500/5 to-transparent",
-    },
-    description:
-      "Bridge single-process code to production infrastructure. Build real-world traffic control, disk durability, slotted-page indexing, and partition queues.",
-    milestoneTitle: "Milestone 2: Infrastructure Mastery",
-    milestoneDesc:
-      "You can design custom rate limiters, layer-7 load balancers, multi-resource schedulers, and append-only message queues.",
-    slugs: [
-      "rate-limiter",
-      "load-balancer",
-      "task-scheduler",
-      "database-index",
-      "object-store",
-      "message-queue",
-      "git",
+    id: "stage-1",
+    stageNumber: 1,
+    name: "Operating System Primitives & Network I/O",
+    category: "FOUNDATIONS",
+    tagline: "Process lifecycle, POSIX system calls, non-blocking I/O and protocol framing.",
+    accentColor: "teal",
+    systems: [
+      {
+        slug: "shell",
+        subtopics: ["fork() & execvp()", "Anonymous Pipes", "SIGINT Trapping", "Zero-Copy Parsing"],
+        position: "left",
+      },
+      {
+        slug: "http-server",
+        subtopics: ["Radix Trie Routing", "HTTP/1.1 Framing", "Keep-Alive Loop", "epoll Event Loop"],
+        position: "right",
+      },
     ],
   },
   {
-    id: "tier-3",
-    name: "Tier 3: Distributed Consensus & AI Systems",
-    badge: "Hard / Advanced",
-    difficulty: "Hard",
-    colorTheme: {
-      badgeBg: "bg-rose-500/10 text-rose-600 border-rose-500/20",
-      badgeText: "text-rose-600",
-      border: "border-rose-500/30",
-      accent: "#f43f5e",
-      dotBg: "bg-rose-500",
-      lightBg: "from-rose-500/5 to-transparent",
-    },
-    description:
-      "The pinnacle of modern software engineering. Build fault-tolerant consensus under partitions, high-dimensional vector search, and token inference runtimes.",
-    milestoneTitle: "Milestone 3: Principal Systems Architect",
-    milestoneDesc:
-      "You have built Raft consensus from scratch, decoded Reed-Solomon erasure shards, and constructed an LLM KV cache.",
-    slugs: [
-      "distributed-consensus",
-      "service-discovery",
-      "distributed-object-storage",
-      "search-engine",
-      "vector-database",
-      "llm-inference",
-      "mcp-runtime",
-      "container-runtime",
-    ],
-  },
-];
-
-const DOMAIN_GROUPS = [
-  {
-    id: "core-systems",
-    name: "Core Systems & Operating Runtimes",
-    description: "Low-level system calls, memory allocators, virtual namespaces, and B-Tree storage.",
-    icon: Terminal,
-    slugs: [
-      "shell",
-      "http-server",
-      "git",
-      "kv-store",
-      "object-store",
-      "lru-cache",
-      "database-index",
-      "container-runtime",
+    id: "stage-2",
+    stageNumber: 2,
+    name: "In-Memory State, Caching & Telemetry",
+    category: "DATA STRUCTURES & MEMORY",
+    tagline: "Hash collisions, doubly linked lists, TTL eviction, and high-frequency metrics.",
+    accentColor: "purple",
+    systems: [
+      {
+        slug: "kv-store",
+        subtopics: ["FNV-1a Hash Buckets", "Append-Only WAL", "fsync() Platter", "Log Compaction"],
+        position: "center",
+      },
+      {
+        slug: "lru-cache",
+        subtopics: ["Doubly Linked List", "O(1) Recency Map", "LFU Frequencies", "Memory Budgets"],
+        position: "left",
+      },
+      {
+        slug: "log-engine",
+        subtopics: ["Zero-Alloc Ingest", "Status Aggregation", "Cardinality Top-K", "P99 Tail Latency"],
+        position: "right",
+      },
     ],
   },
   {
-    id: "distributed-systems",
-    name: "Distributed Systems & Streaming Infrastructure",
-    description: "Multi-node replication, traffic routers, gossip protocols, and finite-field erasure coding.",
-    icon: Network,
-    slugs: [
-      "message-queue",
-      "log-engine",
-      "rate-limiter",
-      "load-balancer",
-      "task-scheduler",
-      "distributed-consensus",
-      "service-discovery",
-      "distributed-object-storage",
+    id: "stage-3",
+    stageNumber: 3,
+    name: "Traffic Control, Routing & Resource Schedulers",
+    category: "CONCURRENCY & NETWORKING",
+    tagline: "Rate limiting algorithms, weighted packet dispatch, and multi-resource bin packing.",
+    accentColor: "orange",
+    systems: [
+      {
+        slug: "rate-limiter",
+        subtopics: ["Token Bucket", "Sliding Window Log", "Leaky Bucket", "Multi-Tenant Tiers"],
+        position: "center",
+      },
+      {
+        slug: "load-balancer",
+        subtopics: ["Weighted Round-Robin", "Least Connections", "Circuit Breakers", "Consistent Hashing"],
+        position: "left",
+      },
+      {
+        slug: "task-scheduler",
+        subtopics: ["Priority Heaps", "Best-Fit Packing", "Worker Heartbeats", "Dominant Resource (DRF)"],
+        position: "right",
+      },
     ],
   },
   {
-    id: "ai-systems",
-    name: "AI Systems, Search & LLM Runtimes",
-    description: "Inverted text indexes, HNSW proximity graphs, PagedAttention KV caches, and MCP agents.",
-    icon: Bot,
-    slugs: ["search-engine", "vector-database", "llm-inference", "mcp-runtime"],
+    id: "stage-4",
+    stageNumber: 4,
+    name: "Storage Engines, Merkle Trees & Streaming Logs",
+    category: "DURABILITY & PERSISTENCE",
+    tagline: "Slotted page formats, content-addressable Merkle DAGs, and partitioned commit logs.",
+    accentColor: "purple",
+    systems: [
+      {
+        slug: "database-index",
+        subtopics: ["B-Tree Point Splits", "Leaf-Chain Range Scan", "4KB Slotted Pages", "LRU Buffer Pool"],
+        position: "left",
+      },
+      {
+        slug: "git",
+        subtopics: ["SHA-1 Content Hash", "Merkle Tree Graph", "Fast Tree Diffing", "Binary Packfiles"],
+        position: "right",
+      },
+      {
+        slug: "object-store",
+        subtopics: ["Chunk Deduplication", "Bit-Rot Scrubbing", "Multipart Assembly", "O_DIRECT Bypass"],
+        position: "left",
+      },
+      {
+        slug: "message-queue",
+        subtopics: ["Partition Offsets", "Consumer Groups", "Batch Commits", "Crash Resilience"],
+        position: "right",
+      },
+    ],
+  },
+  {
+    id: "stage-5",
+    stageNumber: 5,
+    name: "Linux Isolation & Distributed Consensus",
+    category: "DISTRIBUTED SYSTEMS",
+    tagline: "OS namespaces, Raft quorum replication, gossip failure detectors, and erasure codes.",
+    accentColor: "teal",
+    systems: [
+      {
+        slug: "distributed-consensus",
+        subtopics: ["Raft Leader Election", "Quorum Log Replication", "Partition Split-Brain", "Log Snapshots"],
+        position: "center",
+      },
+      {
+        slug: "container-runtime",
+        subtopics: ["PID/IPC Namespaces", "pivot_root Isolation", "Cgroup Memory Limits", "Hot-Pool Prewarm"],
+        position: "left",
+      },
+      {
+        slug: "service-discovery",
+        subtopics: ["Dynamic Heartbeats", "Embedded RFC DNS", "SWIM Gossip Mesh", "Lock-Free RCU"],
+        position: "right",
+      },
+      {
+        slug: "distributed-object-storage",
+        subtopics: ["Reed-Solomon GF(2^8)", "Shard Reconstruction", "Hedged Reads", "SIMD Hardware Acceleration"],
+        position: "center",
+      },
+    ],
+  },
+  {
+    id: "stage-6",
+    stageNumber: 6,
+    name: "AI Systems, Vector Search & LLM Inference",
+    category: "AI & NEURAL RUNTIMES",
+    tagline: "Inverted text indexes, HNSW proximity graphs, PagedAttention KV caches, and MCP protocols.",
+    accentColor: "blue",
+    systems: [
+      {
+        slug: "llm-inference",
+        subtopics: ["Token Buffer Decoder", "KV Cache Acceleration", "PagedAttention Blocks", "FlashAttention Tiling"],
+        position: "center",
+      },
+      {
+        slug: "vector-database",
+        subtopics: ["Exact Cosine kNN", "HNSW Small-World Graph", "Horizontal Sharding", "Scalar Quantization SQ8"],
+        position: "left",
+      },
+      {
+        slug: "search-engine",
+        subtopics: ["Inverted Postings", "Boolean AND/OR Logic", "Okapi BM25 Scoring", "LSM Segment Compaction"],
+        position: "right",
+      },
+      {
+        slug: "mcp-runtime",
+        subtopics: ["JSON-RPC 2.0 Framing", "Resource Templates", "Sandboxed Tool Dispatch", "SIMD JSON Parser"],
+        position: "center",
+      },
+    ],
   },
 ];
 
 export function SystemsRoadmap({ userSolvedSlugs }: SystemsRoadmapProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>("difficulty");
+  const [selectedChallenge, setSelectedChallenge] = useState<CoreChallenge | null>(null);
+  const [activeFilter, setActiveFilter] = useState<"ALL" | "teal" | "purple" | "orange" | "blue">("ALL");
 
   const challengeMap = React.useMemo(() => {
     const map = new Map<string, CoreChallenge>();
@@ -183,285 +219,433 @@ export function SystemsRoadmap({ userSolvedSlugs }: SystemsRoadmapProps) {
   const solvedCount = userSolvedSlugs.length;
   const progressPercent = Math.round((solvedCount / totalChallenges) * 100);
 
+  const filteredStages = ROADMAP_STAGES.filter((stage) => {
+    if (activeFilter === "ALL") return true;
+    return stage.accentColor === activeFilter;
+  });
+
   return (
-    <div className="w-full">
-      {/* Progress & Overview Bar */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xl p-6 md:p-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
-            <div className="md:col-span-2 space-y-2">
+    <div className="w-full bg-[#f8fafc]/60 py-10 relative selection:bg-[#099BE9]/20 selection:text-[#099BE9]">
+      {/* Background Dot Grid */}
+      <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none opacity-40" />
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-10">
+        {/* Top Control Bar & Legend (Exact roadmap.sh style) */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pb-6 border-b border-slate-200">
+          {/* Legend Card */}
+          <div className="bg-white rounded-xl border-2 border-slate-900 shadow-[3px_3px_0px_0px_#09090b] p-4 text-xs font-semibold text-slate-800 space-y-2.5">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              Curriculum Legend
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-900 text-white">
-                  <Route className="w-3.5 h-3.5 text-[#09C899]" />
-                  Curriculum Roadmap
+                <span className="w-3.5 h-3.5 rounded-md bg-[#09C899] border border-slate-900 flex items-center justify-center text-[9px] text-white font-bold">
+                  <Check className="w-2.5 h-2.5 stroke-[3]" />
                 </span>
-                <span className="text-xs text-slate-500 font-medium">
-                  Progressive First-Principles Path
+                <span>Foundations & Runtimes</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3.5 h-3.5 rounded-md bg-[#8647E2] border border-slate-900" />
+                <span>Storage & Indexing</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3.5 h-3.5 rounded-md bg-[#FBAE0C] border border-slate-900" />
+                <span>Traffic & Concurrency</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3.5 h-3.5 rounded-md bg-[#099BE9] border border-slate-900" />
+                <span>AI Systems & LLMs</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Filter Pills & Solved Count */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="inline-flex rounded-xl p-1 bg-white border-2 border-slate-900 shadow-[3px_3px_0px_0px_#09090b]">
+              <button
+                type="button"
+                onClick={() => setActiveFilter("ALL")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeFilter === "ALL"
+                    ? "bg-slate-900 text-white"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                All (20)
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveFilter("teal")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeFilter === "teal"
+                    ? "bg-[#09C899] text-white"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Foundations
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveFilter("purple")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeFilter === "purple"
+                    ? "bg-[#8647E2] text-white"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Storage
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveFilter("orange")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeFilter === "orange"
+                    ? "bg-[#FBAE0C] text-slate-950 font-extrabold"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Routing
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveFilter("blue")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  activeFilter === "blue"
+                    ? "bg-[#099BE9] text-white"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                AI Systems
+              </button>
+            </div>
+
+            {/* Solved Counter Pill */}
+            <div className="bg-white rounded-xl border-2 border-slate-900 shadow-[3px_3px_0px_0px_#09090b] px-4 py-2 flex items-center gap-3">
+              <div>
+                <span className="text-xs font-bold text-slate-500">Progress: </span>
+                <span className="text-xs font-extrabold text-slate-900">
+                  {solvedCount} / {totalChallenges} Solved
                 </span>
               </div>
-              <h3 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
-                {solvedCount} of {totalChallenges} Systems Mastered
-              </h3>
-              <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+              <div className="w-16 h-2 bg-slate-100 rounded-full border border-slate-300 overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-[#09C899] to-[#0AA793] h-full rounded-full transition-all duration-500"
-                  style={{ width: `${Math.max(progressPercent, 4)}%` }}
+                  className="bg-[#09C899] h-full transition-all duration-300"
+                  style={{ width: `${Math.max(progressPercent, 5)}%` }}
                 />
               </div>
             </div>
-
-            <div className="flex items-center gap-4 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6">
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
-                <Flame className="w-6 h-6 text-emerald-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-black text-slate-900">{totalChallenges * 6}</p>
-                <p className="text-xs text-slate-500 font-medium">Engineering Levels</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6">
-              <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0">
-                <Award className="w-6 h-6 text-slate-700" />
-              </div>
-              <div>
-                <p className="text-2xl font-black text-slate-900">100% Native</p>
-                <p className="text-xs text-slate-500 font-medium">Zero Black-Box Libs</p>
-              </div>
-            </div>
-          </div>
-
-          {/* View Mode Toggle Controls */}
-          <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="inline-flex rounded-xl p-1 bg-slate-100 border border-slate-200/80">
-              <button
-                type="button"
-                onClick={() => setViewMode("difficulty")}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-                  viewMode === "difficulty"
-                    ? "bg-white text-slate-900 shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <Route className="w-3.5 h-3.5 text-[#0AA793]" />
-                Progressive Tiers (Beginner ➔ Hard)
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("domain")}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-                  viewMode === "domain"
-                    ? "bg-white text-slate-900 shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <Layers className="w-3.5 h-3.5 text-[#0AA793]" />
-                Domain Tracks (Core, Dist, AI)
-              </button>
-            </div>
-
-            <div className="text-xs text-slate-500 flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              Click any challenge node to open its code workspace or curriculum.
-            </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Roadmap Tree Render */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {viewMode === "difficulty" ? (
-          <div className="space-y-20 relative">
-            {/* Center Vertical Connecting Spine */}
-            <div className="hidden md:block absolute left-1/2 top-10 bottom-10 w-0.5 -translate-x-1/2 bg-gradient-to-b from-emerald-400 via-amber-400 to-rose-400 opacity-40 z-0" />
+        {/* ========================================================================= */}
+        {/* ROADMAP FLOWCHART CANVAS */}
+        {/* ========================================================================= */}
+        <div className="space-y-16 max-w-4xl mx-auto relative pt-4">
+          {filteredStages.map((stage, stageIdx) => {
+            const colorStyles = {
+              teal: {
+                bg: "bg-[#09C899]",
+                headerText: "text-slate-950 font-black",
+                border: "border-slate-900",
+                badgeBg: "bg-white/30 text-slate-950",
+                lineStroke: "#0AA793",
+              },
+              purple: {
+                bg: "bg-[#8647E2]",
+                headerText: "text-white font-black",
+                border: "border-slate-900",
+                badgeBg: "bg-white/20 text-white",
+                lineStroke: "#8647E2",
+              },
+              orange: {
+                bg: "bg-[#FBAE0C]",
+                headerText: "text-slate-950 font-black",
+                border: "border-slate-900",
+                badgeBg: "bg-white/30 text-slate-950",
+                lineStroke: "#F78424",
+              },
+              blue: {
+                bg: "bg-[#099BE9]",
+                headerText: "text-white font-black",
+                border: "border-slate-900",
+                badgeBg: "bg-white/20 text-white",
+                lineStroke: "#099BE9",
+              },
+            }[stage.accentColor];
 
-            {ROADMAP_TIERS.map((tier) => (
-              <div key={tier.id} className="relative z-10 space-y-8">
-                {/* Tier Section Header Pill */}
-                <div className="text-center max-w-2xl mx-auto space-y-3">
-                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border shadow-xs bg-white">
-                    <span
-                      className={`w-2.5 h-2.5 rounded-full ${tier.colorTheme.dotBg} animate-pulse`}
-                    />
-                    <span className="text-xs font-extrabold uppercase tracking-wider text-slate-800">
-                      {tier.badge}
-                    </span>
+            return (
+              <div key={stage.id} className="relative space-y-8">
+                {/* Connecting Line from Previous Stage */}
+                {stageIdx > 0 && (
+                  <div className="flex justify-center -mt-8 mb-4">
+                    <div className="w-0.5 h-10 border-l-2 border-dashed border-slate-900" />
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
-                    {tier.name}
-                  </h2>
-                  <p className="text-sm text-slate-600 leading-relaxed">{tier.description}</p>
+                )}
+
+                {/* Central Stage Milestone Node (roadmap.sh Primary Node) */}
+                <div className="flex flex-col items-center">
+                  <div
+                    className={`w-full max-w-xl rounded-2xl border-2 ${colorStyles.border} ${colorStyles.bg} shadow-[4px_4px_0px_0px_#09090b] p-5 text-center space-y-2 relative`}
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${colorStyles.badgeBg}`}
+                      >
+                        STAGE {stage.stageNumber} • {stage.category}
+                      </span>
+                    </div>
+
+                    <h2 className={`text-xl sm:text-2xl tracking-tight ${colorStyles.headerText}`}>
+                      {stage.name}
+                    </h2>
+
+                    <p
+                      className={`text-xs max-w-md mx-auto leading-relaxed font-medium ${
+                        stage.accentColor === "purple" || stage.accentColor === "blue"
+                          ? "text-white/90"
+                          : "text-slate-900/80"
+                      }`}
+                    >
+                      {stage.tagline}
+                    </p>
+                  </div>
+
+                  {/* Vertical Trunk Line down to children */}
+                  <div className="w-0.5 h-6 bg-slate-900 my-1" />
                 </div>
 
-                {/* Challenge Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                  {tier.slugs.map((slug) => {
-                    const challenge = challengeMap.get(slug);
+                {/* Systems Flowchart Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
+                  {stage.systems.map((item, sysIdx) => {
+                    const challenge = challengeMap.get(item.slug);
                     if (!challenge) return null;
-                    const isSolved = userSolvedSlugs.includes(slug);
+                    const isSolved = userSolvedSlugs.includes(item.slug);
 
                     return (
-                      <RoadmapCard
-                        key={slug}
+                      <RoadmapNodeCard
+                        key={item.slug}
                         challenge={challenge}
+                        subtopics={item.subtopics}
                         isSolved={isSolved}
-                        tierTheme={tier.colorTheme}
+                        accentColor={stage.accentColor}
+                        onSelect={() => setSelectedChallenge(challenge)}
                       />
                     );
                   })}
                 </div>
-
-                {/* Milestone Banner */}
-                <div className="max-w-xl mx-auto p-4 rounded-xl border border-slate-200 bg-slate-50/80 backdrop-blur-xs text-center space-y-1">
-                  <div className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-900">
-                    <Award className="w-4 h-4 text-emerald-600" />
-                    {tier.milestoneTitle}
-                  </div>
-                  <p className="text-xs text-slate-500">{tier.milestoneDesc}</p>
-                </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          /* Domain Track View */
-          <div className="space-y-16">
-            {DOMAIN_GROUPS.map((group) => {
-              const Icon = group.icon;
-              return (
-                <div key={group.id} className="space-y-6">
-                  <div className="flex items-center gap-3 border-b border-slate-200 pb-4">
-                    <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-[#09C899]" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-black text-slate-900 tracking-tight">
-                        {group.name}
-                      </h2>
-                      <p className="text-xs text-slate-500">{group.description}</p>
-                    </div>
-                  </div>
+            );
+          })}
+        </div>
+      </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {group.slugs.map((slug) => {
-                      const challenge = challengeMap.get(slug);
-                      if (!challenge) return null;
-                      const isSolved = userSolvedSlugs.includes(slug);
+      {/* ========================================================================= */}
+      {/* INTERACTIVE DETAIL MODAL DRAWER */}
+      {/* ========================================================================= */}
+      {selectedChallenge && (
+        <ChallengeDetailDrawer
+          challenge={selectedChallenge}
+          isSolved={userSolvedSlugs.includes(selectedChallenge.slug)}
+          onClose={() => setSelectedChallenge(null)}
+        />
+      )}
+    </div>
+  );
+}
 
-                      return (
-                        <RoadmapCard
-                          key={slug}
-                          challenge={challenge}
-                          isSolved={isSolved}
-                          tierTheme={{
-                            badgeBg: "bg-slate-100 text-slate-700 border-slate-200",
-                            badgeText: "text-slate-700",
-                            border: "border-slate-200",
-                            accent: "#09C899",
-                            dotBg: "bg-[#09C899]",
-                            lightBg: "from-slate-50 to-transparent",
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+interface RoadmapNodeCardProps {
+  challenge: CoreChallenge;
+  subtopics: string[];
+  isSolved: boolean;
+  accentColor: "teal" | "purple" | "orange" | "blue";
+  onSelect: () => void;
+}
+
+function RoadmapNodeCard({
+  challenge,
+  subtopics,
+  isSolved,
+  accentColor,
+  onSelect,
+}: RoadmapNodeCardProps) {
+  const accentBorder = {
+    teal: "hover:border-[#09C899]",
+    purple: "hover:border-[#8647E2]",
+    orange: "hover:border-[#FBAE0C]",
+    blue: "hover:border-[#099BE9]",
+  }[accentColor];
+
+  const badgeColor = {
+    teal: "bg-[#09C899]/10 text-[#0AA793] border-[#09C899]/30",
+    purple: "bg-[#8647E2]/10 text-[#8647E2] border-[#8647E2]/30",
+    orange: "bg-[#FBAE0C]/10 text-[#F78424] border-[#FBAE0C]/30",
+    blue: "bg-[#099BE9]/10 text-[#099BE9] border-[#099BE9]/30",
+  }[accentColor];
+
+  return (
+    <div
+      onClick={onSelect}
+      className={`group cursor-pointer bg-white rounded-2xl border-2 border-slate-900 shadow-[3px_3px_0px_0px_#09090b] hover:shadow-[5px_5px_0px_0px_#09090b] hover:-translate-y-0.5 transition-all p-5 space-y-4 relative ${accentBorder}`}
+    >
+      {/* Solved Checkmark Icon (roadmap.sh badge) */}
+      {isSolved && (
+        <div className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-[#09C899] text-white border border-slate-900 shadow-2xs">
+          <Check className="w-3.5 h-3.5 stroke-[3]" />
+          <span>Solved</span>
+        </div>
+      )}
+
+      {/* Header Info */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="font-mono text-xs font-extrabold text-slate-900 bg-slate-100 border border-slate-300 px-2 py-0.5 rounded-md">
+          #{challenge.number}
+        </span>
+        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md border ${badgeColor}`}>
+          {challenge.inspiredBy}
+        </span>
+        <span className="text-[10px] font-bold text-slate-500 uppercase">
+          {challenge.difficulty}
+        </span>
+      </div>
+
+      {/* Title */}
+      <div>
+        <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight group-hover:text-[#099BE9] transition-colors">
+          {challenge.title}
+        </h3>
+        <p className="text-xs text-slate-600 mt-1 font-medium line-clamp-2 leading-relaxed">
+          {challenge.whatStudentsBuild}
+        </p>
+      </div>
+
+      {/* Subtopic Pills with clean Roadmap.sh outlines */}
+      <div className="pt-2 border-t border-slate-100 flex flex-wrap gap-1.5">
+        {subtopics.map((sub, idx) => (
+          <span
+            key={idx}
+            className="text-[11px] font-semibold text-slate-700 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md"
+          >
+            {sub}
+          </span>
+        ))}
+      </div>
+
+      {/* Footer Actions */}
+      <div className="pt-1 flex items-center justify-between text-xs font-bold text-slate-900">
+        <span className="inline-flex items-center gap-1 text-slate-500 group-hover:text-slate-900">
+          Inspect Architecture
+          <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+        </span>
+        <span className="font-mono text-[11px] text-slate-400">6 Levels</span>
       </div>
     </div>
   );
 }
 
-interface RoadmapCardProps {
+interface ChallengeDetailDrawerProps {
   challenge: CoreChallenge;
   isSolved: boolean;
-  tierTheme: TierDefinition["colorTheme"];
+  onClose: () => void;
 }
 
-function RoadmapCard({ challenge, isSolved, tierTheme }: RoadmapCardProps) {
+function ChallengeDetailDrawer({
+  challenge,
+  isSolved,
+  onClose,
+}: ChallengeDetailDrawerProps) {
   return (
-    <div
-      className={`group relative rounded-2xl border bg-white p-6 transition-all duration-200 hover:shadow-lg hover:-translate-y-1 ${
-        isSolved
-          ? "border-emerald-500/50 ring-1 ring-emerald-500/20 bg-emerald-50/10"
-          : "border-slate-200/80 hover:border-slate-300"
-      }`}
-    >
-      {/* Solved Badge Indicator */}
-      {isSolved && (
-        <div className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500 text-white shadow-xs">
-          <Check className="w-3.5 h-3.5 stroke-[3]" />
-          Solved
-        </div>
-      )}
-
-      <div className="space-y-4">
-        {/* Header Badges */}
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <span className="font-mono text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
-            #{challenge.number}
-          </span>
-          <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
-            {challenge.inspiredBy}
-          </span>
-          <span
-            className={`text-[11px] font-bold px-2 py-0.5 rounded border ${
-              challenge.difficulty === "Easy"
-                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                : challenge.difficulty === "Medium"
-                ? "bg-amber-50 text-amber-700 border-amber-200"
-                : "bg-rose-50 text-rose-700 border-rose-200"
-            }`}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-150">
+      <div
+        className="w-full max-w-2xl bg-white rounded-3xl border-2 border-slate-900 shadow-[6px_6px_0px_0px_#09090b] overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-150"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Drawer Header */}
+        <div className="bg-[#262626] text-white p-6 border-b-2 border-slate-900 relative">
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
           >
-            {challenge.difficulty}
-          </span>
-        </div>
+            <X className="w-4 h-4" />
+          </button>
 
-        {/* Title & Concept */}
-        <div>
-          <h3 className="text-lg font-black text-slate-900 tracking-tight group-hover:text-[#0AA793] transition-colors">
+          <div className="flex items-center gap-2 flex-wrap mb-2">
+            <span className="font-mono text-xs font-bold text-white bg-white/10 border border-white/20 px-2 py-0.5 rounded">
+              #{challenge.number}
+            </span>
+            <span className="text-xs font-bold text-[#09C899] bg-[#09C899]/15 border border-[#09C899]/30 px-2.5 py-0.5 rounded">
+              {challenge.domainLabel}
+            </span>
+            <span className="text-xs font-semibold text-neutral-300">
+              {challenge.inspiredBy}
+            </span>
+          </div>
+
+          <h2 className="text-2xl font-black tracking-tight text-white">
             {challenge.title}
-          </h3>
-          <p className="text-xs text-slate-500 mt-1 font-medium leading-relaxed">
-            {challenge.whatStudentsBuild}
+          </h2>
+          <p className="text-xs text-neutral-300 mt-1 font-medium">
+            {challenge.signatureQuestion}
           </p>
         </div>
 
-        {/* 6 Stage Engineering Loop Milestones */}
-        <div className="pt-2 border-t border-slate-100">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
-            6 Progression Levels
+        {/* Drawer Scrollable Content */}
+        <div className="p-6 space-y-6 overflow-y-auto flex-1 text-slate-800">
+          {/* Overview */}
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+              System Specification
+            </h4>
+            <p className="text-sm text-slate-700 leading-relaxed font-normal">
+              {challenge.overview}
+            </p>
           </div>
-          <div className="grid grid-cols-6 gap-1">
-            {challenge.progressionLevels.map((lvl) => (
-              <div
-                key={lvl.level}
-                title={`Level ${lvl.level}: ${lvl.name} (${lvl.focus})`}
-                className="group/lvl relative h-6 rounded bg-slate-100 hover:bg-slate-200 flex items-center justify-center font-mono text-[10px] font-semibold text-slate-600 transition-colors"
-              >
-                L{lvl.level}
-              </div>
-            ))}
+
+          {/* 6 Progression Levels */}
+          <div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+              6-Stage Progressive Levels
+            </h4>
+            <div className="space-y-2">
+              {challenge.progressionLevels.map((lvl) => (
+                <div
+                  key={lvl.level}
+                  className="p-3 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-3"
+                >
+                  <span className="font-mono text-xs font-bold bg-slate-200 text-slate-800 px-2 py-0.5 rounded shrink-0">
+                    L{lvl.level}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-slate-900">{lvl.name}</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5 font-medium">
+                      {lvl.focus}
+                    </p>
+                  </div>
+                  <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-600 shrink-0">
+                    {lvl.stage}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="pt-2 flex items-center gap-2">
-          <Link
-            href={`/challenges/${challenge.slug}/workspace`}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-2xs"
-          >
-            Launch Workspace
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+        {/* Drawer Footer Actions */}
+        <div className="p-5 bg-slate-50 border-t-2 border-slate-900 flex items-center justify-between gap-3">
           <Link
             href={`/challenges/${challenge.slug}`}
-            className="inline-flex items-center justify-center p-2 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 hover:text-slate-900 transition-colors"
-            title="View Level Specifications"
+            className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 bg-white border-2 border-slate-900 hover:bg-slate-100 transition-colors inline-flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#09090b]"
           >
-            <BookOpen className="w-4 h-4" />
+            <BookOpen className="w-3.5 h-3.5" />
+            Curriculum Specs
+          </Link>
+
+          <Link
+            href={`/challenges/${challenge.slug}/workspace`}
+            className="flex-1 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 transition-all inline-flex items-center justify-center gap-2 border-2 border-slate-900 shadow-[3px_3px_0px_0px_#09090b]"
+          >
+            Launch Code Workspace
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       </div>
