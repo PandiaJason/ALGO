@@ -59,33 +59,33 @@ export function ExploreManifesto() {
         {/* 4 Core Competencies Grid */}
         <div className="pt-4 space-y-3">
           <div className="text-xs font-mono uppercase tracking-wider text-slate-800 font-bold">
-            What matters in the systems &amp; agentic era:
+            The 4 engineering skills that actually matter:
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             {[
               {
                 step: "1",
                 color: "#099BE9",
-                q: "Can you direct the architecture?",
-                desc: "Define boundary invariants, byte protocols, and memory budgets before writing a single line.",
+                q: "Can you design the system?",
+                desc: "Plan how data flows, define clean interfaces, and set memory limits before writing code.",
               },
               {
                 step: "2",
                 color: "#09C899",
-                q: "Can you verify it empirically?",
-                desc: "Know definitively whether the code survives high concurrency, power cuts (SIGKILL), and partial writes.",
+                q: "Can you prove it works?",
+                desc: "Know for certain whether your implementation survives heavy traffic, sudden crashes, and unexpected failures.",
               },
               {
                 step: "3",
                 color: "#F78424",
-                q: "Can you isolate the bottleneck?",
-                desc: "Diagnose mutex lock contention, cache misses, memory leaks, and tail-latency spikes under pressure.",
+                q: "Can you find what's slow?",
+                desc: "Pinpoint real bottlenecks — whether it's locked threads, memory bloat, or slow queries.",
               },
               {
                 step: "4",
                 color: "#8647E2",
                 q: "Can you make it faster?",
-                desc: "Re-architect hot paths with striped mutexes, lock-free ring buffers, and zero-copy slicing.",
+                desc: "Rethink data structures and concurrency to handle higher loads with lower latency.",
               },
             ].map((item) => (
               <div
@@ -557,20 +557,20 @@ export function ExploreManifesto() {
                 </li>
                 <li className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center gap-2.5">
                   <span className="text-slate-400 font-bold">2.</span>
-                  <span>Write function in isolated namespace</span>
+                  <span>Write a function in an isolated file</span>
                 </li>
                 <li className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center gap-2.5">
                   <span className="text-slate-400 font-bold">3.</span>
-                  <span>Run against hidden input/output arrays</span>
+                  <span>Run against hidden input/output test arrays</span>
                 </li>
                 <li className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center gap-2.5 text-slate-950 font-bold">
                   <span className="text-slate-400 font-bold">4.</span>
-                  <span>Binary Accepted checkmark → next question</span>
+                  <span>Binary Accepted checkmark → Next question</span>
                 </li>
               </ol>
             </div>
             <p className="text-xs text-slate-700 font-medium border-t border-slate-200 pt-3">
-              Binary pass/fail. Tests memorization; ignores concurrency, I/O bottlenecks, and hardware durability.
+              Binary pass/fail. Tests memorization, but ignores concurrency, memory bloat, and crash resilience.
             </p>
           </div>
 
@@ -588,24 +588,24 @@ export function ExploreManifesto() {
               <ol className="space-y-2.5 font-mono text-xs mt-4">
                 <li className="p-3 rounded-xl bg-[#099BE9]/5 border border-[#099BE9]/20 flex items-center gap-2.5 text-slate-950 font-bold">
                   <span className="text-[#099BE9]">1.</span>
-                  <span>Build raw protocol, core architecture &amp; engine from scratch</span>
+                  <span>Build the real system from scratch (protocols, storage, state)</span>
                 </li>
                 <li className="p-3 rounded-xl bg-[#09C899]/5 border border-[#09C899]/20 flex items-center gap-2.5 text-slate-950 font-bold">
                   <span className="text-[#0AA793]">2.</span>
-                  <span>Run inside an isolated Linux container sandbox</span>
+                  <span>Run it inside an isolated Linux container sandbox</span>
                 </li>
                 <li className="p-3 rounded-xl bg-[#FBAE0C]/5 border border-[#FBAE0C]/20 flex items-center gap-2.5 text-slate-950 font-bold">
                   <span className="text-[#F78424]">3.</span>
-                  <span>Hammer with high-concurrency load, SIGKILL, and contention scenarios</span>
+                  <span>Stress test with high concurrency, crashes, and heavy load</span>
                 </li>
                 <li className="p-3 rounded-xl bg-[#8647E2]/5 border border-[#8647E2]/20 flex items-center gap-2.5 text-slate-950 font-bold">
                   <span className="text-[#8647E2]">4.</span>
-                  <span>Optimize hot paths and verify speedup on the leaderboard</span>
+                  <span>Optimize hot paths and verify speedup on the live leaderboard</span>
                 </li>
               </ol>
             </div>
             <p className="text-xs text-slate-800 font-semibold border-t border-slate-100 pt-3">
-              Continuous optimization loop: empirical profiling, architectural redesign, and verified speedups.
+              A real engineering loop: measure performance, find bottlenecks, and prove speedups with telemetry.
             </p>
           </div>
         </div>

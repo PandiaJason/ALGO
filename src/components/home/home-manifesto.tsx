@@ -21,11 +21,6 @@ import {
   Briefcase,
 } from "lucide-react";
 import {
-  DiagramArchitecture,
-  DiagramEmpiricalVerification,
-  DiagramBottleneckIsolation,
-  DiagramPerformanceOptimization,
-  DiagramSystemsVerificationLoop,
   DiagramSubmissionOneTelemetry,
   DiagramSubmissionFiveTelemetry,
 } from "./manifesto-diagrams";
@@ -66,63 +61,54 @@ export function HomeManifesto() {
         {/* 4 Core Competencies Grid */}
         <div className="pt-2 space-y-4">
           <div className="text-xs font-mono uppercase tracking-wider text-slate-800 font-bold flex items-center justify-between">
-            <span>What matters in the systems &amp; agentic era:</span>
-            <span className="text-slate-600 font-mono text-[11px] hidden sm:inline">
-              // ARCHITECTURE • VERIFICATION • TELEMETRY • OPTIMIZATION
+            <span>The 4 engineering skills that actually matter:</span>
+            <span className="text-slate-500 font-mono text-[11px] hidden sm:inline">
+              // ARCHITECTURE • VERIFICATION • DIAGNOSIS • OPTIMIZATION
             </span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
               {
                 step: "1",
                 color: "#099BE9",
-                q: "Can you direct the architecture?",
-                desc: "Define boundary invariants, byte protocols, and memory budgets before writing a single line.",
-                diagram: <DiagramArchitecture />,
+                q: "Can you design the system?",
+                desc: "Plan how data flows, define clean interfaces, and set memory limits before writing code.",
               },
               {
                 step: "2",
                 color: "#09C899",
-                q: "Can you verify it empirically?",
-                desc: "Know definitively whether the code survives high concurrency, power cuts (SIGKILL), and partial writes.",
-                diagram: <DiagramEmpiricalVerification />,
+                q: "Can you prove it works?",
+                desc: "Know for certain whether your implementation survives heavy traffic, sudden crashes, and unexpected failures.",
               },
               {
                 step: "3",
                 color: "#F78424",
-                q: "Can you isolate the bottleneck?",
-                desc: "Diagnose mutex lock contention, cache misses, memory leaks, and tail-latency spikes under pressure.",
-                diagram: <DiagramBottleneckIsolation />,
+                q: "Can you find what's slow?",
+                desc: "Pinpoint real bottlenecks — whether it's locked threads, memory bloat, or slow queries.",
               },
               {
                 step: "4",
                 color: "#8647E2",
                 q: "Can you make it faster?",
-                desc: "Re-architect hot paths with striped mutexes, lock-free ring buffers, and zero-copy slicing.",
-                diagram: <DiagramPerformanceOptimization />,
+                desc: "Rethink data structures and concurrency to handle higher loads with lower latency.",
               },
             ].map((item) => (
               <div
                 key={item.step}
-                className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-between space-y-3.5"
+                className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-start space-y-2.5"
               >
-                <div>
-                  <div className="flex items-center gap-2.5">
-                    <span
-                      className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-mono font-extrabold text-white shrink-0 shadow-xs"
-                      style={{ backgroundColor: item.color }}
-                    >
-                      {item.step}
-                    </span>
-                    <span className="font-bold text-slate-950 text-sm sm:text-base">{item.q}</span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-slate-700 font-medium mt-2 pl-8 leading-relaxed">
-                    {item.desc}
-                  </p>
+                <div className="flex items-center gap-3">
+                  <span
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-mono font-extrabold text-white shrink-0 shadow-xs"
+                    style={{ backgroundColor: item.color }}
+                  >
+                    {item.step}
+                  </span>
+                  <span className="font-bold text-slate-950 text-base sm:text-lg">{item.q}</span>
                 </div>
-                <div className="pt-1">
-                  {item.diagram}
-                </div>
+                <p className="text-sm text-slate-600 font-medium pl-10 leading-relaxed">
+                  {item.desc}
+                </p>
               </div>
             ))}
           </div>
@@ -356,9 +342,6 @@ export function HomeManifesto() {
           </p>
         </div>
 
-        {/* Abstract Closed-Loop Architecture Diagram */}
-        <DiagramSystemsVerificationLoop />
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
           {/* Traditional Algorithmic Loop */}
           <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-6 flex flex-col justify-between space-y-4">
@@ -376,10 +359,10 @@ export function HomeManifesto() {
                   <span className="text-slate-400">1.</span> Read synthetic problem description
                 </div>
                 <div className="p-2.5 rounded-lg bg-white border border-slate-200 flex items-center gap-2">
-                  <span className="text-slate-400">2.</span> Write function in isolated namespace
+                  <span className="text-slate-400">2.</span> Write a function in an isolated file
                 </div>
                 <div className="p-2.5 rounded-lg bg-white border border-slate-200 flex items-center gap-2">
-                  <span className="text-slate-400">3.</span> Run against hidden input/output arrays
+                  <span className="text-slate-400">3.</span> Run against hidden input/output test arrays
                 </div>
                 <div className="p-2.5 rounded-lg bg-white border border-slate-200 flex items-center gap-2 text-slate-900 font-bold">
                   <span className="text-slate-400">4.</span> Binary Accepted checkmark → Next Question
@@ -387,7 +370,7 @@ export function HomeManifesto() {
               </div>
             </div>
             <p className="text-xs text-slate-600 font-medium border-t border-slate-200 pt-3">
-              Binary pass/fail. Tests memorization; ignores concurrency, I/O bottlenecks, and hardware durability.
+              Binary pass/fail. Tests memorization, but ignores concurrency, memory bloat, and crash resilience.
             </p>
           </div>
 
@@ -404,21 +387,21 @@ export function HomeManifesto() {
               </div>
               <div className="space-y-2 font-mono text-xs">
                 <div className="p-2.5 rounded-lg bg-[#099BE9]/5 border border-[#099BE9]/20 flex items-center gap-2 text-slate-950 font-bold">
-                  <span className="text-[#099BE9]">01.</span> Build raw protocol, core architecture &amp; engine from scratch
+                  <span className="text-[#099BE9]">01.</span> Build the real system from scratch (protocols, storage, state)
                 </div>
                 <div className="p-2.5 rounded-lg bg-[#09C899]/5 border border-[#09C899]/20 flex items-center gap-2 text-slate-950 font-bold">
-                  <span className="text-[#0AA793]">02.</span> Run inside isolated Linux container sandbox
+                  <span className="text-[#0AA793]">02.</span> Run it inside an isolated Linux container sandbox
                 </div>
                 <div className="p-2.5 rounded-lg bg-[#FBAE0C]/5 border border-[#FBAE0C]/20 flex items-center gap-2 text-slate-950 font-bold">
-                  <span className="text-[#F78424]">03.</span> Hammer with 100K concurrent ops, SIGKILL &amp; contention
+                  <span className="text-[#F78424]">03.</span> Stress test with high concurrency, crashes, and heavy load
                 </div>
                 <div className="p-2.5 rounded-lg bg-[#8647E2]/5 border border-[#8647E2]/20 flex items-center gap-2 text-slate-950 font-bold">
-                  <span className="text-[#8647E2]">04.</span> Optimize hot paths and verify speedup on global leaderboard
+                  <span className="text-[#8647E2]">04.</span> Optimize hot paths and verify speedup on the live leaderboard
                 </div>
               </div>
             </div>
             <p className="text-xs text-slate-800 font-semibold border-t border-slate-100 pt-3">
-              Continuous optimization loop: empirical profiling, architectural redesign, and verified speedups.
+              A real engineering loop: measure performance, find bottlenecks, and prove speedups with telemetry.
             </p>
           </div>
         </div>
