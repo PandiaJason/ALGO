@@ -1,271 +1,142 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Database, Network, Activity, Zap, Sparkles, Check } from "lucide-react";
+import { Layers, Share2, Activity, ArrowRight, Check } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
-/* Visual Widget 1: Key-Value / Storage Intuition with Cute Scanning Loop     */
+/* Visual Widget 1: Circular Ring Buffer & Memory State (Systems Thinking)    */
+/* Demonstrates: Cyclic memory allocation, pointer offsets, cache eviction    */
 /* -------------------------------------------------------------------------- */
-function StorageIntuitionWidget() {
-  const [activeSlot, setActiveSlot] = useState(1);
+function RingBufferStateWidget() {
+  const [headIndex, setHeadIndex] = useState(2);
+  const totalSlots = 8;
 
-  // Cute automatic cycling through slots every 2.4s
+  // Advance pointer in a closed cyclic feedback loop
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveSlot((prev) => (prev + 1) % 3);
-    }, 2400);
+      setHeadIndex((prev) => (prev + 1) % totalSlots);
+    }, 1800);
     return () => clearInterval(timer);
   }, []);
 
-  const slots = [
-    { key: "session:402", val: "token_abc", status: "HIT", latency: "0.02ms" },
-    { key: "user:109", val: "profile_data", status: "HIT", latency: "0.01ms" },
-    { key: "cache:rate", val: "limit_60/m", status: "HIT", latency: "0.03ms" },
-  ];
+  // Compute coordinates for 8 circular slots
+  const radius = 42;
+  const centerX = 64;
+  const centerY = 58;
 
   return (
-    <div className="w-full rounded-2xl bg-white border border-slate-200 p-4 shadow-2xs select-none relative overflow-hidden group/widget">
-      {/* Playful Floating Sparkle Particle */}
-      <div className="absolute -top-1 -right-1 w-12 h-12 bg-[#09C899]/10 rounded-full blur-xl pointer-events-none animate-pulse" />
-
-      <div className="flex items-center justify-between pb-3 border-b border-slate-100 relative z-10">
+    <div className="w-full rounded-2xl bg-white border border-slate-200 p-4 shadow-2xs select-none relative overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-3 border-b border-slate-100">
         <div className="flex items-center gap-1.5 text-[11px] font-mono font-semibold text-slate-700">
-          <span className="p-1 rounded-md bg-[#09C899]/10 text-[#0AA793] inline-flex items-center justify-center animate-bounce">
-            <Database className="w-3.5 h-3.5" />
+          <span className="p-1 rounded-md bg-[#09C899]/10 text-[#0AA793] inline-flex items-center justify-center">
+            <Layers className="w-3.5 h-3.5" />
           </span>
-          <span>In-Memory Storage Slot</span>
+          <span>Cyclic Ring Buffer</span>
         </div>
-        <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#09C899]/15 text-[#0AA793] font-bold">
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#09C899]/15 text-[#0AA793] font-bold">
           <span className="w-1.5 h-1.5 rounded-full bg-[#09C899] animate-ping" />
-          <span>O(1) Direct Lookup</span>
+          <span>O(1) Bounded State</span>
         </span>
       </div>
 
-      <div className="py-3 space-y-2 relative z-10">
-        {slots.map((slot, idx) => {
-          const isSelected = activeSlot === idx;
-          return (
-            <div
-              key={slot.key}
-              onClick={() => setActiveSlot(idx)}
-              className={`p-2.5 rounded-xl border text-xs font-mono transition-all duration-300 cursor-pointer flex items-center justify-between relative overflow-hidden ${
-                isSelected
-                  ? "bg-[#09C899]/10 border-[#09C899]/50 shadow-xs scale-[1.02] -translate-y-0.5"
-                  : "bg-slate-50/70 border-slate-200/70 hover:bg-slate-100/70 text-slate-600 scale-100"
-              }`}
-            >
-              {/* Cute sliding pointer indicator */}
-              {isSelected && (
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#09C899] rounded-r animate-pulse" />
-              )}
+      {/* Abstract Circular Memory Diagram */}
+      <div className="py-3 flex items-center justify-between gap-4">
+        {/* Left: SVG Ring Buffer */}
+        <div className="relative w-32 h-28 flex items-center justify-center shrink-0">
+          <svg viewBox="0 0 128 116" className="w-full h-full">
+            {/* Guide circle */}
+            <circle
+              cx={centerX}
+              cy={centerY}
+              r={radius}
+              stroke="#E2E8F0"
+              strokeWidth="1.5"
+              strokeDasharray="2 2"
+              fill="none"
+            />
 
-              <div className="flex items-center gap-2 pl-1">
-                <div className="relative flex items-center justify-center">
-                  <span
-                    className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                      isSelected ? "bg-[#09C899]" : "bg-slate-300"
-                    }`}
+            {/* Render 8 slots */}
+            {Array.from({ length: totalSlots }).map((_, i) => {
+              const angle = (i * (360 / totalSlots) - 90) * (Math.PI / 180);
+              const x = centerX + radius * Math.cos(angle);
+              const y = centerY + radius * Math.sin(angle);
+              const isHead = headIndex === i;
+              const isTail = (headIndex + 4) % totalSlots === i;
+
+              return (
+                <g key={i}>
+                  {/* Slot Circle */}
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r={isHead ? 8 : 6}
+                    className="transition-all duration-500 ease-out"
+                    fill={isHead ? "#09C899" : isTail ? "#FBAE0C" : "#F8FAFC"}
+                    stroke={isHead ? "#0AA793" : isTail ? "#F78424" : "#CBD5E1"}
+                    strokeWidth={isHead ? 2 : 1.5}
                   />
-                  {isSelected && (
-                    <span className="absolute w-4 h-4 rounded-full bg-[#09C899]/40 animate-ping" />
+                  {/* Active slot center dot */}
+                  {isHead && (
+                    <circle cx={x} cy={y} r={3} fill="#FFFFFF" />
                   )}
-                </div>
-                <span className={`font-semibold transition-colors ${isSelected ? "text-slate-950 font-bold" : "text-slate-700"}`}>
-                  {slot.key}
-                </span>
-              </div>
+                </g>
+              );
+            })}
 
-              <div className="flex items-center gap-2">
-                <span className={`text-[11px] font-normal transition-colors ${isSelected ? "text-[#0AA793] font-semibold" : "text-slate-500"}`}>
-                  {slot.latency}
-                </span>
-                <span
-                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 transition-all duration-300 ${
-                    isSelected
-                      ? "bg-[#09C899] text-white shadow-2xs scale-105"
-                      : "bg-slate-200 text-slate-600"
-                  }`}
-                >
-                  {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
-                  <span>{slot.status}</span>
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            {/* Dynamic Pointer Arrow Line from Center to Head Slot */}
+            {(() => {
+              const angle = (headIndex * (360 / totalSlots) - 90) * (Math.PI / 180);
+              const targetX = centerX + (radius - 12) * Math.cos(angle);
+              const targetY = centerY + (radius - 12) * Math.sin(angle);
+              return (
+                <line
+                  x1={centerX}
+                  y1={centerY}
+                  x2={targetX}
+                  y2={targetY}
+                  stroke="#0AA793"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  className="transition-all duration-500 ease-out"
+                />
+              );
+            })()}
 
-      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono relative z-10">
-        <span className="flex items-center gap-1">
-          <Sparkles className="w-3 h-3 text-[#FBAE0C] animate-spin" style={{ animationDuration: "6s" }} />
-          <span>Resolved in memory</span>
-        </span>
-        <span className="text-[#0AA793] font-bold flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#09C899]" />
-          <span>Zero hash collision</span>
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-/* Visual Widget 2: Multi-Node Consensus with Cute Animated Heartbeat Packets */
-/* -------------------------------------------------------------------------- */
-function ClusterIntuitionWidget() {
-  const [pulseKey, setPulseKey] = useState(0);
-
-  // Cute heartbeat pulse every 2s
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setPulseKey((k) => k + 1);
-    }, 2000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const nodes = [
-    { role: "Leader", id: "Node A", isLeader: true, emoji: "👑", state: "Active" },
-    { role: "Follower", id: "Node B", isLeader: false, emoji: "⚡", state: "Synced" },
-    { role: "Follower", id: "Node C", isLeader: false, emoji: "⚡", state: "Synced" },
-  ];
-
-  return (
-    <div className="w-full rounded-2xl bg-white border border-slate-200 p-4 shadow-2xs select-none relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute -top-1 -left-1 w-12 h-12 bg-[#099BE9]/10 rounded-full blur-xl pointer-events-none animate-pulse" />
-
-      <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-        <div className="flex items-center gap-1.5 text-[11px] font-mono font-semibold text-slate-700">
-          <span className="p-1 rounded-md bg-[#099BE9]/10 text-[#099BE9] inline-flex items-center justify-center animate-pulse">
-            <Network className="w-3.5 h-3.5" />
-          </span>
-          <span>Distributed Consensus</span>
+            {/* Center Pivot Hub */}
+            <circle cx={centerX} cy={centerY} r={5} fill="#0AA793" />
+            <circle cx={centerX} cy={centerY} r={2} fill="#FFFFFF" />
+          </svg>
         </div>
-        <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#099BE9]/15 text-[#099BE9] font-bold">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#099BE9] animate-ping" />
-          <span>Quorum 3/3</span>
-        </span>
-      </div>
 
-      {/* Interactive Cluster Nodes with Cute Connecting Pulse Lines */}
-      <div className="py-3 relative">
-        {/* Animated Connecting SVG Data Waves */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
-          <defs>
-            <linearGradient id="msg-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#099BE9" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#09C899" stopOpacity="0.8" />
-            </linearGradient>
-          </defs>
-          {/* Path from Node A (left) to Node B (center) */}
-          <line
-            x1="22%"
-            y1="42%"
-            x2="48%"
-            y2="42%"
-            stroke="#099BE9"
-            strokeWidth="1.5"
-            strokeDasharray="3 3"
-            strokeOpacity="0.4"
-          />
-          {/* Path from Node B (center) to Node C (right) */}
-          <line
-            x1="52%"
-            y1="42%"
-            x2="78%"
-            y2="42%"
-            stroke="#099BE9"
-            strokeWidth="1.5"
-            strokeDasharray="3 3"
-            strokeOpacity="0.4"
-          />
-          {/* Cute Traveling Heartbeat Packets */}
-          <circle r="3" fill="#099BE9" opacity="0.9">
-            <animate
-              key={`p1-${pulseKey}`}
-              attributeName="cx"
-              from="22%"
-              to="50%"
-              dur="1.2s"
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="cy"
-              values="42%;38%;42%"
-              dur="1.2s"
-              repeatCount="indefinite"
-            />
-          </circle>
-          <circle r="3" fill="#09C899" opacity="0.9">
-            <animate
-              key={`p2-${pulseKey}`}
-              attributeName="cx"
-              from="50%"
-              to="78%"
-              dur="1.2s"
-              begin="0.3s"
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="cy"
-              values="42%;46%;42%"
-              dur="1.2s"
-              repeatCount="indefinite"
-            />
-          </circle>
-        </svg>
-
-        {/* 3 Cute Node Cards */}
-        <div className="grid grid-cols-3 gap-2 relative z-10">
-          {nodes.map((n, idx) => (
-            <div
-              key={n.id}
-              className={`p-2.5 rounded-xl border text-center transition-all duration-300 flex flex-col items-center justify-between gap-1.5 ${
-                n.isLeader
-                  ? "bg-[#099BE9]/10 border-[#099BE9]/40 shadow-xs hover:scale-105"
-                  : "bg-slate-50/70 border-slate-200/70 hover:bg-slate-100/70 hover:scale-105"
-              }`}
-            >
-              {/* Cute Node Mascot Avatar */}
-              <div className="relative">
-                <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center font-mono text-xs font-bold transition-transform ${
-                    n.isLeader
-                      ? "bg-[#099BE9] text-white shadow-xs animate-bounce"
-                      : "bg-slate-200 text-slate-700"
-                  }`}
-                  style={{ animationDuration: n.isLeader ? "2s" : "0s" }}
-                >
-                  {n.isLeader ? "1" : idx + 1}
-                </div>
-                <span className="absolute -top-1 -right-1 text-[10px]">
-                  {n.emoji}
-                </span>
-              </div>
-
-              <div className="space-y-0.5">
-                <p className="text-xs font-bold text-slate-900">{n.id}</p>
-                <p
-                  className={`text-[10px] font-mono font-semibold ${
-                    n.isLeader ? "text-[#099BE9]" : "text-slate-500"
-                  }`}
-                >
-                  {n.role}
-                </p>
-              </div>
+        {/* Right: State Stream Indicators */}
+        <div className="flex-1 space-y-2 font-mono text-[11px]">
+          <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
+            <div className="flex items-center justify-between text-slate-500">
+              <span>Write Head</span>
+              <span className="font-bold text-[#0AA793]">Slot 0{headIndex}</span>
             </div>
-          ))}
+            <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+              <div
+                className="bg-[#09C899] h-full transition-all duration-500"
+                style={{ width: `${((headIndex + 1) / totalSlots) * 100}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+            <span className="text-slate-500">Eviction Loop</span>
+            <span className="font-bold text-slate-900">Zero Overrun</span>
+          </div>
         </div>
       </div>
 
+      {/* Footer */}
       <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-        <span className="flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#099BE9] animate-pulse" />
-          <span>Heartbeat synced</span>
-        </span>
-        <span className="text-[#099BE9] font-bold flex items-center gap-1">
+        <span>Offset Indexing</span>
+        <span className="text-[#0AA793] font-bold flex items-center gap-1">
           <Check className="w-3 h-3" />
-          <span>Zero log divergence</span>
+          <span>Cache-line aligned</span>
         </span>
       </div>
     </div>
@@ -273,101 +144,195 @@ function ClusterIntuitionWidget() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Visual Widget 3: Bare-Metal Performance Gauge with Live Wagging Needle     */
+/* Visual Widget 2: Topological Consensus & State Convergence (Systems)       */
+/* Demonstrates: Broadcast quorum, causal order, network convergence          */
 /* -------------------------------------------------------------------------- */
-function BenchmarkIntuitionWidget() {
-  const [opsCount, setOpsCount] = useState(156240);
+function ConsensusTopologyWidget() {
+  const [pulse, setPulse] = useState(0);
 
-  // Cute fluctuating throughput counter
   useEffect(() => {
     const timer = setInterval(() => {
-      setOpsCount((prev) => 156000 + Math.floor(Math.sin(Date.now() / 800) * 2400));
-    }, 600);
+      setPulse((p) => (p + 1) % 4);
+    }, 1600);
     return () => clearInterval(timer);
   }, []);
 
   return (
     <div className="w-full rounded-2xl bg-white border border-slate-200 p-4 shadow-2xs select-none relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-[#8647E2]/10 rounded-full blur-xl pointer-events-none animate-pulse" />
-
+      {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-100">
         <div className="flex items-center gap-1.5 text-[11px] font-mono font-semibold text-slate-700">
-          <span className="p-1 rounded-md bg-[#8647E2]/10 text-[#8647E2] inline-flex items-center justify-center animate-pulse">
+          <span className="p-1 rounded-md bg-[#099BE9]/10 text-[#099BE9] inline-flex items-center justify-center">
+            <Share2 className="w-3.5 h-3.5" />
+          </span>
+          <span>State Convergence</span>
+        </div>
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#099BE9]/15 text-[#099BE9] font-bold">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#099BE9] animate-ping" />
+          <span>Consensus Lock</span>
+        </span>
+      </div>
+
+      {/* Abstract Triangular Graph Topology */}
+      <div className="py-3 flex items-center justify-center">
+        <div className="w-full max-w-[220px] h-28 relative">
+          <svg viewBox="0 0 220 112" className="w-full h-full overflow-visible">
+            {/* Edges Connecting Nodes */}
+            <line x1="110" y1="20" x2="40" y2="86" stroke="#E2E8F0" strokeWidth="1.5" strokeDasharray="3 3" />
+            <line x1="110" y1="20" x2="180" y2="86" stroke="#E2E8F0" strokeWidth="1.5" strokeDasharray="3 3" />
+            <line x1="40" y1="86" x2="180" y2="86" stroke="#E2E8F0" strokeWidth="1.5" strokeDasharray="3 3" />
+
+            {/* Radiating Concurrency Wave from Primary Node */}
+            <circle cx="110" cy="20" r="14" fill="none" stroke="#099BE9" strokeWidth="1" opacity="0.3">
+              <animate attributeName="r" from="10" to="34" dur="1.8s" repeatCount="indefinite" />
+              <animate attributeName="opacity" from="0.7" to="0" dur="1.8s" repeatCount="indefinite" />
+            </circle>
+
+            {/* Traveling Data Packets on Edges */}
+            {/* Edge 1: Top to Left */}
+            <circle r="3" fill="#099BE9">
+              <animate attributeName="cx" from="110" to="40" dur="1.2s" repeatCount="indefinite" />
+              <animate attributeName="cy" from="20" to="86" dur="1.2s" repeatCount="indefinite" />
+            </circle>
+
+            {/* Edge 2: Top to Right */}
+            <circle r="3" fill="#09C899">
+              <animate attributeName="cx" from="110" to="180" dur="1.2s" begin="0.2s" repeatCount="indefinite" />
+              <animate attributeName="cy" from="20" to="86" dur="1.2s" begin="0.2s" repeatCount="indefinite" />
+            </circle>
+
+            {/* Return Edge: Left to Right Sync */}
+            <circle r="2.5" fill="#8647E2">
+              <animate attributeName="cx" from="40" to="180" dur="1.5s" begin="0.4s" repeatCount="indefinite" />
+              <animate attributeName="cy" values="86;84;86" dur="1.5s" begin="0.4s" repeatCount="indefinite" />
+            </circle>
+
+            {/* Primary Node (Top) */}
+            <g>
+              <circle cx="110" cy="20" r="10" fill="#099BE9" stroke="#FFFFFF" strokeWidth="2" />
+              <circle cx="110" cy="20" r="3.5" fill="#FFFFFF" />
+            </g>
+
+            {/* Replica Node A (Bottom Left) */}
+            <g>
+              <circle cx="40" cy="86" r="9" fill="#09C899" stroke="#FFFFFF" strokeWidth="2" />
+              <circle cx="40" cy="86" r="3" fill="#FFFFFF" />
+            </g>
+
+            {/* Replica Node B (Bottom Right) */}
+            <g>
+              <circle cx="180" cy="86" r="9" fill="#8647E2" stroke="#FFFFFF" strokeWidth="2" />
+              <circle cx="180" cy="86" r="3" fill="#FFFFFF" />
+            </g>
+
+            {/* Labels in SVG */}
+            <text x="110" y="38" textAnchor="middle" className="text-[9px] font-mono font-bold fill-slate-700">Leader (t=4)</text>
+            <text x="40" y="104" textAnchor="middle" className="text-[9px] font-mono fill-slate-500">Replica 1</text>
+            <text x="180" y="104" textAnchor="middle" className="text-[9px] font-mono fill-slate-500">Replica 2</text>
+          </svg>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+        <span>Quorum Round</span>
+        <span className="text-[#099BE9] font-bold flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#099BE9]" />
+          <span>Synchronized State</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Visual Widget 3: Pipeline Flow & Little's Law Throughput (Systems)         */
+/* Demonstrates: Bounded queues, backpressure, physical hardware limits       */
+/* -------------------------------------------------------------------------- */
+function PipelineFlowWidget() {
+  const [throughput, setThroughput] = useState(156400);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setThroughput(156000 + Math.floor(Math.sin(Date.now() / 900) * 2200));
+    }, 700);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="w-full rounded-2xl bg-white border border-slate-200 p-4 shadow-2xs select-none relative overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="flex items-center gap-1.5 text-[11px] font-mono font-semibold text-slate-700">
+          <span className="p-1 rounded-md bg-[#8647E2]/10 text-[#8647E2] inline-flex items-center justify-center">
             <Activity className="w-3.5 h-3.5" />
           </span>
-          <span>Physical Limits</span>
+          <span>Pipeline & Latency</span>
         </div>
-        <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#8647E2]/15 text-[#8647E2] font-bold">
-          <Zap className="w-3 h-3 text-[#FBAE0C] fill-[#FBAE0C] animate-bounce" />
-          <span>Bare-Metal</span>
-        </span>
-      </div>
-
-      {/* Speed Dial / Progress Display with Live Cute Oscillation */}
-      <div className="py-3 flex flex-col items-center justify-center text-center space-y-2">
-        <div className="relative flex items-center justify-center">
-          <svg className="w-24 h-24 transform -rotate-90">
-            <circle
-              cx="48"
-              cy="48"
-              r="40"
-              stroke="#F1F5F9"
-              strokeWidth="6"
-              fill="none"
-            />
-            {/* Animated Gauge Arc */}
-            <circle
-              cx="48"
-              cy="48"
-              r="40"
-              stroke="#09C899"
-              strokeWidth="6"
-              fill="none"
-              strokeDasharray="251.2"
-              strokeDashoffset="48"
-              strokeLinecap="round"
-              className="transition-all duration-700 ease-out"
-            />
-          </svg>
-
-          {/* Central Live Counter with cute bounce */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-xl font-extrabold text-slate-950 font-mono tracking-tight transition-all">
-              {Math.round(opsCount / 1000)}K
-            </span>
-            <span className="text-[10px] font-mono text-[#0AA793] font-bold uppercase flex items-center gap-0.5">
-              <span>ops/sec</span>
-              <span className="inline-block animate-pulse">⚡</span>
-            </span>
-          </div>
-        </div>
-
-        {/* Latency & Test Pass Bar with Animated ECG Wave */}
-        <div className="flex items-center gap-4 text-xs font-mono">
-          <div className="text-center">
-            <span className="text-slate-400 block text-[10px]">p99 Latency</span>
-            <span className="font-bold text-[#0AA793]">0.18 ms</span>
-          </div>
-          <div className="w-px h-6 bg-slate-200" />
-          <div className="text-center">
-            <span className="text-slate-400 block text-[10px]">Test Suite</span>
-            <span className="font-bold text-slate-900 inline-flex items-center gap-1">
-              <Check className="w-3 h-3 text-[#09C899] stroke-[3]" />
-              <span>100% Pass</span>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-        <span className="flex items-center gap-1">
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#8647E2]/15 text-[#8647E2] font-bold">
           <span className="w-1.5 h-1.5 rounded-full bg-[#8647E2] animate-ping" />
-          <span>Global Leaderboard</span>
+          <span>Continuous Drain</span>
         </span>
-        <span className="text-[#8647E2] font-bold flex items-center gap-0.5">
-          <span>Top 2%</span>
-          <span className="text-[10px]">🏆</span>
+      </div>
+
+      {/* Abstract Flow Pipeline Architecture */}
+      <div className="py-3 space-y-3">
+        {/* Pipeline Queue Stream SVG */}
+        <div className="w-full h-10 bg-slate-50 rounded-xl border border-slate-200/80 p-1 flex items-center relative overflow-hidden">
+          {/* Moving Flow Gradient Stream */}
+          <div className="absolute inset-0 opacity-20 bg-gradient-to-r from-[#099BE9] via-[#09C899] to-[#8647E2]" />
+
+          {/* Abstract Packets Flowing Left to Right */}
+          <div className="w-full flex items-center justify-between px-2 relative z-10">
+            <span className="text-[10px] font-mono font-semibold text-slate-500">IN</span>
+
+            {/* SVG Packet Stream */}
+            <svg className="flex-1 h-5 mx-2 overflow-visible">
+              {/* Channel Line */}
+              <line x1="0" y1="10" x2="100%" y2="10" stroke="#CBD5E1" strokeWidth="1" strokeDasharray="4 4" />
+
+              {/* Packet 1 */}
+              <rect width="14" height="8" rx="2" y="6" fill="#099BE9">
+                <animate attributeName="x" from="0%" to="100%" dur="2s" repeatCount="indefinite" />
+              </rect>
+
+              {/* Packet 2 */}
+              <rect width="14" height="8" rx="2" y="6" fill="#09C899">
+                <animate attributeName="x" from="0%" to="100%" dur="2s" begin="0.65s" repeatCount="indefinite" />
+              </rect>
+
+              {/* Packet 3 */}
+              <rect width="14" height="8" rx="2" y="6" fill="#8647E2">
+                <animate attributeName="x" from="0%" to="100%" dur="2s" begin="1.3s" repeatCount="indefinite" />
+              </rect>
+            </svg>
+
+            <span className="text-[10px] font-mono font-semibold text-slate-500">OUT</span>
+          </div>
+        </div>
+
+        {/* Live Systems Telemetry Bar */}
+        <div className="grid grid-cols-2 gap-2 font-mono text-center">
+          <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/80">
+            <span className="text-[10px] text-slate-500 block">Measured Rate</span>
+            <span className="text-sm font-bold text-slate-900">
+              {Math.round(throughput / 1000)}K <span className="text-[10px] text-[#0AA793]">ops/s</span>
+            </span>
+          </div>
+
+          <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/80">
+            <span className="text-[10px] text-slate-500 block">Tail p99</span>
+            <span className="text-sm font-bold text-[#8647E2]">0.18 ms</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+        <span>Hardware Bus</span>
+        <span className="text-[#8647E2] font-bold flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#8647E2]" />
+          <span>Zero Backpressure</span>
         </span>
       </div>
     </div>
@@ -378,38 +343,39 @@ function BenchmarkIntuitionWidget() {
 /* Main Section: Clean Brilliant.org-Style Learning Cards                     */
 /* Uses ALGO's 4 Brand Colors:                                                */
 /* Blue (#099BE9), Green (#09C899), Purple (#8647E2), Orange (#FBAE0C)        */
+/* NO EMOJIS — PURE ABSTRACT SYSTEMS THINKING ANIMATIONS                      */
 /* -------------------------------------------------------------------------- */
 export function HomeHowItWorks() {
   const cards = [
     {
       num: "01",
-      badge: "VISUAL INTUITION",
+      badge: "MEMORY & FEEDBACK",
       color: "#09C899", // ALGO Green
       badgeStyle: "text-[#0AA793] bg-[#09C899]/10 border-[#09C899]/30",
       title: "Concepts that click",
       description:
-        "Instead of memorizing synthetic algorithms, build storage engines, write-ahead logs, and buffer pools until the underlying physical mechanics click.",
-      widget: <StorageIntuitionWidget />,
+        "Understand state machines and memory cycles through hands-on construction. Trace pointer offsets, ring buffers, and cache evictions from first principles.",
+      widget: <RingBufferStateWidget />,
     },
     {
       num: "02",
-      badge: "STEP-BY-STEP EVOLUTION",
+      badge: "TOPOLOGY & CONSENSUS",
       color: "#099BE9", // ALGO Blue
       badgeStyle: "text-[#099BE9] bg-[#099BE9]/10 border-[#099BE9]/30",
       title: "Guided progression",
       description:
-        "Start with simple stdin/stdout commands and level up to distributed consensus, network partitions, and fault recovery across 6 progressive tiers.",
-      widget: <ClusterIntuitionWidget />,
+        "Evolve from single-process commands to multi-node topologies. Model message passing, quorum convergence, and partition tolerance across 6 progressive tiers.",
+      widget: <ConsensusTopologyWidget />,
     },
     {
       num: "03",
-      badge: "PHYSICAL MEASUREMENT",
+      badge: "FLOW & CONSTRAINTS",
       color: "#8647E2", // ALGO Purple
       badgeStyle: "text-[#8647E2] bg-[#8647E2]/10 border-[#8647E2]/30",
       title: "Real physical limits",
       description:
-        "No multiple-choice questions or artificial constraints. Stress test against physical CPU limits, memory quotas, and sudden crashes on bare metal.",
-      widget: <BenchmarkIntuitionWidget />,
+        "Test implementations against hardware bottlenecks. Measure queue backpressure, cache-miss penalties, and microsecond tail latencies under real load.",
+      widget: <PipelineFlowWidget />,
     },
   ];
 
@@ -458,7 +424,7 @@ export function HomeHowItWorks() {
                 </span>
               </div>
 
-              {/* Center: Visual Intuition Widget with cute animations */}
+              {/* Center: Abstract Systems Thinking Animation */}
               <div className="pt-1">{card.widget}</div>
 
               {/* Bottom: Title & Friendly Description */}
