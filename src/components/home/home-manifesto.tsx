@@ -185,42 +185,56 @@ export function HomeManifesto() {
             The Agentic Inflection Point
           </h3>
           <p className="text-xs sm:text-sm text-slate-700 font-medium mt-1">
-            Traditional coding assessment asks: <em className="font-bold text-slate-950 font-serif">&ldquo;Can you produce the solution?&rdquo;</em> But now an AI can often produce a solution outright.
+            The question is no longer simply: <em className="font-bold text-slate-950 font-serif">&ldquo;Do we want to learn to code?&rdquo;</em> The question is: <strong className="text-slate-950">&ldquo;What does it mean to engineer software when agents can increasingly do the coding?&rdquo;</strong>
           </p>
         </div>
 
-        {/* Stack Overflow 2025 Stats Cards */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-4">
-          <div className="text-xs font-mono uppercase text-slate-700 font-bold tracking-wider">
-            From Stack Overflow&apos;s 2025 Developer &amp; AI Survey (49,000+ respondents):
-          </div>
+        {/* 3 Core Evidence Sources */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <a
+            href="https://openai.com/index/introducing-swe-bench-verified/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group p-4 rounded-xl bg-white border border-slate-200 hover:border-slate-400 transition-all shadow-2xs space-y-1 block"
+          >
+            <div className="flex items-center justify-between text-[11px] font-mono font-bold text-[#099BE9]">
+              <span>SWE-bench Verified</span>
+              <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-slate-900 transition-colors" />
+            </div>
+            <p className="text-xs text-slate-700 font-medium leading-snug">
+              Agents tested on real multi-file GitHub repos &amp; issues, not synthetic algorithm puzzles.
+            </p>
+          </a>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl bg-[#FBAE0C]/10 border border-[#FBAE0C]/30 space-y-1">
-              <div className="text-2xl sm:text-3xl font-mono font-extrabold text-[#F78424]">
-                66%
-              </div>
-              <p className="text-xs text-slate-900 font-medium leading-snug">
-                of developers are frustrated by AI solutions that are <strong>&ldquo;almost right&rdquo;</strong>
-              </p>
+          <a
+            href="https://www.hackerrank.com/reports/developer-skills-report-2025"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group p-4 rounded-xl bg-white border border-slate-200 hover:border-slate-400 transition-all shadow-2xs space-y-1 block"
+          >
+            <div className="flex items-center justify-between text-[11px] font-mono font-bold text-[#0AA793]">
+              <span>HackerRank 2025</span>
+              <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-slate-900 transition-colors" />
             </div>
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-              <div className="text-2xl sm:text-3xl font-mono font-extrabold text-slate-950">
-                45%
-              </div>
-              <p className="text-xs text-slate-800 font-medium leading-snug">
-                say debugging AI-generated code is <strong>more time-consuming</strong>
-              </p>
+            <p className="text-xs text-slate-700 font-medium leading-snug">
+              <strong className="text-slate-950">78%</strong> say assessments don&apos;t align with real work; <strong className="text-slate-950">66%</strong> prefer repo-level tasks.
+            </p>
+          </a>
+
+          <a
+            href="https://survey.stackoverflow.co/2025/ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group p-4 rounded-xl bg-white border border-slate-200 hover:border-slate-400 transition-all shadow-2xs space-y-1 block"
+          >
+            <div className="flex items-center justify-between text-[11px] font-mono font-bold text-[#F78424]">
+              <span>Stack Overflow AI 2025</span>
+              <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-slate-900 transition-colors" />
             </div>
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-              <div className="text-2xl sm:text-3xl font-mono font-extrabold text-slate-950">
-                46% vs 33%
-              </div>
-              <p className="text-xs text-slate-800 font-medium leading-snug">
-                <strong>distrust AI output accuracy</strong> vs. 33% who trust it
-              </p>
-            </div>
-          </div>
+            <p className="text-xs text-slate-700 font-medium leading-snug">
+              <strong className="text-slate-950">66%</strong> frustrated by &ldquo;almost right&rdquo; code; <strong className="text-slate-950">46%</strong> distrust AI accuracy.
+            </p>
+          </a>
         </div>
 
         {/* Systems Thinking in the Agentic Era (Core Thesis) */}
@@ -246,6 +260,21 @@ export function HomeManifesto() {
           <p className="text-xs sm:text-sm text-slate-700 font-medium leading-relaxed">
             An AI agent can increasingly generate functions, write tests, refactor code, and configure infrastructure. As implementation becomes delegatable, the engineer&apos;s responsibility moves upward — from typing individual pieces of code to understanding, directing, verifying, and evolving the system as a whole.
           </p>
+
+          {/* DSA ≠ Systems Thinking Callout */}
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-800 font-medium leading-relaxed space-y-2">
+            <div className="font-mono font-bold text-slate-950 uppercase text-xs tracking-wider text-[#099BE9] flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#099BE9]" />
+              DSA ≠ Systems Thinking:
+            </div>
+            <p>
+              DSA teaches algorithms, data structures, and computational complexity. That is foundational. But knowing how to implement a graph algorithm doesn&apos;t teach you how to reason about: <span className="font-mono text-xs text-slate-900 font-bold">processes → memory → concurrency → storage → protocols → failure → observability → performance</span>.
+            </p>
+            <div className="pt-2 border-t border-slate-200/80 flex flex-wrap items-center gap-2 text-xs font-mono font-bold">
+              <span className="px-2.5 py-1 rounded bg-slate-100 text-slate-800 border border-slate-200">Code is still the medium.</span>
+              <span className="px-2.5 py-1 rounded bg-[#09C899]/15 text-[#0AA793] border border-[#09C899]/30">Systems understanding is the capability above it.</span>
+            </div>
+          </div>
 
           {/* Why Systems Understanding Becomes Scarce */}
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-800 font-medium leading-relaxed space-y-2">

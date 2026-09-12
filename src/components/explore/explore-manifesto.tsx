@@ -195,46 +195,154 @@ export function ExploreManifesto() {
             The Agentic Inflection Point
           </h2>
           <p className="text-sm sm:text-base text-slate-700 font-medium mt-2 leading-relaxed">
-            Traditional coding assessment asks: <em className="font-bold text-slate-950 font-serif">&ldquo;Can you produce the solution?&rdquo;</em> But now an AI can often produce a solution outright.
+            The question is no longer simply: <em className="font-bold text-slate-950 font-serif">&ldquo;Do we want to learn to code?&rdquo;</em> The question is: <strong className="text-slate-950">&ldquo;What does it mean to engineer software when agents can increasingly do the coding?&rdquo;</strong>
           </p>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <span className="text-xs font-mono uppercase text-slate-700 font-bold tracking-wider">
-              From Stack Overflow&apos;s 2025 Developer &amp; AI Survey (49,000+ respondents):
-              <sup className="ml-1">
-                <a href="#src-5" className="text-[#099BE9] font-mono text-xs font-bold hover:underline">[5]</a>
-              </sup>
-            </span>
+        {/* 3 Pillars of Empirical Evidence */}
+        <div className="space-y-4">
+          <div className="text-xs font-mono uppercase text-slate-700 font-bold tracking-wider flex items-center justify-between">
+            <span>The Three Pillars of Empirical Evidence:</span>
+            <span className="text-slate-500 font-mono text-[11px] hidden sm:inline">// REPOSITORIES • WORKFLOWS • SENTIMENT</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl bg-[#FBAE0C]/10 border border-[#FBAE0C]/30 space-y-1">
-              <div className="text-2xl sm:text-3xl font-mono font-extrabold text-[#F78424]">
-                66%
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Pillar 1: SWE-bench */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-3 flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#099BE9]/10 text-[#099BE9] border border-[#099BE9]/20">
+                    Agentic Benchmark
+                  </span>
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                </div>
+                <h4 className="font-bold text-slate-950 text-sm">
+                  SWE-bench &amp; SWE-bench Verified
+                </h4>
+                <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                  Agents are given full GitHub repositories, issues, terminal tools, and execution environments — evaluated on whether they resolve multi-file engineering problems rather than synthetic algorithm riddles.
+                </p>
               </div>
-              <p className="text-xs text-slate-900 font-medium leading-snug">
-                of developers are frustrated by AI solutions that are <strong>&ldquo;almost right&rdquo;</strong>
-              </p>
+              <div className="pt-2 border-t border-slate-100 flex flex-wrap gap-2 text-[11px] font-mono font-bold">
+                <a
+                  href="https://openai.com/index/introducing-swe-bench-verified/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#099BE9] hover:underline flex items-center gap-1"
+                >
+                  <span>OpenAI Verified</span> →
+                </a>
+                <a
+                  href="https://www.swebench.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-600 hover:text-slate-950 hover:underline"
+                >
+                  swebench.com
+                </a>
+              </div>
             </div>
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-              <div className="text-2xl sm:text-3xl font-mono font-extrabold text-slate-950">
-                45%
+
+            {/* Pillar 2: HackerRank 2025 */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-3 flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#09C899]/10 text-[#0AA793] border border-[#09C899]/20">
+                    Developer Research
+                  </span>
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                </div>
+                <h4 className="font-bold text-slate-950 text-sm">
+                  HackerRank 2025 Skills Report
+                </h4>
+                <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                  <strong className="text-slate-950">66%</strong> prefer real-world repository tasks, <strong className="text-slate-950">78%</strong> say assessments don&apos;t align with real work, and <strong className="text-slate-950">56%</strong> find algorithm questions irrelevant to their jobs.
+                </p>
               </div>
-              <p className="text-xs text-slate-800 font-medium leading-snug">
-                say debugging AI-generated code is <strong>more time-consuming</strong>
-              </p>
+              <div className="pt-2 border-t border-slate-100 text-[11px] font-mono font-bold">
+                <a
+                  href="https://www.hackerrank.com/reports/developer-skills-report-2025"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#0AA793] hover:underline flex items-center gap-1"
+                >
+                  <span>HackerRank 2025 Report</span> →
+                </a>
+              </div>
             </div>
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-              <div className="text-2xl sm:text-3xl font-mono font-extrabold text-slate-950">
-                46% vs 33%
+
+            {/* Pillar 3: Stack Overflow AI 2025 */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-3 flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#FBAE0C]/15 text-[#F78424] border border-[#FBAE0C]/30">
+                    Industry Reality
+                  </span>
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                </div>
+                <h4 className="font-bold text-slate-950 text-sm">
+                  Stack Overflow AI &amp; Agents Survey
+                </h4>
+                <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                  <strong className="text-slate-950">66%</strong> frustration with &ldquo;almost right&rdquo; code, <strong className="text-slate-950">46%</strong> distrust AI accuracy, and developers resist delegating high-responsibility tasks (deployment, monitoring, architecture).
+                </p>
               </div>
-              <p className="text-xs text-slate-800 font-medium leading-snug">
-                <strong>distrust AI output accuracy</strong> vs. 33% who trust it
-              </p>
+              <div className="pt-2 border-t border-slate-100 flex flex-wrap gap-2 text-[11px] font-mono font-bold">
+                <a
+                  href="https://survey.stackoverflow.co/2025/ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#F78424] hover:underline flex items-center gap-1"
+                >
+                  <span>SO AI Survey</span> →
+                </a>
+                <a
+                  href="https://survey.stackoverflow.co/2025/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-600 hover:text-slate-950 hover:underline"
+                >
+                  Main Survey
+                </a>
+              </div>
             </div>
           </div>
+        </div>
+
+        {/* The Conceptual Chain */}
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 sm:p-6 space-y-3">
+          <div className="text-xs font-mono font-bold uppercase tracking-wider text-slate-700 flex items-center justify-between">
+            <span>The Conceptual Chain: From Isolated Code to Systems Thinking</span>
+            <span className="text-slate-500 font-mono text-[10px] hidden sm:inline">// THE EVOLUTION OF ENGINEERING</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-7 gap-2 text-center font-mono text-xs items-center">
+            <div className="p-2.5 rounded-lg bg-white border border-slate-200 shadow-2xs">
+              <div className="text-[10px] text-slate-500 font-bold">STAGE 1</div>
+              <div className="font-bold text-slate-950 text-xs mt-0.5">Isolated DSA</div>
+              <div className="text-[10px] text-slate-500 font-sans mt-0.5">Puzzles &amp; syntax</div>
+            </div>
+            <div className="text-slate-400 font-bold hidden sm:block">→</div>
+            <div className="p-2.5 rounded-lg bg-white border border-slate-200 shadow-2xs">
+              <div className="text-[10px] text-slate-500 font-bold">STAGE 2</div>
+              <div className="font-bold text-slate-950 text-xs mt-0.5">Cheap Code</div>
+              <div className="text-[10px] text-slate-500 font-sans mt-0.5">AI produces syntax</div>
+            </div>
+            <div className="text-slate-400 font-bold hidden sm:block">→</div>
+            <div className="p-2.5 rounded-lg bg-white border border-slate-200 shadow-2xs">
+              <div className="text-[10px] text-slate-500 font-bold">STAGE 3</div>
+              <div className="font-bold text-slate-950 text-xs mt-0.5">Repo Agents</div>
+              <div className="text-[10px] text-slate-500 font-sans mt-0.5">SWE-bench scope</div>
+            </div>
+            <div className="text-slate-400 font-bold hidden sm:block">→</div>
+            <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-900 text-white shadow-sm">
+              <div className="text-[10px] text-emerald-400 font-bold">STAGE 4</div>
+              <div className="font-bold text-white text-xs mt-0.5">Systems Thinking</div>
+              <div className="text-[10px] text-slate-300 font-sans mt-0.5">Direct, verify, evolve</div>
+            </div>
+          </div>
+          <p className="text-xs text-slate-600 font-medium pt-1 text-center sm:text-left">
+            When implementation becomes delegatable, the question shifts from <em className="font-semibold text-slate-900 font-serif">&ldquo;Can you produce the code?&rdquo;</em> to <strong className="text-slate-950">&ldquo;Can you understand, direct, verify, and evolve the system?&rdquo;</strong>
+          </p>
         </div>
 
         {/* ============================================================== */}
@@ -492,6 +600,87 @@ export function ExploreManifesto() {
             <div className="pt-2 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
               <span className="text-slate-600 font-medium">AI can produce the implementation.</span>
               <span className="text-slate-950 font-bold">Systems thinking determines whether the implementation deserves to exist.</span>
+            </div>
+          </div>
+
+          {/* ============================================================== */}
+          {/* DSA ≠ SYSTEMS THINKING                                          */}
+          {/* ============================================================== */}
+          <div className="space-y-4 pt-2 border-t border-slate-200">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold tracking-wider uppercase bg-[#099BE9]/15 text-[#099BE9] border border-[#099BE9]/30">
+                Core Distinction
+              </span>
+              <span className="text-xs font-mono font-bold text-slate-700">
+                // COMPILATION VS ORCHESTRATION
+              </span>
+            </div>
+
+            <h4 className="text-xl sm:text-2xl font-extrabold text-slate-950 tracking-tight">
+              DSA ≠ Systems Thinking
+            </h4>
+
+            <p className="text-sm sm:text-base text-slate-800 font-medium leading-relaxed">
+              One important clarification: <strong className="text-slate-950 font-bold">DSA is not useless.</strong> DSA teaches you to reason about computational problems, algorithmic complexity, data structures, and asymptotic bounds. That is a foundational layer of computer science.
+            </p>
+
+            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+              However, knowing how to implement a graph traversal or balance a binary tree does not teach you how to reason about physical execution reality:
+            </p>
+
+            {/* Pipeline comparison */}
+            <div className="p-4 rounded-xl bg-slate-100/90 border border-slate-200 font-mono text-xs text-slate-800 space-y-2">
+              <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                The Systems Execution Horizon:
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5 font-bold text-slate-950">
+                <span>Processes</span>
+                <span className="text-slate-400">→</span>
+                <span>Memory</span>
+                <span className="text-slate-400">→</span>
+                <span>Concurrency</span>
+                <span className="text-slate-400">→</span>
+                <span>Storage</span>
+                <span className="text-slate-400">→</span>
+                <span>Networking</span>
+                <span className="text-slate-400">→</span>
+                <span>Protocols</span>
+                <span className="text-slate-400">→</span>
+                <span>Failure</span>
+                <span className="text-slate-400">→</span>
+                <span>Observability</span>
+                <span className="text-slate-400">→</span>
+                <span>Performance</span>
+                <span className="text-slate-400">→</span>
+                <span className="text-[#0AA793]">System Evolution</span>
+              </div>
+            </div>
+
+            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+              Likewise, HackerRank and LeetCode are primarily assessment mechanisms for hiring loops — not the answer to how engineers should learn and master increasingly agentic software development.
+            </p>
+
+            {/* The Educational Question */}
+            <div className="p-5 rounded-2xl bg-white border-2 border-slate-900 shadow-xs space-y-3">
+              <div className="text-xs font-mono font-bold uppercase tracking-wider text-slate-600">
+                The Real Educational Question of the AI Era:
+              </div>
+              <p className="text-base sm:text-lg font-bold text-slate-950">
+                &ldquo;If an agent can implement the function, can the human understand the system the function belongs to?&rdquo;
+              </p>
+              <div className="pt-2 border-t border-slate-100 text-xs sm:text-sm text-slate-800 font-medium space-y-2">
+                <p>
+                  <strong>We don’t need to stop learning to code.</strong> We need to stop treating code production as the endpoint of engineering education.
+                </p>
+                <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-mono font-bold">
+                  <span className="px-2.5 py-1 rounded-md bg-slate-100 text-slate-800 border border-slate-200">
+                    Code is still the medium.
+                  </span>
+                  <span className="text-[#0AA793] px-2.5 py-1 rounded-md bg-[#09C899]/15 border border-[#09C899]/30">
+                    Systems understanding is the capability above it.
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -977,15 +1166,39 @@ export function ExploreManifesto() {
           <li id="src-5" className="pt-3 flex items-start gap-2.5">
             <span className="font-bold text-slate-400 shrink-0">[5]</span>
             <span className="font-sans font-medium text-slate-800 leading-relaxed">
-              Stack Overflow 2025 Annual Developer &amp; AI Survey (
+              Stack Overflow 2025 Annual Developer Survey (
               <a href="https://survey.stackoverflow.co/2025/" target="_blank" rel="noopener noreferrer" className="text-[#099BE9] hover:underline font-mono text-xs">
                 survey.stackoverflow.co/2025
               </a>
-              ) — 49,000+ respondents; frustration/debugging/trust figures.
+              ) &amp; AI Section (
+              <a href="https://survey.stackoverflow.co/2025/ai" target="_blank" rel="noopener noreferrer" className="text-[#099BE9] hover:underline font-mono text-xs">
+                survey.stackoverflow.co/2025/ai
+              </a>
+              ) — 49,000+ respondents; frustration with &ldquo;almost right&rdquo; solutions, time spent debugging, and distrust of AI output accuracy.
             </span>
           </li>
           <li id="src-6" className="pt-3 flex items-start gap-2.5">
             <span className="font-bold text-slate-400 shrink-0">[6]</span>
+            <span className="font-sans font-medium text-slate-800 leading-relaxed">
+              SWE-bench — Evaluating Language Models on Real-World Software Engineering Issues (
+              <a href="https://www.swebench.com/" target="_blank" rel="noopener noreferrer" className="text-[#099BE9] hover:underline font-mono text-xs">
+                swebench.com
+              </a>
+              ) — Benchmark evaluating autonomous AI agents on full GitHub repository issue resolution.
+            </span>
+          </li>
+          <li id="src-7" className="pt-3 flex items-start gap-2.5">
+            <span className="font-bold text-slate-400 shrink-0">[7]</span>
+            <span className="font-sans font-medium text-slate-800 leading-relaxed">
+              OpenAI, &ldquo;Introducing SWE-bench Verified&rdquo; (
+              <a href="https://openai.com/index/introducing-swe-bench-verified/" target="_blank" rel="noopener noreferrer" className="text-[#099BE9] hover:underline font-mono text-xs">
+                openai.com/index/introducing-swe-bench-verified
+              </a>
+              ) — Human-validated benchmark subset evaluating frontier models on multi-file repo engineering.
+            </span>
+          </li>
+          <li id="src-8" className="pt-3 flex items-start gap-2.5">
+            <span className="font-bold text-slate-400 shrink-0">[8]</span>
             <span className="font-sans font-medium text-slate-800 leading-relaxed">
               CodeCrafters (
               <a href="https://codecrafters.io" target="_blank" rel="noopener noreferrer" className="text-[#099BE9] hover:underline font-mono text-xs">
@@ -994,8 +1207,8 @@ export function ExploreManifesto() {
               ) — &ldquo;Build Your Own Redis, Git &amp; SQLite From Scratch&rdquo;; stage-based challenges used by engineers at Google, OpenAI, and Vercel.
             </span>
           </li>
-          <li id="src-7" className="pt-3 flex items-start gap-2.5">
-            <span className="font-bold text-slate-400 shrink-0">[7]</span>
+          <li id="src-9" className="pt-3 flex items-start gap-2.5">
+            <span className="font-bold text-slate-400 shrink-0">[9]</span>
             <span className="font-sans font-medium text-slate-800 leading-relaxed">
               Karat, &ldquo;Engineering Interview Trends in 2026&rdquo; (
               <a href="https://karat.com/engineering-interview-trends-2026" target="_blank" rel="noopener noreferrer" className="text-[#099BE9] hover:underline font-mono text-xs">
@@ -1004,14 +1217,14 @@ export function ExploreManifesto() {
               ) — survey of 400 engineering leaders across the U.S., India, and China.
             </span>
           </li>
-          <li id="src-8" className="pt-3 flex items-start gap-2.5">
-            <span className="font-bold text-slate-400 shrink-0">[8]</span>
+          <li id="src-10" className="pt-3 flex items-start gap-2.5">
+            <span className="font-bold text-slate-400 shrink-0">[10]</span>
             <span className="font-sans font-medium text-slate-800 leading-relaxed">
               IEEE-USA InSight, &ldquo;Three Ways AI is Reshaping Traditional Technical Interviews in 2026&rdquo; — survey of 67 FAANG and startup interviewers, citing Karat&apos;s underlying data.
             </span>
           </li>
-          <li id="src-9" className="pt-3 flex items-start gap-2.5">
-            <span className="font-bold text-slate-400 shrink-0">[9]</span>
+          <li id="src-11" className="pt-3 flex items-start gap-2.5">
+            <span className="font-bold text-slate-400 shrink-0">[11]</span>
             <span className="font-sans font-medium text-slate-800 leading-relaxed">
               FinalRound AI, &ldquo;Software Engineering Job Market 2026: Data, Trends and Outlook&rdquo; — on the shift in system design interview content at large employers.
             </span>
