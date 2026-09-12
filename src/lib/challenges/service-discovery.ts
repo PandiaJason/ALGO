@@ -163,9 +163,9 @@ service: "api" ──► [ { id: "i1", addr: "10.0.0.1:80", ttl_expires: now + 5
       ],
       examples: [
         {
-          title: "Register and Lookup",
-          input: "register auth-srv i1 10.0.0.1 8080 5000\\nlookup auth-srv\\nexit",
-          output: "REGISTER_OK\\nENDPOINTS: 10.0.0.1:8080",
+          title: "Register single instance",
+          input: "register api i1 10.0.0.1 80 5000\nlookup api\nexit",
+          output: "REGISTER_OK\nENDPOINTS: 10.0.0.1:80",
         },
       ],
       constraints: ["Instantly evict nodes exceeding TTL", "Support multiple instances per service"],
@@ -248,9 +248,9 @@ Case 2 SRV Record:
       ],
       examples: [
         {
-          title: "Query A Record",
-          input: "dns-query auth.service.consul A\\nexit",
-          output: "DNS_RESPONSE: 1 ANSWER, TYPE A, IP: 10.0.0.1, TTL: 5",
+          title: "Standard A record query",
+          input: "dns-query web.service.algo A\nexit",
+          output: "A_RECORD: 10.0.0.1 TTL: 5",
         },
       ],
       constraints: ["Strict RFC 1035 header flags (QR, AA, RCODE)", "Binary-safe wire encoding"],
@@ -333,9 +333,9 @@ Case 2 Flapping Instance:
       ],
       examples: [
         {
-          title: "Detect Flapping",
-          input: "flap-instance i1 5\\ncheck-suppression i1\\nexit",
-          output: "FLAP_DETECTED penalty=500\\nSUPPRESSED: TRUE (Excluded from DNS)",
+          title: "Normal node healthy",
+          input: "check-suppression i_normal\nexit",
+          output: "SUPPRESSED: FALSE",
         },
       ],
       constraints: ["Automatically suppress node after 3 rapid state changes", "Exponential decay of penalty"],
@@ -425,9 +425,9 @@ Case 2 Failure Detection:
       ],
       examples: [
         {
-          title: "Gossip Failure Detection",
-          input: "kill-node node_7\\ngossip-tick\\ngossip-tick\\nexit",
-          output: "NODE node_7 MARKED SUSPECT\\nNODE node_7 DECLARED DEAD (Cluster Notified)",
+          title: "Join 5-node gossip mesh",
+          input: "init-gossip-mesh 5\ncheck-mesh-size\nexit",
+          output: "MESH_SIZE: 5",
         },
       ],
       constraints: ["O(1) message overhead per node per period", "Zero false positives on transient network delay"],
@@ -505,9 +505,9 @@ Case 2: "measure-dns-tail-latency" ──► P99_LATENCY: < 0.5ms`,
       ],
       examples: [
         {
-          title: "Bench DNS QPS",
-          input: "bench-dns-qps 8\\nexit",
-          output: "QPS: 48200 p50: 0.12ms p99: 0.45ms",
+          title: "DNS QPS benchmark",
+          input: "bench-dns-qps 8\nexit",
+          output: "QPS: > 40000",
         },
       ],
       constraints: ["DNS latency p99 under 0.5ms", "Gossip convergence within O(log N) rounds"],
@@ -589,9 +589,9 @@ Case 2: "bench-concurrent-dns 16" ──► THROUGHPUT: > 100000 QPS`,
       ],
       examples: [
         {
-          title: "Bench Lock-Free DNS",
-          input: "enable-rcu-tables\\nbench-concurrent-dns 16\\nexit",
-          output: "RCU_ENABLED\\nTHROUGHPUT: 125,000 QPS (Zero lock contention)",
+          title: "RCU table enablement",
+          input: "enable-rcu-tables\nexit",
+          output: "RCU_ENABLED: OK",
         },
       ],
       constraints: ["Zero lock contention on read queries", "Atomic route table swap"],

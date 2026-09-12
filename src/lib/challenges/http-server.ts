@@ -239,7 +239,11 @@ Lookup: O(path length) prefix traversal without linear route array scanning.`,
         { cmd: "GET /posts/:slug", desc: "Extracts slug parameter and returns 'Post <slug>'." },
       ],
       examples: [
-        { title: "Dynamic User ID", input: "GET /users/42", output: "HTTP/1.1 200 OK\nContent-Length: 7\n\nUser 42" },
+        {
+          title: "User Route",
+          input: "GET /users/101",
+          output: "HTTP/1.1 200 OK\nContent-Length: 8\n\nUser 101",
+        },
       ],
       constraints: ["Support alphanumeric path parameters", "Return 404 if path structure does not match"],
       cases: [
@@ -309,7 +313,11 @@ Raw Wire Header                 Normalized Internal Map
         { cmd: "GET /echo-agent with User-Agent header", desc: "Extracts and returns User-Agent header value." },
       ],
       examples: [
-        { title: "Query String", input: "GET /search?q=database", output: "HTTP/1.1 200 OK\nContent-Length: 16\n\nSearch: database" },
+        {
+          title: "Single Query Parameter",
+          input: "GET /search?q=redis",
+          output: "HTTP/1.1 200 OK\nContent-Length: 13\n\nSearch: redis",
+        },
       ],
       constraints: ["Header names are case-insensitive", "Query parameters separated by '&' and '='"],
       cases: [
@@ -377,7 +385,11 @@ Wire Stream: [POST /echo\n][Content-Length: 5\n\n][hello]
         { cmd: "POST /json with payload", desc: "Echoes JSON payload back." },
       ],
       examples: [
-        { title: "POST /echo", input: "POST /echo\nContent-Length: 5\n\nhello", output: "HTTP/1.1 200 OK\nContent-Length: 5\n\nhello" },
+        {
+          title: "POST /echo basic",
+          input: "POST /echo\nContent-Length: 5\n\nhello",
+          output: "HTTP/1.1 200 OK\nContent-Length: 5\n\nhello",
+        },
       ],
       constraints: ["Strictly consume Content-Length bytes", "Support arbitrary UTF-8 bodies"],
       cases: [
@@ -445,7 +457,11 @@ TCP Connection Established
         { cmd: "---", desc: "Delimiter for pipelined requests on standard input." },
       ],
       examples: [
-        { title: "2 Pipelined Requests", input: "GET /hello\n---\nGET /ping", output: "HTTP/1.1 200 OK\nContent-Length: 11\nConnection: keep-alive\n\nHello World\n---\nHTTP/1.1 200 OK\nContent-Length: 4\nConnection: close\n\nPONG" },
+        {
+          title: "Pipelined Sequential Reads",
+          input: "GET /hello\n---\nGET /ping",
+          output: "HTTP/1.1 200 OK\nContent-Length: 11\nConnection: keep-alive\n\nHello World\n---\nHTTP/1.1 200 OK\nContent-Length: 4\nConnection: close\n\nPONG",
+        },
       ],
       constraints: ["Must include Connection header", "Accurate Content-Length on every pipelined response"],
       cases: [
@@ -518,7 +534,11 @@ Client Sockets ──►   Linux epoll / kqueue  │
         { cmd: "QUIT", desc: "Drains the server and exits with 'SERVER_DRAINED'." },
       ],
       examples: [
-        { title: "Server Stats", input: "GET /hello\nGET /ping\nSTATS", output: "HTTP/1.1 200 OK\nContent-Length: 11\n\nHello World\nHTTP/1.1 200 OK\nContent-Length: 4\n\nPONG\nREQUESTS: 2 CONNS: 1 STATUS: HEALTHY" },
+        {
+          title: "Burst GETs",
+          input: "GET /hello\nGET /ping\nGET /hello",
+          output: "HTTP/1.1 200 OK\nContent-Length: 11\n\nHello World\nHTTP/1.1 200 OK\nContent-Length: 4\n\nPONG\nHTTP/1.1 200 OK\nContent-Length: 11\n\nHello World",
+        },
       ],
       constraints: ["> 20,000 requests/sec target", "p99 latency < 1.0ms"],
       cases: [

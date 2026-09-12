@@ -105,10 +105,10 @@ export const shellChallenge: ChallengeData = {
 A shell reads what the user types, understands the command, and performs the requested action.
 
 For example:
-echo Hello ALGO Systems
+echo hello world
 
 Your shell should print:
-Hello ALGO Systems`,
+hello world`,
       howItWorks: `When the user types:
 echo hello world
 
@@ -176,9 +176,9 @@ Builtin commands execute directly within the shell process itself rather than la
       ],
       examples: [
         {
-          title: "Echo Command",
-          input: "echo Hello ALGO Systems\nexit",
-          output: "Hello ALGO Systems",
+          title: "Echo string",
+          input: "echo hello world\nexit",
+          output: "hello world",
         },
       ],
       constraints: ["Trim extra spaces between arguments", "Print nothing on empty lines"],
@@ -289,9 +289,9 @@ Case 2 (Missing Binary):
       ],
       examples: [
         {
-          title: "Run External Binary",
-          input: "run echo foo\\nexit",
-          output: "foo\\n[Process exited with code 0]",
+          title: "Run echo binary",
+          input: "run echo test\nexit",
+          output: "test\n[Process exited with code 0]",
         },
       ],
       constraints: ["Report exact process exit code", "Do not crash if binary does not exist"],
@@ -384,9 +384,9 @@ BACKGROUND & REAPING (Case 2):
       ],
       examples: [
         {
-          title: "SIGINT Survival",
-          input: "sigint\\necho alive\\nexit",
-          output: "^C\\nalive",
+          title: "Trap SIGINT",
+          input: "sigint\necho ok\nexit",
+          output: "^C\nok",
         },
       ],
       constraints: ["Zero zombie processes remaining in table", "Shell prompt must reappear after SIGINT"],
@@ -494,9 +494,9 @@ REDIRECTION (Case 3): "echo test > /tmp/algo_test.txt"
       ],
       examples: [
         {
-          title: "Simple Pipeline",
-          input: "echo hello world | tr a-z A-Z\\nexit",
-          output: "HELLO WORLD",
+          title: "2-stage pipeline",
+          input: "echo hello | tr a-z A-Z\nexit",
+          output: "HELLO",
         },
       ],
       constraints: ["Support up to 5 pipeline stages", "Close all unneeded file descriptors"],
@@ -593,9 +593,9 @@ Case 2: "profile true" ──► TYPE: EXTERNAL FORK_US: OK`,
       ],
       examples: [
         {
-          title: "Profile Command",
-          input: "profile echo fast\\nexit",
-          output: "fast\\n[ELAPSED_US: < 2000 SYSCALLS: FORK,EXEC,WAIT]",
+          title: "Profile Builtin",
+          input: "profile echo ping\nexit",
+          output: "ping\nTYPE: BUILTIN ELAPSED_US: < 100",
         },
       ],
       constraints: ["Microsecond accuracy", "Report pipe throughput in MB/s"],
@@ -699,8 +699,8 @@ Case 2: "fast-eval echo zero copy" ──► "zero copy"`,
       ],
       examples: [
         {
-          title: "Bench Heap Allocations",
-          input: "bench-allocs 10000\\nexit",
+          title: "Zero-alloc builtin",
+          input: "bench-allocs 10000\nexit",
           output: "ITERATIONS: 10000 HEAP_ALLOCS: 0",
         },
       ],

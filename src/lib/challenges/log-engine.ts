@@ -158,7 +158,11 @@ COUNT
         { cmd: "COUNT", desc: "Returns total number of ingested log lines." },
       ],
       examples: [
-        { title: "Ingest and Count", input: "INGEST 200 15 /api/users\nCOUNT", output: "OK\n1" },
+        {
+          title: "Single Log Ingestion",
+          input: "INGEST 200 15 /api/users\nCOUNT",
+          output: "OK\n1",
+        },
       ],
       constraints: ["Strict forward stream ingestion", "Count increments on each INGEST"],
       cases: [
@@ -231,7 +235,11 @@ Case 2: "FAMILY_COUNT 5XX" ──► Aggregates 500, 503 error logs`,
         { cmd: "FAMILY_COUNT <family>", desc: "Returns count for family: 2XX, 4XX, 5XX." },
       ],
       examples: [
-        { title: "Status Metrics", input: "INGEST 200 10 /a\nINGEST 200 12 /b\nINGEST 500 80 /c\nSTATUS_COUNT 200\nFAMILY_COUNT 5XX", output: "OK\nOK\nOK\n2\n1" },
+        {
+          title: "Status Code Count",
+          input: "INGEST 200 10 /a\nINGEST 200 12 /b\nSTATUS_COUNT 200",
+          output: "OK\nOK\n2",
+        },
       ],
       constraints: ["Exact integer match on status code", "Case-insensitive family: 2XX, 4XX, 5XX"],
       cases: [
@@ -299,7 +307,11 @@ Case 2:
         { cmd: "ERROR_RATE", desc: "Returns 5XX error percentage formatted to 2 decimals (e.g. '0.00%' or '25.00%')." },
       ],
       examples: [
-        { title: "25% Error Rate", input: "INGEST 200 10 /ok\nINGEST 200 10 /ok\nINGEST 200 10 /ok\nINGEST 500 50 /fail\nERROR_RATE", output: "OK\nOK\nOK\nOK\n25.00%" },
+        {
+          title: "0% Errors",
+          input: "INGEST 200 10 /ok\nERROR_RATE",
+          output: "OK\n0.00%",
+        },
       ],
       constraints: ["Format exactly 'X.XX%'", "Return 0.00% if no logs ingested"],
       cases: [
@@ -375,7 +387,11 @@ OK
         { cmd: "TOP_ENDPOINTS <k>", desc: "Returns space-separated top K endpoints sorted by frequency descending." },
       ],
       examples: [
-        { title: "Top 2 Endpoints", input: "INGEST 200 10 /users\nINGEST 200 10 /users\nINGEST 200 10 /home\nTOP_ENDPOINTS 2", output: "OK\nOK\nOK\n/users /home" },
+        {
+          title: "Top 2 Endpoints",
+          input: "INGEST 200 10 /users\nINGEST 200 10 /users\nINGEST 200 10 /home\nTOP_ENDPOINTS 2",
+          output: "OK\nOK\nOK\n/users /home",
+        },
       ],
       constraints: ["Sort by count desc, then path asc", "Return empty string if no endpoints"],
       cases: [
@@ -447,7 +463,11 @@ Case 2: "LATENCY P99" ──► Identifies tail outliers (e.g. 500ms)`,
         { cmd: "LATENCY <P50|P95|P99>", desc: "Returns the requested percentile latency in milliseconds." },
       ],
       examples: [
-        { title: "P50 Latency", input: "INGEST 200 10 /a\nINGEST 200 20 /b\nINGEST 200 30 /c\nLATENCY P50", output: "OK\nOK\nOK\n20ms" },
+        {
+          title: "P50 Median",
+          input: "INGEST 200 10 /a\nINGEST 200 20 /b\nINGEST 200 30 /c\nLATENCY P50",
+          output: "OK\nOK\nOK\n20ms",
+        },
       ],
       constraints: ["Return '<val>ms'", "Return '0ms' if no logs ingested"],
       cases: [
@@ -519,7 +539,11 @@ TOTAL: 1 ERRORS: 0 P99: 10ms STATUS: HEALTHY`,
         { cmd: "RESET", desc: "Wipes all aggregated metrics and resets engine. Returns 'OK'." },
       ],
       examples: [
-        { title: "Engine Stats", input: "INGEST 200 10 /ok\nSTATS", output: "OK\nTOTAL: 1 ERRORS: 0 P99: 10ms STATUS: HEALTHY" },
+        {
+          title: "Engine STATS",
+          input: "INGEST 200 10 /ok\nSTATS",
+          output: "OK\nTOTAL: 1 ERRORS: 0 P99: 10ms STATUS: HEALTHY",
+        },
       ],
       constraints: ["Sub-millisecond STATS latency", "RESET completely restores fresh state"],
       cases: [

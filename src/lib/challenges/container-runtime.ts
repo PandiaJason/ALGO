@@ -151,9 +151,9 @@ Case 2: "spawn-ns c2 check-pid" ──► get-container-pid ──► INTERNAL_P
       ],
       examples: [
         {
-          title: "Spawn in Namespace",
-          input: "spawn-ns container-alpha echo hello\\nget-container-pid\\nexit",
-          output: "SPAWNED container-alpha\\nINTERNAL_PID: 1 HOST_PID: 1042\\nhello",
+          title: "Spawn basic container",
+          input: "spawn-ns c1 echo test\nexit",
+          output: "SPAWNED c1\ntest",
         },
       ],
       constraints: ["Internal PID must report 1", "Container hostname change must not leak to host"],
@@ -226,9 +226,9 @@ Case 2: "ls-container-root" ──► "bin etc usr var"`,
       ],
       examples: [
         {
-          title: "Pivot Rootfs",
-          input: "mount-rootfs /alpine-root\\nls-container-root\\nexit",
-          output: "PIVOT_ROOT_OK\\nbin dev etc home proc root sys tmp usr var",
+          title: "Mount pristine rootfs",
+          input: "mount-rootfs /rootfs\nexit",
+          output: "PIVOT_ROOT_OK",
         },
       ],
       constraints: ["Host filesystem must be completely unreachable", "Must unmount host root completely"],
@@ -299,9 +299,9 @@ run-with-limits alloc-32M      ──► Exceeds 16M limit! ──► OOM_KILLED
       ],
       examples: [
         {
-          title: "Memory Limit OOM",
-          input: "set-limits --mem 16M --pids 10\\nrun-with-limits alloc-32M\\nexit",
-          output: "CGROUP_CONFIGURED\\nPROCESS_TERMINATED: OOM_KILLED (exit 137)",
+          title: "Normal workload within memory limit",
+          input: "set-limits --mem 64M --pids 10\nrun-with-limits alloc-16M\nexit",
+          output: "CGROUP_CONFIGURED\nALLOC_OK",
         },
       ],
       constraints: ["Strict 0 byte overshoot above memory.max", "Instantly reject forks exceeding pids.max"],
@@ -372,9 +372,9 @@ exec-sandbox sb_1 echo hello ──► hello`,
       ],
       examples: [
         {
-          title: "Spawn Sandbox Pool",
-          input: "spawn-pool 5\\nexec-sandbox sb_0 echo ready\\nexit",
-          output: "POOL_READY: 5 SANDBOXES\\nready",
+          title: "Spawn 5 sandboxes",
+          input: "spawn-pool 5\nexit",
+          output: "POOL_READY: 5",
         },
       ],
       constraints: ["Sandboxes must be 100% mutually isolated", "Zero network traffic between sandboxes"],
@@ -444,9 +444,9 @@ Case 2: "bench-spawn-rate 50" ──► SPAWN_RATE: > 50 /sec`,
       ],
       examples: [
         {
-          title: "Profile Boot",
-          input: "profile-boot\\nexit",
-          output: "CLONE: 1.2ms PIVOT_ROOT: 2.1ms CGROUP: 0.8ms TOTAL_BOOT: 4.1ms",
+          title: "Profile single boot",
+          input: "profile-boot\nexit",
+          output: "TOTAL_BOOT: < 15ms",
         },
       ],
       constraints: ["Total cold boot under 15ms", "Microsecond timeline precision"],
@@ -514,9 +514,9 @@ Case 2: "fast-exec echo fast" ──► Instant handover ──► fast\nDISPATC
       ],
       examples: [
         {
-          title: "Fast Exec",
-          input: "init-hot-pool 5\\nfast-exec echo instantaneous\\nexit",
-          output: "HOT_POOL_READY\\ninstantaneous\\nDISPATCH_TIME: 1.8ms",
+          title: "Initialize hot standby pool",
+          input: "init-hot-pool 5\nexit",
+          output: "HOT_POOL_READY",
         },
       ],
       constraints: ["Sub-3ms execution dispatch", "Re-seed security state between runs"],

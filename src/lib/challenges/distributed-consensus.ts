@@ -173,9 +173,9 @@ Case 2 Heartbeat Broadcast:
       ],
       examples: [
         {
-          title: "Trigger Election",
-          input: "tick node_1\\nstatus\\nexit",
-          output: "NODE node_1 BECAME CANDIDATE TERM 1\\nnode_1: LEADER (term 1), node_2: FOLLOWER (term 1), node_3: FOLLOWER (term 1)",
+          title: "Single node election",
+          input: "tick n1\nstatus\nexit",
+          output: "n1: LEADER term 1",
         },
       ],
       constraints: ["Exactly 1 vote per node per term", "Leaders must maintain regular heartbeats"],
@@ -266,9 +266,9 @@ STATE: x=10`,
       ],
       examples: [
         {
-          title: "Replicate Entry",
-          input: "client-write 'SET a=1'\\nreplicate\\nget-state\\nexit",
-          output: "ENTRY_APPENDED index=1\\nREPLICATED_MAJORITY commitIndex=1\\nSTATE: a=1",
+          title: "Single write commit",
+          input: "client-write 'SET x=10'\nreplicate\nget-state\nexit",
+          output: "COMMITTED index 1\nSTATE: x=10",
         },
       ],
       constraints: ["Strict majority required for commit", "Followers must match leader log prefix exactly"],
@@ -358,9 +358,9 @@ Case 2: "write-majority n3 'SET x=good'" ──► COMMITTED_MAJORITY: x=good`,
       ],
       examples: [
         {
-          title: "Simulate Partition",
-          input: "partition n1,n2 | n3,n4,n5\\nclient-write-to n1 'SET bad=1'\\nreplicate n1\\nexit",
-          output: "PARTITION_ACTIVE\\nWRITE_PENDING (No Quorum: 2/5)\\nUNCOMMITTED",
+          title: "Minority partition write blocked",
+          input: "partition n1,n2 | n3,n4,n5\nwrite-minority n1 'SET x=bad'\ncheck-commit n1\nexit",
+          output: "UNCOMMITTED_NO_QUORUM",
         },
       ],
       constraints: ["Zero split-brain committed values", "Overwritten uncommitted entries must be cleanly discarded"],
@@ -442,9 +442,9 @@ Case 2 Snapshot Installation:
       ],
       examples: [
         {
-          title: "Snapshot Log",
-          input: "take-snapshot\\nget-log-size\\nexit",
-          output: "SNAPSHOT_CREATED index=1000\\nLOG_TRUNCATED entries_remaining=1",
+          title: "Snapshot and log truncation",
+          input: "take-snapshot\nexit",
+          output: "SNAPSHOT_CREATED index 100",
         },
       ],
       constraints: ["Snapshots must include lastIncludedIndex and lastIncludedTerm", "Joint consensus during config change"],
@@ -526,9 +526,9 @@ kill-leader            ──► Terminates current leader
       ],
       examples: [
         {
-          title: "Benchmark Failover",
-          input: "kill-leader\\nexit",
-          output: "LEADER_CRASHED\\nNEW_LEADER_ELECTED: n2 DURATION: 132ms",
+          title: "Measure leader failover",
+          input: "kill-leader\nexit",
+          output: "FAILOVER_TIME: < 150ms",
         },
       ],
       constraints: ["Election duration under 150ms", "Zero divergent commits during failover"],
@@ -608,9 +608,9 @@ bench-pipeline 5000    ──► Evaluates 5000 non-blocking concurrent consensu
       ],
       examples: [
         {
-          title: "Read Index Query",
-          input: "read-index x\\nexit",
-          output: "READ_INDEX_OK term=2 value=10 LATENCY: 0.2ms",
+          title: "Pipelined commit throughput",
+          input: "enable-pipelining\nbench-pipeline 5000\nexit",
+          output: "PIPELINE_THROUGHPUT: > 20000 ops/s",
         },
       ],
       constraints: ["Strict linearizability guarantee", "Zero lost pipeline entries"],

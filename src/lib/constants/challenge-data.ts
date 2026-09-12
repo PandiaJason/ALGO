@@ -232,22 +232,12 @@ NOT_FOUND`,
       "Idempotent Behavior: Missing keys must consistently return NULL for GET and NOT_FOUND for DELETE.",
     ],
     examples: [
-      {
-        title: "Example 1: SET & GET",
-        input: "SET alpha 42\nGET alpha",
-        output: "OK\n42",
-      },
-      {
-        title: "Example 2: Missing Key",
-        input: "GET non_existent_key",
-        output: "NULL",
-      },
-      {
-        title: "Example 3: Overwrite & DELETE",
-        input: "SET score 10\nSET score 20\nGET score\nDELETE score\nGET score",
-        output: "OK\nOK\n20\nOK\nNULL",
-      },
-    ],
+        {
+          title: "Basic SET & GET",
+          input: "SET alpha 42\nGET alpha",
+          output: "OK\n42",
+        },
+      ],
     constraints: [
       "Time Complexity: O(1) average lookup and insertion.",
       "Memory Sandbox: 256MB RAM hard limit inside Docker container.",
@@ -353,17 +343,12 @@ Initial capacity: 8 buckets. When items exceed capacity * 0.75, table doubles to
       "Tombstone Management: On deletion in open addressing, mark slot as tombstone to preserve search probe continuity.",
     ],
     examples: [
-      {
-        title: "Example 1: Collision Resolution",
-        input: "SET k1 val1\nSET k2 val2\nGET k1\nGET k2",
-        output: "OK\nOK\nval1\nval2",
-      },
-      {
-        title: "Example 2: Table Expansion & STATS",
-        input: "SET user:1 jason\nSET user:2 alex\nSET user:3 sam\nSTATS",
-        output: "OK\nOK\nOK\nBUCKETS: 8 ELEMENTS: 3 LOAD: 0.38",
-      },
-    ],
+        {
+          title: "Sequential Inserts",
+          input: "SET a 1\nSET b 2\nGET a\nGET b",
+          output: "OK\nOK\n1\n2",
+        },
+      ],
     constraints: [
       "Maximum Load Factor: 0.75 threshold before dynamic rehashing.",
       "Initial Buckets: Start with exactly 8 buckets.",
@@ -476,17 +461,12 @@ Replay Complete (State 100% Reconstituted) ──► Ready for Traffic`,
       "Tolerant Log Parser: Gracefully ignore truncated or corrupt trailing log lines without crashing or aborting initialization.",
     ],
     examples: [
-      {
-        title: "Example 1: Crash Recovery from WAL",
-        input: "SET user:1 jason\nSET user:2 alex\n# Simulate engine restart\nGET user:1\nGET user:2",
-        output: "OK\nOK\njason\nalex",
-      },
-      {
-        title: "Example 2: Snapshot & Restore",
-        input: "SET key1 value1\nSAVE\nFLUSHALL\nGET key1\nRESTORE\nGET key1",
-        output: "OK\nOK\nOK\nNULL\nOK\nvalue1",
-      },
-    ],
+        {
+          title: "WAL Mutation Persistence",
+          input: "SET user:1 jason\nGET user:1",
+          output: "OK\njason",
+        },
+      ],
     constraints: [
       "WAL Log File: ./data/wal.log.",
       "Sync Guarantee: Flush file buffers (fdatasync/flush) on each mutation.",
@@ -590,17 +570,12 @@ Lookup in expiry_table ──► now_ms() >= expiry ──► DELETE "auth" ─�
       "Monotonic Clock: Use monotonic time (time.monotonic() in Python or steady_clock in C++) to prevent NTP/wall-clock drift issues.",
     ],
     examples: [
-      {
-        title: "Example 1: TTL Expiration",
-        input: "SET token xyz\nEXPIRE token 50\n# sleep 60ms\nGET token\nTTL token",
-        output: "OK\nOK\nNULL\n-2",
-      },
-      {
-        title: "Example 2: PERSIST Command",
-        input: "SET session 123\nEXPIRE session 60000\nTTL session\nPERSIST session\nTTL session",
-        output: "OK\nOK\n>0\nOK\n-1",
-      },
-    ],
+        {
+          title: "EXPIRE & Query",
+          input: "SET auth 99\nEXPIRE auth 5000\nGET auth",
+          output: "OK\nOK\n99",
+        },
+      ],
     constraints: [
       "Time Precision: Millisecond resolution (ttl_ms >= 1).",
       "TTL Return Codes: Positive integer (ms remaining), -1 (no expiration), -2 (key does not exist).",
@@ -706,17 +681,12 @@ GET beta         ──► memory["beta"]  ──► 2`,
       "Thread Safety: Zero race conditions under 16 concurrent worker threads (verified via ThreadSanitizer).",
     ],
     examples: [
-      {
-        title: "Example 1: PING & Multi-Key Read",
-        input: "PING\nSET k1 10\nSET k2 20\nMGET k1 k2 k3",
-        output: "PONG\nOK\nOK\n10 20 NULL",
-      },
-      {
-        title: "Example 2: Atomic Multi-Set",
-        input: "MSET a 1 b 2 c 3\nGET a\nGET b\nGET c",
-        output: "OK\n1\n2\n3",
-      },
-    ],
+        {
+          title: "PING Healthcheck",
+          input: "PING\nPING hello",
+          output: "PONG\nhello",
+        },
+      ],
     constraints: [
       "Parallel Clients: Support 16+ concurrent threads without race conditions.",
       "Lock Striping Factor: At least 16 independent mutex partitions.",
@@ -831,17 +801,12 @@ ALLOCATED_BYTES: 1024 PEAK_BYTES: 1024 FRAGMENTATION_RATIO: 1.00`,
       "Online WAL Compaction: Atomically replace bloated log files with clean point-in-time state snapshots.",
     ],
     examples: [
-      {
-        title: "Example 1: Log Compaction & Memory Stats",
-        input: "SET key 1\nSET key 2\nSET key 3\nCOMPACT\nMEMSTATS\nGET key",
-        output: "OK\nOK\nOK\nOK\nALLOCATED_BYTES: 1048 PEAK_BYTES: 2048 FRAGMENTATION_RATIO: 1.02\n3",
-      },
-      {
-        title: "Example 2: High-Throughput Burst",
-        input: "SET burst:1 val\nSET burst:2 val\nGET burst:1\nDELETE burst:2\nEXISTS burst:2",
-        output: "OK\nOK\nval\nOK\nFALSE",
-      },
-    ],
+        {
+          title: "COMPACT Log Compaction",
+          input: "SET user:1 old\nSET user:1 new\nCOMPACT\nGET user:1",
+          output: "OK\nOK\nOK\nnew",
+        },
+      ],
     constraints: [
       "Throughput Benchmark: > 100,000 ops/sec sustained.",
       "p99 Latency Cap: < 0.20 ms under heavy load.",

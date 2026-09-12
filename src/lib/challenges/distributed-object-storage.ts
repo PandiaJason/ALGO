@@ -155,9 +155,9 @@ Case 2 Write & Read:
       ],
       examples: [
         {
-          title: "Distributed Put and Get",
-          input: "cluster-init 6\\nput-distributed file1 HELLOWORLD\\nget-distributed file1\\nexit",
-          output: "CLUSTER_READY: 6 NODES\\nDISTRIBUTED_OK: 6 SHARDS WRITTEN\\nHELLOWORLD",
+          title: "Initialize 6-node cluster",
+          input: "cluster-init 6\nexit",
+          output: "CLUSTER_READY: 6 NODES",
         },
       ],
       constraints: ["Balanced shard distribution across all nodes", "Strict error on missing nodes"],
@@ -238,9 +238,9 @@ ec-encode ABCDEFGHIJKLMNOP
       ],
       examples: [
         {
-          title: "Encode Data 4+2",
-          input: "ec-encode ABCDEFGHIJKLMNOP\\ninspect-shards\\nexit",
-          output: "DATA_SHARDS: D1, D2, D3, D4\\nPARITY_SHARDS: P1, P2\\nENCODE_SUCCESS",
+          title: "Encode 16-byte payload",
+          input: "ec-encode ABCDEFGHIJKLMNOP\nexit",
+          output: "ENCODED: 4_DATA_2_PARITY",
         },
       ],
       constraints: ["Strict 4 data + 2 parity structure", "Parity bytes must conform to GF(2^8) math"],
@@ -325,9 +325,9 @@ Case 2 Two Node Loss:
       ],
       examples: [
         {
-          title: "Survive 2 Node Failures",
-          input: "kill-nodes n1,n3\\nec-decode\\nexit",
-          output: "NODES DEAD: n1, n3\\nRECONSTRUCTION_MATRIX_INVERTED\\nDATA_RECOVERED: 100% MATCH",
+          title: "Single node loss (Node 1 dead)",
+          input: "kill-nodes n1\nec-decode\nexit",
+          output: "RECOVERED_FROM_5_SHARDS",
         },
       ],
       constraints: ["Must recover 100% of data with any 4 surviving shards", "Fail gracefully if > 2 shards are lost"],
@@ -412,9 +412,9 @@ Case 2 Straggler Mitigation:
       ],
       examples: [
         {
-          title: "Bench Parallel Stream",
-          input: "bench-stream 50\\nexit",
-          output: "STREAMED 50MB across 6 nodes\\nAGGREGATE_THROUGHPUT: 480 MB/s",
+          title: "Parallel stream test",
+          input: "bench-stream 50\nexit",
+          output: "AGGREGATE_THROUGHPUT: > 400 MB/s",
         },
       ],
       constraints: ["Asynchronous non-blocking network I/O", "Hedge request must cancel slow stream"],
@@ -492,9 +492,9 @@ Case 2: "measure-rebuild-amplification 1000" ──► NETWORK_AMPLIFICATION: 4.
       ],
       examples: [
         {
-          title: "Profile EC Math",
-          input: "profile-ec-math\\nexit",
-          output: "ENCODE_SPEED: 820 MB/s DECODE_SPEED: 640 MB/s",
+          title: "Measure encode throughput",
+          input: "profile-ec-math\nexit",
+          output: "MATH_THROUGHPUT: > 600 MB/s",
         },
       ],
       constraints: ["Microsecond accuracy on math profiling", "Accurate byte-level amplification tracking"],
@@ -575,9 +575,9 @@ Case 2: "bench-simd-ec" ──► SIMD_THROUGHPUT: > 3000 MB/s`,
       ],
       examples: [
         {
-          title: "Bench SIMD Speedup",
-          input: "enable-simd\\nbench-simd-ec\\nexit",
-          output: "SIMD_ENABLED: AVX2\\nSCALAR: 780 MB/s -> SIMD: 4,800 MB/s (6.1x SPEEDUP)",
+          title: "SIMD kernel activation",
+          input: "enable-simd\nexit",
+          output: "SIMD_ENABLED: OK",
         },
       ],
       constraints: ["Strict 4x+ speedup over scalar baseline", "Identical bit-for-bit mathematical output"],

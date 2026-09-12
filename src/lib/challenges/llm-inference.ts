@@ -167,9 +167,9 @@ Deterministic Token Transition Model:
       ],
       examples: [
         {
-          title: "Generate Tokens",
-          input: "decode-step 'The capital of France is' 5\\nexit",
-          output: "GENERATED: Paris . <EOS> (Total tokens: 3)",
+          title: "Generate short sequence",
+          input: "decode-step 'hello' 3\nexit",
+          output: "TOKENS: world !",
         },
       ],
       constraints: ["Stop instantly on <EOS> token", "Strict adherence to temperature=0.0 greedy selection"],
@@ -258,9 +258,9 @@ Case 2 FLOP Efficiency:
       ],
       examples: [
         {
-          title: "KV Cache Memoization",
-          input: "enable-kv-cache\\ndecode-step 'Systems programming' 10\\ninspect-kv-size\\nexit",
-          output: "KV_CACHE_ENABLED\\nGENERATED: is powerful\\nCACHED_TOKENS: 4 MEMORY: 64KB",
+          title: "Enable KV cache",
+          input: "enable-kv-cache\nexit",
+          output: "KV_CACHE_ENABLED: OK",
         },
       ],
       constraints: ["Only compute Q projection for current token", "Cache footprint must scale linearly"],
@@ -349,9 +349,9 @@ feed-tokens 150        ──► Exceeds 100! Evicts oldest 50 tokens
       ],
       examples: [
         {
-          title: "Evict Context",
-          input: "set-max-context 2048\\nfeed-tokens 3000\\nexit",
-          output: "CONTEXT_OVERFLOW: 3000 > 2048\\nSLIDING_WINDOW_ACTIVE: Kept [0..64] + [1016..2048] (Evicted 952 tokens)",
+          title: "Context within limit",
+          input: "set-max-context 2048\nfeed-tokens 1000\nexit",
+          output: "CONTEXT_OK: 1000/2048",
         },
       ],
       constraints: ["Strict 0 byte overshoot above allocated memory limit", "Preserve initial system prompt tokens"],
@@ -441,9 +441,9 @@ Case 2 Continuous Batching:
       ],
       examples: [
         {
-          title: "Continuous Batching Step",
-          input: "init-paged-attention --block-size 16\\nschedule-continuous-batch\\nexit",
-          output: "PAGED_ATTENTION_READY\\nITERATION_STEP: 3 ACTIVE REQUESTS, 0 FRAGMENTATION",
+          title: "Allocate physical page block",
+          input: "init-paged-attention --block-size 16\nexit",
+          output: "PAGED_ATTENTION_READY",
         },
       ],
       constraints: ["Zero internal memory fragmentation", "Dynamic request entry and exit at any iteration step"],
@@ -529,9 +529,9 @@ Case 2 Inter-Token Latency:
       ],
       examples: [
         {
-          title: "Bench Serving Metrics",
-          input: "bench-serving --prompts 10 --tokens 50\\nexit",
-          output: "TTFT: 18.2ms p95: 22.1ms\\nITL: 4.1ms p95: 4.8ms\\nTHROUGHPUT: 245 tokens/s",
+          title: "Measure TTFT",
+          input: "measure-ttft\nexit",
+          output: "TTFT: < 25ms",
         },
       ],
       constraints: ["TTFT under 25ms", "ITL under 5ms"],
@@ -617,9 +617,9 @@ Case 2 Long Context Complexity:
       ],
       examples: [
         {
-          title: "Enable FlashAttention",
-          input: "enable-flash-attention\\nbench-attention-speed\\nexit",
-          output: "FLASH_ATTENTION_ACTIVE\\nSPEEDUP: 3.4x MEMORY_SAVINGS: 85% (Zero N×N DRAM allocation)",
+          title: "FlashAttention activation",
+          input: "enable-flash-attention\nexit",
+          output: "FLASH_ATTENTION: ACTIVE",
         },
       ],
       constraints: ["Zero N×N attention matrix materialization in DRAM", "Bit-exact numerical match"],

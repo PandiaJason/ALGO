@@ -173,7 +173,7 @@ RUNNING worker-1`,
       ],
       examples: [
         {
-          title: "Schedule Task on Node",
+          title: "Single Node Single Task",
           input: "ADD_NODE worker-1 4 8192\nSUBMIT task-1 2 2048\nSCHEDULE\nSTATUS task-1",
           output: "OK\nQUEUED\nSCHEDULED task-1 -> worker-1\nRUNNING worker-1",
         },
@@ -275,9 +275,9 @@ SCHEDULE                  ──► Priority 10 scheduled next          ──�
       ],
       examples: [
         {
-          title: "High Priority Dispatched First",
-          input: "ADD_NODE n1 4 8192\nSUBMIT_P low 10 2 2048\nSUBMIT_P high 90 2 2048\nSCHEDULE",
-          output: "OK\nQUEUED\nQUEUED\nSCHEDULED high -> n1",
+          title: "High Priority First",
+          input: "ADD_NODE n1 4 8192\nSUBMIT_P low 10 2 2048\nSUBMIT_P high 90 2 2048\nSCHEDULE\nSCHEDULE",
+          output: "OK\nQUEUED\nQUEUED\nSCHEDULED high -> n1\nSCHEDULED low -> n1",
         },
       ],
       constraints: ["Priority is integer between 1 and 1000", "Higher value means higher priority"],
@@ -373,8 +373,8 @@ SCHEDULE_BEST             ──► Packs tightest fit onto n-small!    ──�
       ],
       examples: [
         {
-          title: "Best-Fit Selection",
-          input: "ADD_NODE n-small 2 2048\nADD_NODE n-large 16 32768\nSUBMIT_P t1 10 2 2048\nSCHEDULE_BEST",
+          title: "Picks Tightest Fitting Node",
+          input: "ADD_NODE n-large 16 32768\nADD_NODE n-small 2 2048\nSUBMIT_P t1 10 2 2048\nSCHEDULE_BEST",
           output: "OK\nOK\nQUEUED\nSCHEDULED t1 -> n-small",
         },
       ],
@@ -473,9 +473,9 @@ STATUS t1                 ──► Verified completed                      ─�
       ],
       examples: [
         {
-          title: "Complete Task Frees Node",
-          input: "ADD_NODE n1 4 4096\nSUBMIT_P t1 10 4 4096\nSCHEDULE_BEST\nSUBMIT_P t2 10 2 2048\nSCHEDULE_BEST\nCOMPLETE t1\nSCHEDULE_BEST",
-          output: "OK\nQUEUED\nSCHEDULED t1 -> n1\nQUEUED\nWAITING\nCOMPLETED t1\nSCHEDULED t2 -> n1",
+          title: "Complete and Reuse",
+          input: "ADD_NODE n1 4 4096\nSUBMIT_P t1 10 4 4096\nSCHEDULE_BEST\nCOMPLETE t1\nSTATUS t1",
+          output: "OK\nQUEUED\nSCHEDULED t1 -> n1\nCOMPLETED t1\nCOMPLETED",
         },
       ],
       constraints: ["Completing non-running task returns 'NOT_FOUND'"],
@@ -574,7 +574,7 @@ STATUS t1                 ──► Running healthy on n2               ──�
       ],
       examples: [
         {
-          title: "Kill Node Evicts Tasks",
+          title: "Kill Node Reschedules to Healthy Node",
           input: "ADD_NODE n1 4 4096\nADD_NODE n2 4 4096\nSUBMIT_P t1 10 2 2048\nSCHEDULE_BEST\nKILL_NODE n1\nSTATUS t1\nSCHEDULE_BEST\nSTATUS t1",
           output: "OK\nOK\nQUEUED\nSCHEDULED t1 -> n1\nDEAD n1 EVICTED 1\nPENDING\nSCHEDULED t1 -> n2\nRUNNING n2",
         },
@@ -678,9 +678,9 @@ SCHEDULE_DRF              ──► Fair balance: Bob scheduled next    ──�
       ],
       examples: [
         {
-          title: "DRF Fair Allocation",
-          input: "ADD_NODE n1 10 1000\nSUBMIT_USER alice t1 2 100\nSUBMIT_USER bob t2 1 400\nSCHEDULE_DRF\nSCHEDULE_DRF",
-          output: "OK\nQUEUED\nQUEUED\nDRF_SCHEDULED alice t1 -> n1\nDRF_SCHEDULED bob t2 -> n1",
+          title: "Fair Interleaving",
+          input: "ADD_NODE n1 10 1000\nSUBMIT_USER alice a1 1 100\nSUBMIT_USER bob b1 1 100\nSCHEDULE_DRF\nSCHEDULE_DRF",
+          output: "OK\nQUEUED\nQUEUED\nDRF_SCHEDULED alice a1 -> n1\nDRF_SCHEDULED bob b1 -> n1",
         },
       ],
       constraints: ["Dominant share is max(allocated_cpu / total_cluster_cpu, allocated_ram / total_cluster_ram)"],

@@ -875,32 +875,49 @@ export function WorkspaceClient({
                 )}
 
                 {/* 3. Concrete Example Session */}
-                {Array.isArray(currentLevelInfo.examples) && currentLevelInfo.examples.length > 0 && (
-                  <div className="space-y-2">
-                    <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">
-                      Example Protocol Session
-                    </h3>
+                {(() => {
+                  const case1 = currentLevelInfo.cases?.[0];
+                  const rawExamples = Array.isArray(currentLevelInfo.examples) ? currentLevelInfo.examples : [];
+                  const displayExamples = case1
+                    ? [
+                        {
+                          title: case1.name?.replace(/^Case\s*\d+\s*:\s*/i, "").trim() || "Case 1 Execution",
+                          input: case1.input,
+                          output: case1.expected,
+                        },
+                        ...rawExamples.slice(1),
+                      ]
+                    : rawExamples;
+
+                  if (displayExamples.length === 0) return null;
+
+                  return (
                     <div className="space-y-2">
-                      {currentLevelInfo.examples.map((ex: any, idx: number) => (
-                        <div key={idx} className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1.5">
-                          <div className="text-[10px] font-mono text-slate-500 font-bold uppercase tracking-wide">
-                            {ex.title}
-                          </div>
-                          <div className="bg-white p-2.5 rounded border border-slate-200 font-mono text-xs text-slate-800 space-y-1.5">
-                            <div>
-                              <span className="text-slate-400 font-semibold block text-[10px]">Input (stdin):</span>
-                              <pre className="text-slate-900 font-medium whitespace-pre-wrap">{ex.input?.replace(/\\n/g, "\n")}</pre>
+                      <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">
+                        Example Protocol Session
+                      </h3>
+                      <div className="space-y-2">
+                        {displayExamples.map((ex: any, idx: number) => (
+                          <div key={idx} className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1.5">
+                            <div className="text-[10px] font-mono text-slate-500 font-bold uppercase tracking-wide">
+                              {ex.title}
                             </div>
-                            <div className="pt-1.5 border-t border-slate-100">
-                              <span className="text-slate-400 font-semibold block text-[10px]">Expected Output (stdout):</span>
-                              <pre className="text-[#0AA793] font-semibold whitespace-pre-wrap">{ex.output?.replace(/\\n/g, "\n")}</pre>
+                            <div className="bg-white p-2.5 rounded border border-slate-200 font-mono text-xs text-slate-800 space-y-1.5">
+                              <div>
+                                <span className="text-slate-400 font-semibold block text-[10px]">Input (stdin):</span>
+                                <pre className="text-slate-900 font-medium whitespace-pre-wrap">{ex.input?.replace(/\\n/g, "\n")}</pre>
+                              </div>
+                              <div className="pt-1.5 border-t border-slate-100">
+                                <span className="text-slate-400 font-semibold block text-[10px]">Expected Output (stdout):</span>
+                                <pre className="text-[#0AA793] font-semibold whitespace-pre-wrap">{ex.output?.replace(/\\n/g, "\n")}</pre>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* 4. Critical Systems Hurdle / Watch Out */}
                 {currentLevelInfo.importantChallenge && (

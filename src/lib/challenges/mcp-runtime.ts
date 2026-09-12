@@ -107,10 +107,10 @@ export const mcpRuntimeChallenge: ChallengeData = {
 Think of it like a universal TV remote that can control any device. Tools are the buttons on the remote, JSON-RPC is the infrared signal format, and the runtime routes button presses to the right device.
 
 For example:
-send-rpc {"jsonrpc": "2.0", "method": "ping", "id": 1}
+send-rpc {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}
 
 It should return a properly formatted response:
-{"jsonrpc": "2.0", "id": 1, "result": "pong"}`,
+{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2024-11-05"}}`,
       howItWorks: `1. The AI decides it wants to do something (like check the weather) and formats a message in JSON.
 2. The runtime reads the JSON string and validates that it has the correct 'jsonrpc', 'method', and 'id' fields.
 3. If the message is valid, it processes the request and sends back a JSON response with the same 'id'.
@@ -164,9 +164,9 @@ send-rpc {"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}
       ],
       examples: [
         {
-          title: "Tools List Request",
-          input: "send-rpc {\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\",\"params\":{}}\nexit",
-          output: "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"tools\":[{\"name\":\"echo\",\"description\":\"Echo text\"}]}}",
+          title: "Initialize handshake",
+          input: "send-rpc {\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\"}}\nexit",
+          output: "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"protocolVersion\":\"2024-11-05\"}}",
         },
       ],
       constraints: ["Strict JSON-RPC 2.0 compliance", "Echo exact request id in response"],
@@ -253,9 +253,9 @@ send-rpc {"jsonrpc":"2.0","id":2,"method":"resources/read","params":{"uri":"file
       ],
       examples: [
         {
-          title: "Read Resource",
-          input: "read-resource file:///system/info\nexit",
-          output: "{\"contents\":[{\"uri\":\"file:///system/info\",\"mimeType\":\"text/plain\",\"text\":\"OS: Linux 6.1\"}]}",
+          title: "List resource templates",
+          input: "send-rpc {\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"resources/templates/list\",\"params\":{}}\nexit",
+          output: "{\"resourceTemplates\":[{\"uriTemplate\":\"file:///{path}\"}]}",
         },
       ],
       constraints: ["Handle parameterized URI patterns", "Return 404 resource not found on invalid URI"],
@@ -337,9 +337,9 @@ execute-tool-sandboxed echo {"msg":12345}
       ],
       examples: [
         {
-          title: "Timeout Runaway Tool",
-          input: "set-tool-timeout 50\nexecute-tool-sandboxed infinite_loop {}\nexit",
-          output: "TOOL_STARTED pid=1042\nTIMEOUT_EXCEEDED (50ms)\nSIGKILL_SENT: PROCESS_TERMINATED",
+          title: "Valid schema arguments",
+          input: "execute-tool-sandboxed echo {\"msg\":\"test\"}\nexit",
+          output: "SCHEMA_VALID: EXECUTED_OK",
         },
       ],
       constraints: ["Strict 50ms execution deadline", "Zero zombie processes left on host"],
@@ -425,9 +425,9 @@ Case 2 Request Cancellation:
       ],
       examples: [
         {
-          title: "Parallel Dispatch",
+          title: "Parallel tool execution 10 jobs",
           input: "dispatch-parallel 10\nexit",
-          output: "DISPATCHED_10_JOBS\nALL_10_COMPLETED_CONCURRENTLY",
+          output: "PARALLEL_COMPLETED: 10",
         },
       ],
       constraints: ["Correct request ID correlation", "Cancel request must immediately free worker"],
@@ -517,9 +517,9 @@ Case 2: "bench-dispatch-qps 8" ──► Multi-threaded dispatch ──► QPS: 
       ],
       examples: [
         {
-          title: "Profile Dispatch Overhead",
+          title: "Measure protocol overhead",
           input: "profile-tool-overhead\nexit",
-          output: "SERIALIZE: 0.18ms SCHEMA_VALIDATION: 0.22ms IPC_PIPE: 0.35ms TOTAL: 0.75ms",
+          output: "TOTAL_OVERHEAD: < 0.8ms",
         },
       ],
       constraints: ["Dispatch overhead under 0.8ms", "Microsecond latency accuracy"],
@@ -610,9 +610,9 @@ Case 2 Fast Dispatch:
       ],
       examples: [
         {
-          title: "Bench Fast Dispatch",
-          input: "enable-simd-parser\nbench-fast-dispatch 10000\nexit",
-          output: "SIMD_PARSER_ACTIVE\nDISPATCHED: 10000 CALLS\nAVERAGE_OVERHEAD: 0.08ms (10x faster)",
+          title: "Enable SIMD parser",
+          input: "enable-simd-parser\nexit",
+          output: "SIMD_PARSER_ACTIVE: OK",
         },
       ],
       constraints: ["Sub-0.1ms average dispatch overhead", "Zero heap allocations on hot path"],

@@ -164,7 +164,11 @@ GET b
         { cmd: "GET <key>", desc: "Retrieves value. Returns '<val>' or 'NULL'." },
       ],
       examples: [
-        { title: "Capacity 2 Eviction", input: "CAPACITY 2\nPUT a 1\nPUT b 2\nPUT c 3\nGET a\nGET c", output: "OK\nOK\nOK\nOK\nNULL\n3" },
+        {
+          title: "Capacity 2 Eviction",
+          input: "CAPACITY 2\nPUT a 1\nPUT b 2\nPUT c 3\nGET a\nGET c",
+          output: "OK\nOK\nOK\nOK\nNULL\n3",
+        },
       ],
       constraints: ["Strict O(1) get and put time complexity", "Default capacity 3 if not specified"],
       cases: [
@@ -229,7 +233,11 @@ GET b                  ──► Evicted                       ──► NULL`,
         { cmd: "GET <key>", desc: "Returns value and promotes key to MRU head position." },
       ],
       examples: [
-        { title: "Read Prevents Eviction", input: "CAPACITY 2\nPUT a 1\nPUT b 2\nGET a\nPUT c 3\nGET a\nGET b", output: "OK\nOK\nOK\n1\nOK\n1\nNULL" },
+        {
+          title: "Read Promotes Key",
+          input: "CAPACITY 2\nPUT a 1\nPUT b 2\nGET a\nPUT c 3\nGET a\nGET b",
+          output: "OK\nOK\nOK\n1\nOK\n1\nNULL",
+        },
       ],
       constraints: ["GET must promote node to MRU head in O(1) time"],
       cases: [
@@ -299,7 +307,11 @@ GET b                  ──► Evicted                       ──► NULL`,
         { cmd: "FREQ <key>", desc: "Returns access count of key." },
       ],
       examples: [
-        { title: "LFU Mode Eviction", input: "CAPACITY 2\nMODE LFU\nPUT a 1\nPUT b 2\nGET a\nPUT c 3\nGET a\nGET b", output: "OK\nOK\nOK\nOK\n1\nOK\n1\nNULL" },
+        {
+          title: "LFU Protects High Frequency Key",
+          input: "CAPACITY 2\nMODE LFU\nPUT a 1\nPUT b 2\nGET a\nGET a\nPUT c 3\nGET a\nGET b",
+          output: "OK\nOK\nOK\nOK\n1\n1\nOK\n1\nNULL",
+        },
       ],
       constraints: ["Track access counts accurately", "Tie-break on equal frequency using LRU"],
       cases: [
@@ -362,7 +374,11 @@ PUT perm 42 ──► Key with no TTL ──► TTL perm ──► -1`,
         { cmd: "TTL <key>", desc: "Returns remaining lifetime in ms (-1 permanent, -2 absent)." },
       ],
       examples: [
-        { title: "SETEX & TTL", input: "CAPACITY 2\nSETEX token 5000 abc\nTTL token", output: "OK\nOK\n>0" },
+        {
+          title: "SETEX & Immediate Read",
+          input: "CAPACITY 2\nSETEX session 5000 123\nGET session",
+          output: "OK\nOK\n123",
+        },
       ],
       constraints: ["Millisecond precision timers", "Expired keys return NULL and count as absent"],
       cases: [
@@ -426,7 +442,11 @@ GET k1                 ──► Evicted to respect budget      ──► NULL`,
         { cmd: "MEMORY_USED", desc: "Returns currently allocated payload bytes." },
       ],
       examples: [
-        { title: "Byte Limit Eviction", input: "MAXMEMORY 10\nPUT a 12345\nPUT b 12345\nGET a", output: "OK\nOK\nOK\nNULL" },
+        {
+          title: "Memory Cap Evicts Old Key",
+          input: "MAXMEMORY 10\nPUT k1 1234\nPUT k2 1234\nGET k1",
+          output: "OK\nOK\nOK\nNULL",
+        },
       ],
       constraints: ["Calculate exact string byte size", "Evict until under budget"],
       cases: [
@@ -498,7 +518,11 @@ HITS: 1 MISSES: 1 RATIO: 0.50 EVICTIONS: 0`,
         { cmd: "FLUSHALL", desc: "Clears all cached entries and resets stats. Returns 'OK'." },
       ],
       examples: [
-        { title: "Stats Query", input: "CAPACITY 2\nPUT a 1\nGET a\nGET b\nSTATS", output: "OK\nOK\n1\nNULL\nHITS: 1 MISSES: 1 RATIO: 0.50 EVICTIONS: 0" },
+        {
+          title: "50% Hit Rate",
+          input: "CAPACITY 2\nPUT a 1\nGET a\nGET b\nSTATS",
+          output: "OK\nOK\n1\nNULL\nHITS: 1 MISSES: 1 RATIO: 0.50 EVICTIONS: 0",
+        },
       ],
       constraints: ["Accurate hit/miss counters", "Track evictions count"],
       cases: [

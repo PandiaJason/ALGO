@@ -168,7 +168,11 @@ EMPTY`,
         { cmd: "POLL <topic>", desc: "Retrieves oldest unconsumed message. Returns '<message>' or 'EMPTY'." },
       ],
       examples: [
-        { title: "Publish & Poll", input: "PUB orders pizza\nPOLL orders", output: "OK 0\npizza" },
+        {
+          title: "Basic PUB and POLL",
+          input: "PUB orders pizza\nPOLL orders",
+          output: "OK 0\npizza",
+        },
       ],
       constraints: ["Strict FIFO delivery order", "Multiple isolated topics"],
       cases: [
@@ -242,7 +246,11 @@ Data:   [ "boot" ]
         { cmd: "LEN <topic>", desc: "Returns total message count in topic log." },
       ],
       examples: [
-        { title: "Offset Read", input: "PUB events click\nREAD_AT events 0\nREAD_AT events 0", output: "OK 0\nclick\nclick" },
+        {
+          title: "Multiple Reads Same Offset",
+          input: "PUB logs boot\nREAD_AT logs 0\nREAD_AT logs 0",
+          output: "OK 0\nboot\nboot",
+        },
       ],
       constraints: ["Offsets start at 0 and increment by 1", "Reading at offset must never delete message"],
       cases: [
@@ -317,7 +325,11 @@ analytics ──► Offset 0 committed (next: 1)`,
         { cmd: "GROUP_COMMIT <group> <topic> <offset>", desc: "Commits consumer group progress. Returns 'OK'." },
       ],
       examples: [
-        { title: "2 Independent Groups", input: "PUB orders $50\nGROUP_POLL billing orders\nGROUP_POLL analytics orders", output: "OK 0\nOFFSET: 0 MSG: $50\nOFFSET: 0 MSG: $50" },
+        {
+          title: "Independent Consumer Groups",
+          input: "PUB orders $50\nGROUP_POLL billing orders\nGROUP_POLL analytics orders",
+          output: "OK 0\nOFFSET: 0 MSG: $50\nOFFSET: 0 MSG: $50",
+        },
       ],
       constraints: ["Groups maintain separate offsets", "Polling advances group cursor automatically"],
       cases: [
@@ -386,7 +398,11 @@ All events for "user_1" route strictly to Partition 1, guaranteeing sequential o
         { cmd: "PART_READ <topic> <partition> <offset>", desc: "Reads from specific partition log. Returns '<msg>' or 'NOT_FOUND'." },
       ],
       examples: [
-        { title: "Partitioned Publish", input: "PART_PUB users user:1 active", output: "PARTITION: 1 OFFSET: 0" },
+        {
+          title: "Deterministic Key Mapping",
+          input: "PART_PUB users user_1 a\nPART_PUB users user_1 b",
+          output: "PARTITION: 1 OFFSET: 0\nPARTITION: 1 OFFSET: 1",
+        },
       ],
       constraints: ["Use 4 partitions per topic (0, 1, 2, 3)", "Identical keys must map to identical partitions", "Use deterministic hash: sum of ASCII char codes % 4"],
       cases: [
@@ -462,7 +478,11 @@ OUTPUT: BATCH_OK COUNT: 3 FIRST_OFFSET: 0`,
         { cmd: "LEN <topic>", desc: "Returns total message count in topic log." },
       ],
       examples: [
-        { title: "Batch Publish", input: "BATCH_PUB sensor temp:20 temp:21 temp:22", output: "BATCH_OK COUNT: 3 FIRST_OFFSET: 0" },
+        {
+          title: "3-Message Batch",
+          input: "BATCH_PUB events e1 e2 e3",
+          output: "BATCH_OK COUNT: 3 FIRST_OFFSET: 0",
+        },
       ],
       constraints: ["Atomic batch offset allocation", "Sub-millisecond batch processing"],
       cases: [
@@ -528,7 +548,11 @@ Health Telemetry (Case 2):
         { cmd: "LEN <topic>", desc: "Returns total message count in topic log." },
       ],
       examples: [
-        { title: "Commit and Stats", input: "PUB t test\nCOMMIT\nSTATS", output: "OK 0\nOK\nTOPICS: 1 MESSAGES: 1 STATUS: HEALTHY" },
+        {
+          title: "COMMIT Confirmation",
+          input: "PUB t test\nCOMMIT",
+          output: "OK 0\nOK",
+        },
       ],
       constraints: ["Zero message loss on simulated restart", "Sub-50ms recovery time"],
       cases: [

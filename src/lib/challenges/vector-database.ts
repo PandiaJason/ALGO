@@ -160,9 +160,9 @@ Case 2 Multi-Vector Scan (k=2):
       ],
       examples: [
         {
-          title: "Query Exact Top-K",
-          input: "insert-vector doc1 1.0,0.0,0.0\\ninsert-vector doc2 0.9,0.1,0.0\\nquery-knn 1.0,0.0,0.0 1\\nexit",
-          output: "INSERT_OK\\nINSERT_OK\\nTOP_1: doc1",
+          title: "Insert and query identical vector",
+          input: "insert-vector v1 1.0,0.0\nquery-knn 1.0,0.0 1\nexit",
+          output: "INSERT_OK\nTOP_1: v1",
         },
       ],
       constraints: ["Support up to 128 dimensions", "Scores normalized between -1.0 and 1.0"],
@@ -251,9 +251,9 @@ Case 2 HNSW Search:
       ],
       examples: [
         {
-          title: "HNSW Query",
-          input: "hnsw-search 1.0,0.5,0.2 5 32\\nexit",
-          output: "HNSW_SEARCH_OK: 5 NEIGHBORS FOUND (Hops: 8, Distance evals: 42)",
+          title: "Insert into HNSW graph",
+          input: "hnsw-insert node1 1.0,0.0\nexit",
+          output: "HNSW_INSERT_OK",
         },
       ],
       constraints: ["Max connections M=16", "Logarithmic search hop complexity"],
@@ -343,9 +343,9 @@ Case 2 Entry Point Migration:
       ],
       examples: [
         {
-          title: "Delete Node",
-          input: "hnsw-delete node1\\ncompact-graph\\nexit",
-          output: "NODE_DELETED\\nGRAPH_COMPACTED (Re-wired 12 edges, 0 orphaned islands)",
+          title: "Delete node and verify exclusion",
+          input: "hnsw-delete node1\nhnsw-search 1.0,0.0 1 16\nexit",
+          output: "EXCLUDED: node1",
         },
       ],
       constraints: ["Zero disconnected components after deletion", "Automatic entry-point migration"],
@@ -431,9 +431,9 @@ Case 2 Sharded Scatter-Gather:
       ],
       examples: [
         {
-          title: "Sharded Query",
-          input: "create-shards 4\\nsharded-query 0.5,0.5 5\\nexit",
-          output: "SCATTERED_TO_4_SHARDS\\nMERGED_TOP_K: 5 RESULTS",
+          title: "Initialize 4 shards",
+          input: "create-shards 4\nexit",
+          output: "SHARDS_INITIALIZED: 4",
         },
       ],
       constraints: ["Parallel scatter-gather dispatch", "Merge top-K strictly by similarity score"],
@@ -518,9 +518,9 @@ measure-recall 10 64
       ],
       examples: [
         {
-          title: "Measure Recall",
-          input: "measure-recall 10 32\\nexit",
-          output: "EF_SEARCH: 32 RECALL@10: 96.4% QPS: 4,850",
+          title: "High recall configuration",
+          input: "measure-recall 10 64\nexit",
+          output: "RECALL@10: > 95%",
         },
       ],
       constraints: ["Recall@10 must exceed 95%", "Microsecond latency measurement"],
@@ -603,9 +603,9 @@ enable-quantization
       ],
       examples: [
         {
-          title: "Bench SIMD Quantization",
-          input: "enable-quantization\\nbench-simd-search\\nexit",
-          output: "QUANTIZATION: INT8 MEMORY_SAVINGS: 75%\\nTHROUGHPUT: 18,200 QPS (3.8x speedup)",
+          title: "Enable scalar quantization",
+          input: "enable-quantization\nexit",
+          output: "SQ8_ENABLED: 75% MEMORY SAVED",
         },
       ],
       constraints: ["75% memory footprint reduction", "Accuracy loss under 2% recall"],

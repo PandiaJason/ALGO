@@ -175,7 +175,7 @@ FORWARD -> web-1`,
       ],
       examples: [
         {
-          title: "Round Robin Cycling",
+          title: "Two Server Alternation",
           input: "ADD_BACKEND s1\nADD_BACKEND s2\nROUTE r1\nROUTE r2\nROUTE r3",
           output: "OK\nOK\nFORWARD -> s1\nFORWARD -> s2\nFORWARD -> s1",
         },
@@ -288,7 +288,7 @@ FORWARD -> a`,
       ],
       examples: [
         {
-          title: "Smooth Weighted Interleaving",
+          title: "Ratio 4:2:1 Smooth Distribution",
           input: "ADD_WEIGHTED a 4\nADD_WEIGHTED b 2\nADD_WEIGHTED c 1\nROUTE_WEIGHTED 1\nROUTE_WEIGHTED 2\nROUTE_WEIGHTED 3\nROUTE_WEIGHTED 4\nROUTE_WEIGHTED 5\nROUTE_WEIGHTED 6\nROUTE_WEIGHTED 7",
           output: "OK\nOK\nOK\nFORWARD -> a\nFORWARD -> b\nFORWARD -> a\nFORWARD -> a\nFORWARD -> c\nFORWARD -> b\nFORWARD -> a",
         },
@@ -392,7 +392,7 @@ ROUTE_LEAST_CONN r4    ──► s1 chosen (conns tie)    ──► FORWARD -> s
       ],
       examples: [
         {
-          title: "Least Conn Routing",
+          title: "Balances Across In-Flight Requests",
           input: "ADD_BACKEND s1\nADD_BACKEND s2\nROUTE_LEAST_CONN r1\nROUTE_LEAST_CONN r2\nROUTE_LEAST_CONN r3\nTRACK_END s1 r1\nROUTE_LEAST_CONN r4",
           output: "OK\nOK\nFORWARD -> s1\nFORWARD -> s2\nFORWARD -> s1\nOK\nFORWARD -> s1",
         },
@@ -499,7 +499,7 @@ ROUTE r2               ──► Bypasses s1              ──► FORWARD -> s
       ],
       examples: [
         {
-          title: "Circuit Breaker Trips to DOWN",
+          title: "Tripping Node Out of Pool",
           input: "ADD_BACKEND s1\nADD_BACKEND s2\nSET_FAIL_THRESHOLD 2\nFAIL s1\nFAIL s1\nROUTE r1\nROUTE r2",
           output: "OK\nOK\nOK\nSTATUS s1 UP\nSTATUS s1 DOWN\nFORWARD -> s2\nFORWARD -> s2",
         },
@@ -601,9 +601,9 @@ ROUTE_KEY alpha        ──► Deterministic sticky route    ──► HASH_FO
       ],
       examples: [
         {
-          title: "Consistent Ring Routing",
-          input: "ADD_RING_NODE cache-1 3\nADD_RING_NODE cache-2 3\nROUTE_KEY user:100\nROUTE_KEY user:200",
-          output: "OK\nOK\nHASH_FORWARD -> cache-1\nHASH_FORWARD -> cache-2",
+          title: "Consistent Key Determinism",
+          input: "ADD_RING_NODE c1 5\nADD_RING_NODE c2 5\nROUTE_KEY alpha\nROUTE_KEY alpha",
+          output: "OK\nOK\nHASH_FORWARD -> c2\nHASH_FORWARD -> c2",
         },
       ],
       constraints: ["Use FNV-1a 32-bit hash algorithm: offset_basis=2166136261, prime=16777619"],
@@ -704,7 +704,7 @@ SERVER_STATUS s1       ──► All drained, node removed──► STATE REMOVE
       ],
       examples: [
         {
-          title: "Drain Active Server",
+          title: "Drain In-Flight Then Removed",
           input: "ADD_BACKEND s1\nADD_BACKEND s2\nROUTE_LEAST_CONN r1\nDRAIN s1\nROUTE r2\nTRACK_END s1 r1\nSERVER_STATUS s1",
           output: "OK\nOK\nFORWARD -> s1\nDRAINING s1 ACTIVE 1\nFORWARD -> s2\nOK\nSTATE REMOVED ACTIVE 0",
         },

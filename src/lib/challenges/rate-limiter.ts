@@ -175,9 +175,9 @@ ALLOWED 1`,
       ],
       examples: [
         {
-          title: "Fixed Window Limit",
-          input: "CONFIG 2 10\nREQUEST alice 1000\nREQUEST alice 2000\nREQUEST alice 3000\nREQUEST alice 10500",
-          output: "OK\nALLOWED 1\nALLOWED 0\nREJECTED 7000\nALLOWED 1",
+          title: "Under Limit Requests Allowed",
+          input: "CONFIG 3 5\nREQUEST alice 1000\nREQUEST alice 2000\nREQUEST alice 3000",
+          output: "OK\nALLOWED 2\nALLOWED 1\nALLOWED 0",
         },
       ],
       constraints: ["window_sec is positive integer", "timestamp_ms is positive integer millisecond"],
@@ -273,7 +273,7 @@ REQUEST_SLIDING c1 5500      ──► Window [500..5500]: [4000, 4500] full!─
       ],
       examples: [
         {
-          title: "Sliding Window Stops Boundary Spikes",
+          title: "Sliding Window Rejects Boundary Spike",
           input: "CONFIG_SLIDING 2 5\nREQUEST_SLIDING c1 4000\nREQUEST_SLIDING c1 4500\nREQUEST_SLIDING c1 5500",
           output: "OK\nALLOWED 1\nALLOWED 0\nREJECTED 3500",
         },
@@ -371,9 +371,9 @@ ACQUIRE c1 1 1000      ──► Bucket empty! (0 tokens available)       ──
       ],
       examples: [
         {
-          title: "Token Refill & Acquisition",
-          input: "CONFIG_BUCKET c1 5 1\nACQUIRE c1 3 1000\nACQUIRE c1 2 1000\nACQUIRE c1 1 1000\nACQUIRE c1 1 2000",
-          output: "OK\nALLOWED 2\nALLOWED 0\nREJECTED\nALLOWED 0",
+          title: "Full Capacity Burst",
+          input: "CONFIG_BUCKET c1 10 2\nACQUIRE c1 10 1000\nACQUIRE c1 1 1000",
+          output: "OK\nALLOWED 0\nREJECTED",
         },
       ],
       constraints: ["Capacity and refill rate are positive integers", "Tokens remaining printed as integer floor"],
@@ -477,7 +477,7 @@ LEAK 2000              ──► Leaks 1 request from queue          ──► P
       ],
       examples: [
         {
-          title: "Enqueue and Drain",
+          title: "Buffer and Leak Steady Rate",
           input: "CONFIG_LEAKY 3 1\nENQUEUE r1 1000\nENQUEUE r2 1000\nENQUEUE r3 1000\nENQUEUE r4 1000\nLEAK 2000",
           output: "OK\nQUEUED 1\nQUEUED 2\nQUEUED 3\nDROPPED\nPROCESSED r1",
         },
@@ -585,7 +585,7 @@ REQUEST_TIER bob 2000  ──► bob 2/5 consumed        ──► ALLOWED PRO 3
       ],
       examples: [
         {
-          title: "Tier Isolation",
+          title: "Multi-Tier Quota Enforcement",
           input: "ADD_TIER FREE 1 10\nADD_TIER PRO 5 10\nASSIGN_TIER alice FREE\nASSIGN_TIER bob PRO\nREQUEST_TIER alice 1000\nREQUEST_TIER alice 2000\nREQUEST_TIER bob 1000\nREQUEST_TIER bob 2000",
           output: "OK\nOK\nOK\nOK\nALLOWED FREE 0\nREJECTED FREE\nALLOWED PRO 4\nALLOWED PRO 3",
         },
@@ -688,7 +688,7 @@ STATS c1 ALLOWED 1 REJECTED 1 TOKENS 2`,
       ],
       examples: [
         {
-          title: "Atomic Telemetry",
+          title: "Atomic Acquire Updates Stats",
           input: "CONFIG_BUCKET c1 5 1\nATOMIC_ACQUIRE c1 3 1000\nATOMIC_ACQUIRE c1 3 1000\nCLIENT_STATS c1",
           output: "OK\nALLOWED 2\nRATE_LIMITED\nSTATS c1 ALLOWED 1 REJECTED 1 TOKENS 2",
         },

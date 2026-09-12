@@ -176,7 +176,7 @@ POSTINGS world d1`,
       ],
       examples: [
         {
-          title: "Build Inverted Index",
+          title: "Multiple Docs Inverted Postings",
           input: "INDEX d1 Hello World\nINDEX d2 Hello Systems\nDOC_COUNT\nPOSTINGS hello\nPOSTINGS world",
           output: "INDEXED d1 2\nINDEXED d2 2\nDOCS 2\nPOSTINGS hello d1 d2\nPOSTINGS world d1",
         },
@@ -288,7 +288,7 @@ SEARCH_OR algorithms design
       ],
       examples: [
         {
-          title: "Boolean AND & OR Search",
+          title: "AND Query Filters Results",
           input: "INDEX d1 distributed systems algorithms\nINDEX d2 distributed databases\nINDEX d3 graphic design\nSEARCH_AND distributed systems\nSEARCH_OR algorithms design",
           output: "INDEXED d1 3\nINDEXED d2 2\nINDEXED d3 2\nMATCHES d1\nMATCHES d1 d3",
         },
@@ -392,7 +392,7 @@ TFIDF redis
       ],
       examples: [
         {
-          title: "TF-IDF Ranking",
+          title: "Higher TF Scores Higher",
           input: "INDEX d1 redis redis cache\nINDEX d2 redis database\nINDEX d3 postgresql database\nTFIDF redis",
           output: "INDEXED d1 2\nINDEXED d2 2\nINDEXED d3 2\nRANKED d1:2.81 d2:1.41",
         },
@@ -493,7 +493,7 @@ BM25 kafka
       ],
       examples: [
         {
-          title: "BM25 Ranking",
+          title: "BM25 Term Saturation",
           input: "INDEX d1 kafka streaming message queue\nINDEX d2 kafka kafka kafka\nBM25 kafka",
           output: "INDEXED d1 4\nINDEXED d2 1\nBM25 d2:0.35 d1:0.25",
         },
@@ -599,7 +599,7 @@ PHRASE brown fox
       ],
       examples: [
         {
-          title: "Exact Phrase Match",
+          title: "Consecutive Word Match",
           input: "INDEX d1 the quick brown fox jumps\nINDEX d2 fox brown quick\nPHRASE quick brown fox\nPHRASE brown fox",
           output: "INDEXED d1 5\nINDEXED d2 3\nPHRASE_MATCH d1\nPHRASE_MATCH d1",
         },
@@ -711,7 +711,7 @@ SEARCH_AND hello        ──► Scans merged segment  ──► MATCHES d1 d2`
       ],
       examples: [
         {
-          title: "Commit and Merge Segments",
+          title: "Commit and Search Across Segments",
           input: "INDEX d1 hello world\nCOMMIT_SEGMENT\nINDEX d2 hello systems\nCOMMIT_SEGMENT\nSEGMENT_STATS\nMERGE_SEGMENTS\nSEGMENT_STATS\nSEARCH_AND hello",
           output: "INDEXED d1 2\nCOMMITTED seg-1\nINDEXED d2 2\nCOMMITTED seg-2\nSEGMENTS 2 TOTAL_DOCS 2\nMERGED 2 -> 1\nSEGMENTS 1 TOTAL_DOCS 2\nMATCHES d1 d2",
         },

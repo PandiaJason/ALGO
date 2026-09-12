@@ -156,15 +156,10 @@ Case 2 Retrieval:
       ],
       examples: [
         {
-          title: "Hash and Cat File",
-          input: "hash-object hello world\\ncat-file -p <hash>\\nexit",
-          output: "95d09f2b10159347eece71399a7e2e907ea3df4f\\nhello world",
+          title: "Hash short string",
+          input: "hash-object test\nexit",
+          output: "30d74d258442c7c65512eafab474568dd706c430",
         },
-        {
-          title: "Deduplication Check",
-          input: "hash-object same\\nhash-object same\\nexit",
-          output: "same_hash\\nsame_hash",
-        }
       ],
       constraints: ["Follow exact Git header framing", "Return 40-character hex hash"],
       cases: [
@@ -251,9 +246,9 @@ Case 2 Retrieval:
       ],
       examples: [
         {
-          title: "Write Tree and Commit",
-          input: "write-tree 100644 main.c <hash>\\ncommit-tree <thash> -m 'Initial commit'\\nexit",
-          output: "TREE_OK\\nCOMMIT_OK",
+          title: "Write single-entry tree",
+          input: "write-tree 100644 file.txt aabbccddee00112233445566778899aabbccddee\nexit",
+          output: "TREE_OK",
         },
       ],
       constraints: ["Tree entries must be sorted lexicographically", "Commits must record exact parent pointer"],
@@ -331,9 +326,9 @@ Case 2 Retrieval:
       ],
       examples: [
         {
-          title: "Fsck Verification",
-          input: "fsck\\nexit",
-          output: "VERIFIED: 12 objects, 0 corrupted, 0 dangling",
+          title: "Clean repository fsck",
+          input: "fsck\nexit",
+          output: "VERIFIED: 0 CORRUPTED: 0",
         },
       ],
       constraints: ["Report exact hash of corrupted objects", "Zero tolerance for hash mismatches"],
@@ -406,9 +401,9 @@ Case 2 Retrieval:
       ],
       examples: [
         {
-          title: "Diff Trees",
-          input: "diff-tree TREE_A TREE_B\\nexit",
-          output: "M src/main.c\\nA docs/guide.md\\nD old.txt",
+          title: "Identical trees (fast skip)",
+          input: "diff-tree T1 T1\nexit",
+          output: "NO_CHANGES",
         },
       ],
       constraints: ["O(differences) traversal complexity", "Do not descend into identical subtrees"],
@@ -480,9 +475,9 @@ Case 2 Retrieval:
       ],
       examples: [
         {
-          title: "Count Objects",
-          input: "count-objects\\nexit",
-          output: "OBJECTS: 1540 SIZE_KB: 4200",
+          title: "Count initial objects",
+          input: "count-objects\nexit",
+          output: "OBJECTS: > 0",
         },
       ],
       constraints: ["Accurate loose object count", "Microsecond commit walking benchmark"],
@@ -559,9 +554,9 @@ Case 2 Retrieval:
       ],
       examples: [
         {
-          title: "Repack Archive",
-          input: "repack\\nexit",
-          output: "PACKED: 1540 objects RATIO: 64.2% saved",
+          title: "Packfile compression ratio",
+          input: "repack\nexit",
+          output: "COMPRESSION_SAVED: > 50%",
         },
       ],
       constraints: ["Delta chain depth bounded to 10", "Packfile must be self-contained and indexable"],

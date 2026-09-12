@@ -154,7 +154,11 @@ NOT_FOUND`,
         { cmd: "SCAN <id>", desc: "Sequentially scans rows for matching id. Returns '<value>' or 'NOT_FOUND'." },
       ],
       examples: [
-        { title: "Insert & Scan", input: "INSERT 10 Jason\nSCAN 10", output: "OK\nJason" },
+        {
+          title: "Basic Insert & Scan",
+          input: "INSERT 10 Jason\nSCAN 10",
+          output: "OK\nJason",
+        },
       ],
       constraints: ["Strict sequential scan order", "Return NOT_FOUND if ID absent"],
       cases: [
@@ -223,7 +227,11 @@ Lookup complexity: O(log N)`,
         { cmd: "INDEX_GET <id>", desc: "Performs binary search over sorted index. Returns '<value>' or 'NOT_FOUND'." },
       ],
       examples: [
-        { title: "Indexed Lookup", input: "INSERT 50 E\nINSERT 20 B\nINDEX_GET 20", output: "OK\nOK\nB" },
+        {
+          title: "Out of Order Inserts",
+          input: "INSERT 30 C\nINSERT 10 A\nINSERT 20 B\nINDEX_GET 10",
+          output: "OK\nOK\nOK\nA",
+        },
       ],
       constraints: ["Maintain sorted order of keys", "Binary search logic"],
       cases: [
@@ -291,7 +299,11 @@ Node Split Topology:
         { cmd: "BTREE_GET <id>", desc: "Traverses B-Tree nodes to retrieve value. Returns '<val>' or 'NOT_FOUND'." },
       ],
       examples: [
-        { title: "B-Tree Insert & Get", input: "BTREE_INSERT 10 X\nBTREE_GET 10", output: "OK\nX" },
+        {
+          title: "3 Inserts without split",
+          input: "BTREE_INSERT 1 A\nBTREE_INSERT 2 B\nBTREE_INSERT 3 C\nBTREE_GET 2",
+          output: "OK\nOK\nOK\nB",
+        },
       ],
       constraints: ["Node capacity M=3 keys maximum", "Balanced search traversal"],
       cases: [
@@ -357,7 +369,11 @@ Range [10..25] emits: A, B (stops before 30)`,
         { cmd: "RANGE <min_id> <max_id>", desc: "Returns space-separated values for keys in range [min_id, max_id]." },
       ],
       examples: [
-        { title: "Range Query", input: "BTREE_INSERT 10 A\nBTREE_INSERT 20 B\nBTREE_INSERT 30 C\nRANGE 10 25", output: "OK\nOK\nOK\nA B" },
+        {
+          title: "Two Key Range",
+          input: "BTREE_INSERT 10 A\nBTREE_INSERT 20 B\nBTREE_INSERT 30 C\nRANGE 10 25",
+          output: "OK\nOK\nOK\nA B",
+        },
       ],
       constraints: ["Inclusive range [min, max]", "Return 'EMPTY' if no keys match"],
       cases: [
@@ -424,7 +440,11 @@ Slotted Page Layout (4KB):
         { cmd: "PAGE_STATS <page_id>", desc: "Returns slotted page metadata: FREE_BYTES: <f> ITEMS: <n>." },
       ],
       examples: [
-        { title: "Slotted Page Stats", input: "BTREE_INSERT 1 x\nPAGE_STATS 0", output: "OK\nPAGE: 0 FREE_BYTES: 4056 ITEMS: 1" },
+        {
+          title: "Initial Page Free Space",
+          input: "BTREE_INSERT 100 alpha\nPAGE_STATS 0",
+          output: "OK\nPAGE: 0 FREE_BYTES: 4056 ITEMS: 1",
+        },
       ],
       constraints: ["Page size exactly 4096 bytes", "Proper free space calculation", "Each row occupies exactly 40 bytes in the slotted page"],
       cases: [
@@ -493,7 +513,11 @@ CAPACITY: 8 HITS: 0 MISSES: 1 HIT_RATIO: 0.00`,
         { cmd: "BUFFER_STATS", desc: "Returns buffer pool metrics: CAPACITY: <c> HITS: <h> MISSES: <m> HIT_RATIO: <r>." },
       ],
       examples: [
-        { title: "Buffer Stats", input: "BTREE_GET 10\nBUFFER_STATS", output: "NOT_FOUND\nCAPACITY: 8 HITS: 0 MISSES: 1 HIT_RATIO: 0.00" },
+        {
+          title: "Buffer Miss on Cold Read",
+          input: "BTREE_INSERT 1 a\nBTREE_GET 1\nBUFFER_STATS",
+          output: "OK\na\nCAPACITY: 8 HITS: 0 MISSES: 1 HIT_RATIO: 0.00",
+        },
       ],
       constraints: ["Bounded buffer pool frame capacity (e.g. 8 pages)", "Clock replacement tracking"],
       cases: [
