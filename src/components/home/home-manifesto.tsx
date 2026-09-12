@@ -30,28 +30,33 @@ export function HomeManifesto() {
           </span>
         </div>
 
-        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-950 leading-tight">
-          Software engineering changed. <br className="hidden sm:inline" />
-          The way we measure it hasn&apos;t.
-        </h2>
-
-        <div className="text-base sm:text-lg text-slate-800 font-medium leading-relaxed space-y-4">
-          <p>
+        <div className="space-y-3">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-950 leading-tight">
+            Code is becoming cheaper to produce. <br className="hidden sm:inline" />
+            Understanding systems is not.
+          </h2>
+          <p className="text-base sm:text-lg text-slate-800 font-medium leading-relaxed">
             AI can generate syntax in seconds. Developers are already using it at scale:{" "}
-            <strong className="text-slate-950 font-bold">82%</strong> report using AI tools in their development process, while separately,{" "}
-            <strong className="text-slate-950 font-bold">46%</strong> say they distrust AI-generated output&apos;s accuracy.
+            <strong className="text-slate-950 font-bold">82%</strong> report using AI tools in development, while separately,{" "}
+            <strong className="text-slate-950 font-bold">46%</strong> distrust the accuracy of AI-generated output.
           </p>
-          <div className="p-4 rounded-xl bg-slate-100 border-l-4 border-slate-900 text-slate-950 text-base sm:text-lg font-bold">
-            That creates a new reality: if producing code becomes cheap, measuring code production becomes less useful.
+        </div>
+
+        <div className="p-5 rounded-2xl bg-slate-950 text-white shadow-lg border border-slate-800 space-y-2">
+          <div className="text-xs font-mono uppercase tracking-wider text-[#099BE9] font-bold">
+            The Central Question
           </div>
+          <p className="text-base sm:text-lg font-bold text-white leading-relaxed">
+            &ldquo;When an AI agent can write the code, can you still understand, direct, verify, and optimize the system that code creates?&rdquo;
+          </p>
         </div>
 
         {/* 4 Core Competencies Grid */}
         <div className="pt-2 space-y-4">
           <div className="text-xs font-mono uppercase tracking-wider text-slate-800 font-bold flex items-center justify-between">
-            <span>The 4 engineering skills that actually matter:</span>
+            <span>The 4 capabilities ALGO evaluates:</span>
             <span className="text-slate-500 font-mono text-[11px] hidden sm:inline">
-              // ARCHITECTURE • VERIFICATION • DIAGNOSIS • OPTIMIZATION
+              // DESIGN • UNDERSTANDING • VERIFICATION • OPTIMIZATION
             </span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -59,26 +64,26 @@ export function HomeManifesto() {
               {
                 step: "1",
                 color: "#099BE9",
-                q: "Can you design the system?",
-                desc: "Plan how data flows, define clean interfaces, and set memory limits before writing code.",
+                title: "System Design",
+                desc: "Decompose a problem into reliable components, plan data flows, and define clean architectural boundaries.",
               },
               {
                 step: "2",
                 color: "#09C899",
-                q: "Can you prove it works?",
-                desc: "Know for certain whether your implementation survives heavy traffic, sudden crashes, and unexpected failures.",
+                title: "Systems Understanding",
+                desc: "Master the mechanisms beneath the abstractions: memory layout, operating system primitives, and protocols.",
               },
               {
                 step: "3",
                 color: "#F78424",
-                q: "Can you find what's slow?",
-                desc: "Pinpoint real bottlenecks — whether it's locked threads, memory bloat, or slow queries.",
+                title: "Empirical Verification",
+                desc: "Demonstrate that your system survives heavy traffic, sudden crashes, and adversarial conditions.",
               },
               {
                 step: "4",
                 color: "#8647E2",
-                q: "Can you make it faster?",
-                desc: "Rethink data structures and concurrency to handle higher loads with lower latency.",
+                title: "Optimization",
+                desc: "Pinpoint real bottlenecks and redesign hot paths to achieve measurable throughput and latency gains.",
               },
             ].map((item) => (
               <div
@@ -92,7 +97,7 @@ export function HomeManifesto() {
                   >
                     {item.step}
                   </span>
-                  <span className="font-bold text-slate-950 text-base sm:text-lg">{item.q}</span>
+                  <span className="font-bold text-slate-950 text-base sm:text-lg">{item.title}</span>
                 </div>
                 <p className="text-sm text-slate-600 font-medium pl-10 leading-relaxed">
                   {item.desc}
@@ -213,7 +218,7 @@ export function HomeManifesto() {
               DSA ≠ Systems Thinking:
             </div>
             <p>
-              DSA teaches algorithms, data structures, and computational complexity. That is foundational. But knowing how to implement a graph algorithm doesn&apos;t teach you how to reason about:
+              DSA teaches algorithms, data structures, and computational complexity. That is foundational. But between an algorithm and a production system lies physical execution:
             </p>
             <div className="p-3 bg-white rounded-lg border border-slate-200 font-mono text-xs text-slate-900 font-bold flex flex-wrap items-center gap-1.5">
               <span>processes</span>
@@ -385,7 +390,7 @@ export function HomeManifesto() {
             {/* Visual Telemetry Breakdown */}
             <DiagramSubmissionOneTelemetry />
             <p className="text-xs text-slate-700 font-medium pt-2 border-t border-slate-100 leading-relaxed">
-              It works. Accepted. But the leaderboard shows top implementations exceeding 100,000 ops/s. You investigate mutex bottlenecks and profile lock wait times.
+              It works. Accepted. But the leaderboard shows top implementations exceeding 90,000 ops/s. You investigate mutex bottlenecks and profile lock wait times.
             </p>
           </div>
 
@@ -479,7 +484,7 @@ export function HomeManifesto() {
       </div>
 
       {/* ============================================================== */}
-      {/* 7. CTA: DEEP DIVE INTO THE FULL RESEARCH CASE STUDY             */}
+      {/* 7. CTA: READ FULL CASE STUDY                                   */}
       {/* ============================================================== */}
       <div className="pt-4 border-t border-slate-200">
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xs">
@@ -488,13 +493,13 @@ export function HomeManifesto() {
               <span className="text-xs font-mono font-bold text-[#099BE9] uppercase tracking-wider">
                 DEEP RESEARCH &amp; ANALYSIS
               </span>
-              <span className="text-xs font-mono text-slate-500">• 11 Documented Sources</span>
+              <span className="text-xs font-mono text-slate-500">• 20-System Curriculum</span>
             </div>
             <h4 className="text-lg sm:text-xl font-extrabold text-slate-950 tracking-tight">
-              Looking for the full academic thesis &amp; industry analysis?
+              Case Study: Systems Engineering in the Agentic Era
             </h4>
             <p className="text-xs sm:text-sm text-slate-700 font-medium max-w-xl">
-              Includes Karat hiring data, FAANG interviewer retooling surveys, a detailed comparison with CodeCrafters, and the 10 invariant dimensions of systems engineering.
+              Explore the 10 invariant dimensions of systems thinking, the 6-stage engineering progression, the 20-system curriculum, and full empirical data from SWE-bench and developer reports.
             </p>
           </div>
 
@@ -511,4 +516,3 @@ export function HomeManifesto() {
     </section>
   );
 }
-
