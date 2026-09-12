@@ -51,17 +51,17 @@ export function ChallengesTable({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search challenges, technologies..."
-            className="w-full pl-9 pr-4 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-[#099BE9] text-slate-950 font-medium placeholder:text-slate-400 shadow-2xs"
+            className="w-full pl-9 pr-4 py-2 text-xs bg-white border-2 border-slate-900 rounded-xl focus:outline-none focus:border-[#099BE9] text-slate-950 font-bold placeholder:text-slate-400 shadow-[2px_2px_0px_0px_#09090b] transition-all"
           />
         </div>
 
         {/* Domain Filter Tabs */}
-        <div className="inline-flex rounded-xl border border-slate-200 p-1 bg-slate-50 text-xs font-mono overflow-x-auto shrink-0">
+        <div className="inline-flex rounded-xl border-2 border-slate-900 p-1 bg-white text-xs font-mono overflow-x-auto shrink-0 shadow-[3px_3px_0px_0px_#09090b]">
           <button
             onClick={() => setDomainFilter("ALL")}
-            className={`px-3 py-1.5 rounded-lg transition-colors font-semibold cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg transition-all font-semibold cursor-pointer ${
               domainFilter === "ALL"
-                ? "bg-white text-slate-950 shadow-2xs font-bold"
+                ? "bg-slate-900 text-white font-bold"
                 : "text-slate-700 hover:text-slate-950"
             }`}
           >
@@ -71,9 +71,9 @@ export function ChallengesTable({
             <button
               key={domKey}
               onClick={() => setDomainFilter(domKey)}
-              className={`px-3 py-1.5 rounded-lg transition-colors font-semibold cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg transition-all font-semibold cursor-pointer ${
                 domainFilter === domKey
-                  ? "bg-white text-slate-950 shadow-2xs font-bold"
+                  ? "bg-slate-900 text-white font-bold"
                   : "text-slate-700 hover:text-slate-950"
               }`}
             >
@@ -84,11 +84,11 @@ export function ChallengesTable({
       </div>
 
       {/* Unified High-Density Problemset Table */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs">
+      <div className="overflow-hidden rounded-2xl border-2 border-slate-900 bg-white shadow-[4px_4px_0px_0px_#09090b]">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-sans border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/90 text-slate-800 font-mono text-[11px] uppercase tracking-wider">
+              <tr className="border-b-2 border-slate-900 bg-slate-100/90 text-slate-900 font-mono text-[11px] uppercase tracking-wider">
                 <th className="py-3.5 px-4 w-14 text-center font-bold">#</th>
                 <th className="py-3.5 px-4 font-bold">Challenge Title</th>
                 <th className="py-3.5 px-4 font-bold hidden sm:table-cell">Inspired By</th>
@@ -194,10 +194,10 @@ export function ChallengesTable({
                       <td className="py-4 px-4 text-center">
                         <Link
                           href={`/challenges/${c.slug}/workspace`}
-                          className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all group/btn ${
+                          className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold border-2 border-slate-900 shadow-[2px_2px_0px_0px_#09090b] hover:shadow-[3px_3px_0px_0px_#09090b] hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer group/btn ${
                             c.status === "COMING_SOON"
-                              ? "text-slate-700 bg-slate-100 hover:bg-slate-200"
-                              : "text-[#099BE9] bg-[#099BE9]/10 hover:bg-[#099BE9] hover:text-white"
+                              ? "text-slate-800 bg-slate-100 hover:bg-slate-200"
+                              : "text-white bg-[#09C899] hover:bg-[#0AA793]"
                           }`}
                         >
                           <span>{c.status === "COMING_SOON" ? "Preview" : "Solve"}</span>
@@ -213,7 +213,7 @@ export function ChallengesTable({
         </div>
 
         {/* Table Footer */}
-        <div className="px-4 py-3 border-t border-slate-200 bg-slate-50/70 flex items-center justify-between text-xs text-slate-700 font-mono">
+        <div className="px-4 py-3.5 border-t-2 border-slate-900 bg-slate-50 flex items-center justify-between text-xs text-slate-700 font-mono">
           <div>
             Showing <span className="font-bold text-slate-950">{filtered.length}</span> of{" "}
             <span className="font-bold text-slate-950">{CORE_CHALLENGES.length}</span> verified systems challenges

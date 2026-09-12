@@ -6,6 +6,7 @@ import {
   Check,
   ChevronRight,
   Filter,
+  Info,
 } from "lucide-react";
 import { CORE_CHALLENGES, CoreChallenge } from "@/lib/constants/core-challenges";
 
@@ -245,100 +246,81 @@ export function SystemsRoadmap({ userSolvedSlugs, levelProgressMap = {} }: Syste
             const systemsCount = stage.systems.length;
 
             return (
-              <div key={stage.id} className="relative">
-                {/* Connecting Line from Previous Stage */}
+              <React.Fragment key={stage.id}>
+                {/* Connecting Line from Previous Stage Outer Box */}
                 {stageIdx > 0 && (
-                  <div className="flex justify-center -mt-6 mb-6">
-                    <div className="w-0.5 h-10 border-l-2 border-dashed border-slate-900" />
+                  <div className="flex justify-center -my-3 py-1 relative z-0">
+                    <div className="w-0.5 h-8 border-l-2 border-dashed border-slate-900" />
                   </div>
                 )}
 
-                {/* Central Stage Milestone Node */}
-                <div className="flex flex-col items-center">
+                {/* Outer Stage Container Box */}
+                <div className="relative bg-white rounded-3xl border-2 border-slate-900 shadow-[5px_5px_0px_0px_#09090b] p-5 sm:p-7 space-y-6 z-10">
+                  {/* Stage Header Banner with Hover Tooltip */}
                   <div
-                    className={`w-full max-w-xl rounded-2xl border-2 ${colorStyles.border} ${colorStyles.bg} shadow-[4px_4px_0px_0px_#09090b] p-5 text-center space-y-1.5 relative`}
+                    className={`group relative w-full rounded-2xl border-2 ${colorStyles.border} ${colorStyles.bg} shadow-[3px_3px_0px_0px_#09090b] px-4 py-3.5 sm:px-6 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-default transition-all`}
                   >
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center gap-3 min-w-0">
                       <span
-                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${colorStyles.badgeBg}`}
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${colorStyles.badgeBg} shrink-0`}
                       >
                         STAGE {stage.stageNumber} • {stage.category}
                       </span>
+                      <h2 className={`text-base sm:text-lg font-black tracking-tight truncate ${colorStyles.headerText}`}>
+                        {stage.name}
+                      </h2>
                     </div>
 
-                    <h2 className={`text-xl sm:text-2xl tracking-tight ${colorStyles.headerText}`}>
-                      {stage.name}
-                    </h2>
+                    {/* Info Trigger & Hover Tooltip for Tagline */}
+                    <div className="relative flex items-center gap-1.5 self-end sm:self-auto shrink-0">
+                      <div
+                        className={`px-2 py-0.5 rounded-md text-[11px] font-mono font-bold flex items-center gap-1 cursor-help ${colorStyles.badgeBg}`}
+                      >
+                        <Info className="w-3.5 h-3.5" />
+                        <span>Scope</span>
+                      </div>
 
-                    <p
-                      className={`text-xs max-w-md mx-auto leading-relaxed font-medium ${
-                        stage.accentColor === "purple" || stage.accentColor === "blue"
-                          ? "text-white/90"
-                          : "text-slate-900/80"
-                      }`}
-                    >
-                      {stage.tagline}
-                    </p>
+                      {/* Tooltip shown on hover */}
+                      <div className="pointer-events-none absolute right-0 top-full mt-2 w-72 sm:w-80 rounded-xl bg-slate-950 text-white text-xs p-3.5 shadow-2xl border border-slate-800 opacity-0 group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-50 space-y-1">
+                        <div className="text-[10px] font-mono font-bold text-[#09C899] uppercase tracking-wider">
+                          Stage {stage.stageNumber} Scope
+                        </div>
+                        <p className="text-neutral-200 leading-relaxed font-medium">
+                          {stage.tagline}
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Vertical Trunk Line down */}
-                  <div className="w-0.5 h-6 bg-slate-900 my-0.5" />
+                  {/* Challenge Nodes Grid (nested inside the stage outer box) */}
+                  <div
+                    className={`grid gap-4 sm:gap-5 relative ${
+                      systemsCount === 2
+                        ? "grid-cols-1 sm:grid-cols-2"
+                        : systemsCount === 3
+                        ? "grid-cols-1 sm:grid-cols-3"
+                        : "grid-cols-1 sm:grid-cols-2"
+                    }`}
+                  >
+                    {stage.systems.map((slug) => {
+                      const challenge = challengeMap.get(slug);
+                      if (!challenge) return null;
+                      const isSolved = userSolvedSlugs.includes(slug);
+                      const completedLevels = levelProgressMap[slug] || 0;
 
-                  {/* Flowchart Branch Crossbar */}
-                  {systemsCount === 2 && (
-                    <div className="hidden sm:block relative w-full max-w-2xl h-4 mb-2">
-                      <div className="absolute top-0 left-1/4 right-1/4 h-0.5 bg-slate-900" />
-                      <div className="absolute top-0 left-1/4 w-0.5 h-4 bg-slate-900" />
-                      <div className="absolute top-0 right-1/4 w-0.5 h-4 bg-slate-900" />
-                    </div>
-                  )}
-
-                  {systemsCount === 3 && (
-                    <div className="hidden sm:block relative w-full max-w-3xl h-4 mb-2">
-                      <div className="absolute top-0 left-[16.6%] right-[16.6%] h-0.5 bg-slate-900" />
-                      <div className="absolute top-0 left-[16.6%] w-0.5 h-4 bg-slate-900" />
-                      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0.5 h-4 bg-slate-900" />
-                      <div className="absolute top-0 right-[16.6%] w-0.5 h-4 bg-slate-900" />
-                    </div>
-                  )}
-
-                  {systemsCount === 4 && (
-                    <div className="hidden sm:block relative w-full max-w-2xl h-4 mb-2">
-                      <div className="absolute top-0 left-1/4 right-1/4 h-0.5 bg-slate-900" />
-                      <div className="absolute top-0 left-1/4 w-0.5 h-4 bg-slate-900" />
-                      <div className="absolute top-0 right-1/4 w-0.5 h-4 bg-slate-900" />
-                    </div>
-                  )}
+                      return (
+                        <RoadmapNode
+                          key={slug}
+                          challenge={challenge}
+                          isSolved={isSolved}
+                          completedLevels={completedLevels}
+                          accentColor={stage.accentColor}
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
-
-                {/* Challenge Nodes Grid (Just Names & Direct Links) */}
-                <div
-                  className={`grid gap-4 sm:gap-5 relative mt-1 ${
-                    systemsCount === 2
-                      ? "grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto"
-                      : systemsCount === 3
-                      ? "grid-cols-1 sm:grid-cols-3 max-w-3xl mx-auto"
-                      : "grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto"
-                  }`}
-                >
-                  {stage.systems.map((slug) => {
-                    const challenge = challengeMap.get(slug);
-                    if (!challenge) return null;
-                    const isSolved = userSolvedSlugs.includes(slug);
-                    const completedLevels = levelProgressMap[slug] || 0;
-
-                    return (
-                      <RoadmapNode
-                        key={slug}
-                        challenge={challenge}
-                        isSolved={isSolved}
-                        completedLevels={completedLevels}
-                        accentColor={stage.accentColor}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
+              </React.Fragment>
             );
           })}
         </div>

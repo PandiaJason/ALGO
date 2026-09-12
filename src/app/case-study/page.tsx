@@ -31,11 +31,15 @@ export default async function CaseStudyPage() {
             An evidence-led analysis of technical assessment in the agentic era.
           </p>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-10 bg-white" style={{ clipPath: "polygon(0 100%, 100% 100%, 100% 0)" }} />
+        <div className="absolute bottom-0 left-0 right-0 h-10 bg-[#f8fafc]" style={{ clipPath: "polygon(0 100%, 100% 100%, 100% 0)" }} />
       </section>
 
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-        <ExploreManifesto />
+      {/* Main Canvas with Dot-Grid Depth */}
+      <main className="flex-1 w-full bg-[#f8fafc]/60 py-8 sm:py-10 relative selection:bg-[#099BE9]/20 selection:text-[#099BE9]">
+        <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none opacity-40" />
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <ExploreManifesto />
+        </div>
       </main>
 
       <Footer />

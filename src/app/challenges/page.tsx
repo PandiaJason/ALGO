@@ -95,19 +95,23 @@ export default async function ChallengesPage() {
           </div>
           <a
             href="/roadmap"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-emerald-300 border border-emerald-500/30 transition-all self-start md:self-auto shrink-0 shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-[#09C899] hover:bg-[#0AA793] text-white border-2 border-slate-900 shadow-[2px_2px_0px_0px_#09090b] transition-all self-start md:self-auto shrink-0 cursor-pointer"
           >
             <span>Systems Roadmap ➔</span>
           </a>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-10 bg-white" style={{ clipPath: "polygon(0 100%, 100% 100%, 100% 0)" }} />
+        <div className="absolute bottom-0 left-0 right-0 h-10 bg-[#f8fafc]" style={{ clipPath: "polygon(0 100%, 100% 100%, 100% 0)" }} />
       </section>
 
-      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
-        <ChallengesTable
-          userSolvedIds={userSolvedIds}
-          topThroughputMap={topThroughputMap}
-        />
+      {/* Main Canvas with Dot-Grid Depth */}
+      <main className="flex-1 w-full bg-[#f8fafc]/60 py-8 relative selection:bg-[#099BE9]/20 selection:text-[#099BE9]">
+        <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none opacity-40" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <ChallengesTable
+            userSolvedIds={userSolvedIds}
+            topThroughputMap={topThroughputMap}
+          />
+        </div>
       </main>
 
       <Footer />

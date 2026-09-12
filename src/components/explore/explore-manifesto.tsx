@@ -51,17 +51,17 @@ export function ExploreManifesto() {
               <a href="#src-2" className="text-[#099BE9] font-mono text-xs font-bold hover:underline ml-0.5">[2]</a>
             </sup>
           </p>
-          <div className="p-4 rounded-xl bg-slate-100 border-l-4 border-slate-900 text-slate-900 text-base sm:text-lg font-bold">
+          <div className="p-5 rounded-2xl bg-slate-100 border-2 border-slate-900 shadow-[3px_3px_0px_0px_#09090b] text-slate-950 text-base sm:text-lg font-bold">
             That creates a new reality: if producing code becomes cheap, measuring code production becomes less useful.
           </div>
         </div>
 
         {/* 4 Core Competencies Grid */}
         <div className="pt-4 space-y-3">
-          <div className="text-xs font-mono uppercase tracking-wider text-slate-800 font-bold">
+          <div className="text-xs font-mono uppercase tracking-wider text-slate-900 font-bold">
             What matters in the systems &amp; agentic era:
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
               {
                 step: "1",
@@ -77,7 +77,7 @@ export function ExploreManifesto() {
               },
               {
                 step: "3",
-                color: "#F78424",
+                color: "#FBAE0C",
                 q: "Can you isolate the bottleneck?",
                 desc: "Diagnose mutex lock contention, cache misses, memory leaks, and tail-latency spikes under pressure.",
               },
@@ -90,18 +90,18 @@ export function ExploreManifesto() {
             ].map((item) => (
               <div
                 key={item.step}
-                className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs hover:border-slate-300 transition-colors"
+                className="bg-white border-2 border-slate-900 rounded-2xl p-5 shadow-[3px_3px_0px_0px_#09090b] hover:shadow-[4px_4px_0px_0px_#09090b] transition-all"
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3">
                   <span
-                    className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-mono font-extrabold text-white shrink-0"
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-mono font-extrabold text-white shrink-0 border border-slate-900 shadow-[1px_1px_0px_0px_#09090b]"
                     style={{ backgroundColor: item.color }}
                   >
                     {item.step}
                   </span>
                   <span className="font-bold text-slate-950 text-sm">{item.q}</span>
                 </div>
-                <p className="text-xs text-slate-700 font-medium mt-2 pl-8 leading-relaxed">
+                <p className="text-xs text-slate-700 font-medium mt-2.5 pl-10 leading-relaxed">
                   {item.desc}
                 </p>
               </div>
@@ -130,10 +130,10 @@ export function ExploreManifesto() {
         </div>
 
         {/* Survey Table */}
-        <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-2xs">
+        <div className="rounded-2xl border-2 border-slate-900 bg-white overflow-hidden shadow-[4px_4px_0px_0px_#09090b]">
           <table className="w-full text-left text-xs sm:text-sm">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-mono font-bold uppercase text-[11px]">
+              <tr className="bg-slate-100 border-b-2 border-slate-900 text-slate-900 font-mono font-bold uppercase text-[11px]">
                 <th className="py-3 px-4 sm:px-6 w-24">Stat</th>
                 <th className="py-3 px-4 sm:px-6">Finding</th>
               </tr>
@@ -152,7 +152,7 @@ export function ExploreManifesto() {
                 <td className="py-3.5 px-4 sm:px-6 font-semibold text-slate-900">say algorithm-based questions are irrelevant to their day jobs</td>
               </tr>
               <tr>
-                <td className="py-3.5 px-4 sm:px-6 font-mono font-extrabold text-2xl text-[#F78424]">62%</td>
+                <td className="py-3.5 px-4 sm:px-6 font-mono font-extrabold text-2xl text-[#FBAE0C]">62%</td>
                 <td className="py-3.5 px-4 sm:px-6 font-semibold text-slate-900">feel they need to overprepare for algorithm-heavy assessments</td>
               </tr>
             </tbody>
@@ -160,8 +160,8 @@ export function ExploreManifesto() {
         </div>
 
         {/* HackerRank Bail Out Blog Callout */}
-        <div className="p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-          <div className="flex items-center gap-2 text-xs font-mono font-bold text-slate-700 uppercase tracking-wider">
+        <div className="p-5 rounded-2xl bg-white border-2 border-slate-900 shadow-[3px_3px_0px_0px_#09090b] space-y-2">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-slate-900 uppercase tracking-wider">
             <span>Research Citation Note</span>
             <sup className="text-[#099BE9] font-mono text-xs font-bold">[4]</sup>
           </div>
@@ -172,9 +172,9 @@ export function ExploreManifesto() {
         </div>
 
         {/* The Measurable Gap */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-2xs space-y-2">
+        <div className="rounded-2xl border-2 border-slate-900 bg-white p-6 shadow-[3px_3px_0px_0px_#09090b] space-y-2">
           <h3 className="text-base font-bold text-slate-950 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#099BE9]" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#099BE9]" />
             The Measurable Gap
           </h3>
           <p className="text-sm text-slate-700 font-medium leading-relaxed">
@@ -188,7 +188,7 @@ export function ExploreManifesto() {
       {/* ============================================================== */}
       <section className="space-y-6 border-b border-slate-200/80 pb-14">
         <div>
-          <span className="text-xs font-mono uppercase tracking-wider text-[#F78424] font-bold">
+          <span className="text-xs font-mono uppercase tracking-wider text-[#FBAE0C] font-bold">
             The Agentic Inflection Point
           </span>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950 mt-1">
@@ -199,7 +199,7 @@ export function ExploreManifesto() {
           </p>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-4">
+        <div className="bg-white border-2 border-slate-900 rounded-2xl p-6 shadow-[4px_4px_0px_0px_#09090b] space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <span className="text-xs font-mono uppercase text-slate-700 font-bold tracking-wider">
               From Stack Overflow&apos;s 2025 Developer &amp; AI Survey (49,000+ respondents):
@@ -210,15 +210,15 @@ export function ExploreManifesto() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl bg-[#FBAE0C]/10 border border-[#FBAE0C]/30 space-y-1">
-              <div className="text-2xl sm:text-3xl font-mono font-extrabold text-[#F78424]">
+            <div className="p-4 rounded-xl bg-[#FBAE0C]/10 border-2 border-slate-900 shadow-[2px_2px_0px_0px_#09090b] space-y-1">
+              <div className="text-2xl sm:text-3xl font-mono font-extrabold text-[#FBAE0C]">
                 66%
               </div>
               <p className="text-xs text-slate-900 font-medium leading-snug">
                 of developers are frustrated by AI solutions that are <strong>&ldquo;almost right&rdquo;</strong>
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div className="p-4 rounded-xl bg-slate-50 border-2 border-slate-900 shadow-[2px_2px_0px_0px_#09090b] space-y-1">
               <div className="text-2xl sm:text-3xl font-mono font-extrabold text-slate-950">
                 45%
               </div>
@@ -226,7 +226,7 @@ export function ExploreManifesto() {
                 say debugging AI-generated code is <strong>more time-consuming</strong>
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div className="p-4 rounded-xl bg-slate-50 border-2 border-slate-900 shadow-[2px_2px_0px_0px_#09090b] space-y-1">
               <div className="text-2xl sm:text-3xl font-mono font-extrabold text-slate-950">
                 46% vs 33%
               </div>
@@ -242,10 +242,10 @@ export function ExploreManifesto() {
           <h3 className="text-sm font-bold font-mono text-slate-900 uppercase tracking-wider">
             The Re-Definition of Skill
           </h3>
-          <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-2xs">
+          <div className="rounded-2xl border-2 border-slate-900 bg-white overflow-hidden shadow-[4px_4px_0px_0px_#09090b]">
             <table className="w-full text-left text-xs sm:text-sm">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-mono font-bold uppercase text-[11px]">
+                <tr className="bg-slate-100 border-b-2 border-slate-900 text-slate-900 font-mono font-bold uppercase text-[11px]">
                   <th className="py-3 px-4 sm:px-6 w-1/2">Old Skill</th>
                   <th className="py-3 px-4 sm:px-6 w-1/2">New Skill</th>
                 </tr>
@@ -281,71 +281,71 @@ export function ExploreManifesto() {
         {/* Comparison Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
           {/* Traditional */}
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 flex flex-col justify-between space-y-4">
+          <div className="rounded-2xl border-2 border-slate-900 bg-slate-50 p-6 shadow-[4px_4px_0px_0px_#09090b] flex flex-col justify-between space-y-4">
             <div>
-              <div className="flex items-center justify-between pb-3 border-b border-slate-200">
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-700">
+              <div className="flex items-center justify-between pb-3 border-b-2 border-slate-900">
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-900">
                   Traditional coding platforms
                 </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-200 text-slate-800">
+                <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-bold bg-slate-200 border border-slate-900 text-slate-900 shadow-[1px_1px_0px_0px_#09090b]">
                   SYNTAX TEST
                 </span>
               </div>
               <ol className="space-y-2.5 font-mono text-xs text-slate-800 font-medium mt-4">
-                <li className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center gap-2.5">
+                <li className="p-3 rounded-xl bg-white border-2 border-slate-900 shadow-[2px_2px_0px_0px_#09090b] flex items-center gap-2.5">
                   <span className="text-slate-400 font-bold">1.</span>
                   <span>Read synthetic problem description</span>
                 </li>
-                <li className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center gap-2.5">
+                <li className="p-3 rounded-xl bg-white border-2 border-slate-900 shadow-[2px_2px_0px_0px_#09090b] flex items-center gap-2.5">
                   <span className="text-slate-400 font-bold">2.</span>
                   <span>Write function in isolated namespace</span>
                 </li>
-                <li className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center gap-2.5">
+                <li className="p-3 rounded-xl bg-white border-2 border-slate-900 shadow-[2px_2px_0px_0px_#09090b] flex items-center gap-2.5">
                   <span className="text-slate-400 font-bold">3.</span>
                   <span>Run against hidden input/output arrays</span>
                 </li>
-                <li className="p-3 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center gap-2.5 text-slate-950 font-bold">
+                <li className="p-3 rounded-xl bg-white border-2 border-slate-900 shadow-[2px_2px_0px_0px_#09090b] flex items-center gap-2.5 text-slate-950 font-bold">
                   <span className="text-slate-400 font-bold">4.</span>
                   <span>Binary Accepted checkmark → next question</span>
                 </li>
               </ol>
             </div>
-            <p className="text-xs text-slate-700 font-medium border-t border-slate-200 pt-3">
+            <p className="text-xs text-slate-700 font-medium border-t-2 border-slate-900 pt-3">
               Binary pass/fail. Tests memorization; ignores concurrency, I/O bottlenecks, and hardware durability.
             </p>
           </div>
 
           {/* ALGO Proving Ground Loop */}
-          <div className="rounded-2xl border-2 border-[#09C899]/50 bg-white p-6 shadow-xs flex flex-col justify-between space-y-4">
+          <div className="rounded-2xl border-2 border-slate-900 bg-white p-6 shadow-[4px_4px_0px_0px_#09090b] flex flex-col justify-between space-y-4">
             <div>
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center justify-between pb-3 border-b-2 border-slate-900">
                 <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#0AA793]">
                   The ALGO Proving Ground loop
                 </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#09C899]/15 text-[#0AA793] border border-[#09C899]/30">
+                <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-bold bg-[#09C899]/15 text-[#0AA793] border border-slate-900 shadow-[1px_1px_0px_0px_#09090b]">
                   EMPIRICAL SYSTEMS
                 </span>
               </div>
               <ol className="space-y-2.5 font-mono text-xs mt-4">
-                <li className="p-3 rounded-xl bg-[#099BE9]/5 border border-[#099BE9]/20 flex items-center gap-2.5 text-slate-950 font-bold">
+                <li className="p-3 rounded-xl bg-[#099BE9]/10 border-2 border-slate-900 shadow-[2px_2px_0px_0px_#09090b] flex items-center gap-2.5 text-slate-950 font-bold">
                   <span className="text-[#099BE9]">1.</span>
                   <span>Build raw protocol, core architecture &amp; engine from scratch</span>
                 </li>
-                <li className="p-3 rounded-xl bg-[#09C899]/5 border border-[#09C899]/20 flex items-center gap-2.5 text-slate-950 font-bold">
+                <li className="p-3 rounded-xl bg-[#09C899]/10 border-2 border-slate-900 shadow-[2px_2px_0px_0px_#09090b] flex items-center gap-2.5 text-slate-950 font-bold">
                   <span className="text-[#0AA793]">2.</span>
                   <span>Run inside an isolated Linux container sandbox</span>
                 </li>
-                <li className="p-3 rounded-xl bg-[#FBAE0C]/5 border border-[#FBAE0C]/20 flex items-center gap-2.5 text-slate-950 font-bold">
-                  <span className="text-[#F78424]">3.</span>
+                <li className="p-3 rounded-xl bg-[#FBAE0C]/10 border-2 border-slate-900 shadow-[2px_2px_0px_0px_#09090b] flex items-center gap-2.5 text-slate-950 font-bold">
+                  <span className="text-[#FBAE0C]">3.</span>
                   <span>Hammer with high-concurrency load, SIGKILL, and contention scenarios</span>
                 </li>
-                <li className="p-3 rounded-xl bg-[#8647E2]/5 border border-[#8647E2]/20 flex items-center gap-2.5 text-slate-950 font-bold">
+                <li className="p-3 rounded-xl bg-[#8647E2]/10 border-2 border-slate-900 shadow-[2px_2px_0px_0px_#09090b] flex items-center gap-2.5 text-slate-950 font-bold">
                   <span className="text-[#8647E2]">4.</span>
                   <span>Optimize hot paths and verify speedup on the leaderboard</span>
                 </li>
               </ol>
             </div>
-            <p className="text-xs text-slate-800 font-semibold border-t border-slate-100 pt-3">
+            <p className="text-xs text-slate-800 font-semibold border-t-2 border-slate-900 pt-3">
               Continuous optimization loop: empirical profiling, architectural redesign, and verified speedups.
             </p>
           </div>
@@ -372,26 +372,26 @@ export function ExploreManifesto() {
         {/* Submission Telemetry Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* First Submission */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div className="bg-white border-2 border-slate-900 rounded-2xl p-5 shadow-[4px_4px_0px_0px_#09090b] space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b-2 border-slate-900">
               <span className="font-mono text-xs font-bold text-slate-900">
                 Submission #1 — Initial Implementation
               </span>
-              <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#09C899]/10 text-[#0AA793] font-bold border border-[#09C899]/30">
+              <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-md bg-[#09C899]/15 text-[#0AA793] font-bold border border-[#09C899]/40">
                 ACCEPTED
               </span>
             </div>
 
             <ul className="space-y-2 font-mono text-xs">
-              <li className="flex justify-between py-1 border-b border-slate-50">
+              <li className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-600 font-semibold">Correctness:</span>
                 <span className="font-bold text-[#0AA793]">100% (24/24 tests passed)</span>
               </li>
-              <li className="flex justify-between py-1 border-b border-slate-50">
+              <li className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-600 font-semibold">Throughput:</span>
                 <span className="font-bold text-slate-950">18,200 ops/s</span>
               </li>
-              <li className="flex justify-between py-1 border-b border-slate-50">
+              <li className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-600 font-semibold">P99 latency:</span>
                 <span className="font-bold text-slate-950">2.8 ms</span>
               </li>
@@ -401,13 +401,13 @@ export function ExploreManifesto() {
               </li>
             </ul>
 
-            <div className="bg-slate-50 rounded-xl p-3 text-xs text-slate-800 font-medium leading-relaxed">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 font-medium leading-relaxed">
               It works. Accepted. But ALGO doesn&apos;t stop there — the leaderboard shows someone else at 74K ops/sec.
             </div>
           </div>
 
           {/* Optimized Engine */}
-          <div className="bg-slate-950 border border-slate-800 text-white rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between">
+          <div className="bg-slate-950 border-2 border-slate-900 text-white rounded-2xl p-5 shadow-[4px_4px_0px_0px_#09090b] space-y-4 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                 <div className="flex items-center gap-2">
@@ -416,7 +416,7 @@ export function ExploreManifesto() {
                     Submission #5 — Optimized Engine
                   </span>
                 </div>
-                <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#099BE9]/20 text-[#099BE9] font-bold border border-[#099BE9]/40">
+                <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-md bg-[#099BE9]/20 text-[#099BE9] font-bold border border-[#099BE9]/40">
                   +403%
                 </span>
               </div>
@@ -467,24 +467,24 @@ export function ExploreManifesto() {
         </div>
 
         {/* System Execution Pipeline Visual */}
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+        <div className="bg-white border-2 border-slate-900 rounded-2xl p-6 shadow-[4px_4px_0px_0px_#09090b]">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs sm:text-sm text-center">
-            <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-2xs font-bold text-slate-950">
+            <div className="bg-slate-50 border-2 border-slate-900 rounded-xl px-4 py-3 shadow-[2px_2px_0px_0px_#09090b] font-bold text-slate-950">
               Human + AI
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 hidden sm:block" />
-            <span className="sm:hidden text-slate-500 font-bold">↓</span>
-            <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-2xs font-bold text-slate-950">
+            <ArrowRight className="w-4 h-4 text-slate-900 hidden sm:block" />
+            <span className="sm:hidden text-slate-900 font-bold">↓</span>
+            <div className="bg-slate-50 border-2 border-slate-900 rounded-xl px-4 py-3 shadow-[2px_2px_0px_0px_#09090b] font-bold text-slate-950">
               System Architecture
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 hidden sm:block" />
-            <span className="sm:hidden text-slate-500 font-bold">↓</span>
-            <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-2xs font-bold text-slate-950">
+            <ArrowRight className="w-4 h-4 text-slate-900 hidden sm:block" />
+            <span className="sm:hidden text-slate-900 font-bold">↓</span>
+            <div className="bg-slate-50 border-2 border-slate-900 rounded-xl px-4 py-3 shadow-[2px_2px_0px_0px_#09090b] font-bold text-slate-950">
               Physical Reality
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 hidden sm:block" />
-            <span className="sm:hidden text-slate-500 font-bold">↓</span>
-            <div className="bg-slate-900 text-white border border-slate-800 rounded-xl px-4 py-3 shadow-sm font-bold">
+            <ArrowRight className="w-4 h-4 text-slate-900 hidden sm:block" />
+            <span className="sm:hidden text-slate-900 font-bold">↓</span>
+            <div className="bg-slate-900 text-white border-2 border-slate-900 rounded-xl px-4 py-3 shadow-[2px_2px_0px_0px_#09090b] font-bold">
               Empirical Measurement
             </div>
           </div>
@@ -499,7 +499,7 @@ export function ExploreManifesto() {
       {/* ============================================================== */}
       <section className="space-y-6 border-b border-slate-200/80 pb-14">
         <div>
-          <span className="text-xs font-mono uppercase tracking-wider text-[#F78424] font-bold">
+          <span className="text-xs font-mono uppercase tracking-wider text-[#FBAE0C] font-bold">
             Ecosystem Analysis
           </span>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950 mt-1">
@@ -508,10 +508,10 @@ export function ExploreManifesto() {
         </div>
 
         {/* Comparison Table */}
-        <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-2xs">
+        <div className="rounded-2xl border-2 border-slate-900 bg-white overflow-hidden shadow-[4px_4px_0px_0px_#09090b]">
           <table className="w-full text-left text-xs sm:text-sm">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-mono font-bold uppercase text-[11px]">
+              <tr className="bg-slate-100 border-b-2 border-slate-900 text-slate-900 font-mono font-bold uppercase text-[11px]">
                 <th className="py-3 px-4 sm:px-6 w-1/3">Platform</th>
                 <th className="py-3 px-4 sm:px-6">Focus</th>
               </tr>
@@ -545,7 +545,7 @@ export function ExploreManifesto() {
               </tr>
               <tr className="bg-slate-50/70">
                 <td className="py-3.5 px-4 sm:px-6 font-extrabold text-slate-950 text-sm flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#099BE9]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#099BE9]" />
                   ALGO Proving Ground
                 </td>
                 <td className="py-3.5 px-4 sm:px-6 font-bold text-slate-950 text-sm">
@@ -561,7 +561,7 @@ export function ExploreManifesto() {
         </p>
 
         {/* Deep Dive: Where ALGO Differs From CodeCrafters */}
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 space-y-3">
+        <div className="rounded-2xl border-2 border-slate-900 bg-white p-6 shadow-[3px_3px_0px_0px_#09090b] space-y-3">
           <h3 className="text-sm font-bold font-mono text-slate-950 uppercase tracking-wider">
             Where ALGO differs from CodeCrafters specifically
           </h3>
@@ -591,7 +591,7 @@ export function ExploreManifesto() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-2.5">
+          <div className="bg-white border-2 border-slate-900 rounded-2xl p-5 shadow-[3px_3px_0px_0px_#09090b] space-y-2.5">
             <div className="text-3xl font-extrabold font-mono text-[#8647E2]">
               71%
             </div>
@@ -606,7 +606,7 @@ export function ExploreManifesto() {
             </p>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-2.5">
+          <div className="bg-white border-2 border-slate-900 rounded-2xl p-5 shadow-[3px_3px_0px_0px_#09090b] space-y-2.5">
             <div className="text-3xl font-extrabold font-mono text-[#099BE9]">
               58%
             </div>
@@ -621,7 +621,7 @@ export function ExploreManifesto() {
             </p>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs space-y-2.5">
+          <div className="bg-white border-2 border-slate-900 rounded-2xl p-5 shadow-[3px_3px_0px_0px_#09090b] space-y-2.5">
             <div className="text-3xl font-extrabold font-mono text-[#0AA793]">
               2026 Shift
             </div>
@@ -637,7 +637,7 @@ export function ExploreManifesto() {
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-800 text-xs sm:text-sm font-medium leading-relaxed">
+        <div className="p-5 rounded-2xl bg-white border-2 border-slate-900 shadow-[3px_3px_0px_0px_#09090b] text-slate-900 text-xs sm:text-sm font-medium leading-relaxed">
           <strong className="text-slate-950 font-bold">Put together:</strong> the shift ALGO is betting on isn&apos;t hypothetical or platform-side wishful thinking — it&apos;s already visible in how the biggest employers are rewriting their own interview loops.
         </div>
       </section>
@@ -655,7 +655,7 @@ export function ExploreManifesto() {
           </h2>
         </div>
 
-        <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-3">
+        <div className="p-6 rounded-2xl bg-white border-2 border-slate-900 shadow-[3px_3px_0px_0px_#09090b] space-y-3">
           <p className="text-sm sm:text-base text-slate-800 font-medium leading-relaxed">
             ALGO is early. The evidence above establishes <em className="text-slate-950 font-serif font-bold">that the gap exists</em> and <em className="text-slate-950 font-serif font-bold">why the approach is a reasonable response to it</em> — it does not yet establish that ALGO closes the gap in practice.
           </p>
