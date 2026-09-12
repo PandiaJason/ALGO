@@ -237,6 +237,81 @@ export function HomeManifesto() {
           </div>
         </div>
 
+        {/* Systems Thinking in the Agentic Era (Core Thesis) */}
+        <div className="rounded-2xl border-2 border-[#8647E2]/30 bg-white p-6 sm:p-7 shadow-xs space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wider uppercase bg-[#8647E2]/15 text-[#8647E2] border border-[#8647E2]/30">
+              Core Thesis
+            </span>
+            <span className="text-xs font-mono font-bold text-slate-700">
+              // WHERE JUDGMENT MATTERS
+            </span>
+          </div>
+
+          <div>
+            <h4 className="text-xl sm:text-2xl font-extrabold text-slate-950 tracking-tight">
+              Systems Thinking in the Agentic Workflow Era
+            </h4>
+            <p className="text-base sm:text-lg text-slate-800 font-bold mt-1.5">
+              As AI makes software implementation cheaper, systems understanding becomes more valuable.
+            </p>
+          </div>
+
+          <p className="text-xs sm:text-sm text-slate-700 font-medium leading-relaxed">
+            An AI agent can increasingly generate functions, write tests, refactor code, and configure infrastructure. As implementation becomes delegatable, the engineer&apos;s responsibility moves upward — from typing individual pieces of code to understanding, directing, verifying, and evolving the system as a whole.
+          </p>
+
+          {/* Why Systems Understanding Becomes Scarce */}
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-800 font-medium leading-relaxed space-y-2">
+            <div className="font-mono font-bold text-slate-950 uppercase text-xs tracking-wider text-rose-600 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-rose-500" />
+              The Failure Modes of Delegated Code:
+            </div>
+            <p>
+              An agent can generate syntactically valid code that is still <strong className="text-slate-950">vulnerable to race conditions</strong>, <strong className="text-slate-950">inefficient under concurrency</strong>, <strong className="text-slate-950">fragile under partial failure (SIGKILL)</strong>, or <strong className="text-slate-950">wasteful in memory</strong>. Code generation does not eliminate these problems — it creates them at greater speed.
+            </p>
+          </div>
+
+          {/* The 10 Invariant Dimensions */}
+          <div className="space-y-2.5">
+            <div className="text-xs font-mono uppercase tracking-wider text-slate-800 font-bold">
+              The 10 Invariant Dimensions of Systems Thinking:
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 font-mono text-xs">
+              {[
+                { tag: "State", sub: "Ownership & lifecycle" },
+                { tag: "Boundaries", sub: "Subsystem isolation" },
+                { tag: "Protocols", sub: "Wire format & bytes" },
+                { tag: "Invariants", sub: "Non-negotiable truths" },
+                { tag: "Resources", sub: "CPU, memory, sockets" },
+                { tag: "Concurrency", sub: "Simultaneous ops & locks" },
+                { tag: "Failure", sub: "Crash & recovery safety" },
+                { tag: "Observability", sub: "Empirical telemetry" },
+                { tag: "Performance", sub: "Bottleneck diagnosis" },
+                { tag: "Trade-offs", sub: "Deliberate compromises" },
+              ].map((item, i) => (
+                <div key={i} className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900">
+                  <div className="font-bold text-slate-950 text-xs">{item.tag}</div>
+                  <div className="text-[10px] text-slate-600 mt-0.5">{item.sub}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* The New Engineering Question Callout */}
+          <div className="p-4 rounded-xl bg-slate-950 text-white font-mono text-xs space-y-2">
+            <div className="text-[10px] text-[#099BE9] font-bold uppercase tracking-wider">
+              The New Engineering Question:
+            </div>
+            <p className="text-sm font-bold text-white">
+              &ldquo;Can you engineer a system when implementation itself can be delegated?&rdquo;
+            </p>
+            <p className="text-slate-400 text-xs font-sans font-medium">
+              AI can produce the implementation. Systems thinking determines whether the implementation deserves to exist.
+            </p>
+          </div>
+        </div>
+
         {/* The Re-Definition of Skill Table */}
         <div className="space-y-2">
           <div className="text-xs font-mono uppercase tracking-wider text-slate-800 font-bold">

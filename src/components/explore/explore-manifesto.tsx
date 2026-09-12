@@ -237,6 +237,281 @@ export function ExploreManifesto() {
           </div>
         </div>
 
+        {/* ============================================================== */}
+        {/* SYSTEMS THINKING IN THE AGENTIC WORKFLOW ERA                   */}
+        {/* ============================================================== */}
+        <div className="space-y-8 pt-4">
+          <div className="border-t border-slate-200 pt-6">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold tracking-wider uppercase bg-[#8647E2]/15 text-[#8647E2] border border-[#8647E2]/30">
+                Core Thesis
+              </span>
+              <span className="text-xs font-mono font-bold text-slate-700">
+                // ARCHITECTURAL DIRECTION
+              </span>
+            </div>
+
+            <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950 mt-2">
+              Systems Thinking in the Agentic Workflow Era
+            </h3>
+            <p className="text-base sm:text-lg text-slate-800 font-bold mt-2 leading-relaxed">
+              As AI makes software implementation cheaper, systems understanding becomes more valuable.
+            </p>
+          </div>
+
+          <div className="text-sm sm:text-base text-slate-800 font-medium leading-relaxed space-y-4">
+            <p>
+              The rise of agentic workflows changes more than how software is written. It changes where engineering judgment matters.
+            </p>
+            <p>
+              An AI agent can increasingly generate functions, implement APIs, write tests, refactor code, configure infrastructure, and even operate across an entire development workflow. As implementation becomes increasingly delegatable, the engineer&apos;s responsibility moves upward — from producing individual pieces of code to understanding, directing, verifying, and evolving the system as a whole.
+            </p>
+            <div className="p-4 rounded-xl bg-slate-100 border-l-4 border-[#8647E2] text-slate-950 font-bold">
+              This makes systems thinking a first-class engineering skill.
+            </div>
+          </div>
+
+          {/* From Code Generation to System Direction */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-bold font-mono text-slate-900 uppercase tracking-wider">
+              From Code Generation to System Direction
+            </h4>
+            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+              The difference is fundamental: the engineer is no longer necessarily the person writing every line. The engineer becomes the person responsible for ensuring that the system produced by humans and agents actually satisfies its intended properties.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+              <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 space-y-2.5">
+                <div className="flex items-center justify-between text-xs font-mono font-bold text-slate-600 uppercase">
+                  <span>Traditional Software Workflow</span>
+                  <span className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 text-[10px]">LINEAR</span>
+                </div>
+                <div className="space-y-1.5 text-xs font-mono text-slate-700 font-medium">
+                  <div className="p-2 bg-white rounded border border-slate-200">1. Understand the problem</div>
+                  <div className="p-2 bg-white rounded border border-slate-200">2. Design the solution</div>
+                  <div className="p-2 bg-white rounded border border-slate-200">3. Write the code</div>
+                  <div className="p-2 bg-white rounded border border-slate-200">4. Test the code</div>
+                </div>
+              </div>
+
+              <div className="rounded-xl border-2 border-[#8647E2]/40 bg-white p-4 space-y-2.5 shadow-xs">
+                <div className="flex items-center justify-between text-xs font-mono font-bold text-[#8647E2] uppercase">
+                  <span>Agentic Systems Workflow</span>
+                  <span className="px-1.5 py-0.5 rounded bg-[#8647E2]/15 text-[#8647E2] text-[10px]">GOVERNED LOOP</span>
+                </div>
+                <div className="space-y-1.5 text-xs font-mono text-slate-900 font-semibold">
+                  <div className="p-2 bg-[#8647E2]/5 rounded border border-[#8647E2]/20">1. Define objective &amp; establish constraints</div>
+                  <div className="p-2 bg-[#8647E2]/5 rounded border border-[#8647E2]/20">2. Direct agents &amp; inspect system behavior</div>
+                  <div className="p-2 bg-[#8647E2]/5 rounded border border-[#8647E2]/20">3. Verify empirically &amp; diagnose failures</div>
+                  <div className="p-2 bg-[#8647E2]/5 rounded border border-[#8647E2]/20">4. Redesign architecture &amp; optimize hot paths</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Why Systems Understanding Becomes More Valuable */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-bold font-mono text-slate-900 uppercase tracking-wider">
+              Why Systems Understanding Becomes More Valuable
+            </h4>
+            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+              An agent can generate a technically valid implementation while still producing a system that is fundamentally broken in production. Code generation does not eliminate these failure modes — it can make them easier to create at greater speed:
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 font-mono text-xs">
+              {[
+                { title: "Architecturally Inconsistent", desc: "Violates subsystem boundaries and state invariants" },
+                { title: "Vulnerable to Race Conditions", desc: "Subtle atomicity hazards under concurrent execution" },
+                { title: "Inefficient Under Concurrency", desc: "Global lock contention and thread synchronization stalls" },
+                { title: "Wasteful in Memory", desc: "Unbounded buffer growth, memory leaks, and GC thrash" },
+                { title: "Fragile Under Partial Failure", desc: "Data corruption or hanging connections upon SIGKILL" },
+                { title: "Difficult to Observe", desc: "Missing telemetry, opaque state machines, and silent errors" },
+                { title: "Impossible to Scale Economically", desc: "Quadratic complexity and unmetered resource exhaustion" },
+                { title: "Solving the Wrong Problem", desc: "Syntactically green but functionally divergent from reality" },
+              ].map((item, idx) => (
+                <div key={idx} className="p-3 rounded-xl bg-white border border-slate-200/90 shadow-2xs space-y-1">
+                  <div className="font-bold text-rose-600 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+                    <span>{item.title}</span>
+                  </div>
+                  <p className="text-slate-600 text-[11px] font-sans font-medium pl-3">
+                    {item.desc}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-800 font-medium leading-relaxed">
+              Therefore, the scarce capability shifts from <strong className="text-slate-950 font-mono font-bold">&ldquo;Can you write the code?&rdquo;</strong> toward:{" "}
+              <strong className="text-slate-950 font-mono font-bold text-[#0AA793]">
+                &ldquo;Do you understand the system well enough to direct an agent to build the right thing, recognize when it is wrong, and determine how to make it better?&rdquo;
+              </strong>
+            </div>
+          </div>
+
+          {/* The Engineer as a System-Level Controller */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-bold font-mono text-slate-900 uppercase tracking-wider">
+              The Engineer as a System-Level Controller
+            </h4>
+            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+              In an agentic workflow, the engineer increasingly operates as a control layer between intent and physical reality:
+            </p>
+
+            <div className="bg-slate-950 text-white rounded-2xl p-5 border border-slate-800 font-mono text-xs shadow-inner">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+                  <div className="text-[10px] text-slate-400 font-bold uppercase">INTENT</div>
+                  <div className="font-bold text-white text-xs">Human Intent</div>
+                  <div className="text-[10px] text-slate-500">System goals &amp; boundaries</div>
+                </div>
+                <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+                  <div className="text-[10px] text-[#099BE9] font-bold uppercase">BLUEPRINT</div>
+                  <div className="font-bold text-white text-xs">Architecture</div>
+                  <div className="text-[10px] text-slate-500">Invariants &amp; protocols</div>
+                </div>
+                <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+                  <div className="text-[10px] text-[#F78424] font-bold uppercase">DELEGATION</div>
+                  <div className="font-bold text-white text-xs">Agentic Code</div>
+                  <div className="text-[10px] text-slate-500">Accelerated implementation</div>
+                </div>
+                <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+                  <div className="text-[10px] text-[#09C899] font-bold uppercase">SUBSTRATE</div>
+                  <div className="font-bold text-white text-xs">Real Environment</div>
+                  <div className="text-[10px] text-slate-500">Linux kernel, CPU, I/O</div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-center my-3 text-slate-500 font-mono text-xs font-semibold">
+                <span>↓ Telemetry &amp; Evidence Feedback Loop ↓</span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+                  <div className="text-[10px] text-cyan-400 font-bold uppercase">METRICS</div>
+                  <div className="font-bold text-white text-xs">Telemetry Data</div>
+                  <div className="text-[10px] text-slate-500">p99 latency, ops/s, mem</div>
+                </div>
+                <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+                  <div className="text-[10px] text-purple-400 font-bold uppercase">CONTROL</div>
+                  <div className="font-bold text-white text-xs">Engineering Judgment</div>
+                  <div className="text-[10px] text-slate-500">Diagnosing root causes</div>
+                </div>
+                <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+                  <div className="text-[10px] text-amber-400 font-bold uppercase">REFACTOR</div>
+                  <div className="font-bold text-white text-xs">Correction</div>
+                  <div className="text-[10px] text-slate-500">Architectural iteration</div>
+                </div>
+                <div className="p-2.5 rounded-lg bg-[#064E3B]/60 border border-[#09C899]/50 space-y-1">
+                  <div className="text-[10px] text-[#34D399] font-bold uppercase">SCALE</div>
+                  <div className="font-bold text-white text-xs">Optimization</div>
+                  <div className="text-[10px] text-emerald-300">Verified benchmark gain</div>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-400 font-medium text-center mt-3 pt-3 border-t border-slate-800/80">
+                The agent accelerates implementation. The engineer provides the mental model, invariants, evaluation criteria, and corrective decisions.
+              </p>
+            </div>
+          </div>
+
+          {/* Systems Thinking Is Not Just System Design */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-bold font-mono text-slate-900 uppercase tracking-wider">
+              Systems Thinking Is Not Just System Design
+            </h4>
+            <p className="text-sm text-slate-700 font-medium leading-relaxed">
+              Systems thinking should not be reduced to drawing boxes and arrows in an interview. It means understanding how a system behaves as a collection of interacting components under constraints:
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+              {[
+                { title: "State", q: "What exists, where does it live, and who owns it?" },
+                { title: "Boundaries", q: "Where does one component stop and another begin?" },
+                { title: "Protocols", q: "What exact bytes and formats pass between components?" },
+                { title: "Invariants", q: "What properties must unconditionally remain true?" },
+                { title: "Resources", q: "What happens when CPU, memory, storage, bandwidth, or connections saturate?" },
+                { title: "Concurrency", q: "What happens when thousands of operations occur simultaneously?" },
+                { title: "Failure", q: "What happens when a process dies, a write is interrupted, or a dependency fails?" },
+                { title: "Observability", q: "How do we empirically know what the system is actually doing?" },
+                { title: "Performance", q: "Where is the bottleneck, and what telemetry proves it?" },
+                { title: "Trade-offs", q: "What are we sacrificing when we optimize one property?" },
+              ].map((item, idx) => (
+                <div key={idx} className="p-3 rounded-xl bg-white border border-slate-200/90 shadow-2xs flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-md bg-slate-100 text-slate-700 font-bold flex items-center justify-center text-[10px] shrink-0 border border-slate-200">
+                    {idx + 1}
+                  </span>
+                  <div>
+                    <span className="font-bold text-slate-950 text-xs">{item.title}</span>
+                    <p className="text-slate-600 text-[11px] font-sans font-medium mt-0.5">
+                      {item.q}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-xs sm:text-sm text-slate-700 font-medium pt-1">
+              This is fundamentally different from knowing a programming language or memorizing an algorithm.
+            </p>
+          </div>
+
+          {/* Agents Increase the Value of Engineering Judgment */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-bold font-mono text-slate-900 uppercase tracking-wider">
+              Agents Increase the Value of Engineering Judgment
+            </h4>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm font-medium leading-relaxed space-y-2">
+              <p className="text-slate-950 font-bold font-mono text-xs uppercase tracking-wider text-[#8647E2]">
+                The Paradox of the Agentic Era:
+              </p>
+              <p className="text-base font-bold text-slate-950">
+                The better AI becomes at writing software, the more important it becomes to understand software as a system.
+              </p>
+              <p className="text-xs sm:text-sm text-slate-700">
+                If an engineer cannot reason about architecture, failure modes, resource constraints, performance, and correctness, giving that engineer a more powerful coding agent does not produce a better system. It simply produces software faster.
+              </p>
+            </div>
+
+            {/* Pipeline Comparison */}
+            <div className="rounded-xl border border-slate-200 bg-white p-4 font-mono text-xs space-y-3">
+              <div className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">
+                Competency Progression:
+              </div>
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-center">
+                <div className="w-full sm:w-auto px-3 py-2 rounded-lg bg-slate-100 border border-slate-200 text-slate-500 line-through">
+                  Problem → Code → Pass
+                </div>
+                <span className="text-slate-400 font-bold sm:inline hidden">──▶</span>
+                <span className="text-slate-400 font-bold sm:hidden">↓</span>
+                <div className="w-full sm:w-auto px-3 py-2 rounded-lg bg-[#09C899]/10 border border-[#09C899]/30 text-[#0AA793] font-bold">
+                  Specification → Architecture → Delegation → Verification → Diagnosis → Optimization
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* The New Engineering Question Callout */}
+          <div className="rounded-2xl border-2 border-[#099BE9]/40 bg-white p-6 shadow-sm space-y-3">
+            <div className="text-xs font-mono uppercase tracking-wider font-bold text-[#099BE9]">
+              The New Engineering Question
+            </div>
+            <h4 className="text-base sm:text-lg font-bold text-slate-950 leading-snug">
+              The important question of the agentic era is not <span className="font-mono text-slate-600">&ldquo;Can you code without AI?&rdquo;</span> nor is it simply <span className="font-mono text-slate-600">&ldquo;Can you code with AI?&rdquo;</span>
+            </h4>
+            <p className="text-sm sm:text-base font-bold text-slate-950 bg-[#099BE9]/10 p-3.5 rounded-xl border border-[#099BE9]/20 font-mono">
+              &ldquo;Can you engineer a system when implementation itself can be delegated?&rdquo;
+            </p>
+            <p className="text-xs sm:text-sm text-slate-700 font-medium leading-relaxed">
+              That requires understanding not only how to produce software, but why the system is structured the way it is, what must remain true, how it can fail, how its behavior can be measured, and how evidence should change the architecture.
+            </p>
+            <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
+              <span className="text-slate-500 font-semibold">AI can produce the implementation.</span>
+              <span className="text-[#0AA793] font-bold">Systems thinking determines whether the implementation deserves to exist.</span>
+            </div>
+          </div>
+        </div>
+
         {/* The Re-definition of skill Table */}
         <div className="space-y-2">
           <h3 className="text-sm font-bold font-mono text-slate-900 uppercase tracking-wider">
