@@ -621,7 +621,6 @@ export default async function ChallengeDetailPage({ params }: Props) {
                     return (
                       <details
                         key={lvl.level}
-                        open={idx === 0}
                         className="group transition-colors"
                       >
                         <summary className="p-4 sm:px-6 sm:py-4 flex items-center justify-between gap-4 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden hover:bg-slate-50/80 transition-colors">
