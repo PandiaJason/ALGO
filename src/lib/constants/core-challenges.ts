@@ -625,3 +625,48 @@ export const CORE_CHALLENGES: CoreChallenge[] = [
     overview: "Build a production-grade Model Context Protocol (MCP) tool execution runtime that connects LLMs to real-world code execution environments. Implement JSON-RPC 2.0 stdio framing, resource templates, strict schema validation, and sandboxed subprocess execution.",
   },
 ];
+
+export interface DailyChallengeInfo {
+  challenge: CoreChallenge;
+  formattedDate: string;
+  timeRemaining: string;
+  dayIndex: number;
+}
+
+export function getDailyChallenge(now: Date = new Date()): DailyChallengeInfo {
+  // Epoch: January 1, 2026 UTC
+  const epoch = Date.UTC(2026, 0, 1);
+  const currentUtc = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate()
+  );
+  const dayIndex = Math.floor((currentUtc - epoch) / (1000 * 60 * 60 * 24));
+
+  // Safe positive modulo indexing across CORE_CHALLENGES
+  const index =
+    ((dayIndex % CORE_CHALLENGES.length) + CORE_CHALLENGES.length) %
+    CORE_CHALLENGES.length;
+  const challenge = CORE_CHALLENGES[index];
+
+  const formattedDate = now.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+
+  // Calculate time remaining until next UTC midnight
+  const nextMidnightUtc = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() + 1
+  );
+  const diffMs = Math.max(0, nextMidnightUtc - now.getTime());
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  const timeRemaining = `${hours}h ${minutes.toString().padStart(2, "0")}m`;
+
+  return { challenge, formattedDate, timeRemaining, dayIndex };
+}
+

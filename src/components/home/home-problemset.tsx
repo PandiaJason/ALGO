@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
-import { CORE_CHALLENGES, DOMAINS, CoreChallenge } from "@/lib/constants/core-challenges";
-import { Terminal, ArrowRight, CheckCircle2, ChevronRight, Zap, Code2, Layers } from "lucide-react";
+import { CORE_CHALLENGES, DOMAINS, CoreChallenge, getDailyChallenge } from "@/lib/constants/core-challenges";
+import { Terminal, ArrowRight, CheckCircle2, ChevronRight, Zap, Code2, Layers, Flame } from "lucide-react";
 
 export function HomeProblemset() {
   const [domainFilter, setDomainFilter] = useState<string>("ALL");
+  const dailySlug = useMemo(() => getDailyChallenge().challenge.slug, []);
 
   const filtered = CORE_CHALLENGES.filter((c) => {
     if (domainFilter === "ALL") return true;
@@ -106,6 +107,12 @@ export function HomeProblemset() {
                         >
                           {c.title}
                         </Link>
+                        {c.slug === dailySlug && (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#FBAE0C]/15 border border-[#FBAE0C]/30 text-[#F78424]">
+                            <Flame className="w-3 h-3 fill-[#F78424]" />
+                            DAILY
+                          </span>
+                        )}
                         {c.status === "COMING_SOON" && (
                           <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
                             PREVIEW
