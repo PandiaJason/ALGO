@@ -7,6 +7,7 @@ import { HeroTerminal } from "@/components/home/hero-terminal";
 import { DailyChallengeBanner } from "@/components/home/daily-challenge-banner";
 import { HomeManifesto } from "@/components/home/home-manifesto";
 import { HomeWishlist } from "@/components/home/home-wishlist";
+import { HomeCaseStudyBanner } from "@/components/home/home-case-study-banner";
 import { ChevronRight, Play, Route } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -84,6 +85,11 @@ export default async function HomePage() {
         {/* 6. JOIN WISHLIST & DIRECT MESSAGE (Queued in Admin Control)    */}
         {/* ============================================================== */}
         <HomeWishlist />
+
+        {/* ============================================================== */}
+        {/* 7. CASE STUDY BANNER (LAST CARD ON HOMEPAGE)                   */}
+        {/* ============================================================== */}
+        <HomeCaseStudyBanner />
       </main>
 
       <Footer />
