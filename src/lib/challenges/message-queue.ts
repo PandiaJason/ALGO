@@ -499,7 +499,15 @@ OUTPUT: BATCH_OK COUNT: 3 FIRST_OFFSET: 0`,
       title: "Commit Log Persistence & Crash Recovery",
       difficulty: "Hard",
       tagline: "Guarantee zero message loss across sudden SIGKILL process termination. Reconstitute unconsumed offsets on boot.",
-      whatAreYouBuilding: `In this final level, you are adding a safe to the post office. Every time someone says COMMIT, you take a snapshot of the entire post office—all the mail and all the bookmarks—and lock it in the safe. If the power goes out and the post office reboots, you can pull everything out of the safe and resume exactly where you left off.`,
+      whatAreYouBuilding: `In this final level, you are adding a safe to the post office. Every time someone says COMMIT, you take a snapshot of the entire post office—all the mail and all the bookmarks—and lock it in the safe. If the power goes out and the post office reboots, you can pull everything out of the safe and resume exactly where you left off.
+
+For example:
+PUB orders order_100
+COMMIT
+
+your message queue writes to disk and confirms:
+OK 0
+OK`,
       howItWorks: `1. Normally, data lives only in fast, temporary memory (RAM).
 2. When 'COMMIT' is called, you simulate writing everything permanently to a disk file.
 3. When 'STATS' is called, you scan your data structures and report the total number of topics and messages currently in the system.

@@ -96,58 +96,66 @@ export const shellChallenge: ChallengeData = {
     1: {
       level: 1,
       stage: "BUILD",
-      shortTitle: "Build Your First Shell",
-      title: "Build Your First Shell",
+      shortTitle: "Interactive REPL & Builtins",
+      title: "Interactive REPL & Builtins",
       difficulty: "Easy",
-      tagline: "Build a small command-line shell that reads what the user types, understands the command, and performs the requested action.",
-      whatAreYouBuilding: `You are going to build a small command-line shell.
+      tagline: "Can you make it work? — Build a small Unix shell that reads commands from standard input and executes built-in commands.",
+      whatAreYouBuilding: `A shell is a program that waits for commands, processes them, and executes them.
 
-A shell reads what the user types, understands the command, and performs the requested action.
+In this stage, your shell only needs to support four commands:
+• echo
+• pwd
+• cd
+• exit
 
-For example:
+For example, when the user enters:
 echo hello world
 
-Your shell should print:
+your shell should print:
 hello world`,
-      howItWorks: `When the user types:
-echo hello world
-
-your shell can think of it as:
-Command: echo
-Arguments:
-  hello
-  world
-
-Then it runs the echo command and prints the result.`,
+      howItWorks: `When the user enters a command:
+1. Read the command line from standard input.
+2. Split the line into the command name and its argument words.
+3. Match against the built-in command table (echo, pwd, cd, exit).
+4. Execute the command and write its output to standard output.`,
       technicalTerms: [
         {
-                "term": "REPL",
-                "definition": "A program that repeatedly reads and responds to commands (Read-Eval-Print Loop)."
+          term: "REPL",
+          definition: "Read-Eval-Print Loop: A program that repeatedly reads input, evaluates it, and prints the result."
         },
         {
-                "term": "argv",
-                "definition": "The list of command-line argument words."
+          term: "Built-in Command",
+          definition: "A command executed directly inside the shell process rather than launching an external program."
         },
         {
-                "term": "stdout",
-                "definition": "The normal standard output of a program."
+          term: "chdir()",
+          definition: "The POSIX system call used to change the current working directory of the calling process."
         },
         {
-                "term": "builtin",
-                "definition": "A command handled directly by your shell without starting a new program."
+          term: "Standard Streams",
+          definition: "Standard input (stdin) for receiving commands and standard output (stdout) for writing results."
         }
-],
-      description: `Every shell begins with an interactive Read-Eval-Print Loop (REPL). In Level 1, your shell must continuously read command lines from standard input (stdin), parse the command name and arguments, and execute four fundamental builtins: echo, pwd, cd, and exit.
+      ],
+      description: `Why is cd special?
+Most commands can eventually be implemented by starting another process.
 
-Builtin commands execute directly within the shell process itself rather than launching an external program. This is critical for commands like 'cd' (change directory), because if 'cd' were run in an external child process, it would only alter the child's working directory, leaving the parent shell unchanged.`,
+cd is different.
+The directory must change inside the shell process itself. Otherwise, the directory change would disappear when that process finishes.
+
+You will encounter process creation and external commands in later levels.
+
+Implementation notes:
+• You may use standard system functions for working with directories, such as getcwd() and chdir().
+• For this level, you do not need to implement external programs, pipes, redirection, or advanced shell parsing.
+• Empty input lines should produce no output.
+• Do not print prompts such as '$' unless required by the test.`,
       implementationGuide: [
-        "Initialize an interactive REPL loop reading line-by-line from standard input (stdin) until reaching EOF.",
-        "Tokenize each line by splitting on whitespace into the command name and its argument tokens.",
-        "Implement 'echo [args...]': join the arguments with a single space and print to stdout.",
-        "Implement 'pwd': print the current working directory. (When called from the initial start directory in tests, print 'OK').",
-        "Implement 'cd <dir>': change the current working directory using chdir().",
-        "Implement 'exit': break the REPL loop and terminate cleanly."
-],
+        "Reads commands continuously from standard input.",
+        "Splits each command into words separated by whitespace.",
+        "Identifies the command and its arguments.",
+        "Executes the supported built-in commands (echo, pwd, cd, exit).",
+        "Continues until exit or end-of-file is received."
+      ],
       diagram: `USER INPUT: "echo hello world"
       │
       ▼
@@ -159,20 +167,25 @@ Builtin commands execute directly within the shell process itself rather than la
       ▼
 [Builtin Dispatch] ──► Write to stdout: "hello world\\n"`,
       learningLoop: {
-        bottleneck: "How does a shell process commands without leaking memory or crashing on empty lines?",
+        bottleneck: "Why must 'cd' change directory inside the shell process itself rather than in a child process?",
         whatYouUnderstand: [
-          "Whitespace argument splitting and quote preservation.",
-          "Stateful builtins modifying shell process state (e.g. current working directory).",
-          "Clean termination protocol without orphaned resources.",
+          "Read commands from standard input",
+          "Parse command arguments",
+          "Execute echo",
+          "Execute pwd",
+          "Execute cd",
+          "Execute exit",
+          "Handle empty lines safely",
+          "Maintain the current working directory between commands"
         ],
-        productionParity: "The core builtin dispatch table of dash and bash.",
-        outcomeSummary: "You master command string tokenization and basic builtin execution.",
+        productionParity: "The basic Read → Parse → Execute loop of a Unix shell.",
+        outcomeSummary: "Once this works, you have the basic Read → Parse → Execute loop of a Unix shell."
       },
       operations: [
-        { cmd: "echo <text>", desc: "Prints the given text back to stdout." },
-        { cmd: "pwd", desc: "Prints the current working directory." },
-        { cmd: "cd <path>", desc: "Changes the current working directory." },
-        { cmd: "exit", desc: "Terminates the shell session (outputs 'CLEAN_EXIT' when active children are present)." },
+        { cmd: "echo [args...]", desc: "Print the arguments given to the command. Multiple spaces between arguments should be treated as separators. Example: '$ echo hello    world' -> 'hello world'." },
+        { cmd: "pwd", desc: "Print the shell's current working directory. Example: '$ pwd' -> '/home/user/project' (prints 'OK' in initial directory during tests)." },
+        { cmd: "cd <path>", desc: "Change the shell's current working directory. The directory change must remain active for subsequent commands. Example: '$ cd /tmp'." },
+        { cmd: "exit", desc: "Terminate the shell. The shell should terminate successfully without printing anything." },
       ],
       examples: [
         {
@@ -315,7 +328,14 @@ Case 2 (Missing Binary):
 Your shell should:
 • Stay alive when the user presses Ctrl+C.
 • Run programs in the background.
-• Clean up programs after they finish.`,
+• Clean up programs after they finish.
+
+For example, when running a background program:
+spawn-bg true
+reap
+
+your shell cleans up the finished program:
+REAPED: 1`,
       howItWorks: `Three key problems to solve:
 1. Handle Ctrl+C: Normally pressing Ctrl+C stops the shell. Your shell should intercept this safely and stay alive.
 2. Run in the background: 'spawn-bg <program>' starts the program and immediately gives control back to the user.
@@ -619,7 +639,14 @@ Case 2: "profile true" ──► TYPE: EXTERNAL FORK_US: OK`,
 Every time your shell reads a command, it breaks that command into pieces.
 A simple implementation creates new pieces of heap memory every time.
 
-Your goal is to avoid those unnecessary memory allocations on the shell's most frequently used path (the hot path).`,
+Your goal is to avoid those unnecessary memory allocations on the shell's most frequently used path (the hot path).
+
+For example:
+fast-eval echo speed test
+
+your shell executes the command using pre-allocated buffers:
+speed test
+HEAP_ALLOCS: 0`,
       howItWorks: `What does "zero allocation" mean?
 Instead of creating brand-new strings for every word:
   "echo"

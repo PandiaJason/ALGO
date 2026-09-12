@@ -184,6 +184,7 @@ export function WorkspaceClient({
   const [code, setCode] = useState<string>(() => getInitialCode("python"));
   const [leftTab, setLeftTab] = useState<"description" | "missions" | "submissions" | "leaderboard">("description");
   const [descSubTab, setDescSubTab] = useState<"spec" | "diagram" | "gotcha" | "examples">("spec");
+  const [diagramTab, setDiagramTab] = useState<"dataflow" | "system" | "both">("dataflow");
 
   // Restore preferred language and typed code draft from localStorage on mount / challenge change
   useEffect(() => {
@@ -749,58 +750,238 @@ export function WorkspaceClient({
                   </div>
                 </div>
 
-                {/* TIER 1: What Are You Building (Simple Explanation First) */}
+                {/* 1. System Architecture & Data Flow Diagram (Immediately After Title) */}
+                {(currentLevelInfo.diagram || architectureDiagram) && (
+                  <div className="rounded-xl border border-slate-200 bg-white overflow-hidden text-xs shadow-2xs">
+                    <div className="p-2.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <Terminal className="w-3.5 h-3.5 text-[#099BE9]" />
+                        <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-900">
+                          Architecture &amp; Data Flow
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 bg-slate-200/80 p-0.5 rounded-lg text-[10px] font-mono font-semibold">
+                        {currentLevelInfo.diagram && (
+                          <button
+                            type="button"
+                            onClick={() => setDiagramTab("dataflow")}
+                            className={`px-2 py-1 rounded transition-colors cursor-pointer ${
+                              diagramTab === "dataflow"
+                                ? "bg-white text-[#099BE9] shadow-2xs font-bold"
+                                : "text-slate-600 hover:text-slate-950"
+                            }`}
+                          >
+                            Level {selectedLevel} Data Flow
+                          </button>
+                        )}
+                        {architectureDiagram && (
+                          <button
+                            type="button"
+                            onClick={() => setDiagramTab("system")}
+                            className={`px-2 py-1 rounded transition-colors cursor-pointer ${
+                              diagramTab === "system"
+                                ? "bg-white text-[#099BE9] shadow-2xs font-bold"
+                                : "text-slate-600 hover:text-slate-950"
+                            }`}
+                          >
+                            System Architecture
+                          </button>
+                        )}
+                        {currentLevelInfo.diagram && architectureDiagram && (
+                          <button
+                            type="button"
+                            onClick={() => setDiagramTab("both")}
+                            className={`px-2 py-1 rounded transition-colors cursor-pointer ${
+                              diagramTab === "both"
+                                ? "bg-white text-[#099BE9] shadow-2xs font-bold"
+                                : "text-slate-600 hover:text-slate-950"
+                            }`}
+                          >
+                            Show Both
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Diagram Content */}
+                    <div className="p-3.5 bg-[#141416] text-[#09C899] font-mono text-[11px] overflow-x-auto space-y-3.5">
+                      {(diagramTab === "dataflow" || diagramTab === "both") && currentLevelInfo.diagram && (
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold tracking-wider uppercase border-b border-slate-800/80 pb-1">
+                            <span className="text-[#099BE9]">Data Flow Diagram (Level {selectedLevel})</span>
+                            <span className="text-slate-500 font-medium">Input ➔ Internal Logic ➔ Output</span>
+                          </div>
+                          <pre className="whitespace-pre leading-relaxed font-medium">{currentLevelInfo.diagram}</pre>
+                        </div>
+                      )}
+
+                      {diagramTab === "both" && currentLevelInfo.diagram && architectureDiagram && (
+                        <div className="border-t border-slate-800/80" />
+                      )}
+
+                      {(diagramTab === "system" || diagramTab === "both") && architectureDiagram && (
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold tracking-wider uppercase border-b border-slate-800/80 pb-1">
+                            <span className="text-[#099BE9]">{challenge.title} — System Architecture</span>
+                            <span className="text-slate-500 font-medium">End-to-End Topology</span>
+                          </div>
+                          <pre className="whitespace-pre leading-relaxed font-medium">{architectureDiagram}</pre>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. What Are You Building */}
                 {currentLevelInfo.whatAreYouBuilding && (
                   <div className="rounded-xl bg-white border border-slate-200 p-4 space-y-2 text-xs shadow-2xs">
-                    <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#099BE9] flex items-center gap-1.5">
+                    <div className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#099BE9] flex items-center gap-1.5">
                       <Compass className="w-3.5 h-3.5 text-[#099BE9]" />
                       <span>What are you building?</span>
                     </div>
-                    <div className="text-slate-800 leading-relaxed font-normal whitespace-pre-line">
+                    <div className="text-slate-800 leading-relaxed font-normal whitespace-pre-line text-xs">
                       {currentLevelInfo.whatAreYouBuilding}
                     </div>
                   </div>
                 )}
 
-                {/* TIER 1.5: How It Works (Mental Model & Examples) */}
-                {currentLevelInfo.howItWorks && (
-                  <div className="rounded-xl bg-amber-500/5 border border-amber-200/80 p-4 space-y-2 text-xs shadow-2xs">
-                    <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
-                      <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
-                      <span>How it works</span>
+                {/* 3. Your Task */}
+                {Array.isArray(currentLevelInfo.implementationGuide) && currentLevelInfo.implementationGuide.length > 0 && (
+                  <div className="rounded-xl border border-indigo-200/90 bg-white p-4 space-y-3 shadow-2xs">
+                    <div className="flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-wider text-indigo-950">
+                      <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
+                      <span>Your Task</span>
                     </div>
-                    <div className="text-slate-800 leading-relaxed font-normal whitespace-pre-line font-mono text-[11px]">
-                      {currentLevelInfo.howItWorks}
-                    </div>
+                    <p className="text-xs text-slate-600 font-medium">
+                      Implement {challenge.title.toLowerCase()} functionality that:
+                    </p>
+                    <ol className="space-y-2 text-xs text-slate-800 font-medium list-none">
+                      {currentLevelInfo.implementationGuide.map((step: string, idx: number) => (
+                        <li key={idx} className="flex items-start gap-2.5">
+                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-100 text-indigo-950 text-[11px] font-mono font-bold shrink-0 mt-0.5 border border-indigo-200">
+                            {idx + 1}
+                          </span>
+                          <span className="leading-relaxed text-slate-800 font-normal">{step}</span>
+                        </li>
+                      ))}
+                    </ol>
                   </div>
                 )}
 
-                {/* TIER 1.6: Level Data Flow Architecture Diagram */}
-                {currentLevelInfo.diagram && (
-                  <div className="rounded-xl border border-slate-200 bg-white overflow-hidden text-xs shadow-2xs">
-                    <div className="p-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <Terminal className="w-3.5 h-3.5 text-[#099BE9]" />
-                        <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-900">
-                          Data Flow Diagram (Level {selectedLevel})
-                        </span>
-                      </div>
+                {/* 4. Supported Commands */}
+                {Array.isArray(currentLevelInfo.operations) && currentLevelInfo.operations.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">
+                        Supported Commands
+                      </h3>
                       <span className="text-[10px] font-mono text-slate-500 font-semibold">
-                        Input ➔ Internal Logic ➔ Output
+                        Level {selectedLevel} Protocol
                       </span>
                     </div>
-                    <div className="p-3.5 bg-[#141416] font-mono text-[11px] text-[#09C899] overflow-x-auto">
-                      <pre className="whitespace-pre leading-relaxed font-medium">{currentLevelInfo.diagram}</pre>
+
+                    <div className="border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs divide-y divide-slate-100">
+                      {currentLevelInfo.operations.map((op: any, idx: number) => (
+                        <div key={idx} className="p-3 hover:bg-slate-50/60 transition-colors space-y-1.5">
+                          <div className="flex items-center gap-2">
+                            <code className="px-2 py-0.5 rounded bg-[#099BE9]/10 border border-[#099BE9]/30 font-mono text-[#099BE9] text-xs shrink-0 font-bold">
+                              {op.cmd}
+                            </code>
+                          </div>
+                          <p className="text-slate-800 font-normal text-xs leading-relaxed whitespace-pre-line">
+                            {op.desc}
+                          </p>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
 
-                {/* TIER 2: Technical Terms Made Simple (Engineering Terminology Second) */}
+                {/* 5. Input & Output Protocol Specification */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-3 text-xs">
+                  <div className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                    <Terminal className="w-3.5 h-3.5 text-[#099BE9]" />
+                    <span>Input &amp; Output Protocol</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1.5">
+                      <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-700">
+                        Standard Input (stdin)
+                      </div>
+                      <ul className="text-slate-700 space-y-1 text-xs leading-relaxed">
+                        <li className="flex items-start gap-1.5">
+                          <span className="text-[#099BE9] font-bold">•</span>
+                          <span>Commands are provided line-by-line via standard input.</span>
+                        </li>
+                        <li className="flex items-start gap-1.5">
+                          <span className="text-[#099BE9] font-bold">•</span>
+                          <span>Each line represents a single command invocation with arguments.</span>
+                        </li>
+                        <li className="flex items-start gap-1.5">
+                          <span className="text-[#099BE9] font-bold">•</span>
+                          <span>Continue executing until <code className="px-1 py-0.5 rounded bg-slate-200 text-slate-900 font-mono text-[10px]">exit</code> or EOF is received.</span>
+                        </li>
+                      </ul>
+                    </div>
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1.5">
+                      <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-700">
+                        Standard Output (stdout)
+                      </div>
+                      <ul className="text-slate-700 space-y-1 text-xs leading-relaxed">
+                        <li className="flex items-start gap-1.5">
+                          <span className="text-[#0AA793] font-bold">•</span>
+                          <span>Print command responses directly to standard output.</span>
+                        </li>
+                        <li className="flex items-start gap-1.5">
+                          <span className="text-[#0AA793] font-bold">•</span>
+                          <span>Do not print any prompt string (such as <code className="px-1 py-0.5 rounded bg-slate-200 text-slate-900 font-mono text-[10px]">$ </code> or <code className="px-1 py-0.5 rounded bg-slate-200 text-slate-900 font-mono text-[10px]">&gt; </code>).</span>
+                        </li>
+                        <li className="flex items-start gap-1.5">
+                          <span className="text-[#0AA793] font-bold">•</span>
+                          <span>Empty lines or silent commands produce no output lines.</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 6. Implementation Notes & Systems Concept */}
+                {(currentLevelInfo.description || currentLevelInfo.howItWorks) && (
+                  <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-2 text-xs leading-relaxed text-slate-800 shadow-2xs">
+                    <div className="font-mono text-[11px] font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                      <Lightbulb className="w-3.5 h-3.5 text-[#FBAE0C]" />
+                      <span>Implementation Notes &amp; Systems Concept</span>
+                    </div>
+                    <div className="text-slate-700 font-normal leading-relaxed whitespace-pre-line text-xs">
+                      {currentLevelInfo.description || currentLevelInfo.howItWorks}
+                    </div>
+                  </div>
+                )}
+
+                {/* 7. Critical Systems Hurdle / Watch Out */}
+                {currentLevelInfo.importantChallenge && (
+                  <div className="rounded-xl border border-amber-300/80 bg-amber-500/10 p-3.5 space-y-2 text-amber-950 shadow-2xs">
+                    <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase text-amber-700">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span>The Engineering Hurdle: {currentLevelInfo.importantChallenge.title}</span>
+                    </div>
+                    <p className="text-xs text-slate-800 leading-relaxed font-medium">
+                      {currentLevelInfo.importantChallenge.description}
+                    </p>
+                    {currentLevelInfo.importantChallenge.codeOrFormat && (
+                      <div className="bg-slate-900 text-amber-300 p-2.5 rounded font-mono text-[11px] overflow-x-auto border border-amber-500/20">
+                        <pre className="whitespace-pre leading-relaxed">{currentLevelInfo.importantChallenge.codeOrFormat}</pre>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 8. Technical Terms Made Simple */}
                 {Array.isArray(currentLevelInfo.technicalTerms) && currentLevelInfo.technicalTerms.length > 0 && (
                   <div className="rounded-xl bg-[#141416] text-white p-4 space-y-2.5 shadow-sm border border-slate-800">
-                    <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                    <div className="font-mono text-[11px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
                       <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Technical terms made simple</span>
+                      <span>Technical Terms Made Simple</span>
                     </div>
                     <div className="divide-y divide-slate-800/80 pt-1">
                       {currentLevelInfo.technicalTerms.map((t: any, idx: number) => (
@@ -814,67 +995,7 @@ export function WorkspaceClient({
                   </div>
                 )}
 
-                {/* TIER 2.5: Step-by-Step Implementation Guide */}
-                {Array.isArray(currentLevelInfo.implementationGuide) && currentLevelInfo.implementationGuide.length > 0 && (
-                  <div className="rounded-xl border border-indigo-200/90 bg-indigo-50/50 p-4 space-y-2.5 shadow-2xs">
-                    <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase text-indigo-950">
-                      <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
-                      <span>Step-by-Step Implementation Guide</span>
-                    </div>
-                    <ol className="space-y-2 text-xs text-slate-800 font-medium list-none">
-                      {currentLevelInfo.implementationGuide.map((step: string, idx: number) => (
-                        <li key={idx} className="flex items-start gap-2.5">
-                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-200 text-indigo-950 text-[11px] font-mono font-bold shrink-0 mt-0.5">
-                            {idx + 1}
-                          </span>
-                          <span className="leading-relaxed text-slate-800 font-normal">{step}</span>
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                )}
-
-                {/* TIER 3: Deep Dive Concept & System Architecture (Deep Details Third) */}
-                {currentLevelInfo.description && (
-                  <div className="rounded-xl bg-slate-50/80 border border-slate-200 p-3.5 space-y-2 text-xs leading-relaxed text-slate-800 shadow-2xs">
-                    <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-                      <Terminal className="w-3.5 h-3.5 text-[#099BE9]" />
-                      <span>Technical Deep Dive &amp; Architecture</span>
-                    </div>
-                    <div className="text-slate-700 font-normal leading-relaxed whitespace-pre-line text-xs">
-                      {currentLevelInfo.description}
-                    </div>
-                  </div>
-                )}
-
-                {/* 2. Operations & Protocol Specification */}
-                {Array.isArray(currentLevelInfo.operations) && currentLevelInfo.operations.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">
-                        Supported Operations
-                      </h3>
-                      <span className="text-[10px] font-mono text-slate-500 font-semibold">
-                        POSIX Stream Protocol
-                      </span>
-                    </div>
-
-                    <div className="border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs divide-y divide-slate-100">
-                      {currentLevelInfo.operations.map((op: any, idx: number) => (
-                        <div key={idx} className="p-2.5 flex flex-col sm:flex-row sm:items-start gap-2 hover:bg-slate-50/60 transition-colors">
-                          <code className="px-1.5 py-0.5 rounded bg-[#099BE9]/10 border border-[#099BE9]/30 font-mono text-[#099BE9] text-[11px] shrink-0 font-bold">
-                            {op.cmd}
-                          </code>
-                          <span className="text-slate-800 font-medium text-xs leading-relaxed">
-                            {op.desc}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 3. Concrete Example Session */}
+                {/* 9. Example Protocol Session */}
                 {(() => {
                   const case1 = currentLevelInfo.cases?.[0];
                   const rawExamples = Array.isArray(currentLevelInfo.examples) ? currentLevelInfo.examples : [];
@@ -893,23 +1014,28 @@ export function WorkspaceClient({
 
                   return (
                     <div className="space-y-2">
-                      <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">
-                        Example Protocol Session
-                      </h3>
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">
+                          Example Protocol Session
+                        </h3>
+                        <span className="text-[10px] font-mono text-slate-500 font-semibold">
+                          Interactive REPL Test
+                        </span>
+                      </div>
                       <div className="space-y-2">
                         {displayExamples.map((ex: any, idx: number) => (
                           <div key={idx} className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1.5">
                             <div className="text-[10px] font-mono text-slate-500 font-bold uppercase tracking-wide">
                               {ex.title}
                             </div>
-                            <div className="bg-white p-2.5 rounded border border-slate-200 font-mono text-xs text-slate-800 space-y-1.5">
+                            <div className="bg-white p-2.5 rounded border border-slate-200 font-mono text-xs text-slate-800 space-y-2">
                               <div>
-                                <span className="text-slate-400 font-semibold block text-[10px]">Input (stdin):</span>
-                                <pre className="text-slate-900 font-medium whitespace-pre-wrap">{ex.input?.replace(/\\n/g, "\n")}</pre>
+                                <span className="text-slate-400 font-semibold block text-[10px] uppercase">Input (stdin):</span>
+                                <pre className="text-slate-900 font-medium whitespace-pre-wrap mt-0.5">{ex.input?.replace(/\\n/g, "\n")}</pre>
                               </div>
-                              <div className="pt-1.5 border-t border-slate-100">
-                                <span className="text-slate-400 font-semibold block text-[10px]">Expected Output (stdout):</span>
-                                <pre className="text-[#0AA793] font-semibold whitespace-pre-wrap">{ex.output?.replace(/\\n/g, "\n")}</pre>
+                              <div className="pt-2 border-t border-slate-100">
+                                <span className="text-slate-400 font-semibold block text-[10px] uppercase">Expected Output (stdout):</span>
+                                <pre className="text-[#0AA793] font-semibold whitespace-pre-wrap mt-0.5">{ex.output?.replace(/\\n/g, "\n")}</pre>
                               </div>
                             </div>
                           </div>
@@ -919,107 +1045,87 @@ export function WorkspaceClient({
                   );
                 })()}
 
-                {/* 4. Critical Systems Hurdle / Watch Out */}
-                {currentLevelInfo.importantChallenge && (
-                  <div className="rounded-xl border border-amber-300/80 bg-amber-500/10 p-3.5 space-y-2 text-amber-950 shadow-2xs">
-                    <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase text-amber-700">
-                      <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                      <span>The Engineering Hurdle: {currentLevelInfo.importantChallenge.title}</span>
+                {/* 10. Level Goal */}
+                {currentLevelInfo.learningLoop && (
+                  <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-3 shadow-2xs text-xs">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-slate-900">
+                        <CheckCircle2 className="w-4 h-4 text-[#09C899]" />
+                        <span>Level {selectedLevel} Goal</span>
+                      </div>
+                      <span className="text-[10px] font-mono text-slate-500 font-semibold">
+                        Mastery Checklist
+                      </span>
                     </div>
-                    <p className="text-xs text-slate-800 leading-relaxed font-medium">
-                      {currentLevelInfo.importantChallenge.description}
+                    <p className="text-xs text-slate-600 font-medium">
+                      After completing Level {selectedLevel}, your implementation should:
                     </p>
-                    {currentLevelInfo.importantChallenge.codeOrFormat && (
-                      <div className="bg-slate-900 text-amber-300 p-2.5 rounded font-mono text-[11px] overflow-x-auto border border-amber-500/20">
-                        <pre className="whitespace-pre leading-relaxed">{currentLevelInfo.importantChallenge.codeOrFormat}</pre>
+                    {Array.isArray(currentLevelInfo.learningLoop.whatYouUnderstand) && (
+                      <div className="space-y-1.5 pt-1">
+                        {currentLevelInfo.learningLoop.whatYouUnderstand.map((concept: string, idx: number) => (
+                          <div key={idx} className="flex items-start gap-2 text-xs text-slate-800">
+                            <CheckCircle2 className="w-4 h-4 text-[#09C899] shrink-0 mt-0.5" />
+                            <span className="font-normal leading-relaxed">{concept}</span>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
                 )}
 
-                {/* 5. Durability Protocol & Constraints */}
-                <div className="space-y-3 pt-1">
-                  {Array.isArray(currentLevelInfo.durabilityRules) && currentLevelInfo.durabilityRules.length > 0 && (
-                    <div className="space-y-1.5">
-                      <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">
-                        Engineering Rules &amp; Invariants
-                      </h3>
-                      <div className="p-3 rounded-lg bg-slate-50/80 border border-slate-200 space-y-1 text-xs text-slate-800 font-medium">
-                        {currentLevelInfo.durabilityRules.map((rule: any, idx: number) => (
-                          <div key={idx} className="flex items-start gap-2">
-                            <span className="text-[#0AA793] font-bold font-mono">•</span>
-                            <span>{rule}</span>
-                          </div>
-                        ))}
+                {/* 11. Engineering Rules & Machine Constraints */}
+                {((Array.isArray(currentLevelInfo.durabilityRules) && currentLevelInfo.durabilityRules.length > 0) ||
+                  (Array.isArray(currentLevelInfo.constraints) && currentLevelInfo.constraints.length > 0)) && (
+                  <div className="space-y-3 pt-1">
+                    {Array.isArray(currentLevelInfo.durabilityRules) && currentLevelInfo.durabilityRules.length > 0 && (
+                      <div className="space-y-1.5">
+                        <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">
+                          Engineering Rules &amp; Invariants
+                        </h3>
+                        <div className="p-3 rounded-lg bg-slate-50/80 border border-slate-200 space-y-1 text-xs text-slate-800 font-medium">
+                          {currentLevelInfo.durabilityRules.map((rule: any, idx: number) => (
+                            <div key={idx} className="flex items-start gap-2">
+                              <span className="text-[#0AA793] font-bold font-mono">•</span>
+                              <span>{rule}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
+                    )}
+
+                    {Array.isArray(currentLevelInfo.constraints) && currentLevelInfo.constraints.length > 0 && (
+                      <div className="space-y-1.5">
+                        <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">
+                          Physical Machine Constraints
+                        </h3>
+                        <div className="p-3 rounded-lg bg-slate-50/80 border border-slate-200 space-y-1 text-xs text-slate-800 font-medium">
+                          {currentLevelInfo.constraints.map((c: any, idx: number) => (
+                            <div key={idx} className="flex items-start gap-2">
+                              <span className="text-rose-500 font-bold font-mono">▸</span>
+                              <span>{c}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 12. CLI Verification Session */}
+                {currentLevelInfo.endGoalDemonstration && (
+                  <details className="rounded-lg border border-slate-200 bg-white overflow-hidden text-xs">
+                    <summary className="p-2.5 font-mono font-bold text-slate-800 cursor-pointer select-none hover:bg-slate-50 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 text-[#0AA793]">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>CLI Verification Session</span>
+                      </span>
+                      <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                    </summary>
+                    <div className="p-3 bg-slate-950 font-mono text-[11px] text-[#09C899] overflow-x-auto border-t border-slate-800">
+                      <pre className="whitespace-pre leading-relaxed">{currentLevelInfo.endGoalDemonstration}</pre>
                     </div>
-                  )}
-
-                  {Array.isArray(currentLevelInfo.constraints) && currentLevelInfo.constraints.length > 0 && (
-                    <div className="space-y-1.5">
-                      <h3 className="text-xs font-mono font-bold text-slate-950 uppercase tracking-wider">
-                        Physical Machine Constraints
-                      </h3>
-                      <div className="p-3 rounded-lg bg-slate-50/80 border border-slate-200 space-y-1 text-xs text-slate-800 font-medium">
-                        {currentLevelInfo.constraints.map((c: any, idx: number) => (
-                          <div key={idx} className="flex items-start gap-2">
-                            <span className="text-rose-500 font-bold font-mono">▸</span>
-                            <span>{c}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* 6. Systems Thinking & Mental Models */}
-                <div className="space-y-2 pt-2 border-t border-slate-200">
-                  {currentLevelInfo.learningLoop && (
-                    <details className="rounded-lg border border-slate-200 bg-white overflow-hidden text-xs">
-                      <summary className="p-2.5 font-mono font-bold text-slate-800 cursor-pointer select-none hover:bg-slate-50 flex items-center justify-between">
-                        <span className="flex items-center gap-1.5 text-[#8647E2]">
-                          <Lightbulb className="w-3.5 h-3.5" />
-                          <span>Mental Model &amp; Systems Takeaways (L{selectedLevel})</span>
-                        </span>
-                        <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                      </summary>
-                      <div className="p-3 space-y-2.5 bg-slate-50/50 border-t border-slate-200 text-xs text-slate-800">
-                        {currentLevelInfo.learningLoop.bottleneck && (
-                          <div className="p-2 rounded bg-white border border-slate-200 space-y-0.5">
-                            <span className="font-bold font-mono text-[10px] text-rose-700 uppercase block">The Systems Bottleneck:</span>
-                            <span className="text-slate-700 font-medium">{currentLevelInfo.learningLoop.bottleneck}</span>
-                          </div>
-                        )}
-                        {Array.isArray(currentLevelInfo.learningLoop.whatYouUnderstand) && (
-                          <div className="space-y-1">
-                            <span className="font-bold font-mono text-[10px] text-slate-600 uppercase block">Key Takeaways:</span>
-                            {currentLevelInfo.learningLoop.whatYouUnderstand.map((concept: string, idx: number) => (
-                              <div key={idx} className="flex items-start gap-1.5 text-[11px] text-slate-700">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-[#09C899] shrink-0 mt-0.5" />
-                                <span>{concept}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </details>
-                  )}
-
-                  {currentLevelInfo.endGoalDemonstration && (
-                    <details className="rounded-lg border border-slate-200 bg-white overflow-hidden text-xs">
-                      <summary className="p-2.5 font-mono font-bold text-slate-800 cursor-pointer select-none hover:bg-slate-50 flex items-center justify-between">
-                        <span className="flex items-center gap-1.5 text-[#0AA793]">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>CLI Verification Session</span>
-                        </span>
-                        <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                      </summary>
-                      <div className="p-3 bg-slate-950 font-mono text-[11px] text-[#09C899] overflow-x-auto border-t border-slate-800">
-                        <pre className="whitespace-pre leading-relaxed">{currentLevelInfo.endGoalDemonstration}</pre>
-                      </div>
-                    </details>
-                  )}
-                </div>
+                  </details>
+                )}
 
                 {/* 7. Level Advancer Footer */}
                 <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-xs font-mono">

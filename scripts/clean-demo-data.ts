@@ -1,5 +1,5 @@
-import { db } from "../db";
-import { users, submissions, submissionResults, leaderboardEntries, submissionFiles } from "../db/schema";
+import { db } from "@/db";
+import { users, submissions, submissionResults, leaderboardEntries, submissionFiles } from "@/db/schema";
 import { eq, or } from "drizzle-orm";
 import * as dotenv from "dotenv";
 
@@ -18,7 +18,7 @@ async function cleanDemoData() {
     console.log(`Found demo user: ${u.username} (${u.email}) - ID: ${u.id}`);
 
     // Remove user challenge progress
-    const { userChallengeProgress } = await import("../db/schema");
+    const { userChallengeProgress } = await import("@/db/schema");
     await db.delete(userChallengeProgress).where(eq(userChallengeProgress.userId, u.id));
 
     // Remove leaderboard entries
