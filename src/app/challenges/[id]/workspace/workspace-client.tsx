@@ -174,12 +174,40 @@ export function WorkspaceClient({
   const levelParam = Number(searchParams?.get("level"));
   const initialLevel = (levelParam >= 1 && levelParam <= 6) ? levelParam : 1;
 
+  // Storage key constants
+  const PREFERRED_LANG_KEY = "algo_preferred_language";
+  const getCodeSessionKey = (slug: string, lang: SupportedLanguage) => `algo_code_${slug}_${lang}`;
+
   const [language, setLanguage] = useState<SupportedLanguage>("python");
   const [selectedLevel, setSelectedLevel] = useState<number>(initialLevel);
   const [showBlueprintModal, setShowBlueprintModal] = useState(false);
   const [code, setCode] = useState<string>(() => getInitialCode("python"));
   const [leftTab, setLeftTab] = useState<"description" | "missions" | "submissions" | "leaderboard">("description");
   const [descSubTab, setDescSubTab] = useState<"spec" | "diagram" | "gotcha" | "examples">("spec");
+
+  // Restore preferred language from localStorage and typed code draft from sessionStorage on mount / challenge change
+  useEffect(() => {
+    try {
+      // 1. Restore preferred language
+      const savedLang = localStorage.getItem(PREFERRED_LANG_KEY) as SupportedLanguage | null;
+      const validLangs: SupportedLanguage[] = ["python", "cpp", "rust", "go", "java"];
+      const activeLang = savedLang && validLangs.includes(savedLang) ? savedLang : "python";
+
+      if (activeLang !== language) {
+        setLanguage(activeLang);
+      }
+
+      // 2. Restore typed code draft for this challenge & active language
+      const savedCode = sessionStorage.getItem(getCodeSessionKey(challenge.slug, activeLang));
+      if (savedCode !== null) {
+        setCode(savedCode);
+      } else if (activeLang !== "python") {
+        setCode(getInitialCode(activeLang));
+      }
+    } catch (err) {
+      console.warn("Storage access failed:", err);
+    }
+  }, [challenge.slug]);
 
   // Focus mode & Code full screen mode
   const [isFocusMode, setIsFocusMode] = useState(false);
@@ -248,12 +276,36 @@ export function WorkspaceClient({
 
 
   const handleLanguageChange = (newLang: SupportedLanguage) => {
+    // 1. Persist current draft in sessionStorage before leaving this language
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.setItem(getCodeSessionKey(challenge.slug, language), code);
+        localStorage.setItem(PREFERRED_LANG_KEY, newLang);
+      } catch (err) {
+        console.warn("Storage write failed:", err);
+      }
+    }
+
     setLanguage(newLang);
-    setCode(getInitialCode(newLang));
+
+    // 2. Load draft for the newly selected language from sessionStorage or fallback to starter template
+    let savedCode: string | null = null;
+    if (typeof window !== "undefined") {
+      try {
+        savedCode = sessionStorage.getItem(getCodeSessionKey(challenge.slug, newLang));
+      } catch {}
+    }
+
+    setCode(savedCode !== null ? savedCode : getInitialCode(newLang));
   };
 
   const handleReset = () => {
     if (confirm("Reset editor to original starter template?")) {
+      if (typeof window !== "undefined") {
+        try {
+          sessionStorage.removeItem(getCodeSessionKey(challenge.slug, language));
+        } catch {}
+      }
       setCode(getInitialCode(language));
     }
   };
@@ -1286,7 +1338,15 @@ export function WorkspaceClient({
             <MonacoWrapper
               value={code}
               language={language}
-              onChange={(val) => setCode(val || "")}
+              onChange={(val) => {
+                const newCode = val || "";
+                setCode(newCode);
+                if (typeof window !== "undefined") {
+                  try {
+                    sessionStorage.setItem(getCodeSessionKey(challenge.slug, language), newCode);
+                  } catch {}
+                }
+              }}
               theme="vs"
             />
           </div>
