@@ -1,21 +1,10 @@
 import React from "react";
 import Link from "next/link";
 import { auth } from "@/auth";
-import { db } from "@/db";
-import {
-  challenges,
-  leaderboardEntries,
-  users,
-  submissions,
-  submissionResults,
-} from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { HeroTerminal } from "@/components/home/hero-terminal";
 import { DailyChallengeBanner } from "@/components/home/daily-challenge-banner";
-import { HomeProblemset } from "@/components/home/home-problemset";
-import { HomeLeaderboardSnapshot } from "@/components/home/home-leaderboard-snapshot";
 import { HomeManifesto } from "@/components/home/home-manifesto";
 import { HomeWishlist } from "@/components/home/home-wishlist";
 import { HomeCaseStudyBanner } from "@/components/home/home-case-study-banner";
@@ -25,34 +14,6 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const session = await auth();
-
-  let realLeaderboardEntries: any[] = [];
-  try {
-    realLeaderboardEntries = await db
-      .select({
-        id: leaderboardEntries.id,
-        score: leaderboardEntries.score,
-        throughputOpsSec: leaderboardEntries.throughputOpsSec,
-        latencyP99Ms: leaderboardEntries.latencyP99Ms,
-        username: users.username,
-        challengeTitle: challenges.title,
-        challengeSlug: challenges.slug,
-        language: submissions.language,
-      })
-      .from(leaderboardEntries)
-      .innerJoin(users, eq(leaderboardEntries.userId, users.id))
-      .innerJoin(challenges, eq(leaderboardEntries.challengeId, challenges.id))
-      .innerJoin(submissions, eq(leaderboardEntries.submissionId, submissions.id))
-      .innerJoin(
-        submissionResults,
-        eq(submissions.id, submissionResults.submissionId)
-      )
-      .where(eq(submissionResults.isInvalidated, false))
-      .orderBy(desc(leaderboardEntries.score))
-      .limit(5);
-  } catch (err) {
-    console.warn("Homepage leaderboard query skipped or unavailable:", err);
-  }
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-slate-900 selection:bg-[#099BE9]/20 selection:text-[#099BE9] font-sans">
@@ -73,7 +34,7 @@ export default async function HomePage() {
                 </h1>
 
                 <p className="text-sm sm:text-base text-neutral-200 max-w-xl mx-auto lg:mx-0 leading-relaxed font-normal">
-                  Reconstruct the foundational systems that power modern computing. Measure throughput, profile latency percentiles, and optimize against verified baselines.
+                  Learn how databases, caches, and distributed protocols work by building them from scratch. Write real code in an isolated Linux sandbox and benchmark your performance level by level.
                 </p>
 
                 <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-3">
@@ -114,16 +75,6 @@ export default async function HomePage() {
         {/* 2. DAILY SYSTEMS CHALLENGE BANNER                              */}
         {/* ============================================================== */}
         <DailyChallengeBanner />
-
-        {/* ============================================================== */}
-        {/* 3. CORE SYSTEMS PROBLEMSET (Direct, High-Density Table)         */}
-        {/* ============================================================== */}
-        <HomeProblemset />
-
-        {/* ============================================================== */}
-        {/* 4. LIVE GLOBAL LEADERBOARD SNAPSHOT (Real Database Entries)    */}
-        {/* ============================================================== */}
-        <HomeLeaderboardSnapshot entries={realLeaderboardEntries} />
 
         {/* ============================================================== */}
         {/* 5. THE PROVING GROUND THESIS & SYSTEMS VERIFICATION LOOP       */}
