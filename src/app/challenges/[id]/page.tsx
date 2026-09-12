@@ -3,8 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { challenges, challengeVersions } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { challenges, challengeVersions, userChallengeProgress } from "@/db/schema";
+import { eq, desc, and } from "drizzle-orm";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Badge } from "@/components/ui/badge";
@@ -342,6 +342,8 @@ export default async function ChallengeDetailPage({ params }: Props) {
         "100K+ ops/sec throughput, online log compaction, and custom slab memory arenas",
       ];
 
+  let userProgress: { highestLevelUnlocked: number; isCompleted: boolean } | null = null;
+
   try {
     const foundChallenges = await db
       .select()
@@ -351,6 +353,25 @@ export default async function ChallengeDetailPage({ params }: Props) {
 
     if (foundChallenges[0]) {
       challenge = foundChallenges[0];
+
+      if (session?.user?.id) {
+        const foundProgress = await db
+          .select({
+            highestLevelUnlocked: userChallengeProgress.highestLevelUnlocked,
+            isCompleted: userChallengeProgress.isCompleted,
+          })
+          .from(userChallengeProgress)
+          .where(
+            and(
+              eq(userChallengeProgress.challengeId, challenge.id),
+              eq(userChallengeProgress.userId, session.user.id)
+            )
+          )
+          .limit(1);
+        if (foundProgress[0]) {
+          userProgress = foundProgress[0];
+        }
+      }
 
       const versions = await db
         .select()
@@ -540,10 +561,14 @@ export default async function ChallengeDetailPage({ params }: Props) {
                   <span>Leaderboard</span>
                 </Button>
               </Link>
-              <Link href={`/challenges/${challenge.slug}/workspace`}>
+              <Link href={`/challenges/${challenge.slug}/workspace${userProgress?.highestLevelUnlocked && userProgress.highestLevelUnlocked > 1 ? `?level=${userProgress.highestLevelUnlocked}` : ""}`}>
                 <Button size="sm" className="h-9 px-4 text-xs font-bold gap-1.5 shadow-sm bg-[#09C899] hover:bg-[#0AA793] text-white border-0 cursor-pointer">
                   <Terminal className="w-3.5 h-3.5" />
-                  <span>Launch Workspace</span>
+                  <span>
+                    {userProgress?.highestLevelUnlocked && userProgress.highestLevelUnlocked > 1
+                      ? `Continue Level ${userProgress.highestLevelUnlocked}`
+                      : "Launch Workspace"}
+                  </span>
                 </Button>
               </Link>
             </div>
@@ -617,6 +642,7 @@ export default async function ChallengeDetailPage({ params }: Props) {
                     const shortParity = getShortParity(rawParity);
                     const bottleneck = lvl.learningLoop?.bottleneck || lvl.importantChallenge?.description;
                     const ops = Array.isArray(lvl.operations) ? lvl.operations : [];
+                    const isCompletedLevel = userProgress?.highestLevelUnlocked ? lvl.level < userProgress.highestLevelUnlocked : false;
 
                     return (
                       <details
@@ -649,6 +675,12 @@ export default async function ChallengeDetailPage({ params }: Props) {
                                 }`}>
                                   {lvl.difficulty}
                                 </span>
+                                {isCompletedLevel && (
+                                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold shrink-0 bg-[#09C899]/15 text-[#0AA793] border border-[#09C899]/30 flex items-center gap-1">
+                                    <CheckCircle2 className="w-3 h-3 text-[#0AA793]" />
+                                    Completed
+                                  </span>
+                                )}
                               </div>
 
                               {/* 1-line crisp objective with universal core question */}

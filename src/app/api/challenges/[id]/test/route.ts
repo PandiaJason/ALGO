@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { challenges } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import {
+  challenges,
+  challengeVersions,
+  submissions,
+  submissionFiles,
+  submissionResults,
+  userChallengeProgress,
+} from "@/db/schema";
+import { eq, desc, sql } from "drizzle-orm";
 import { enqueueQuickTest } from "@/lib/queue/producer";
 import { runQuickTest } from "@/lib/sandbox/runner";
 import { z } from "zod";
@@ -81,12 +88,144 @@ export async function POST(
       }
     }
 
+    // 3. Auto-save in PostgreSQL if ALL testcases for this level passed
+    let saved = false;
+    let highestLevelUnlocked = level;
+
+    if (result && result.passed === result.total && result.total > 0 && session?.user?.id) {
+      try {
+        let challengeRecord: any = null;
+        if (isUuid) {
+          const found = await db
+            .select()
+            .from(challenges)
+            .where(eq(challenges.id, id))
+            .limit(1);
+          challengeRecord = found[0];
+        }
+        if (!challengeRecord) {
+          const found = await db
+            .select()
+            .from(challenges)
+            .where(eq(challenges.slug, challengeSlug))
+            .limit(1);
+          challengeRecord = found[0];
+        }
+
+        if (challengeRecord) {
+          // Resolve challenge version
+          const latestVer = await db
+            .select({ id: challengeVersions.id })
+            .from(challengeVersions)
+            .where(eq(challengeVersions.challengeId, challengeRecord.id))
+            .orderBy(desc(challengeVersions.version))
+            .limit(1);
+
+          let versionId = latestVer[0]?.id;
+          if (!versionId) {
+            const [newVer] = await db
+              .insert(challengeVersions)
+              .values({
+                challengeId: challengeRecord.id,
+                version: 1,
+                spec: {},
+                levels: [],
+                starterTemplates: {},
+                testDefinitions: {},
+              })
+              .returning();
+            versionId = newVer?.id;
+          }
+
+          if (versionId) {
+            // Persist completed submission record
+            const filenameMap: Record<string, string> = {
+              python: "solution.py",
+              cpp: "solution.cpp",
+              rust: "solution.rs",
+              go: "main.go",
+              java: "Solution.java",
+            };
+            const filename = filenameMap[language] || "solution.txt";
+
+            const [newSub] = await db
+              .insert(submissions)
+              .values({
+                userId: session.user.id,
+                challengeId: challengeRecord.id,
+                challengeVersionId: versionId,
+                language,
+                level,
+                status: "COMPLETED",
+                submittedAt: new Date(),
+                completedAt: new Date(),
+              })
+              .returning();
+
+            if (newSub) {
+              await db.insert(submissionFiles).values({
+                submissionId: newSub.id,
+                filename,
+                content: code,
+              });
+
+              await db
+                .insert(submissionResults)
+                .values({
+                  submissionId: newSub.id,
+                  correctnessPassed: result.passed,
+                  correctnessTotal: result.total,
+                  correctnessScore: "1.0000",
+                  isCorrect: true,
+                  testOutput: result.details || "All test cases passed.",
+                })
+                .onConflictDoNothing();
+
+              // Unlock next level (e.g. if Level 1 passed, Level 2 is unlocked; max 6)
+              const nextLevel = Math.min(level + 1, 6);
+              const isCompleted = level >= 6;
+
+              const [prog] = await db
+                .insert(userChallengeProgress)
+                .values({
+                  userId: session.user.id,
+                  challengeId: challengeRecord.id,
+                  highestLevelUnlocked: nextLevel,
+                  bestSubmissionId: newSub.id,
+                  isCompleted,
+                  submissionCount: 1,
+                  updatedAt: new Date(),
+                })
+                .onConflictDoUpdate({
+                  target: [userChallengeProgress.userId, userChallengeProgress.challengeId],
+                  set: {
+                    highestLevelUnlocked: sql`GREATEST(${userChallengeProgress.highestLevelUnlocked}, ${nextLevel})`,
+                    bestSubmissionId: newSub.id,
+                    isCompleted: sql`${userChallengeProgress.isCompleted} OR ${isCompleted}`,
+                    submissionCount: sql`${userChallengeProgress.submissionCount} + 1`,
+                    updatedAt: new Date(),
+                  },
+                })
+                .returning();
+
+              saved = true;
+              highestLevelUnlocked = prog?.highestLevelUnlocked ?? nextLevel;
+            }
+          }
+        }
+      } catch (dbErr) {
+        console.error("[Test Auto-Save Database Error]:", dbErr);
+      }
+    }
+
     return NextResponse.json({
       passed: result.passed,
       total: result.total,
       details: result.details,
       output: result.output,
       cases: result.cases,
+      saved,
+      highestLevelUnlocked,
     });
   } catch (err: any) {
     const isTimeout = err.message?.includes("timed out") || err.message?.includes("timeout");

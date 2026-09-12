@@ -113,12 +113,17 @@ interface Props {
     username: string;
     name: string | null;
   }>;
+  userProgress?: {
+    highestLevelUnlocked: number;
+    isCompleted: boolean;
+  } | null;
 }
 
 export function WorkspaceClient({
   challenge,
   version,
   user,
+  userProgress = null,
   pastSubmissions = [],
   topLeaders = [],
 }: Props) {
@@ -180,6 +185,9 @@ export function WorkspaceClient({
 
   const [language, setLanguage] = useState<SupportedLanguage>("python");
   const [selectedLevel, setSelectedLevel] = useState<number>(initialLevel);
+  const [unlockedLevel, setUnlockedLevel] = useState<number>(() =>
+    userProgress?.highestLevelUnlocked ? Math.max(userProgress.highestLevelUnlocked, 1) : 1
+  );
   const [showBlueprintModal, setShowBlueprintModal] = useState(false);
   const [code, setCode] = useState<string>(() => getInitialCode("python"));
   const [leftTab, setLeftTab] = useState<"description" | "missions" | "submissions" | "leaderboard">("description");
@@ -256,6 +264,7 @@ export function WorkspaceClient({
       passed: boolean;
       error?: string;
     }>;
+    saved?: boolean;
   } | null>(null);
 
   const [isScopeExpanded, setIsScopeExpanded] = useState(true);
@@ -357,8 +366,14 @@ export function WorkspaceClient({
           details: data.details,
           output: data.output || "Tests complete.",
           cases: data.cases || [],
+          saved: data.saved || false,
         });
         setSelectedResultCaseIndex(0);
+
+        if (data.passed === data.total && data.total > 0) {
+          const nextLvl = data.highestLevelUnlocked || Math.min(selectedLevel + 1, 6);
+          setUnlockedLevel((prev) => Math.max(prev, nextLvl));
+        }
       }
     } catch (err: any) {
       setTestResult({
@@ -697,18 +712,22 @@ export function WorkspaceClient({
                     {Object.entries(levelData).map(([lvlNumStr, lvlInfo]) => {
                       const num = Number(lvlNumStr);
                       const isActive = selectedLevel === num;
+                      const isPassed = num < unlockedLevel;
                       const stageLabel = (lvlInfo as any).stage || UNIVERSAL_STAGES[num]?.label || `L${num}`;
                       return (
                         <button
                           key={num}
                           onClick={() => handleSelectLevel(num)}
-                          className={`flex-1 min-w-[76px] py-1.5 px-1.5 rounded-md font-bold transition-all text-center cursor-pointer ${
+                          className={`flex-1 min-w-[76px] py-1.5 px-1.5 rounded-md font-bold transition-all text-center cursor-pointer flex items-center justify-center gap-1 ${
                             isActive
                               ? "bg-white text-[#099BE9] shadow-2xs border border-slate-200 ring-1 ring-[#099BE9]/30"
+                              : isPassed
+                              ? "text-[#0AA793] hover:text-[#0AA793] hover:bg-[#09C899]/10"
                               : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
                           }`}
                         >
-                          L{num}: {stageLabel}
+                          {isPassed && <CheckCircle2 className="w-3.5 h-3.5 text-[#0AA793] shrink-0" />}
+                          <span>L{num}: {stageLabel}</span>
                         </button>
                       );
                     })}
@@ -1586,11 +1605,12 @@ export function WorkspaceClient({
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             {testResult.passed === testResult.total ? (
-                              <span className="flex items-center gap-1.5 text-sm font-bold text-[#0AA793] bg-[#09C899]/10 px-2.5 py-1 rounded-md border border-[#09C899]/30">
-                                <CheckCircle2 className="w-4 h-4 text-[#0AA793]" /> Accepted
+                              <span className="flex items-center gap-1.5 text-xs font-bold text-[#0AA793] bg-[#09C899]/10 px-2.5 py-1 rounded-md border border-[#09C899]/30">
+                                <CheckCircle2 className="w-4 h-4 text-[#0AA793]" />
+                                Accepted · Saved to DB
                               </span>
                             ) : (
-                              <span className="flex items-center gap-1.5 text-sm font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-md border border-rose-200">
+                              <span className="flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-md border border-rose-200">
                                 <XCircle className="w-4 h-4 text-rose-600" /> Wrong Answer
                               </span>
                             )}
@@ -1606,11 +1626,17 @@ export function WorkspaceClient({
                             {testResult.passed === testResult.total && selectedLevel < 6 && (
                               <button
                                 onClick={() => handleSelectLevel(selectedLevel + 1)}
-                                className="px-2.5 py-1 rounded bg-[#09C899]/15 hover:bg-[#09C899]/25 text-[#0AA793] border border-[#09C899]/30 text-xs font-semibold flex items-center gap-1 transition-colors shadow-2xs"
+                                className="px-3 py-1.5 rounded-lg bg-[#099BE9] hover:bg-[#0887cc] text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
                               >
                                 <span>Continue to Level {selectedLevel + 1}</span>
-                                <ChevronRight className="w-3.5 h-3.5" />
+                                <ChevronRight className="w-4 h-4" />
                               </button>
+                            )}
+                            {testResult.passed === testResult.total && selectedLevel === 6 && (
+                              <span className="px-3 py-1.5 rounded-lg bg-[#09C899]/15 text-[#0AA793] border border-[#09C899]/30 text-xs font-bold flex items-center gap-1.5">
+                                <CheckCircle2 className="w-4 h-4" />
+                                All 6 Levels Completed!
+                              </span>
                             )}
                             <span className="text-[11px] font-mono text-[#0AA793] font-semibold flex items-center gap-1.5">
                               <span className="w-2 h-2 rounded-full bg-[#0AA793] animate-pulse" />

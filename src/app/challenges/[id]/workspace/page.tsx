@@ -2,7 +2,7 @@ import React from "react";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { challenges, challengeVersions, submissions, submissionResults, leaderboardEntries, users } from "@/db/schema";
+import { challenges, challengeVersions, submissions, submissionResults, leaderboardEntries, users, userChallengeProgress } from "@/db/schema";
 import { eq, desc, and } from "drizzle-orm";
 import { WorkspaceClient } from "./workspace-client";
 import { getChallenge } from "@/lib/challenges";
@@ -71,6 +71,7 @@ export default async function WorkspacePage({ params }: Props) {
 
   let userSubmissions: any[] = [];
   let topLeaders: any[] = [];
+  let userProgress: any = null;
 
   try {
     const foundChallenges = await db
@@ -129,7 +130,26 @@ export default async function WorkspacePage({ params }: Props) {
         };
       }
 
+      userProgress = null;
       if (session?.user?.id) {
+        const foundProgress = await db
+          .select({
+            highestLevelUnlocked: userChallengeProgress.highestLevelUnlocked,
+            isCompleted: userChallengeProgress.isCompleted,
+          })
+          .from(userChallengeProgress)
+          .where(
+            and(
+              eq(userChallengeProgress.challengeId, challenge.id),
+              eq(userChallengeProgress.userId, session.user.id)
+            )
+          )
+          .limit(1);
+
+        if (foundProgress[0]) {
+          userProgress = foundProgress[0];
+        }
+
         userSubmissions = await db
           .select({
             id: submissions.id,
@@ -258,6 +278,7 @@ export default async function WorkspacePage({ params }: Props) {
           spec: version.spec || undefined,
         })}
         user={safeUser}
+        userProgress={serializeJsonSafe(userProgress)}
         pastSubmissions={serializeJsonSafe(safeSubmissions)}
         topLeaders={serializeJsonSafe(safeLeaders)}
       />
