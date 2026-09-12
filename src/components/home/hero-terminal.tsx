@@ -13,6 +13,9 @@ import {
   Clock,
   RotateCcw,
   Cpu,
+  Database,
+  GitBranch,
+  Network,
 } from "lucide-react";
 
 type Language = "cpp" | "rust" | "go" | "python";
@@ -389,7 +392,10 @@ export function HeroTerminal() {
                     : "text-neutral-400 hover:text-white hover:bg-white/5"
                 }`}
               >
-                <span>{id === "kv-store" ? "⚡ Redis" : id === "git" ? "🌳 Git" : "🗳️ Raft"}</span>
+                {id === "kv-store" && <Database className={`w-3.5 h-3.5 ${isSel ? "text-white" : "text-emerald-400"}`} />}
+                {id === "git" && <GitBranch className={`w-3.5 h-3.5 ${isSel ? "text-white" : "text-amber-400"}`} />}
+                {id === "distributed-consensus" && <Network className={`w-3.5 h-3.5 ${isSel ? "text-white" : "text-purple-400"}`} />}
+                <span>{id === "kv-store" ? "Redis" : id === "git" ? "Git" : "Raft"}</span>
               </button>
             );
           })}
