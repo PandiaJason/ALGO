@@ -20,6 +20,15 @@ import {
   Activity,
   Briefcase,
 } from "lucide-react";
+import {
+  DiagramArchitecture,
+  DiagramEmpiricalVerification,
+  DiagramBottleneckIsolation,
+  DiagramPerformanceOptimization,
+  DiagramSystemsVerificationLoop,
+  DiagramSubmissionOneTelemetry,
+  DiagramSubmissionFiveTelemetry,
+} from "./manifesto-diagrams";
 
 export function HomeManifesto() {
   return (
@@ -55,53 +64,65 @@ export function HomeManifesto() {
         </div>
 
         {/* 4 Core Competencies Grid */}
-        <div className="pt-2 space-y-3">
-          <div className="text-xs font-mono uppercase tracking-wider text-slate-800 font-bold">
-            What matters in the systems &amp; agentic era:
+        <div className="pt-2 space-y-4">
+          <div className="text-xs font-mono uppercase tracking-wider text-slate-800 font-bold flex items-center justify-between">
+            <span>What matters in the systems &amp; agentic era:</span>
+            <span className="text-slate-600 font-mono text-[11px] hidden sm:inline">
+              // ARCHITECTURE • VERIFICATION • TELEMETRY • OPTIMIZATION
+            </span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
               {
                 step: "1",
                 color: "#099BE9",
                 q: "Can you direct the architecture?",
                 desc: "Define boundary invariants, byte protocols, and memory budgets before writing a single line.",
+                diagram: <DiagramArchitecture />,
               },
               {
                 step: "2",
                 color: "#09C899",
                 q: "Can you verify it empirically?",
                 desc: "Know definitively whether the code survives high concurrency, power cuts (SIGKILL), and partial writes.",
+                diagram: <DiagramEmpiricalVerification />,
               },
               {
                 step: "3",
                 color: "#F78424",
                 q: "Can you isolate the bottleneck?",
                 desc: "Diagnose mutex lock contention, cache misses, memory leaks, and tail-latency spikes under pressure.",
+                diagram: <DiagramBottleneckIsolation />,
               },
               {
                 step: "4",
                 color: "#8647E2",
                 q: "Can you make it faster?",
                 desc: "Re-architect hot paths with striped mutexes, lock-free ring buffers, and zero-copy slicing.",
+                diagram: <DiagramPerformanceOptimization />,
               },
             ].map((item) => (
               <div
                 key={item.step}
-                className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs hover:border-slate-300 transition-colors"
+                className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-between space-y-3.5"
               >
-                <div className="flex items-center gap-2.5">
-                  <span
-                    className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-mono font-extrabold text-white shrink-0"
-                    style={{ backgroundColor: item.color }}
-                  >
-                    {item.step}
-                  </span>
-                  <span className="font-bold text-slate-950 text-sm">{item.q}</span>
+                <div>
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-mono font-extrabold text-white shrink-0 shadow-xs"
+                      style={{ backgroundColor: item.color }}
+                    >
+                      {item.step}
+                    </span>
+                    <span className="font-bold text-slate-950 text-sm sm:text-base">{item.q}</span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-700 font-medium mt-2 pl-8 leading-relaxed">
+                    {item.desc}
+                  </p>
                 </div>
-                <p className="text-xs text-slate-700 font-medium mt-2 pl-8 leading-relaxed">
-                  {item.desc}
-                </p>
+                <div className="pt-1">
+                  {item.diagram}
+                </div>
               </div>
             ))}
           </div>
@@ -260,6 +281,9 @@ export function HomeManifesto() {
           </p>
         </div>
 
+        {/* Abstract Closed-Loop Architecture Diagram */}
+        <DiagramSystemsVerificationLoop />
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
           {/* Traditional Algorithmic Loop */}
           <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-6 flex flex-col justify-between space-y-4">
@@ -373,6 +397,8 @@ export function HomeManifesto() {
                 <span className="font-bold text-slate-950">142 MB</span>
               </div>
             </div>
+            {/* Visual Telemetry Breakdown */}
+            <DiagramSubmissionOneTelemetry />
             <p className="text-xs text-slate-700 font-medium pt-2 border-t border-slate-100 leading-relaxed">
               It works. Accepted. But the leaderboard shows top implementations exceeding 100,000 ops/s. You investigate mutex bottlenecks and profile lock wait times.
             </p>
@@ -409,6 +435,8 @@ export function HomeManifesto() {
                 <span className="font-bold text-slate-950">41 MB (-71%)</span>
               </div>
             </div>
+            {/* Visual Telemetry Breakdown */}
+            <DiagramSubmissionFiveTelemetry />
             <p className="text-xs text-slate-800 font-semibold pt-2 border-t border-slate-100 leading-relaxed">
               Now you haven&apos;t just answered a question. You have engineered a high-performance system.
             </p>
@@ -434,24 +462,29 @@ export function HomeManifesto() {
 
         {/* Pipeline Diagram */}
         <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs sm:text-sm text-center">
-            <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-2xs font-bold text-slate-950">
-              Human + AI
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 font-mono text-center">
+            <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs space-y-1">
+              <div className="text-[10px] uppercase font-bold text-slate-600">INPUT</div>
+              <div className="font-bold text-slate-950 text-xs sm:text-sm">Human + AI</div>
+              <div className="text-[10px] text-slate-700 font-medium">Agents, LLMs, Synthesized Code</div>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 hidden sm:block" />
-            <span className="sm:hidden text-slate-500 font-bold">↓</span>
-            <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-2xs font-bold text-slate-950">
-              System Architecture
+
+            <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs space-y-1">
+              <div className="text-[10px] uppercase font-bold text-[#099BE9]">DESIGN</div>
+              <div className="font-bold text-slate-950 text-xs sm:text-sm">System Architecture</div>
+              <div className="text-[10px] text-slate-700 font-medium">Invariants, Protocols, Buffers</div>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 hidden sm:block" />
-            <span className="sm:hidden text-slate-500 font-bold">↓</span>
-            <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-2xs font-bold text-slate-950">
-              Physical Reality
+
+            <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs space-y-1">
+              <div className="text-[10px] uppercase font-bold text-[#F78424]">SUBSTRATE</div>
+              <div className="font-bold text-slate-950 text-xs sm:text-sm">Physical Reality</div>
+              <div className="text-[10px] text-slate-700 font-medium">Kernel, CPU Cache, I/O Friction</div>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-500 hidden sm:block" />
-            <span className="sm:hidden text-slate-500 font-bold">↓</span>
-            <div className="bg-slate-950 text-white border border-slate-800 rounded-xl px-4 py-3 shadow-sm font-bold">
-              Empirical Measurement
+
+            <div className="bg-slate-950 text-white border border-slate-800 rounded-xl p-3 shadow-sm space-y-1">
+              <div className="text-[10px] uppercase font-bold text-[#09C899]">SIGNAL</div>
+              <div className="font-bold text-white text-xs sm:text-sm">Empirical Telemetry</div>
+              <div className="text-[10px] text-slate-300 font-medium">p99, ops/s, Crash Durability</div>
             </div>
           </div>
           <p className="text-xs text-slate-700 font-medium text-center mt-4">
