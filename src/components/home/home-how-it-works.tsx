@@ -1,142 +1,135 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Layers, Share2, Activity, ArrowRight, Check } from "lucide-react";
+import { GitCommit, Activity, RefreshCw, Layers, ArrowRight, Check } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
-/* Visual Widget 1: Circular Ring Buffer & Memory State (Systems Thinking)    */
-/* Demonstrates: Cyclic memory allocation, pointer offsets, cache eviction    */
+/* Diagram 1: Causal Loop Diagram (CLD) — Balancing (B) & Reinforcing (R)     */
+/* Foundational Systems Thinking: Feedback polarities and self-stabilization  */
 /* -------------------------------------------------------------------------- */
-function RingBufferStateWidget() {
-  const [headIndex, setHeadIndex] = useState(2);
-  const totalSlots = 8;
-
-  // Advance pointer in a closed cyclic feedback loop
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setHeadIndex((prev) => (prev + 1) % totalSlots);
-    }, 1800);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Compute coordinates for 8 circular slots
-  const radius = 42;
-  const centerX = 64;
-  const centerY = 58;
-
+function CausalLoopDiagram() {
   return (
     <div className="w-full rounded-2xl bg-white border border-slate-200 p-4 shadow-2xs select-none relative overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-100">
         <div className="flex items-center gap-1.5 text-[11px] font-mono font-semibold text-slate-700">
           <span className="p-1 rounded-md bg-[#09C899]/10 text-[#0AA793] inline-flex items-center justify-center">
-            <Layers className="w-3.5 h-3.5" />
+            <RefreshCw className="w-3.5 h-3.5" />
           </span>
-          <span>Cyclic Ring Buffer</span>
+          <span>Causal Loop Diagram</span>
         </div>
         <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#09C899]/15 text-[#0AA793] font-bold">
           <span className="w-1.5 h-1.5 rounded-full bg-[#09C899] animate-ping" />
-          <span>O(1) Bounded State</span>
+          <span>Balancing Feedback</span>
         </span>
       </div>
 
-      {/* Abstract Circular Memory Diagram */}
-      <div className="py-3 flex items-center justify-between gap-4">
-        {/* Left: SVG Ring Buffer */}
-        <div className="relative w-32 h-28 flex items-center justify-center shrink-0">
-          <svg viewBox="0 0 128 116" className="w-full h-full">
-            {/* Guide circle */}
-            <circle
-              cx={centerX}
-              cy={centerY}
-              r={radius}
-              stroke="#E2E8F0"
-              strokeWidth="1.5"
-              strokeDasharray="2 2"
+      {/* SVG: Causal Loop Diagram with Interlocking B & R Feedback Loops */}
+      <div className="py-3 flex items-center justify-center">
+        <div className="w-full max-w-[260px] h-32 relative">
+          <svg viewBox="0 0 260 128" className="w-full h-full overflow-visible">
+            <defs>
+              <marker
+                id="arrow-head"
+                viewBox="0 0 10 10"
+                refX="6"
+                refY="5"
+                markerWidth="5"
+                markerHeight="5"
+                orient="auto-start-reverse"
+              >
+                <path d="M 0 1 L 8 5 L 0 9 z" fill="#94A3B8" />
+              </marker>
+              <marker
+                id="arrow-green"
+                viewBox="0 0 10 10"
+                refX="6"
+                refY="5"
+                markerWidth="5"
+                markerHeight="5"
+                orient="auto-start-reverse"
+              >
+                <path d="M 0 1 L 8 5 L 0 9 z" fill="#09C899" />
+              </marker>
+            </defs>
+
+            {/* Variable Nodes */}
+            {/* Top: System Load */}
+            <rect x="92" y="6" width="76" height="22" rx="6" fill="#F8FAFC" stroke="#CBD5E1" strokeWidth="1" />
+            <text x="130" y="21" textAnchor="middle" className="text-[10px] font-mono font-bold fill-slate-800">System Load</text>
+
+            {/* Bottom Left: Ingress Throttle */}
+            <rect x="6" y="96" width="94" height="22" rx="6" fill="#F8FAFC" stroke="#CBD5E1" strokeWidth="1" />
+            <text x="53" y="111" textAnchor="middle" className="text-[10px] font-mono font-bold fill-slate-800">Throttle Rate</text>
+
+            {/* Bottom Right: Queue Buffer */}
+            <rect x="160" y="96" width="94" height="22" rx="6" fill="#F8FAFC" stroke="#CBD5E1" strokeWidth="1" />
+            <text x="207" y="111" textAnchor="middle" className="text-[10px] font-mono font-bold fill-slate-800">Buffer Depth</text>
+
+            {/* Causal Feedback Loop 1: Balancing Loop Path (Left) */}
+            <path
+              id="cld-path-b"
+              d="M 100 28 C 60 46, 30 68, 45 96 C 60 110, 85 85, 115 28"
               fill="none"
+              stroke="#09C899"
+              strokeWidth="1.5"
+              strokeDasharray="3 3"
+            />
+            {/* Causal Feedback Loop 2: Reinforcing Path (Right) */}
+            <path
+              id="cld-path-r"
+              d="M 160 28 C 190 46, 225 68, 215 96 C 195 110, 175 80, 145 28"
+              fill="none"
+              stroke="#FBAE0C"
+              strokeWidth="1.5"
+              strokeDasharray="3 3"
             />
 
-            {/* Render 8 slots */}
-            {Array.from({ length: totalSlots }).map((_, i) => {
-              const angle = (i * (360 / totalSlots) - 90) * (Math.PI / 180);
-              const x = centerX + radius * Math.cos(angle);
-              const y = centerY + radius * Math.sin(angle);
-              const isHead = headIndex === i;
-              const isTail = (headIndex + 4) % totalSlots === i;
-
-              return (
-                <g key={i}>
-                  {/* Slot Circle */}
-                  <circle
-                    cx={x}
-                    cy={y}
-                    r={isHead ? 8 : 6}
-                    className="transition-all duration-500 ease-out"
-                    fill={isHead ? "#09C899" : isTail ? "#FBAE0C" : "#F8FAFC"}
-                    stroke={isHead ? "#0AA793" : isTail ? "#F78424" : "#CBD5E1"}
-                    strokeWidth={isHead ? 2 : 1.5}
-                  />
-                  {/* Active slot center dot */}
-                  {isHead && (
-                    <circle cx={x} cy={y} r={3} fill="#FFFFFF" />
-                  )}
-                </g>
-              );
-            })}
-
-            {/* Dynamic Pointer Arrow Line from Center to Head Slot */}
-            {(() => {
-              const angle = (headIndex * (360 / totalSlots) - 90) * (Math.PI / 180);
-              const targetX = centerX + (radius - 12) * Math.cos(angle);
-              const targetY = centerY + (radius - 12) * Math.sin(angle);
-              return (
-                <line
-                  x1={centerX}
-                  y1={centerY}
-                  x2={targetX}
-                  y2={targetY}
-                  stroke="#0AA793"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  className="transition-all duration-500 ease-out"
-                />
-              );
-            })()}
-
-            {/* Center Pivot Hub */}
-            <circle cx={centerX} cy={centerY} r={5} fill="#0AA793" />
-            <circle cx={centerX} cy={centerY} r={2} fill="#FFFFFF" />
-          </svg>
-        </div>
-
-        {/* Right: State Stream Indicators */}
-        <div className="flex-1 space-y-2 font-mono text-[11px]">
-          <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
-            <div className="flex items-center justify-between text-slate-500">
-              <span>Write Head</span>
-              <span className="font-bold text-[#0AA793]">Slot 0{headIndex}</span>
-            </div>
-            <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-              <div
-                className="bg-[#09C899] h-full transition-all duration-500"
-                style={{ width: `${((headIndex + 1) / totalSlots) * 100}%` }}
+            {/* Traveling Signal Pulse along Balancing Loop */}
+            <circle r="3" fill="#09C899">
+              <animateMotion
+                path="M 100 28 C 60 46, 30 68, 45 96 C 60 110, 85 85, 115 28"
+                dur="2.4s"
+                repeatCount="indefinite"
               />
-            </div>
-          </div>
+            </circle>
 
-          <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
-            <span className="text-slate-500">Eviction Loop</span>
-            <span className="font-bold text-slate-900">Zero Overrun</span>
-          </div>
+            {/* Traveling Signal Pulse along Reinforcing Loop */}
+            <circle r="3" fill="#FBAE0C">
+              <animateMotion
+                path="M 160 28 C 190 46, 225 68, 215 96 C 195 110, 175 80, 145 28"
+                dur="2.8s"
+                repeatCount="indefinite"
+              />
+            </circle>
+
+            {/* Center Badges: (B) Balancing Loop Symbol */}
+            <g transform="translate(74, 54)">
+              <circle cx="12" cy="12" r="12" fill="#09C899" opacity="0.12" />
+              <circle cx="12" cy="12" r="10" fill="#FFFFFF" stroke="#09C899" strokeWidth="1" />
+              <text x="12" y="16" textAnchor="middle" className="text-[10px] font-mono font-black fill-[#0AA793]">B</text>
+            </g>
+
+            {/* Center Badges: (R) Reinforcing Loop Symbol */}
+            <g transform="translate(150, 54)">
+              <circle cx="12" cy="12" r="12" fill="#FBAE0C" opacity="0.12" />
+              <circle cx="12" cy="12" r="10" fill="#FFFFFF" stroke="#FBAE0C" strokeWidth="1" />
+              <text x="12" y="16" textAnchor="middle" className="text-[10px] font-mono font-black fill-[#F78424]">R</text>
+            </g>
+
+            {/* Polarities */}
+            <text x="36" y="58" className="text-[9px] font-mono font-bold fill-[#0AA793]">( - )</text>
+            <text x="214" y="58" className="text-[9px] font-mono font-bold fill-[#F78424]">( + )</text>
+          </svg>
         </div>
       </div>
 
       {/* Footer */}
       <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-        <span>Offset Indexing</span>
+        <span>Negative Feedback</span>
         <span className="text-[#0AA793] font-bold flex items-center gap-1">
           <Check className="w-3 h-3" />
-          <span>Cache-line aligned</span>
+          <span>Homeostatic Equilibrium</span>
         </span>
       </div>
     </div>
@@ -144,16 +137,17 @@ function RingBufferStateWidget() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Visual Widget 2: Topological Consensus & State Convergence (Systems)       */
-/* Demonstrates: Broadcast quorum, causal order, network convergence          */
+/* Diagram 2: Stock & Flow Diagram — Accumulation, Rates & Backpressure      */
+/* Foundational Systems Thinking: Reservoirs, Inflow/Outflow, Valve Control   */
 /* -------------------------------------------------------------------------- */
-function ConsensusTopologyWidget() {
-  const [pulse, setPulse] = useState(0);
+function StockAndFlowDiagram() {
+  const [level, setLevel] = useState(52);
 
+  // Dynamic fluctuation of the buffer stock
   useEffect(() => {
     const timer = setInterval(() => {
-      setPulse((p) => (p + 1) % 4);
-    }, 1600);
+      setLevel((prev) => 48 + Math.floor(Math.sin(Date.now() / 900) * 12));
+    }, 600);
     return () => clearInterval(timer);
   }, []);
 
@@ -163,82 +157,133 @@ function ConsensusTopologyWidget() {
       <div className="flex items-center justify-between pb-3 border-b border-slate-100">
         <div className="flex items-center gap-1.5 text-[11px] font-mono font-semibold text-slate-700">
           <span className="p-1 rounded-md bg-[#099BE9]/10 text-[#099BE9] inline-flex items-center justify-center">
-            <Share2 className="w-3.5 h-3.5" />
+            <Layers className="w-3.5 h-3.5" />
           </span>
-          <span>State Convergence</span>
+          <span>Stock & Flow Diagram</span>
         </div>
         <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#099BE9]/15 text-[#099BE9] font-bold">
           <span className="w-1.5 h-1.5 rounded-full bg-[#099BE9] animate-ping" />
-          <span>Consensus Lock</span>
+          <span>Rate Throttling</span>
         </span>
       </div>
 
-      {/* Abstract Triangular Graph Topology */}
+      {/* SVG: Canonical Stock and Flow with Valves and Feedback Link */}
       <div className="py-3 flex items-center justify-center">
-        <div className="w-full max-w-[220px] h-28 relative">
-          <svg viewBox="0 0 220 112" className="w-full h-full overflow-visible">
-            {/* Edges Connecting Nodes */}
-            <line x1="110" y1="20" x2="40" y2="86" stroke="#E2E8F0" strokeWidth="1.5" strokeDasharray="3 3" />
-            <line x1="110" y1="20" x2="180" y2="86" stroke="#E2E8F0" strokeWidth="1.5" strokeDasharray="3 3" />
-            <line x1="40" y1="86" x2="180" y2="86" stroke="#E2E8F0" strokeWidth="1.5" strokeDasharray="3 3" />
+        <div className="w-full max-w-[260px] h-32 relative">
+          <svg viewBox="0 0 260 128" className="w-full h-full overflow-visible">
+            <defs>
+              {/* Valve Symbol Definition */}
+              <g id="valve-symbol">
+                <polygon points="-6,-6 6,6 6,-6 -6,6" fill="#099BE9" />
+                <circle cx="0" cy="0" r="2.5" fill="#FFFFFF" />
+              </g>
+            </defs>
 
-            {/* Radiating Concurrency Wave from Primary Node */}
-            <circle cx="110" cy="20" r="14" fill="none" stroke="#099BE9" strokeWidth="1" opacity="0.3">
-              <animate attributeName="r" from="10" to="34" dur="1.8s" repeatCount="indefinite" />
-              <animate attributeName="opacity" from="0.7" to="0" dur="1.8s" repeatCount="indefinite" />
-            </circle>
+            {/* Inflow Cloud Source */}
+            <circle cx="18" cy="52" r="10" fill="#F1F5F9" stroke="#CBD5E1" strokeWidth="1" strokeDasharray="2 2" />
+            <text x="18" y="55" textAnchor="middle" className="text-[8px] font-mono fill-slate-400">Src</text>
 
-            {/* Traveling Data Packets on Edges */}
-            {/* Edge 1: Top to Left */}
+            {/* Inflow Pipe Line */}
+            <line x1="28" y1="52" x2="88" y2="52" stroke="#099BE9" strokeWidth="2.5" />
+
+            {/* Inflow Valve (Double Triangle) */}
+            <g transform="translate(56, 52)">
+              <use href="#valve-symbol" />
+              <text x="0" y="-10" textAnchor="middle" className="text-[8px] font-mono font-bold fill-slate-700">Inflow</text>
+            </g>
+
+            {/* Continuous Inflow Packets */}
             <circle r="3" fill="#099BE9">
-              <animate attributeName="cx" from="110" to="40" dur="1.2s" repeatCount="indefinite" />
-              <animate attributeName="cy" from="20" to="86" dur="1.2s" repeatCount="indefinite" />
+              <animate attributeName="cx" from="28" to="88" dur="1.2s" repeatCount="indefinite" />
+              <animate attributeName="cy" from="52" to="52" dur="1.2s" repeatCount="indefinite" />
             </circle>
 
-            {/* Edge 2: Top to Right */}
+            {/* CENTRAL STOCK (Accumulator Box) */}
+            <rect
+              x="88"
+              y="26"
+              width="84"
+              height="52"
+              rx="4"
+              fill="#FFFFFF"
+              stroke="#099BE9"
+              strokeWidth="2"
+            />
+            {/* Dynamic Fill Level in Stock */}
+            <rect
+              x="90"
+              y={76 - (level * 48) / 100}
+              width="80"
+              height={(level * 48) / 100}
+              rx="2"
+              fill="#099BE9"
+              opacity="0.18"
+              className="transition-all duration-500"
+            />
+            {/* Stock Level Surface Line */}
+            <line
+              x1="90"
+              y1={76 - (level * 48) / 100}
+              x2="170"
+              y2={76 - (level * 48) / 100}
+              stroke="#099BE9"
+              strokeWidth="1.5"
+              strokeDasharray="2 2"
+              className="transition-all duration-500"
+            />
+            <text x="130" y="44" textAnchor="middle" className="text-[10px] font-mono font-black fill-slate-900">STOCK</text>
+            <text x="130" y="58" textAnchor="middle" className="text-[9px] font-mono font-semibold fill-[#099BE9]">
+              Queue [{level}%]
+            </text>
+
+            {/* Outflow Pipe Line */}
+            <line x1="172" y1="52" x2="232" y2="52" stroke="#099BE9" strokeWidth="2.5" />
+
+            {/* Outflow Valve */}
+            <g transform="translate(202, 52)">
+              <use href="#valve-symbol" />
+              <text x="0" y="-10" textAnchor="middle" className="text-[8px] font-mono font-bold fill-slate-700">Drain</text>
+            </g>
+
+            {/* Outflow Cloud Sink */}
+            <circle cx="242" cy="52" r="10" fill="#F1F5F9" stroke="#CBD5E1" strokeWidth="1" strokeDasharray="2 2" />
+            <text x="242" y="55" textAnchor="middle" className="text-[8px] font-mono fill-slate-400">Sink</text>
+
+            {/* Continuous Outflow Packets */}
             <circle r="3" fill="#09C899">
-              <animate attributeName="cx" from="110" to="180" dur="1.2s" begin="0.2s" repeatCount="indefinite" />
-              <animate attributeName="cy" from="20" to="86" dur="1.2s" begin="0.2s" repeatCount="indefinite" />
+              <animate attributeName="cx" from="172" to="232" dur="1.2s" begin="0.3s" repeatCount="indefinite" />
+              <animate attributeName="cy" from="52" to="52" dur="1.2s" repeatCount="indefinite" />
             </circle>
 
-            {/* Return Edge: Left to Right Sync */}
-            <circle r="2.5" fill="#8647E2">
-              <animate attributeName="cx" from="40" to="180" dur="1.5s" begin="0.4s" repeatCount="indefinite" />
-              <animate attributeName="cy" values="86;84;86" dur="1.5s" begin="0.4s" repeatCount="indefinite" />
+            {/* Information Feedback Link: Stock to Inflow Valve (Backpressure) */}
+            <path
+              d="M 130 78 C 130 110, 56 110, 56 64"
+              fill="none"
+              stroke="#8647E2"
+              strokeWidth="1.5"
+              strokeDasharray="3 3"
+            />
+            <text x="96" y="112" textAnchor="middle" className="text-[8px] font-mono font-bold fill-[#8647E2]">
+              Backpressure Throttle Link
+            </text>
+            {/* Feedback Signal Traveling Along Link */}
+            <circle r="2" fill="#8647E2">
+              <animateMotion
+                path="M 130 78 C 130 110, 56 110, 56 64"
+                dur="1.8s"
+                repeatCount="indefinite"
+              />
             </circle>
-
-            {/* Primary Node (Top) */}
-            <g>
-              <circle cx="110" cy="20" r="10" fill="#099BE9" stroke="#FFFFFF" strokeWidth="2" />
-              <circle cx="110" cy="20" r="3.5" fill="#FFFFFF" />
-            </g>
-
-            {/* Replica Node A (Bottom Left) */}
-            <g>
-              <circle cx="40" cy="86" r="9" fill="#09C899" stroke="#FFFFFF" strokeWidth="2" />
-              <circle cx="40" cy="86" r="3" fill="#FFFFFF" />
-            </g>
-
-            {/* Replica Node B (Bottom Right) */}
-            <g>
-              <circle cx="180" cy="86" r="9" fill="#8647E2" stroke="#FFFFFF" strokeWidth="2" />
-              <circle cx="180" cy="86" r="3" fill="#FFFFFF" />
-            </g>
-
-            {/* Labels in SVG */}
-            <text x="110" y="38" textAnchor="middle" className="text-[9px] font-mono font-bold fill-slate-700">Leader (t=4)</text>
-            <text x="40" y="104" textAnchor="middle" className="text-[9px] font-mono fill-slate-500">Replica 1</text>
-            <text x="180" y="104" textAnchor="middle" className="text-[9px] font-mono fill-slate-500">Replica 2</text>
           </svg>
         </div>
       </div>
 
       {/* Footer */}
       <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-        <span>Quorum Round</span>
+        <span>Accumulation Law</span>
         <span className="text-[#099BE9] font-bold flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#099BE9]" />
-          <span>Synchronized State</span>
+          <Check className="w-3 h-3" />
+          <span>Inflow = Outflow Steady State</span>
         </span>
       </div>
     </div>
@@ -246,19 +291,10 @@ function ConsensusTopologyWidget() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Visual Widget 3: Pipeline Flow & Little's Law Throughput (Systems)         */
-/* Demonstrates: Bounded queues, backpressure, physical hardware limits       */
+/* Diagram 3: Dynamic Equilibrium & Delay Dampening (Systems Thinking)        */
+/* Foundational Systems Thinking: Time delays, oscillations, state stability  */
 /* -------------------------------------------------------------------------- */
-function PipelineFlowWidget() {
-  const [throughput, setThroughput] = useState(156400);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setThroughput(156000 + Math.floor(Math.sin(Date.now() / 900) * 2200));
-    }, 700);
-    return () => clearInterval(timer);
-  }, []);
-
+function EquilibriumDelayDiagram() {
   return (
     <div className="w-full rounded-2xl bg-white border border-slate-200 p-4 shadow-2xs select-none relative overflow-hidden">
       {/* Header */}
@@ -267,72 +303,69 @@ function PipelineFlowWidget() {
           <span className="p-1 rounded-md bg-[#8647E2]/10 text-[#8647E2] inline-flex items-center justify-center">
             <Activity className="w-3.5 h-3.5" />
           </span>
-          <span>Pipeline & Latency</span>
+          <span>Dynamic Equilibrium</span>
         </div>
         <span className="inline-flex items-center gap-1.5 text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#8647E2]/15 text-[#8647E2] font-bold">
           <span className="w-1.5 h-1.5 rounded-full bg-[#8647E2] animate-ping" />
-          <span>Continuous Drain</span>
+          <span>Damped Delay</span>
         </span>
       </div>
 
-      {/* Abstract Flow Pipeline Architecture */}
-      <div className="py-3 space-y-3">
-        {/* Pipeline Queue Stream SVG */}
-        <div className="w-full h-10 bg-slate-50 rounded-xl border border-slate-200/80 p-1 flex items-center relative overflow-hidden">
-          {/* Moving Flow Gradient Stream */}
-          <div className="absolute inset-0 opacity-20 bg-gradient-to-r from-[#099BE9] via-[#09C899] to-[#8647E2]" />
+      {/* SVG: Phase Response Curve Showing Damped Convergence toward Goal State */}
+      <div className="py-3 flex items-center justify-center">
+        <div className="w-full max-w-[260px] h-32 relative">
+          <svg viewBox="0 0 260 128" className="w-full h-full overflow-visible">
+            {/* Axis grid lines */}
+            <line x1="20" y1="110" x2="246" y2="110" stroke="#CBD5E1" strokeWidth="1" />
+            <line x1="20" y1="16" x2="20" y2="110" stroke="#CBD5E1" strokeWidth="1" />
+            <text x="246" y="122" textAnchor="end" className="text-[8px] font-mono fill-slate-400">Time (t) ➔</text>
+            <text x="14" y="24" textAnchor="end" className="text-[8px] font-mono fill-slate-400">State</text>
 
-          {/* Abstract Packets Flowing Left to Right */}
-          <div className="w-full flex items-center justify-between px-2 relative z-10">
-            <span className="text-[10px] font-mono font-semibold text-slate-500">IN</span>
+            {/* Target Goal Equilibrium Line (Dashed Green) */}
+            <line x1="20" y1="56" x2="246" y2="56" stroke="#09C899" strokeWidth="1.5" strokeDasharray="4 4" />
+            <rect x="180" y="44" width="66" height="15" rx="3" fill="#09C899" opacity="0.1" />
+            <text x="213" y="55" textAnchor="middle" className="text-[8px] font-mono font-bold fill-[#0AA793]">
+              Goal Equilibrium
+            </text>
 
-            {/* SVG Packet Stream */}
-            <svg className="flex-1 h-5 mx-2 overflow-visible">
-              {/* Channel Line */}
-              <line x1="0" y1="10" x2="100%" y2="10" stroke="#CBD5E1" strokeWidth="1" strokeDasharray="4 4" />
+            {/* Time Delay Marker Line */}
+            <line x1="70" y1="16" x2="70" y2="110" stroke="#FBAE0C" strokeWidth="1" strokeDasharray="2 2" />
+            <text x="70" y="14" textAnchor="middle" className="text-[8px] font-mono font-bold fill-[#F78424]">
+              Delay (τ)
+            </text>
 
-              {/* Packet 1 */}
-              <rect width="14" height="8" rx="2" y="6" fill="#099BE9">
-                <animate attributeName="x" from="0%" to="100%" dur="2s" repeatCount="indefinite" />
-              </rect>
+            {/* Damped Convergence Wave Path */}
+            {/* Starts from sudden perturbation, oscillates with damping, then locks to goal */}
+            <path
+              id="damping-curve"
+              d="M 20 102 C 40 102, 50 16, 70 20 C 95 24, 110 82, 135 78 C 160 74, 175 48, 195 54 C 215 58, 230 56, 246 56"
+              fill="none"
+              stroke="#8647E2"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
 
-              {/* Packet 2 */}
-              <rect width="14" height="8" rx="2" y="6" fill="#09C899">
-                <animate attributeName="x" from="0%" to="100%" dur="2s" begin="0.65s" repeatCount="indefinite" />
-              </rect>
+            {/* Traveling Tracer on the Damped Convergence Curve */}
+            <circle r="4" fill="#8647E2" stroke="#FFFFFF" strokeWidth="1.5">
+              <animateMotion
+                path="M 20 102 C 40 102, 50 16, 70 20 C 95 24, 110 82, 135 78 C 160 74, 175 48, 195 54 C 215 58, 230 56, 246 56"
+                dur="3s"
+                repeatCount="indefinite"
+              />
+            </circle>
 
-              {/* Packet 3 */}
-              <rect width="14" height="8" rx="2" y="6" fill="#8647E2">
-                <animate attributeName="x" from="0%" to="100%" dur="2s" begin="1.3s" repeatCount="indefinite" />
-              </rect>
-            </svg>
-
-            <span className="text-[10px] font-mono font-semibold text-slate-500">OUT</span>
-          </div>
-        </div>
-
-        {/* Live Systems Telemetry Bar */}
-        <div className="grid grid-cols-2 gap-2 font-mono text-center">
-          <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/80">
-            <span className="text-[10px] text-slate-500 block">Measured Rate</span>
-            <span className="text-sm font-bold text-slate-900">
-              {Math.round(throughput / 1000)}K <span className="text-[10px] text-[#0AA793]">ops/s</span>
-            </span>
-          </div>
-
-          <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/80">
-            <span className="text-[10px] text-slate-500 block">Tail p99</span>
-            <span className="text-sm font-bold text-[#8647E2]">0.18 ms</span>
-          </div>
+            {/* Stable Convergence Point Indicator */}
+            <circle cx="246" cy="56" r="4" fill="#09C899" />
+          </svg>
         </div>
       </div>
 
       {/* Footer */}
       <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-        <span>Hardware Bus</span>
+        <span>Stability Factor</span>
         <span className="text-[#8647E2] font-bold flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#8647E2]" />
-          <span>Zero Backpressure</span>
+          <Check className="w-3 h-3" />
+          <span>Critically Damped (No Thrashing)</span>
         </span>
       </div>
     </div>
@@ -340,42 +373,42 @@ function PipelineFlowWidget() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Main Section: Clean Brilliant.org-Style Learning Cards                     */
-/* Uses ALGO's 4 Brand Colors:                                                */
-/* Blue (#099BE9), Green (#09C899), Purple (#8647E2), Orange (#FBAE0C)        */
-/* NO EMOJIS — PURE ABSTRACT SYSTEMS THINKING ANIMATIONS                      */
+/* Main Section: Pure Systems Thinking Diagrams                              */
+/* 1. Causal Feedback Loops (CLD)                                             */
+/* 2. Stock and Flow with Backpressure Link                                   */
+/* 3. Equilibrium Convergence with Delay Damping                              */
 /* -------------------------------------------------------------------------- */
 export function HomeHowItWorks() {
   const cards = [
     {
       num: "01",
-      badge: "MEMORY & FEEDBACK",
+      badge: "CAUSAL FEEDBACK LOOPS",
       color: "#09C899", // ALGO Green
       badgeStyle: "text-[#0AA793] bg-[#09C899]/10 border-[#09C899]/30",
-      title: "Concepts that click",
+      title: "Feedback loops",
       description:
-        "Understand state machines and memory cycles through hands-on construction. Trace pointer offsets, ring buffers, and cache evictions from first principles.",
-      widget: <RingBufferStateWidget />,
+        "Every distributed system is governed by feedback. Balance load through negative feedback loops, and identify runaway reinforcing loops before cascading failures strike.",
+      widget: <CausalLoopDiagram />,
     },
     {
       num: "02",
-      badge: "TOPOLOGY & CONSENSUS",
+      badge: "STOCKS & FLOWS",
       color: "#099BE9", // ALGO Blue
       badgeStyle: "text-[#099BE9] bg-[#099BE9]/10 border-[#099BE9]/30",
-      title: "Guided progression",
+      title: "Stocks & flow rates",
       description:
-        "Evolve from single-process commands to multi-node topologies. Model message passing, quorum convergence, and partition tolerance across 6 progressive tiers.",
-      widget: <ConsensusTopologyWidget />,
+        "Model queues, buffer pools, and thread states as physical accumulations. Design closed information links where stock levels throttle inflow rates through backpressure.",
+      widget: <StockAndFlowDiagram />,
     },
     {
       num: "03",
-      badge: "FLOW & CONSTRAINTS",
+      badge: "EQUILIBRIUM & DELAY",
       color: "#8647E2", // ALGO Purple
       badgeStyle: "text-[#8647E2] bg-[#8647E2]/10 border-[#8647E2]/30",
-      title: "Real physical limits",
+      title: "Dynamic equilibrium",
       description:
-        "Test implementations against hardware bottlenecks. Measure queue backpressure, cache-miss penalties, and microsecond tail latencies under real load.",
-      widget: <PipelineFlowWidget />,
+        "Time delays between measurement and actuation cause oscillation and thrashing. Engineer critically damped systems that converge predictably to goal equilibrium.",
+      widget: <EquilibriumDelayDiagram />,
     },
   ];
 
@@ -392,17 +425,17 @@ export function HomeHowItWorks() {
               <span className="w-1.5 h-1.5 rounded-full bg-[#8647E2]" />
               <span className="w-1.5 h-1.5 rounded-full bg-[#FBAE0C]" />
             </span>
-            <span>How ALGO Works</span>
+            <span>Systems Thinking in Action</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-950">
-            Master systems by building them.
+            Learn systems by modeling their dynamics.
           </h2>
           <p className="text-sm sm:text-base text-slate-600 font-medium leading-relaxed">
-            Visual, first-principles systems engineering. Learn how real databases, caches, and distributed networks operate from the ground up.
+            Move beyond isolated syntax. Master feedback loops, accumulation stocks, and time-delay dynamics that define real distributed architectures.
           </p>
         </div>
 
-        {/* 3 Brilliant-Style Visual Cards */}
+        {/* 3 Pure Systems Thinking Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
           {cards.map((card) => (
             <div
@@ -424,10 +457,10 @@ export function HomeHowItWorks() {
                 </span>
               </div>
 
-              {/* Center: Abstract Systems Thinking Animation */}
+              {/* Center: Systems Thinking Diagram with Abstract Vector Motion */}
               <div className="pt-1">{card.widget}</div>
 
-              {/* Bottom: Title & Friendly Description */}
+              {/* Bottom: Title & Deep Dive Description */}
               <div className="space-y-2 pt-2 border-t border-slate-100">
                 <h3 className="text-lg font-bold text-slate-950 tracking-tight transition-colors group-hover:text-[#0AA793]">
                   {card.title}
