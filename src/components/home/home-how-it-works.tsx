@@ -305,16 +305,18 @@ export function HomeHowItWorks() {
     <section className="w-full bg-white py-16 sm:py-20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-14 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-white text-slate-700 border border-slate-200 shadow-2xs">
-            {/* ALGO 4-color dots indicator */}
-            <span className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#099BE9]" />
-              <span className="w-1.5 h-1.5 rounded-full bg-[#09C899]" />
-              <span className="w-1.5 h-1.5 rounded-full bg-[#8647E2]" />
-              <span className="w-1.5 h-1.5 rounded-full bg-[#FBAE0C]" />
+        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-14 space-y-4">
+          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-50/90 border border-slate-200/90 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:shadow-xs transition-all duration-300 select-none">
+            {/* ALGO 4-color dots capsule */}
+            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white border border-slate-200/60 shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-[#099BE9] shadow-[0_0_6px_rgba(9,155,233,0.5)]" />
+              <span className="w-2 h-2 rounded-full bg-[#09C899] shadow-[0_0_6px_rgba(9,200,153,0.5)]" />
+              <span className="w-2 h-2 rounded-full bg-[#8647E2] shadow-[0_0_6px_rgba(134,71,226,0.5)]" />
+              <span className="w-2 h-2 rounded-full bg-[#FBAE0C] shadow-[0_0_6px_rgba(251,174,12,0.5)]" />
             </span>
-            <span>How ALGO Works</span>
+            <span className="text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-slate-800">
+              How ALGO Works
+            </span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-950 leading-tight">
             AI can write the code.

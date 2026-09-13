@@ -24,7 +24,7 @@ export default async function HomePage() {
         {/* ============================================================== */}
         {/* 1. HERO SECTION: Charcoal Dark Surface with Pure White Typography */}
         {/* ============================================================== */}
-        <section className="relative bg-[#262626] pt-12 pb-24 sm:pb-32 overflow-hidden">
+        <section className="relative bg-[#262626] min-h-[calc(100vh-4rem)] flex flex-col justify-center pt-8 pb-20 sm:pb-28 overflow-hidden">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
               {/* Left Column: Hero Pitch & CTA */}
