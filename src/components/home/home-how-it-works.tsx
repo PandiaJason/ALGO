@@ -315,7 +315,7 @@ export function HomeHowItWorks() {
               <span className="w-2 h-2 rounded-full bg-[#FBAE0C] shadow-[0_0_6px_rgba(251,174,12,0.5)]" />
             </span>
             <span className="text-[11px] font-mono font-bold uppercase tracking-[0.16em] text-slate-800">
-              How ALGO Works
+              Systems Thinking
             </span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-950 leading-tight">
