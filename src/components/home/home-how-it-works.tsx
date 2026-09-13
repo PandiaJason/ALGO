@@ -392,9 +392,7 @@ export function HomeHowItWorks() {
   const cards = [
     {
       slug: "git",
-      badge: "CONTENT-ADDRESSED DAG",
       color: "#09C899", // ALGO Green
-      badgeStyle: "text-[#0AA793] bg-[#09C899]/10 border-[#09C899]/30",
       title: "Git Version Control Engine",
       description:
         "Content-addressed object database and Directed Acyclic Graph (DAG)",
@@ -402,9 +400,7 @@ export function HomeHowItWorks() {
     },
     {
       slug: "rate-limiter",
-      badge: "TOKEN BUCKET DYNAMICS",
       color: "#099BE9", // ALGO Blue
-      badgeStyle: "text-[#099BE9] bg-[#099BE9]/10 border-[#099BE9]/30",
       title: "Distributed Rate Limiter",
       description:
         "Low-overhead token bucket and sliding window rate limiter",
@@ -412,9 +408,7 @@ export function HomeHowItWorks() {
     },
     {
       slug: "mcp-runtime",
-      badge: "JSON-RPC DISPATCHER",
       color: "#8647E2", // ALGO Purple
-      badgeStyle: "text-[#8647E2] bg-[#8647E2]/10 border-[#8647E2]/30",
       title: "Model Context Protocol (MCP) Runtime",
       description:
         "Type-safe JSON-RPC 2.0 tool execution runtime with schema validation and isolation",
@@ -423,7 +417,7 @@ export function HomeHowItWorks() {
   ];
 
   return (
-    <section className="w-full bg-[#FAF9F6] border-t border-b border-slate-200/80 py-16 sm:py-20">
+    <section className="w-full bg-white py-16 sm:py-20">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-14 space-y-3">
@@ -460,17 +454,8 @@ export function HomeHowItWorks() {
               key={card.slug}
               className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-2xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between space-y-6 group cursor-default"
             >
-              {/* Top: Category Eyebrow Badge (No numbers) */}
-              <div className="flex items-center">
-                <span
-                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border ${card.badgeStyle} transition-transform duration-300 group-hover:scale-105`}
-                >
-                  {card.badge}
-                </span>
-              </div>
-
               {/* Center: Systems Thinking Diagram with Abstract Vector Motion */}
-              <div className="pt-1">{card.widget}</div>
+              <div>{card.widget}</div>
 
               {/* Bottom: Title & Deep Dive Description */}
               <div className="space-y-2 pt-2 border-t border-slate-100">
